@@ -50,10 +50,23 @@ class Point3D(object):
     pass
 
 class VehicleMode(object):
-    """Vehicle mode information"""
-
-    def __init__(self):
-        self.name = "AUTO"
+    """
+    Vehicle mode information
+    
+    Supported properties:
+    
+    ============= ======================================
+    Name          Description
+    ============= ======================================
+    name          string - the mode name (AUTO etc...)
+    ============= ======================================
+    
+    """
+    def __init__(self, name):
+        self.name = name
+        
+    def __str__(self):
+        return "VehicleMode:%s" % self.name
 
 class APIConnection(object):
     """
@@ -63,13 +76,14 @@ class APIConnection(object):
     this class.
     """
 
-    def get_vehicles(self, fixme):
+    def get_vehicles(self, query = None):
         """
         Find a set of vehicles that are controllable from this connection.
 
-        FIXME - explain how this works in the web case
+        :param query: This parameter will be documented with the web API, for now just use the default
         """
-        return [ Vehicle(), Vehicle() ]
+        #return [ Vehicle(), Vehicle() ]
+        raise Exception("Subclasses must override")
 
 class HasAttributeObservers(object):
     """
@@ -237,28 +251,30 @@ class Vehicle(HasAttributeObservers):
         exception) and future reads will see their effects."""
         pass
 
-    def __getattr__(self, name):
-        """
-        Attributes are automatically populated based on vehicle type.
-
-        This override provides that behavior.
-        """
-
-        try:
-            return self.__dict[name]
-        except KeyError:
-            msg = "'{0}' object has no attribute '{1}'"
-            raise AttributeError(msg.format(type(self).__name__, name))
-
-    def __setattr__(self, name, value):
-        """
-        An override to support setting for vehicle attributes.
-
-        Note: Exceptions due to loss of communications, missing attributes or insufficient permissions are not guaranteed
-        to be thrown from inside this method.  Most failures will not be seen until flush() is called.  If you require immediate
-        notification of failure set autoflush.
-        """
-        pass
+#===============================================================================
+#     def __getattr__(self, name):
+#         """
+#         Attributes are automatically populated based on vehicle type.
+# 
+#         This override provides that behavior.
+#         """
+# 
+#         try:
+#             return self.__dict[name]
+#         except KeyError:
+#             msg = "'{0}' object has no attribute '{1}'"
+#             raise AttributeError(msg.format(type(self).__name__, name))
+# 
+#     def __setattr__(self, name, value):
+#         """
+#         An override to support setting for vehicle attributes.
+# 
+#         Note: Exceptions due to loss of communications, missing attributes or insufficient permissions are not guaranteed
+#         to be thrown from inside this method.  Most failures will not be seen until flush() is called.  If you require immediate
+#         notification of failure set autoflush.
+#         """
+#         pass
+#===============================================================================
 
 class Mission(object):
     """
