@@ -86,10 +86,14 @@ class APIConnection(object):
         raise Exception("Subclasses must override")
 
 class HasAttributeObservers(object):
+    def __init__(self):
+        # A mapping from attr_name to a list of observers
+        self.__observers = {}
+        
     """
     Provides callback based notification on attribute changes.
 
-    The argument list for observer is TBD but probably observer(attr_name, new_value).
+    The argument list for observer is observer(attr_name, new_value).
     """
     def add_attribute_observer(self, attr_name, observer):
         """
@@ -98,7 +102,11 @@ class HasAttributeObservers(object):
         :param attr_name: the attribute to watch
         :param observer: the callback to invoke when change is detected
         """
-        pass
+        l = self.__observers.get(attr_name)
+        if l is None:
+            l = []
+            self.__observers[attr_name] = l
+        l.append(observer)
 
     def remove_attribute_observer(self, attr_name, observer):
         """
@@ -107,7 +115,11 @@ class HasAttributeObservers(object):
         :param attr_name: the attribute to watch
         :param observer: the callback to invoke when change is detected
         """
-        pass
+        l = self.__observers.get(attr_name)
+        if l is not None:
+            l.remove(observer)
+            if len(l) == 0:
+                del self.__observers[attr_name]
 
     def notify_observers(self, attr_name, new_value):
         """
@@ -115,7 +127,10 @@ class HasAttributeObservers(object):
 
         FIXME would it make sense just to override __setattr__?
         """
-        pass
+        l = self.__observers.get(attr_name)
+        if l is not None:
+            for o in l:
+                o(attr_name, new_value)
 
 class Vehicle(HasAttributeObservers):
     """
