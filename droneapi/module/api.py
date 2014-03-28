@@ -1,7 +1,7 @@
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.DroneApi import APIConnection, Vehicle, VehicleMode, Location,\
-    Attitude
+    Attitude, GPSInfo
 
 """
 fixme make params work
@@ -45,7 +45,11 @@ class MPVehicle(Vehicle):
     @property
     def attitude(self):
         return Attitude(self.__module.pitch, self.__module.yaw, self.__module.roll)
-     
+
+    @property
+    def gps_0(self):
+        return GPSInfo(self.__module.eph, self.__module.epv, self.__module.fix_type, self.__module.satellites_visible)
+         
 class MPAPIConnection(APIConnection):
     """
     A small private version of the APIConnection class
@@ -67,14 +71,21 @@ class APIModule(mp_module.MPModule):
         self.lat = None
         self.lon = None
         self.alt = None
+        
         self.airspeed = None
         self.groundspeed = None
+        
         self.pitch = None
         self.yaw = None
         self.roll = None
+        
+        self.eph = None
+        self.epv = None
+        self.satellites_visible = None
+        self.fix_type = None # FIXME support multiple GPSs per vehicle
         print("DroneAPI loaded")
 
-    def __on_change(self, **args):
+    def __on_change(self, *args):
         for a in args:
             self.vehicle.notify_observers(a)
             
@@ -84,7 +95,11 @@ class APIModule(mp_module.MPModule):
             self.__on_change('location')
         elif m.get_type() == 'GPS_RAW_INT':
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self.__on_change('location')
+            self.eph = m.eph
+            self.epv = m.epv
+            self.satellites_visible = m.satellites_visible
+            self.fix_type = m.fix_type
+            self.__on_change('location', 'gps_0')
         elif m.get_type() == "VFR_HUD":
             self.heading = m.heading
             self.alt = m.alt
@@ -96,7 +111,7 @@ class APIModule(mp_module.MPModule):
             self.yaw = m.yaw
             self.roll = m.roll
             self.__on_change('attitude')
-            
+               
     def cmd_api(self, args):
         print "Running test... (FIXME - add python script loading instead)"
         api = self.api
@@ -104,6 +119,7 @@ class APIModule(mp_module.MPModule):
         print "Mode: %s" % v.mode
         print "Location: %s" % v.location
         print "Attitude: %s" % v.attitude
+        print "GPS: %s" % v.gps_0
         v.mode = VehicleMode("AUTO")
         v.flush()
 

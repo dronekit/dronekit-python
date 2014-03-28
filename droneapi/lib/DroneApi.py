@@ -58,6 +58,22 @@ class Location(object):
         
     def __str__(self):
         return "Location:%s,%s,%s" % (self.lat, self.lon, self.alt)
+
+class GPSInfo(object):
+    """
+    Standard information available about GPS
+    
+    FIXME - possibly normalize eph/epv?  report fix type as string?
+    """
+    def __init__(self, eph, epv, fix_type, satellites_visible):   
+        self.eph = eph
+        self.epv = epv
+        self.fix_type = fix_type
+        self.satellites_visible = satellites_visible
+
+    def __str__(self):
+        return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type, self.satellites_visible)
+    
     
 class VehicleMode(object):
     """
@@ -139,7 +155,7 @@ class HasAttributeObservers(object):
 
         FIXME would it make sense just to override __setattr__?
         """
-        print "Notify: " + attr_name
+        #print "Notify: " + attr_name
         l = self.__observers.get(attr_name)
         if l is not None:
             for o in l:
@@ -173,6 +189,7 @@ class Vehicle(HasAttributeObservers):
     mode              VehicleMode
     airspeed          double (FIXME - should this move somewhere else?)
     groundspeed       double
+    gps_0             GPSInfo
     battery_0_soc     double
     battery_0_volt    double
     channel_override  Dictionary (channelName -> value) (formery rc_override)
