@@ -1,11 +1,12 @@
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.DroneApi import APIConnection, Vehicle, VehicleMode, Location,\
-    Attitude, GPSInfo, Parameters
+    Attitude, GPSInfo, Parameters, CommandSequence
 
 """
 fixme do follow me example
 fixme make mission work
+fixme make into a real pip module - for easy install
 """
 
 class MPParameters(Parameters):
@@ -23,11 +24,45 @@ class MPParameters(Parameters):
 
     def __setitem__(self, name, value):
         self.__module.mpstate.functions.param_set(name, value)
+
+class MPCommandSequence(CommandSequence):
+    """
+    See CommandSequence baseclass for documentation.
+    """
+
+    def __init__(self, module):
+        self.__module = module
+        self.__module.master.waypoint_request_list_send()
+        # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
+
+    @property
+    def __wp(self):
+        return self.__module.module('wp')
     
+    @property
+    def count(self):
+        return self.__wp.wploader.count()
+    
+    @property
+    def next(self):
+        return None
+
+    @next.setter
+    def next(self, index):
+        self.__module.master.waypoint_set_current_send(index)
+    
+    def __getitem__(self, index):
+        return self.__wp.wploader.wp(index)
+
+    def __setitem__(self, index, value):
+        self.__wp.wploader.set(value, index)
+        # BIG FIXME - mark as dirty/send on next flush
+
 class MPVehicle(Vehicle):
     def __init__(self, module):
         self.__module = module
         self._parameters = MPParameters(module) 
+        self._waypoints = MPCommandSequence(module)
 
     #
     # Private sugar methods 
@@ -98,7 +133,7 @@ class APIModule(mp_module.MPModule):
         self.eph = None
         self.epv = None
         self.satellites_visible = None
-        self.fix_type = None # FIXME support multiple GPSs per vehicle
+        self.fix_type = None # FIXME support multiple GPSs per vehicle - possibly by using componentId
         print("DroneAPI loaded")
 
     def __on_change(self, *args):
@@ -137,6 +172,7 @@ class APIModule(mp_module.MPModule):
         print "Attitude: %s" % v.attitude
         print "GPS: %s" % v.gps_0
         print "Param: %s" % v.parameters['THR_MAX']
+        print "Home WP: %s" % v.commands[0]
         v.mode = VehicleMode("AUTO")
         v.flush()
 

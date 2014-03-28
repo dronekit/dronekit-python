@@ -1,4 +1,5 @@
 # DroneAPI module
+from pymavlink import mavutil
 
 def web_connect(authinfo):
     """
@@ -233,7 +234,7 @@ class Vehicle(HasAttributeObservers):
     """
 
     def __init__(self):
-        self._waypoints = CommandSequence()
+        pass
 
     @property
     def commands(self):
@@ -345,11 +346,11 @@ class Parameters(HasAttributeObservers):
     Operations are not guaranteed to be complete until flush() is called on the parent Vehicle object.
     """
 
-class Command(object):
+class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
     A waypoint object.
 
-    FIXME Documentation for Waypoint not included (yet).  But it will contain position, waypoint type and parameter arguments.
+    FIXME - for now we just inherit the standard mavlink mission item contents
     """
     pass
 
@@ -361,17 +362,27 @@ class CommandSequence(object):
     Any changes by the client are not guaranteed to be complete until flush() is called on the parent Vehicle object.
     """
 
-    def __init__(self):
-        self._next = None
-
+    @property
+    def count(self):
+        '''return number of waypoints'''
+        return 0
+    
     @property
     def next(self):
-        """Currently active waypoint number"""
-        return self._next
+        """
+        Currently active waypoint number
+        
+        (implementation provided by subclass)
+        """
+        return None
 
     @next.setter
     def next(self, value):
-        """Tell vehicle to change next waypoint"""
-        self._next = value
+        """
+        Tell vehicle to change next waypoint
+        
+        (implementation provided by subclass)
+        """
+        pass
 
 
