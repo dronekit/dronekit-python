@@ -34,21 +34,31 @@ class Attitude(object):
     """
     Attitude information
 
-    FIXME, possibly repurpose/share with a standard python library
+    pitch/yaw/roll in radians
+    
     """
-    def __init__(self):
-        self.pitch = 0.0
-        self.yaw = 0.0
-        self.roll = 0.0
+    def __init__(self, pitch, yaw, roll):
+        self.pitch = pitch
+        self.yaw = yaw
+        self.roll = roll
 
-class Point3D(object):
+    def __str__(self):
+        return "Attitude:%s,%s,%s" % (self.pitch, self.yaw, self.roll)
+    
+class Location(object):
     """
     A location object -
 
-    FIXME, possibly repurpose/share with a standard python library
+    FIXME, possibly add a vector3 representation
     """
-    pass
-
+    def __init__(self, lat, lon, alt):
+        self.lat = lat
+        self.lon = lon
+        self.alt = alt
+        
+    def __str__(self):
+        return "Location:%s,%s,%s" % (self.lat, self.lon, self.alt)
+    
 class VehicleMode(object):
     """
     Vehicle mode information
@@ -93,11 +103,13 @@ class HasAttributeObservers(object):
     """
     Provides callback based notification on attribute changes.
 
-    The argument list for observer is observer(attr_name, new_value).
+    The argument list for observer is observer(attr_name).
     """
     def add_attribute_observer(self, attr_name, observer):
         """
-        Add an observer.
+        Add an attribute observer.  Note: attribute changes will only be published for 
+        changes due to some other entity.  They will not be published for changes made by the local API client.
+        (This is done to prevent redundant notification for local changes)
 
         :param attr_name: the attribute to watch
         :param observer: the callback to invoke when change is detected
@@ -121,16 +133,17 @@ class HasAttributeObservers(object):
             if len(l) == 0:
                 del self.__observers[attr_name]
 
-    def notify_observers(self, attr_name, new_value):
+    def notify_observers(self, attr_name):
         """
         (For subclass use only) Tell observers that the named attribute has changed.
 
         FIXME would it make sense just to override __setattr__?
         """
+        print "Notify: " + attr_name
         l = self.__observers.get(attr_name)
         if l is not None:
             for o in l:
-                o(attr_name, new_value)
+                o(attr_name)
 
 class Vehicle(HasAttributeObservers):
     """
@@ -154,18 +167,27 @@ class Vehicle(HasAttributeObservers):
     ================= =======================================================
     Name              Type
     ================= =======================================================
-    location          Point3D
+    location          Location
     waypoint_home     Waypoint
     attitude          Attitude
     mode              VehicleMode
+    airspeed          double (FIXME - should this move somewhere else?)
+    groundspeed       double
     battery_0_soc     double
     battery_0_volt    double
     channel_override  Dictionary (channelName -> value) (formery rc_override)
     channel_readback  Dictionary (channelName -> value) (read only)
+    ================= =======================================================
+
+    Autopilot specific attributes & types:
+
+    ================= =======================================================
+    Name              Type
+    ================= =======================================================
     ap_pin5_mode      string (adc, dout, din)
     ap_pin5_value     double (0, 1, 2.3 etc...)
     ================= =======================================================
-
+    
     channel_override/channel_readback documentation:
     In the previous version of this API I used the 'tried and true'
     rc_override terminology.  However I've changed rc_override to be
