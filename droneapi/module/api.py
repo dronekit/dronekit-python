@@ -1,17 +1,33 @@
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.DroneApi import APIConnection, Vehicle, VehicleMode, Location,\
-    Attitude, GPSInfo
+    Attitude, GPSInfo, Parameters
 
 """
-fixme make params work
 fixme do follow me example
 fixme make mission work
 """
 
+class MPParameters(Parameters):
+    """
+    See Parameters baseclass for documentation.
+    
+    FIXME - properly publish change notification
+    """
+
+    def __init__(self, module):
+        self.__module = module
+        
+    def __getitem__(self, name):
+        return self.__module.mav_param[name]
+
+    def __setitem__(self, name, value):
+        self.__module.mpstate.functions.param_set(name, value)
+    
 class MPVehicle(Vehicle):
     def __init__(self, module):
         self.__module = module
+        self._parameters = MPParameters(module) 
 
     #
     # Private sugar methods 
@@ -120,6 +136,7 @@ class APIModule(mp_module.MPModule):
         print "Location: %s" % v.location
         print "Attitude: %s" % v.attitude
         print "GPS: %s" % v.gps_0
+        print "Param: %s" % v.parameters['THR_MAX']
         v.mode = VehicleMode("AUTO")
         v.flush()
 

@@ -234,7 +234,6 @@ class Vehicle(HasAttributeObservers):
 
     def __init__(self):
         self._waypoints = CommandSequence()
-        self._parameters = Parameters()
 
     @property
     def commands(self):
@@ -345,12 +344,6 @@ class Parameters(HasAttributeObservers):
     Attribute names are generated automatically based on parameter names.  Standard get/set operations can be performed.
     Operations are not guaranteed to be complete until flush() is called on the parent Vehicle object.
     """
-
-    def __getattr__(self, name):
-        pass
-
-    def __setattr__(self, name, value):
-        pass
 
 class Command(object):
     """
