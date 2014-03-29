@@ -19,11 +19,11 @@ setup (name = 'droneapi',
        classifiers=['Development Status :: 4 - Beta',
                     'Environment :: Console',
                     'Intended Audience :: Science/Research',
-                    'License :: OSI Approved :: Apache License version 2',
+                    'License :: OSI Approved :: Apache Software License',
                     'Operating System :: OS Independent',
                     'Programming Language :: Python :: 2.7',
                     'Topic :: Scientific/Engineering'
                     ],
        license='apache',
-       packages = ['dapi_module'],
+       packages = ['droneapi', 'droneapi.module', 'droneapi.lib' ],
        ext_modules = ext_modules)

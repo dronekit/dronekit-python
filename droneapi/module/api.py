@@ -1,12 +1,11 @@
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
-from droneapi.lib.DroneApi import APIConnection, Vehicle, VehicleMode, Location,\
+from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location,\
     Attitude, GPSInfo, Parameters, CommandSequence
 
 """
 fixme do follow me example
 fixme make mission work
-fixme make into a real pip module - for easy install
 """
 
 class MPParameters(Parameters):
@@ -116,7 +115,7 @@ class MPAPIConnection(APIConnection):
 class APIModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(APIModule, self).__init__(mpstate, "api")
-        self.add_command('api', self.cmd_api, "API commands")
+        self.add_command('api', self.cmd_api, "API commands", [ "<test>", "<load> (FILENAME)" ])
         self.api = MPAPIConnection(self)
         self.vehicle = self.api.get_vehicles()[0]
         self.lat = None
@@ -162,9 +161,8 @@ class APIModule(mp_module.MPModule):
             self.yaw = m.yaw
             self.roll = m.roll
             self.__on_change('attitude')
-               
-    def cmd_api(self, args):
-        print "Running test... (FIXME - add python script loading instead)"
+    
+    def test(self):
         api = self.api
         v = api.get_vehicles()[0]
         print "Mode: %s" % v.mode
@@ -175,6 +173,23 @@ class APIModule(mp_module.MPModule):
         print "Home WP: %s" % v.commands[0]
         v.mode = VehicleMode("AUTO")
         v.flush()
+    
+    def get_connection(self):
+        return self.api
+    
+    def cmd_api(self, args):
+        if len(args) < 1:
+            print("usage: api <test|load> <filename>")
+            return
+    
+        if args[0] == "test":
+            self.test()
+        elif args[0] == "load":
+            if len(args) != 2:
+                print("usage: api load <filename>")
+                return
+            globals = { "local_connect" : self.get_connection }
+            execfile(args[1], globals)
 
 def init(mpstate):
     '''initialise module'''
