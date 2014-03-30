@@ -112,7 +112,7 @@ class APIConnection(object):
         #return [ Vehicle(), Vehicle() ]
         raise Exception("Subclasses must override")
 
-class HasAttributeObservers(object):
+class HasObservers(object):
     def __init__(self):
         # A mapping from attr_name to a list of observers
         self.__observers = {}
@@ -162,7 +162,7 @@ class HasAttributeObservers(object):
             for o in l:
                 o(attr_name)
 
-class Vehicle(HasAttributeObservers):
+class Vehicle(HasObservers):
     """
     The main vehicle API
 
@@ -241,7 +241,7 @@ class Vehicle(HasAttributeObservers):
         """
         The (editable) waypoints for this vehicle.
         """
-        return self._waypoints
+        None
 
     @property
     def parameters(self):
@@ -338,7 +338,7 @@ class Mission(object):
     from the REST API.  (This is based on the most likely use-cases wanting a REST interface)"""
     pass
 
-class Parameters(HasAttributeObservers):
+class Parameters(HasObservers):
     """
     The set of named parameters for the vehicle.
 
@@ -358,10 +358,21 @@ class CommandSequence(object):
     """
     A sequence of vehicle waypoints.
 
-    Documentation for Waypoints not included (yet).  Operations will include 'array style' indexed access to the various contained Waypoints.
+    Operations include 'array style' indexed access to the various contained Waypoints.
     Any changes by the client are not guaranteed to be complete until flush() is called on the parent Vehicle object.
+    
+    Waypoints are not downloaded from vehicle until download() is called.  Fetch starts a (potentially asynchronous)
+    waypoint download.  If you'd like to block your thread until the download is completed, call wait_valid() 
     """
 
+    def download(self):
+        '''Download all waypoints from the vehicle'''
+        pass
+    
+    def wait_valid(self):
+        '''Block the calling thread until waypoints have been downloaded'''
+        pass
+    
     @property
     def count(self):
         '''return number of waypoints'''
