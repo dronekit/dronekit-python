@@ -12,7 +12,7 @@ def followme():
     every two seconds it sends a new goto command to the vehicle.
 
     To use this example:
-    * Run mavproxy.py with the correct options to correct to your vehicle
+    * Run mavproxy.py with the correct options to connect to your vehicle
     * module load api
     * api start <path-to-follow_me.py>
 
@@ -20,7 +20,7 @@ def followme():
     transmitter or type "api stop".
     """
     try:
-        # First get an instance of the API endpoint
+        # First get an instance of the API endpoint (the connect via web case will be similar)
         api = local_connect()
 
         # Now get our vehicle (we assume the user is trying to control the virst vehicle attached to the GCS)
@@ -38,12 +38,14 @@ def followme():
         gpsd = gps.gps(mode=gps.WATCH_ENABLE)
 
         while not api.exit:
+            # This is necessary to read the GPS state from the laptop
             gpsd.next()
 
             if is_guided and v.mode.name != "GUIDED":
                 print "User has changed flight modes - aborting follow-me"
                 break
 
+            # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
             if (gpsd.valid & gps.LATLON_SET) != 0:
                 altitude = 30  # in meters
                 dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
