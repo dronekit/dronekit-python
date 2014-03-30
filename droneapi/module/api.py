@@ -6,13 +6,6 @@ from MAVProxy.modules.lib import mp_module
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
     Attitude, GPSInfo, Parameters, CommandSequence
 
-def api_want_exit():
-    """
-    Has this thread been asked to exit?
-    FIXME - should this be private, or part of the drone api?
-    """
-    return threading.current_thread().exit
-
 """
 fixme do follow me example
 fixme make mission work
@@ -51,8 +44,21 @@ class MPCommandSequence(CommandSequence):
         '''Block the calling thread until waypoints have been downloaded'''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
         print 'waiting for download'
-        while (self.__wp.wp_op is not None) and not api_want_exit():
+        while (self.__wp.wp_op is not None) and not self.__module.api.exit:
             time.sleep(0.200)
+
+    def goto(self, l):
+        if l.is_relative:
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+        else:
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+        self.__module.master.mav.mission_item_send(self.__module.target_system,
+                                               self.__module.target_component,
+                                               0,
+                                               frame,
+                                               mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                                               2, 0, 0, 0, 0, 0,
+                                               l.lat, l.lon, l.alt)
 
     @property
     def __wp(self):
@@ -268,7 +274,7 @@ class APIModule(mp_module.MPModule):
 
     def cmd_api(self, args):
         if len(args) < 1:
-            print("usage: api <list|start|stop> <filename or threadnum>")
+            print("usage: api <list|start|stop> [filename or threadnum]")
             return
 
         if args[0] == "test":
