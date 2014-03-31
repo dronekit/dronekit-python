@@ -15,9 +15,10 @@ API please see:
 # WARNING
 
 This is an early draft of the drone API.  It is likely that various interfaces will move around over the next couple of months.  So
-please 
-Copyright 2014 3D Robotics, Inc.
-Author: Kevin Hester
+please send feedback and expect some changes...
+
+Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
+kevin@3drobotics.com
 
 
 
