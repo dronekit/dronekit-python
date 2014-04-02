@@ -2,7 +2,7 @@ from setuptools import setup, Extension
 import numpy as np
 import platform
 
-version = '0.1.0'
+version = '0.1.1'
 
 ext_modules = []
 
@@ -11,10 +11,10 @@ setup (name = 'droneapi',
        version = version,
        description = 'Python language bindings for the DroneApi',
        long_description = '''Python language bindings for the DroneApi (includes the droneapi MAVProxy module)''',
-       url = 'https://github.com/3drobotics/droneapi-python',
+       url = 'https://github.com/diydrones/droneapi-python',
        author = '3D Robotics',
        install_requires = [ 'pymavlink',
-                            'MAVProxy >= 1.2.9' ],
+                            'MAVProxy >= 1.3.1' ],
        author_email = 'kevinh@geeksville.com',
        classifiers=['Development Status :: 4 - Beta',
                     'Environment :: Console',
@@ -26,5 +26,5 @@ setup (name = 'droneapi',
                     ],
        license='apache',
        packages = ['droneapi', 'droneapi.module', 'droneapi.lib' ],
-       package_data={'droneapi': ['example']},
+       # doesn't work: package_data={'droneapi': ['example/*']},
        ext_modules = ext_modules)
