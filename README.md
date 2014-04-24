@@ -1,5 +1,8 @@
 # DroneAPI-python
 
+Build Status: [![Dependency Status](https://www.codeship.io/projects/869efe80-ae1a-0131-b6a4-527e64ff213a/status)](https://www.codeship.io/projects/19685)
+
+
 This package contains the python language bindings for the drone API and the associated MAVProxy module.
 
 # Users wanted!
