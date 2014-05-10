@@ -292,9 +292,15 @@ class Vehicle(HasObservers):
         """
         Returns an object that can be used to create 'raw' mavlink messages that are appropriate for this vehicle.
         These message types are defined in the central Mavlink github repository.  For example, a Pixhawk understands
-        the following messages: (FIXME - insert link to pixhawk.py).
+        the following messages: (from https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml).
 
-        Example usage:
+          <message id="153" name="IMAGE_TRIGGER_CONTROL">
+               <field type="uint8_t" name="enable">0 to disable, 1 to enable</field>
+          </message>
+
+        The name of the factory method will always be the lower case version of the message name with _encode appended.
+        Each field in the xml message definition must be listed as arguments to this factory method.  So for this example
+        message, the call would be:
 
         msg = vehicle.message_factory.image_trigger_control_encode(True)
         vehicle.send_mavlink(msg)
