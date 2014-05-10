@@ -56,7 +56,7 @@ class Location(object):
     :param alt: Altitude in meters (either relative or absolute)
     :param is_relative: True if the specified altitude is relative to a 'home' location
     """
-    def __init__(self, lat, lon, alt=None, is_relative=None):
+    def __init__(self, lat, lon, alt=None, is_relative=True):
         self.lat = lat
         self.lon = lon
         self.alt = alt
@@ -252,7 +252,7 @@ class Vehicle(HasObservers):
     """
 
     def __init__(self):
-        pass
+        self.mavrx_callback = None
 
     @property
     def commands(self):
@@ -287,7 +287,21 @@ class Vehicle(HasObservers):
         """
         return Mission()
 
-    def send_mavlink(self, packet):
+    @property
+    def message_factory(self):
+        """
+        Returns an object that can be used to create 'raw' mavlink messages that are appropriate for this vehicle.
+        These message types are defined in the central Mavlink github repository.  For example, a Pixhawk understands
+        the following messages: (FIXME - insert link to pixhawk.py).
+
+        Example usage:
+
+        msg = vehicle.message_factory.image_trigger_control_encode(True)
+        vehicle.send_mavlink(msg)
+        """
+        None
+
+    def send_mavlink(self, message):
         """
         This is an advanced/low-level method to send raw mavlink to the vehicle.
 
@@ -298,15 +312,13 @@ class Vehicle(HasObservers):
         If you find yourself needing to use this mathod please contact the drone-platform google group and
         we'll see if we can support the operation you needed in some future revision of the API.
 
-        * FIXME: Instead of passing in bytes, probably better to have the developer pass in Mavlink packet objects.
-
-        :param: packet: A mavlink packet.
+        :param: message: A MAVLink_message instance.  No need to fill in sysId/compId/seqNum - the API will take care of that.
         """
         pass
 
     def set_mavlink_callback(self, callback):
         """
-        Provides asynchronous notification when any mavlink packet is received from this vehice.  FOR DISCUSSION!
+        Provides asynchronous notification when any mavlink packet is received from this vehice. 
 
         Note: I've included this prototype for feedback.  I _hope_ that it isn't necessary to provide this method as part
         of the API, because I think because of the async attribute/waypoint/parameter notifications there is no need for
@@ -314,7 +326,7 @@ class Vehicle(HasObservers):
 
         If we do need to include this method it would be easy to implement.
         """
-        pass
+        self.mavrx_callback = callback
 
     def flush(self):
         """It is important to understand that setting attributes/changing vehicle state may occur over a slow link.

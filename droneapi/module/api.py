@@ -135,6 +135,10 @@ class MPVehicle(Vehicle):
             self._waypoints = MPCommandSequence(self.__module)
         return self._waypoints
 
+    def send_mavlink(self, message):
+        self.__module.master.mav.send(message)
+
+
 class MPAPIConnection(APIConnection):
     """
     A small private version of the APIConnection class
@@ -239,6 +243,9 @@ class APIModule(mp_module.MPModule):
             self.yaw = m.yaw
             self.roll = m.roll
             self.__on_change('attitude')
+
+        if (self.vehicle is not None) and (self.vehicle.mavrx_callback is not None):
+            self.vehicle.mavrx_callback(m)
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
