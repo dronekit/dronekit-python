@@ -252,6 +252,7 @@ class Vehicle(HasObservers):
     """
 
     def __init__(self):
+        super(HasObservers,self).__init__()
         self.mavrx_callback = None
 
     @property
@@ -324,7 +325,7 @@ class Vehicle(HasObservers):
 
     def set_mavlink_callback(self, callback):
         """
-        Provides asynchronous notification when any mavlink packet is received from this vehice. 
+        Provides asynchronous notification when any mavlink packet is received from this vehice.
 
         Note: I've included this prototype for feedback.  I _hope_ that it isn't necessary to provide this method as part
         of the API, because I think because of the async attribute/waypoint/parameter notifications there is no need for

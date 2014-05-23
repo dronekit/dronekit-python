@@ -85,6 +85,7 @@ class MPCommandSequence(CommandSequence):
 
 class MPVehicle(Vehicle):
     def __init__(self, module):
+        super(Vehicle,self).__init__()
         self.__module = module
         self._parameters = MPParameters(module)
         self._waypoints = None
