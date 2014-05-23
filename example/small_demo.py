@@ -25,6 +25,7 @@ cmds = v.commands
 cmds.download()
 cmds.wait_valid()
 print "Home WP: %s" % cmds[0]
+print "Current dest: %s" % cmds.next
 
 # Now change the vehicle into auto mode
 v.mode = VehicleMode("AUTO")

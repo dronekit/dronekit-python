@@ -70,7 +70,12 @@ class MPCommandSequence(CommandSequence):
 
     @property
     def next(self):
-        return None
+        """
+        Currently active waypoint number
+
+        (implementation provided by subclass)
+        """
+        return self.__module.last_waypoint
 
     @next.setter
     def next(self, index):
@@ -200,6 +205,8 @@ class APIModule(mp_module.MPModule):
         self.yaw = None
         self.roll = None
 
+        self.last_waypoint = 0
+
         self.eph = None
         self.epv = None
         self.satellites_visible = None
@@ -223,29 +230,32 @@ class APIModule(mp_module.MPModule):
                 print "WARNING: Timed out waiting for %s to exit." % t
 
     def mavlink_packet(self, m):
-        if m.get_type() == 'GPS_RAW':
+        typ = m.get_type()
+        if typ == 'GPS_RAW':
             (self.lat, self.lon) = (m.lat, m.lon)
             self.__on_change('location')
-        elif m.get_type() == 'GPS_RAW_INT':
+        elif typ == 'GPS_RAW_INT':
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             self.eph = m.eph
             self.epv = m.epv
             self.satellites_visible = m.satellites_visible
             self.fix_type = m.fix_type
             self.__on_change('location', 'gps_0')
-        elif m.get_type() == "VFR_HUD":
+        elif typ == "VFR_HUD":
             self.heading = m.heading
             self.alt = m.alt
             self.airspeed = m.airspeed
             self.groundspeed = m.groundspeed
             self.__on_change('location', 'airspeed', 'groundspeed')
-        elif m.get_type() == "ATTITUDE":
+        elif typ == "ATTITUDE":
             self.pitch = m.pitch
             self.yaw = m.yaw
             self.roll = m.roll
             self.__on_change('attitude')
+        elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
+            self.last_waypoint = m.seq
 
-        if (self.vehicle is not None) and (self.vehicle.mavrx_callback is not None):
+        if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
             self.vehicle.mavrx_callback(m)
 
     def thread_remove(self, t):
