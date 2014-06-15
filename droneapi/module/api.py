@@ -133,6 +133,10 @@ class MPVehicle(Vehicle):
         return GPSInfo(self.__module.eph, self.__module.epv, self.__module.fix_type, self.__module.satellites_visible)
 
     @property
+    def armed(self):
+        return self.__module.mpstate.status.armed
+
+    @property
     def commands(self):
         """
         The (editable) waypoints for this vehicle.

@@ -17,6 +17,7 @@ print "Mode: %s" % v.mode
 print "Location: %s" % v.location
 print "Attitude: %s" % v.attitude
 print "GPS: %s" % v.gps_0
+print "Armed: %s" % v.armed
 
 # You can read and write parameters
 print "Param: %s" % v.parameters['THR_MAX']

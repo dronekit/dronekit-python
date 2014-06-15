@@ -2,7 +2,7 @@ from setuptools import setup, Extension
 import numpy as np
 import platform
 
-version = '0.1.3'
+version = '0.1.4'
 
 ext_modules = []
 

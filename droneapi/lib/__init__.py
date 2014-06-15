@@ -211,6 +211,7 @@ class Vehicle(HasObservers):
     gps_0             GPSInfo
     battery_0_soc     double
     battery_0_volt    double
+    armed             boolean
     channel_override  Dictionary (channelName -> value) (formery rc_override)
     channel_readback  Dictionary (channelName -> value) (read only)
     ================= =======================================================
