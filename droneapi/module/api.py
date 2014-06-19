@@ -280,6 +280,8 @@ class APIModule(mp_module.MPModule):
             self.yaw = m.yaw
             self.roll = m.roll
             self.__on_change('attitude')
+        elif typ == "HEARTBEAT":
+            self.__on_change('mode', 'armed')
         elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
             self.last_waypoint = m.seq
 
