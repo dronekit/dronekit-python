@@ -1,7 +1,7 @@
 #
 # This is a small example of the python drone API - an ultra minimal GCS
 # Usage:
-# * mavproxy.py
+# * mavproxy.py --master=/dev/ttyACM0,115200
 # * module load api
 # * api start microgcs.py
 #
@@ -43,9 +43,11 @@ attitudeLabel = Label(frame, text = "No Att", width=60)
 attitudeLabel.pack()
 modeLabel = Label(frame, text = "mode")
 modeLabel.pack()
+
 addObserverAndInit('attitude', lambda attr: updateGUI(attitudeLabel, v.attitude))
 addObserverAndInit('location', lambda attr: updateGUI(locationLabel, v.location))
 addObserverAndInit('mode', lambda attr: updateGUI(modeLabel, v.mode))
+
 Button(frame, text = "Auto", command = lambda : setMode("AUTO")).pack()
 Button(frame, text = "RTL", command = lambda : setMode("RTL")).pack()
 
