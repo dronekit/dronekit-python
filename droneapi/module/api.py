@@ -137,6 +137,14 @@ class MPVehicle(Vehicle):
         return self.__module.mpstate.status.armed
 
     @property
+    def groundspeed(self):
+        return self.__module.groundspeed
+
+    @property
+    def airspeed(self):
+        return self.__module.airspeed
+
+    @property
     def commands(self):
         """
         The (editable) waypoints for this vehicle.
@@ -147,9 +155,9 @@ class MPVehicle(Vehicle):
 
     def send_mavlink(self, message):
         status = self.__module.mpstate.status
-        if hasattr(message, 'target_system'): 
+        if hasattr(message, 'target_system'):
             message.target_system = status.target_system
-        if hasattr(message, 'target_component'):            
+        if hasattr(message, 'target_component'):
             message.target_component = status.target_component
         self.__module.master.mav.send(message)
 
