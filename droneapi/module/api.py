@@ -136,6 +136,13 @@ class MPVehicle(Vehicle):
     def armed(self):
         return self.__module.mpstate.status.armed
 
+    @armed.setter
+    def armed(self, value):
+        if value:
+            self.__master.arducopter_arm()
+        else:
+            self.__master.arducopter_disarm()
+
     @property
     def groundspeed(self):
         return self.__module.groundspeed

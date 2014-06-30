@@ -54,6 +54,14 @@ msg = v.message_factory.command_long_encode(0, 0,
 print "Created msg: %s" % msg
 v.send_mavlink(msg)
 
+print "Disarming..."
+v.armed = False
+v.flush()
+
+print "Arming..."
+v.armed = True
+v.flush()
+
 # Now change the vehicle into auto mode
 v.mode = VehicleMode("AUTO")
 
