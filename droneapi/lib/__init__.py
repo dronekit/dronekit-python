@@ -212,7 +212,7 @@ class Vehicle(HasObservers):
     battery_0_soc     double
     battery_0_volt    double
     armed             boolean
-    channel_override  Dictionary (channelName -> value) (formery rc_override)
+    channel_override  Dictionary (channelName -> value) (where channel name is 1,2,3, etc...)
     channel_readback  Dictionary (channelName -> value) (read only)
     ================= =======================================================
 

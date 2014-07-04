@@ -152,6 +152,23 @@ class MPVehicle(Vehicle):
         return self.__module.airspeed
 
     @property
+    def channel_override(self):
+        overrides = self.__rc.override
+        # Only return entries that have a non zero override
+        return dict((str(num + 1), overrides[num]) for num in range(8) if overrides[num] != 0)
+
+    @channel_override.setter
+    def channel_override(self, newch):
+        overrides = self.__rc.override
+        for k, v in newch.iteritems():
+            overrides[int(k) - 1] = v
+        self.__rc.set_override(overrides)
+
+    @property
+    def __rc(self):
+        return self.__module.module('rc')
+
+    @property
     def commands(self):
         """
         The (editable) waypoints for this vehicle.

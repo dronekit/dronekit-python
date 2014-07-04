@@ -22,7 +22,7 @@ print "groundspeed: %s" % v.groundspeed
 print "airspeed: %s" % v.airspeed
 
 # You can read and write parameters
-print "Param: %s" % v.parameters['THR_MAX']
+#print "Param: %s" % v.parameters['THR_MAX']
 
 # Now download the vehicle waypoints
 cmds = v.commands
@@ -48,11 +48,11 @@ print "Current dest: %s" % cmds.next
 #                param5                    : Parameter 5, as defined by MAV_CMD enum. (float)
 #                param6                    : Parameter 6, as defined by MAV_CMD enum. (float)
 #                param7                    : Parameter 7, as defined by MAV_CMD enum. (float)
-msg = v.message_factory.command_long_encode(0, 0,
+#msg = v.message_factory.command_long_encode(0, 0,
                                   mavutil.mavlink.MAV_CMD_CONDITION_YAW, 0,
                                   0, 0, 0, 0, 1, 0, 0)
-print "Created msg: %s" % msg
-v.send_mavlink(msg)
+#print "Created msg: %s" % msg
+#v.send_mavlink(msg)
 
 print "Disarming..."
 v.armed = False
@@ -60,6 +60,15 @@ v.flush()
 
 print "Arming..."
 v.armed = True
+v.flush()
+
+print "Overriding a RC channel"
+v.channel_override = { "1" : 900, "4" : 1000 }
+v.flush()
+print "Current overrides are:", v.channel_override
+
+print "Cancelling override"
+v.channel_override = {}
 v.flush()
 
 # Now change the vehicle into auto mode
