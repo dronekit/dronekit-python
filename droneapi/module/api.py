@@ -165,6 +165,10 @@ class MPVehicle(Vehicle):
         self.__rc.set_override(overrides)
 
     @property
+    def channel_readback(self):
+        return self.__module.rc_readback
+
+    @property
     def __rc(self):
         return self.__module.module('rc')
 
@@ -265,6 +269,8 @@ class APIModule(mp_module.MPModule):
         self.yaw = None
         self.roll = None
 
+        self.rc_readback = {}
+
         self.last_waypoint = 0
 
         self.eph = None
@@ -316,9 +322,25 @@ class APIModule(mp_module.MPModule):
             self.__on_change('mode', 'armed')
         elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
             self.last_waypoint = m.seq
+        elif typ == "RC_CHANNELS_RAW":
+            def set(chnum, v):
+                '''Private utility for handling rc channel messages'''
+                # use port to allow ch nums greater than 8
+                self.rc_readback[str(m.port * 8 + chnum)] = v
+
+            set(1, m.chan1_raw)
+            set(2, m.chan2_raw)
+            set(3, m.chan3_raw)
+            set(4, m.chan4_raw)
+            set(5, m.chan5_raw)
+            set(6, m.chan6_raw)
+            set(7, m.chan7_raw)
+            set(8, m.chan8_raw)
 
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
             self.vehicle.mavrx_callback(m)
+
+
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]

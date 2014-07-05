@@ -49,8 +49,8 @@ print "Current dest: %s" % cmds.next
 #                param6                    : Parameter 6, as defined by MAV_CMD enum. (float)
 #                param7                    : Parameter 7, as defined by MAV_CMD enum. (float)
 #msg = v.message_factory.command_long_encode(0, 0,
-                                  mavutil.mavlink.MAV_CMD_CONDITION_YAW, 0,
-                                  0, 0, 0, 0, 1, 0, 0)
+#                                  mavutil.mavlink.MAV_CMD_CONDITION_YAW, 0,
+#                                  0, 0, 0, 0, 1, 0, 0)
 #print "Created msg: %s" % msg
 #v.send_mavlink(msg)
 
@@ -66,6 +66,8 @@ print "Overriding a RC channel"
 v.channel_override = { "1" : 900, "4" : 1000 }
 v.flush()
 print "Current overrides are:", v.channel_override
+
+print "RC readback:", v.channel_readback
 
 print "Cancelling override"
 v.channel_override = {}
