@@ -122,7 +122,11 @@ class MPVehicle(Vehicle):
 
     @property
     def location(self):
-        return Location(self.__module.lat, self.__module.lon, self.__module.alt)
+        return Location(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+
+    @property
+    def velocity(self):
+        return [ self.__module.vx, self.__module.vy, self.__module.vz ]
 
     @property
     def attitude(self):
@@ -262,12 +266,19 @@ class APIModule(mp_module.MPModule):
         self.lon = None
         self.alt = None
 
+        self.vx = None
+        self.vy = None
+        self.vz = None
+
         self.airspeed = None
         self.groundspeed = None
 
         self.pitch = None
         self.yaw = None
         self.roll = None
+        self.pitchspeed = None
+        self.yawspeed = None
+        self.rollspeed = None
 
         self.rc_readback = {}
 
@@ -297,16 +308,21 @@ class APIModule(mp_module.MPModule):
 
     def mavlink_packet(self, m):
         typ = m.get_type()
-        if typ == 'GPS_RAW':
-            (self.lat, self.lon) = (m.lat, m.lon)
-            self.__on_change('location')
-        elif typ == 'GPS_RAW_INT':
+        if typ == 'GLOBAL_POSITION_INT':
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
+            self.__on_change('location', 'velocity')
+        elif typ == 'GPS_RAW':
+            pass # better to just use global position int
+            # (self.lat, self.lon) = (m.lat, m.lon)
+            # self.__on_change('location')
+        elif typ == 'GPS_RAW_INT':
+            # (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             self.eph = m.eph
             self.epv = m.epv
             self.satellites_visible = m.satellites_visible
             self.fix_type = m.fix_type
-            self.__on_change('location', 'gps_0')
+            self.__on_change('gps_0')
         elif typ == "VFR_HUD":
             self.heading = m.heading
             self.alt = m.alt
@@ -317,6 +333,9 @@ class APIModule(mp_module.MPModule):
             self.pitch = m.pitch
             self.yaw = m.yaw
             self.roll = m.roll
+            self.pitchspeed = m.pitchspeed
+            self.yawspeed = m.yawspeed
+            self.rollspeed = m.rollspeed
             self.__on_change('attitude')
         elif typ == "HEARTBEAT":
             self.__on_change('mode', 'armed')
