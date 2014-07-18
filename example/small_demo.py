@@ -16,6 +16,7 @@ v = api.get_vehicles()[0]
 print "Mode: %s" % v.mode
 print "Location: %s" % v.location
 print "Attitude: %s" % v.attitude
+print "Velocity: %s" % v.velocity
 print "GPS: %s" % v.gps_0
 print "Armed: %s" % v.armed
 print "groundspeed: %s" % v.groundspeed

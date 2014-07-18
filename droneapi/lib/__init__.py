@@ -45,7 +45,7 @@ class Attitude(object):
         self.roll = roll
 
     def __str__(self):
-        return "Attitude:%s,%s,%s" % (self.pitch, self.yaw, self.roll)
+        return "Attitude:pitch=%s,yaw=%s,roll=%s" % (self.pitch, self.yaw, self.roll)
 
 class Location(object):
     """
@@ -205,6 +205,7 @@ class Vehicle(HasObservers):
     location          Location
     waypoint_home     Waypoint
     attitude          Attitude
+    velocity          a three element list [ vx, vy, vz ] (in meter/sec)
     mode              VehicleMode
     airspeed          double (FIXME - should this move somewhere else?)
     groundspeed       double
