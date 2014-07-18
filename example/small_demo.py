@@ -69,8 +69,9 @@ print "Current overrides are:", v.channel_override
 
 print "RC readback:", v.channel_readback
 
+# To Cancel override send 0 to the channels
 print "Cancelling override"
-v.channel_override = {}
+v.channel_override = { "1" : 0, "4" : 0 }
 v.flush()
 
 # Now change the vehicle into auto mode
