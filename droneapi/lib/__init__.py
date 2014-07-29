@@ -329,11 +329,9 @@ class Vehicle(HasObservers):
         """
         Provides asynchronous notification when any mavlink packet is received from this vehice.
 
-        Note: I've included this prototype for feedback.  I _hope_ that it isn't necessary to provide this method as part
-        of the API, because I think because of the async attribute/waypoint/parameter notifications there is no need for
+        Note: This method is implemented - but we hope you don't need it.
+        Because of the async attribute/waypoint/parameter notifications there is no need for
         API clients to see raw mavlink.  Did I miss any use cases?  Feedback?
-
-        If we do need to include this method it would be easy to implement.
         """
         self.mavrx_callback = callback
 

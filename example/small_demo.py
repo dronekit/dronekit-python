@@ -8,6 +8,10 @@
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
 
+def mavrx_debug_handler(message):
+    """A demo of receiving raw mavlink messages"""
+    print "Received", message
+
 # First get an instance of the API endpoint
 api = local_connect()
 # get our vehicle - when running with mavproxy it only knows about one vehicle (for now)
@@ -21,6 +25,10 @@ print "GPS: %s" % v.gps_0
 print "Armed: %s" % v.armed
 print "groundspeed: %s" % v.groundspeed
 print "airspeed: %s" % v.airspeed
+
+# Use of the following method is not recommended (it is better to add observer callbacks to attributes) but if you need it
+# it is available...
+# v.set_mavlink_callback(mavrx_debug_handler)
 
 # You can read and write parameters
 #print "Param: %s" % v.parameters['THR_MAX']
