@@ -31,6 +31,6 @@ datagen, headers = poster.encode.multipart_encode(MultipartParam.from_params(par
 # Create the Request object
 
 vehicle = str(uuid.uuid1(clock_seq = 0))
-request = urllib2.Request("http://api.3drobotics.com/api/v1/mission/upload/" + vehicle, datagen, headers)
+request = urllib2.Request("https://api.3drobotics.com/api/v1/mission/upload/" + vehicle, datagen, headers)
 # Actually do the request, and get the response
 print urllib2.urlopen(request).read()
