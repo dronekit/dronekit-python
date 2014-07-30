@@ -1,8 +1,10 @@
 import time
 import threading
 import traceback
+import logging
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
+from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
     Attitude, GPSInfo, Parameters, CommandSequence
 
@@ -259,7 +261,12 @@ class APIThread(threading.Thread):
 class APIModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(APIModule, self).__init__(mpstate, "api")
+
+        # Enable logging here (until this code can be moved into mavproxy)
+        logging.basicConfig(level=logging.DEBUG)
+
         self.add_command('api', self.cmd_api, "API commands", [ "<list>", "<start> (FILENAME)", "<stop> [THREAD_NUM]" ])
+        self.add_command('web', self.cmd_web, "API web connections", [ "<track> (USERNAME) (PASSWORD) (VEHICLEID)" ])
         self.api = MPAPIConnection(self)
         self.vehicle = self.api.get_vehicles()[0]
         self.lat = None
@@ -291,6 +298,9 @@ class APIModule(mp_module.MPModule):
 
         self.next_thread_num = 0  # Monotonically increasing
         self.threads = {}  # A map from int ID to thread object
+
+        self.web = None
+        self.web_interface = 0
         print("DroneAPI loaded")
 
     def __on_change(self, *args):
@@ -359,7 +369,8 @@ class APIModule(mp_module.MPModule):
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
             self.vehicle.mavrx_callback(m)
 
-
+        if (self.web is not None):
+            self.web.filterMavlink(self.web_interface, m)
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
@@ -375,32 +386,28 @@ class APIModule(mp_module.MPModule):
     def cmd_kill(self, n):
         self.threads[n].kill()
 
-    def test(self):
-        api = self.api
-        v = api.get_vehicles()[0]
-        print "Mode: %s" % v.mode
-        print "Location: %s" % v.location
-        print "Attitude: %s" % v.attitude
-        print "GPS: %s" % v.gps_0
-        print "Param: %s" % v.parameters['THR_MAX']
-        cmds = v.commands
-        cmds.download()
-        cmds.wait_valid()
-        print "Home WP: %s" % cmds[0]
-        v.mode = VehicleMode("AUTO")
-        v.flush()
-
     def get_connection(self):
         return self.api
+
+    def handle_webmavlink(self, msg):
+        print "got msg", msg
+
+    def web_track(self, username, password, vehicleid):
+        """Start uploading live flight data to web service"""
+        u = LoginInfo()
+        u.loginName = username
+        u.password = password
+        u.vehicleId = vehicleid
+
+        self.web = WebClient(u)
+        self.web.connect(lambda msg: self.handle_webmavlink(msg))
 
     def cmd_api(self, args):
         if len(args) < 1:
             print("usage: api <list|start|stop> [filename or threadnum]")
             return
 
-        if args[0] == "test":
-            APIThread(self, self.test, "Test function")
-        elif args[0] == "list":
+        if args[0] == "list":
             self.cmd_list()
         elif args[0] == "stop":
             if len(args) > 2:
@@ -417,6 +424,18 @@ class APIModule(mp_module.MPModule):
                 return
             g = { "local_connect" : self.get_connection }
             APIThread(self, lambda: execfile(args[1], g), args[1])
+        else:
+            print("Invalid api subcommand")
+
+    def cmd_web(self, args):
+        if len(args) < 1:
+            print("usage: web <track> ...")
+            return
+
+        if args[0] == "track":
+            self.web_track(args[1], args[2], args[3])
+        else:
+            print("Invalid web subcommand")
 
 def init(mpstate):
     '''initialise module'''
