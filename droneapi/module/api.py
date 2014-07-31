@@ -8,10 +8,10 @@ from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
     Attitude, GPSInfo, Parameters, CommandSequence
 
-"""
-fixme do follow me example
-fixme make mission work
-"""
+# Enable logging here (until this code can be moved into mavproxy)
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 class MPParameters(Parameters):
     """
@@ -262,9 +262,6 @@ class APIModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(APIModule, self).__init__(mpstate, "api")
 
-        # Enable logging here (until this code can be moved into mavproxy)
-        logging.basicConfig(level=logging.DEBUG)
-
         self.add_command('api', self.cmd_api, "API commands", [ "<list>", "<start> (FILENAME)", "<stop> [THREAD_NUM]" ])
         self.add_command('web', self.cmd_web, "API web connections", [ "<track> (USERNAME) (PASSWORD) (VEHICLEID)" ])
         self.api = MPAPIConnection(self)
@@ -301,6 +298,7 @@ class APIModule(mp_module.MPModule):
 
         self.web = None
         self.web_interface = 0
+        self.web_serverid = None
         print("DroneAPI loaded")
 
     def __on_change(self, *args):
@@ -370,7 +368,10 @@ class APIModule(mp_module.MPModule):
             self.vehicle.mavrx_callback(m)
 
         if (self.web is not None):
-            self.web.filterMavlink(self.web_interface, m.get_msgbuf())
+            #logger.debug("to web: " + str(m))
+            sysid = m.get_srcSystem()
+            if sysid != self.web_serverid: # Never return packets that arrived from the server
+                self.web.filterMavlink(self.web_interface, m.get_msgbuf())
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
@@ -390,7 +391,12 @@ class APIModule(mp_module.MPModule):
         return self.api
 
     def handle_webmavlink(self, msg):
-        print "got msg", msg
+        #print "got msg", msg
+        decoded = self.master.mav.decode(msg)
+        self.web_serverid = decoded.get_srcSystem()
+        print "sending for server: %s (sys=%d, comp=%d, seq=%d)" % (decoded,
+            decoded.get_srcSystem(), decoded.get_srcComponent(), decoded.get_seq())
+        self.master.mav.send(decoded)
 
     def web_track(self, username, password, vehicleid):
         """Start uploading live flight data to web service"""

@@ -4,6 +4,7 @@ import socket
 import time
 import logging
 import uuid
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +38,8 @@ class GCSHooks(object):
         self.sock.connect((host, port))
         self.startTime = long(round(time.time() * 1e6)) # time in usecs since 1970
 
-    def setRxMavlinkCallback(self, cb):
-        pass
-
     def filterMavlink(self, fromInterface, bytes):
-        logger.debug("filter mavlink")
+        #logger.debug("filter mavlink")
         curtime = long(round(time.time() * 1e6))
 
         e = Envelope()
@@ -86,7 +84,7 @@ class GCSHooks(object):
         self.__checkLoginOkay()
 
     def send(self, envelope):
-        logger.debug("send " + str(envelope))
+        #logger.debug("send " + str(envelope))
         self.sock.send(delimitProtobuf(envelope))
 
     def startMission(self, keep, uuid):
@@ -121,12 +119,12 @@ class GCSHooks(object):
     def close(self):
         self.sock.close()
 
-    def __readEnvelope(self):
+    def readEnvelope(self):
         return readDelimited(self.sock)
 
     def __readLoginResponse(self):
         self.flush() # Make sure all previous commands are sent
-        r = self.__readEnvelope().loginResponse
+        r = self.readEnvelope().loginResponse
         if r.code == LoginResponseMsg.CALL_LATER:
             raise Exception('Callback later')
         return r
@@ -145,6 +143,7 @@ class WebClient(object):
     def __init__(self, loginInfo):
         self.loginInfo = loginInfo
         self.ifnum = 0 # FIXME support multiple interfaces
+        self.rxThread = None
 
     def connect(self, rxcallback):
         self.link = GCSHooks()
@@ -157,7 +156,9 @@ class WebClient(object):
 
         allowctl = rxcallback != None
         if allowctl:
-            self.link.setRxMavlinkCallback(rxcallback)
+            self.rxThread = threading.Thread(target = lambda: self.__rxWorker(rxcallback), name = "webrx")
+            self.rxThread.daemon = True
+            self.rxThread.start()
 
         # FIXME - support multiple interfaces and different sysids
         sysid = 1
@@ -166,6 +167,15 @@ class WebClient(object):
         keep = True
         missionId = uuid.uuid1()
         self.link.startMission(keep, missionId)
+
+    def __rxWorker(self, rxcallback):
+        logger.info("Listening to server")
+        while True:
+            e = self.link.readEnvelope()
+            if e.mavlink != None:
+                for p in e.mavlink.packet:
+                    #logger.debug("Received: " + p)
+                    rxcallback(p)
 
     def close(self):
         self.link.stopMission(keep)
