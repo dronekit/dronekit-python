@@ -42,6 +42,14 @@ class GCSHooks(object):
 
     def filterMavlink(self, fromInterface, bytes):
         logger.debug("filter mavlink")
+        curtime = long(round(time.time() * 1e6))
+
+        e = Envelope()
+        l = e.mavlink
+        l.srcInterface = fromInterface
+        l.packet.append(bytes)
+        l.deltaT = curtime - self.startTime
+        self.send(e)
         pass
 
     def loginUser(self, userName, password):
@@ -136,6 +144,7 @@ class LoginInfo(object):
 class WebClient(object):
     def __init__(self, loginInfo):
         self.loginInfo = loginInfo
+        self.ifnum = 0 # FIXME support multiple interfaces
 
     def connect(self, rxcallback):
         self.link = GCSHooks()
@@ -151,15 +160,16 @@ class WebClient(object):
             self.link.setRxMavlinkCallback(rxcallback)
 
         # FIXME - support multiple interfaces and different sysids
-        ifnum = 0
         sysid = 1
-        self.link.setVehicleId(u.vehicleId, ifnum, sysid, allowctl)
+        self.link.setVehicleId(u.vehicleId, self.ifnum, sysid, allowctl)
 
         keep = True
         missionId = uuid.uuid1()
         self.link.startMission(keep, missionId)
 
-        # FIXME -send packets
+    def close(self):
         self.link.stopMission(keep)
         self.link.close()
 
+    def filterMavlink(self, ifnum, bytes):
+        self.link.filterMavlink(ifnum, bytes)

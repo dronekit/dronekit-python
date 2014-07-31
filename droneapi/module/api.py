@@ -370,7 +370,7 @@ class APIModule(mp_module.MPModule):
             self.vehicle.mavrx_callback(m)
 
         if (self.web is not None):
-            self.web.filterMavlink(self.web_interface, m)
+            self.web.filterMavlink(self.web_interface, m.get_msgbuf())
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
