@@ -163,10 +163,8 @@ class WebClient(object):
         # FIXME - support multiple interfaces and different sysids
         sysid = 1
         self.link.setVehicleId(u.vehicleId, self.ifnum, sysid, allowctl)
-
-        keep = True
         missionId = uuid.uuid1()
-        self.link.startMission(keep, missionId)
+        self.link.startMission(False, missionId)
 
     def __rxWorker(self, rxcallback):
         logger.info("Listening to server")
@@ -178,7 +176,7 @@ class WebClient(object):
                     rxcallback(p)
 
     def close(self):
-        self.link.stopMission(keep)
+        self.link.stopMission(True)
         self.link.close()
 
     def filterMavlink(self, ifnum, bytes):
