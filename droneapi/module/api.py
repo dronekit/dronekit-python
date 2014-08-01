@@ -392,11 +392,21 @@ class APIModule(mp_module.MPModule):
 
     def handle_webmavlink(self, msg):
         #print "got msg", msg
+        #for m in msg: print "#", hex(ord(m))
         decoded = self.master.mav.decode(msg)
         self.web_serverid = decoded.get_srcSystem()
-        print "sending for server: %s (sys=%d, comp=%d, seq=%d)" % (decoded,
-            decoded.get_srcSystem(), decoded.get_srcComponent(), decoded.get_seq())
-        self.master.mav.send(decoded)
+        logger.debug("sending for server: %s (sys=%d, comp=%d, seq=%d)" % (decoded,
+            decoded.get_srcSystem(), decoded.get_srcComponent(), decoded.get_seq()))
+
+        mav = self.master.mav
+        # FIXME - mavproxy is slaming in its own sysid - until I fix the generator for mavlinkv10.py to add a sendRaw()
+        # instead of the following we send using private state of the mav connection
+        #mav.send(decoded)
+        mav.file.write(msg)
+        mav.total_packets_sent += 1
+        mav.total_bytes_sent += len(msg)
+        if mav.send_callback:
+            mav.send_callback(decoded, *mav.send_callback_args, **mav.send_callback_kwargs)
 
     def web_track(self, username, password, vehicleid):
         """Start uploading live flight data to web service"""
