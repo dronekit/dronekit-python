@@ -33,7 +33,7 @@ def readDelimited(sock):
     return msg
 
 class GCSHooks(object):
-    def __init__(self, host = "api.3drobotics.com", port = 5555):
+    def __init__(self, host = "localhost", port = 5555):
         self.sock = socket.socket()
         self.sock.connect((host, port))
         self.startTime = long(round(time.time() * 1e6)) # time in usecs since 1970
@@ -71,14 +71,15 @@ class GCSHooks(object):
         r = self.__readLoginResponse()
         return r.code == LoginResponseMsg.OK
 
-    def createUser(self, userName, password, email):
+    def createUser(self, userName, password, email = None):
         logger.debug("create user")
         e = Envelope()
         l = e.login
         l.code = CREATE
         l.username = userName
         l.password = password
-        l.email = email
+        if not email is None:
+            l.email = email
         l.startTime = self.startTime
         self.send(e)
         self.__checkLoginOkay()
@@ -102,7 +103,7 @@ class GCSHooks(object):
         l.keep = keep
         self.send(e)
 
-    def setVehicleId(self, vehicleId, fromInterface, mavlinkSysId, allowControl):
+    def setVehicleId(self, vehicleId, fromInterface, mavlinkSysId, allowControl, wantPipe = False):
         logger.debug("set vehicleid")
         e = Envelope()
         l = e.setSender
@@ -110,6 +111,7 @@ class GCSHooks(object):
         l.sysId = mavlinkSysId
         l.vehicleUUID = str(vehicleId)
         l.canAcceptCommands = allowControl
+        l.wantPipe = wantPipe
         self.send(e)
 
     def flush(self):
@@ -137,7 +139,8 @@ class GCSHooks(object):
 
 
 class LoginInfo(object):
-    pass
+    def __init__(self):
+        self.email = None # Email addr is optional
 
 class WebClient(object):
     def __init__(self, loginInfo):
@@ -145,7 +148,7 @@ class WebClient(object):
         self.ifnum = 0 # FIXME support multiple interfaces
         self.rxThread = None
 
-    def connect(self, rxcallback):
+    def connect(self, rxcallback, wantPipe = False):
         self.link = GCSHooks()
 
         u = self.loginInfo
@@ -162,9 +165,10 @@ class WebClient(object):
 
         # FIXME - support multiple interfaces and different sysids
         sysid = 1
-        self.link.setVehicleId(u.vehicleId, self.ifnum, sysid, allowctl)
-        missionId = uuid.uuid1()
-        self.link.startMission(False, missionId)
+        self.link.setVehicleId(u.vehicleId, self.ifnum, sysid, allowctl, wantPipe = wantPipe)
+        if not wantPipe:
+            missionId = uuid.uuid1()
+            self.link.startMission(False, missionId)
 
     def __rxWorker(self, rxcallback):
         logger.info("Listening to server")

@@ -263,7 +263,8 @@ class APIModule(mp_module.MPModule):
         super(APIModule, self).__init__(mpstate, "api")
 
         self.add_command('api', self.cmd_api, "API commands", [ "<list>", "<start> (FILENAME)", "<stop> [THREAD_NUM]" ])
-        self.add_command('web', self.cmd_web, "API web connections", [ "<track> (USERNAME) (PASSWORD) (VEHICLEID)" ])
+        self.add_command('web', self.cmd_web, "API web connections", [ "<track> (USERNAME) (PASSWORD) (VEHICLEID)",
+            "<control> (USERNAME) (PASSWORD) (VEHICLEID)" ])
         self.api = MPAPIConnection(self)
         self.vehicle = self.api.get_vehicles()[0]
         self.lat = None
@@ -371,7 +372,12 @@ class APIModule(mp_module.MPModule):
             #logger.debug("to web: " + str(m))
             sysid = m.get_srcSystem()
             if sysid != self.web_serverid: # Never return packets that arrived from the server
-                self.web.filterMavlink(self.web_interface, m.get_msgbuf())
+                try:
+                    self.web.filterMavlink(self.web_interface, m.get_msgbuf())
+                except IOError, e:
+                    print "Lost connection to server"
+                    # self.web.close()
+                    self.web = None
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
@@ -415,8 +421,24 @@ class APIModule(mp_module.MPModule):
         u.password = password
         u.vehicleId = vehicleid
 
-        self.web = WebClient(u)
-        self.web.connect(lambda msg: self.handle_webmavlink(msg))
+        self.__web_connect(u, False)
+
+    def web_control(self, username, password, vehicleid):
+        """Start controlling a vehicle through the web service"""
+        u = LoginInfo()
+        u.loginName = username
+        u.password = password
+        u.vehicleId = vehicleid
+        self.__web_connect(u, True)
+
+    def __web_connect(self, u, wantPipe):
+        try:
+            self.web = WebClient(u)
+            self.web.connect(lambda msg: self.handle_webmavlink(msg), wantPipe = wantPipe)
+            self.is_controlling = wantPipe
+        except:
+            print("Error, can not connect to server")
+            self.web = None
 
     def cmd_api(self, args):
         if len(args) < 1:
