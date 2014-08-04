@@ -27,15 +27,19 @@ def readDelimited(sock):
     # We now know size of our msg, but we might have unused bytes from the delimeter
     numextra = delimsize - pos
     numtoread = payloadsize - numextra
-    payload = delimbytes[pos:] + sock.recv(numtoread)
+    payload = delimbytes[pos:] + sock.recv(numtoread, socket.MSG_WAITALL)
     msg = Envelope()
+    #print "payloadsize=%d, pos=%d, numextra=%d, numtoread=%d, paylen=%d" % (payloadsize, pos, numextra, numtoread, len(payload))
     msg.ParseFromString(payload)
     return msg
 
 class GCSHooks(object):
-    def __init__(self, host = "localhost", port = 5555):
-        self.sock = socket.socket()
-        self.sock.connect((host, port))
+    def __init__(self, host = "api.3drobotics.com", port = 5555):
+        connecttimeout = 15
+        readtimeout = 30
+        self.sock = socket.create_connection((host, port), connecttimeout)
+        self.sock.settimeout(60 * 60)
+        self.sock.setblocking(True)
         self.startTime = long(round(time.time() * 1e6)) # time in usecs since 1970
 
     def filterMavlink(self, fromInterface, bytes):
@@ -168,7 +172,7 @@ class WebClient(object):
         self.link.setVehicleId(u.vehicleId, self.ifnum, sysid, allowctl, wantPipe = wantPipe)
         if not wantPipe:
             missionId = uuid.uuid1()
-            self.link.startMission(False, missionId)
+            self.link.startMission(True, missionId)
 
     def __rxWorker(self, rxcallback):
         logger.info("Listening to server")
@@ -184,8 +188,9 @@ class WebClient(object):
             self.link = None
 
     def close(self):
-        self.link.stopMission(True)
-        self.link.close()
+        if self.link is not None:
+            self.link.stopMission(True)
+            elf.link.close()
 
     def filterMavlink(self, ifnum, bytes):
         if(self.link is not None):
