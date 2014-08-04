@@ -1,15 +1,17 @@
 import time
 import threading
 import traceback
+import logging
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
+from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
     Attitude, GPSInfo, Parameters, CommandSequence
 
-"""
-fixme do follow me example
-fixme make mission work
-"""
+# Enable logging here (until this code can be moved into mavproxy)
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 class MPParameters(Parameters):
     """
@@ -259,7 +261,10 @@ class APIThread(threading.Thread):
 class APIModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(APIModule, self).__init__(mpstate, "api")
+
         self.add_command('api', self.cmd_api, "API commands", [ "<list>", "<start> (FILENAME)", "<stop> [THREAD_NUM]" ])
+        self.add_command('web', self.cmd_web, "API web connections", [ "<track> (USERNAME) (PASSWORD) (VEHICLEID)",
+            "<control> (USERNAME) (PASSWORD) (VEHICLEID)", "<disconnect>" ])
         self.api = MPAPIConnection(self)
         self.vehicle = self.api.get_vehicles()[0]
         self.lat = None
@@ -291,6 +296,10 @@ class APIModule(mp_module.MPModule):
 
         self.next_thread_num = 0  # Monotonically increasing
         self.threads = {}  # A map from int ID to thread object
+
+        self.web = None
+        self.web_interface = 0
+        self.web_serverid = None
         print("DroneAPI loaded")
 
     def __on_change(self, *args):
@@ -359,7 +368,22 @@ class APIModule(mp_module.MPModule):
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
             self.vehicle.mavrx_callback(m)
 
+        self.send_to_server(m)
 
+    def send_to_server(self, m):
+        if (self.web is not None):
+            sysid = m.get_srcSystem()
+            if sysid != self.web_serverid: # Never return packets that arrived from the server
+                try:
+                    #logger.debug("send to web: " + str(m))
+                    self.web.filterMavlink(self.web_interface, m.get_msgbuf())
+                except IOError, e:
+                    print "Lost connection to server"
+                    # self.web.close()
+                    self.web = None
+            else:
+                #logger.debug("ignore to: " + str(m))
+                pass
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
@@ -375,32 +399,77 @@ class APIModule(mp_module.MPModule):
     def cmd_kill(self, n):
         self.threads[n].kill()
 
-    def test(self):
-        api = self.api
-        v = api.get_vehicles()[0]
-        print "Mode: %s" % v.mode
-        print "Location: %s" % v.location
-        print "Attitude: %s" % v.attitude
-        print "GPS: %s" % v.gps_0
-        print "Param: %s" % v.parameters['THR_MAX']
-        cmds = v.commands
-        cmds.download()
-        cmds.wait_valid()
-        print "Home WP: %s" % cmds[0]
-        v.mode = VehicleMode("AUTO")
-        v.flush()
-
     def get_connection(self):
         return self.api
+
+    def handle_webmavlink(self, msg):
+        #print "got msg", msg
+        #for m in msg: print "#", hex(ord(m))
+        decoded = self.master.mav.decode(msg)
+        self.web_serverid = decoded.get_srcSystem()
+        #logger.debug("from server: %s (sys=%d, comp=%d, seq=%d)" % (decoded, decoded.get_srcSystem(), decoded.get_srcComponent(), decoded.get_seq()))
+
+        mav = self.master.mav
+        # FIXME - mavproxy is slaming in its own sysid - until I fix the generator for mavlinkv10.py to add a sendRaw()
+        # instead of the following we send using private state of the mav connection
+        #mav.send(decoded)
+        mav.file.write(msg)
+
+        if not self.is_controlling:
+            # The server wants to send a packet to the vehicle
+            mav.total_packets_sent += 1
+            mav.total_bytes_sent += len(msg)
+            if mav.send_callback:
+                mav.send_callback(decoded, *mav.send_callback_args, **mav.send_callback_kwargs)
+        else:
+            # Pretend that this packet from the server just arrived over a local interface
+            mav.total_packets_received += 1
+            if mav.callback:
+                mav.callback(decoded, *mav.callback_args, **mav.callback_kwargs)
+
+    def web_track(self, username, password, vehicleid):
+        """Start uploading live flight data to web service"""
+        u = LoginInfo()
+        u.loginName = username
+        u.password = password
+        u.vehicleId = vehicleid
+
+        self.__web_connect(u, False)
+
+    def web_control(self, username, password, vehicleid):
+        """Start controlling a vehicle through the web service"""
+        u = LoginInfo()
+        u.loginName = username
+        u.password = password
+        u.vehicleId = vehicleid
+        # FIXME - this is a super nasty we we find packets the local mavproxy wants to send to server
+        # talk with Tridge and construct a better mechanism.  (Possibly make a new 'mav' binding?)
+        self.master.mav.set_send_callback(lambda m, master: self.send_to_server(m), self.master)
+        self.__web_connect(u, True)
+
+    def web_disconnect(self):
+        if self.web is not None:
+            self.web.close()
+            self.web = None
+            print("Disconnected from server")
+
+    def __web_connect(self, u, wantPipe):
+        self.web_disconnect() # Drop any old connections
+        try:
+            self.web = WebClient(u)
+            self.web.connect(lambda msg: self.handle_webmavlink(msg), wantPipe = wantPipe)
+            self.is_controlling = wantPipe
+            print("Connected to server")
+        except:
+            print("Error, can not connect to server")
+            self.web = None
 
     def cmd_api(self, args):
         if len(args) < 1:
             print("usage: api <list|start|stop> [filename or threadnum]")
             return
 
-        if args[0] == "test":
-            APIThread(self, self.test, "Test function")
-        elif args[0] == "list":
+        if args[0] == "list":
             self.cmd_list()
         elif args[0] == "stop":
             if len(args) > 2:
@@ -417,6 +486,22 @@ class APIModule(mp_module.MPModule):
                 return
             g = { "local_connect" : self.get_connection }
             APIThread(self, lambda: execfile(args[1], g), args[1])
+        else:
+            print("Invalid api subcommand")
+
+    def cmd_web(self, args):
+        if len(args) < 1:
+            print("usage: web <track|control|disconnect> ...")
+            return
+
+        if args[0] == "track":
+            self.web_track(args[1], args[2], args[3])
+        elif args[0] == "control":
+            self.web_control(args[1], args[2], args[3])
+        elif args[0] == "disconnect":
+            self.web_disconnect()
+        else:
+            print("Invalid web subcommand")
 
 def init(mpstate):
     '''initialise module'''

@@ -14,7 +14,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='webapi.proto',
   package='com.geeksville.dapi',
-  serialized_pb='\n\x0cwebapi.proto\x12\x13\x63om.geeksville.dapi\"\xd9\x02\n\x08LoginMsg\x12\x33\n\x04\x63ode\x18\x01 \x02(\x0e\x32%.com.geeksville.dapi.LoginRequestCode\x12\x10\n\x08username\x18\x02 \x02(\t\x12\x10\n\x08password\x18\x03 \x01(\t\x12\r\n\x05\x65mail\x18\x04 \x01(\t\x12\x11\n\tstartTime\x18\x05 \x01(\x03\x12\x0f\n\x07gcsName\x18\x06 \x01(\t\x12\x17\n\x0fsoftwareVersion\x18\x07 \x01(\t\x12\x1a\n\x0fprotocolVersion\x18\x08 \x01(\x05:\x01\x31\x12\x43\n\x12\x64\x65\x66\x61ultViewPrivacy\x18\t \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x06PUBLIC\x12G\n\x15\x64\x65\x66\x61ultControlPrivacy\x18\n \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x07PRIVATE\"\x17\n\x07NoteMsg\x12\x0c\n\x04note\x18\x01 \x02(\t\"\x90\x01\n\x07ShowMsg\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0b\n\x03url\x18\x02 \x01(\t\x12?\n\x08priority\x18\x03 \x02(\x0e\x32%.com.geeksville.dapi.ShowMsg.Priority:\x06MEDIUM\")\n\x08Priority\x12\x07\n\x03LOW\x10\x00\x12\n\n\x06MEDIUM\x10\n\x12\x08\n\x04HIGH\x10\x14\"\x97\x02\n\x10LoginResponseMsg\x12@\n\x04\x63ode\x18\x01 \x02(\x0e\x32\x32.com.geeksville.dapi.LoginResponseMsg.ResponseCode\x12-\n\x07message\x18\x02 \x01(\x0b\x32\x1c.com.geeksville.dapi.ShowMsg\x12\x15\n\rcallbackDelay\x18\x03 \x01(\x05\"{\n\x0cResponseCode\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x42\x41\x44_PASSWORD\x10\x01\x12\x0e\n\nCALL_LATER\x10\x02\x12\x14\n\x10NAME_UNAVAILABLE\x10\x03\x12\x19\n\x15PROTOCOL_INCOMPATIBLE\x10\x04\x12\x10\n\x0cSERVER_FAULT\x10\x05\"\xbd\x01\n\x0fStartMissionMsg\x12\r\n\x05notes\x18\x01 \x01(\t\x12=\n\x0bviewPrivacy\x18\x02 \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x07\x44\x45\x46\x41ULT\x12@\n\x0e\x63ontrolPrivacy\x18\x03 \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x07\x44\x45\x46\x41ULT\x12\x0c\n\x04keep\x18\x04 \x02(\x08\x12\x0c\n\x04uuid\x18\x05 \x01(\t\"-\n\x0eStopMissionMsg\x12\r\n\x05notes\x18\x02 \x01(\t\x12\x0c\n\x04keep\x18\x03 \x02(\x08\"@\n\x0fMissionResponse\x12-\n\x07message\x18\x02 \x01(\x0b\x32\x1c.com.geeksville.dapi.ShowMsg\"\x18\n\x07PingMsg\x12\r\n\x05nonce\x18\x01 \x02(\x11\" \n\x0fPingResponseMsg\x12\r\n\x05nonce\x18\x01 \x02(\x11\"B\n\nMavlinkMsg\x12\x14\n\x0csrcInterface\x18\x01 \x02(\x11\x12\x0e\n\x06packet\x18\x02 \x03(\x0c\x12\x0e\n\x06\x64\x65ltaT\x18\x03 \x01(\x03\"\xe2\x01\n\x0bSenderIdMsg\x12\x14\n\x0cgcsInterface\x18\x01 \x02(\x11\x12\r\n\x05sysId\x18\x02 \x02(\x05\x12\x13\n\x0bvehicleUUID\x18\x03 \x02(\t\x12\x19\n\x11\x63\x61nAcceptCommands\x18\x04 \x02(\x08\x12\x11\n\thumanName\x18\x05 \x01(\t\x12\x14\n\x0cmanufacturer\x18\x06 \x01(\t\x12\x13\n\x0bvehicleType\x18\x07 \x01(\t\x12\x15\n\rautopilotType\x18\x08 \x01(\t\x12\x17\n\x0fsoftwareVersion\x18\t \x01(\t\x12\x10\n\x08wantPipe\x18\n \x01(\x08\"\xfe\x06\n\x08\x45nvelope\x12\x33\n\x04type\x18\x01 \x01(\x0e\x32%.com.geeksville.dapi.Envelope.MsgCode\x12\x30\n\x07mavlink\x18\x02 \x01(\x0b\x32\x1f.com.geeksville.dapi.MavlinkMsg\x12,\n\x05login\x18  \x01(\x0b\x32\x1d.com.geeksville.dapi.LoginMsg\x12\x33\n\tsetSender\x18! \x01(\x0b\x32 .com.geeksville.dapi.SenderIdMsg\x12*\n\x04note\x18\" \x01(\x0b\x32\x1c.com.geeksville.dapi.NoteMsg\x12:\n\x0cstartMission\x18# \x01(\x0b\x32$.com.geeksville.dapi.StartMissionMsg\x12\x38\n\x0bstopMission\x18$ \x01(\x0b\x32#.com.geeksville.dapi.StopMissionMsg\x12*\n\x04ping\x18% \x01(\x0b\x32\x1c.com.geeksville.dapi.PingMsg\x12<\n\rloginResponse\x18@ \x01(\x0b\x32%.com.geeksville.dapi.LoginResponseMsg\x12*\n\x04show\x18\x41 \x01(\x0b\x32\x1c.com.geeksville.dapi.ShowMsg\x12=\n\x0fmissionResponse\x18\x42 \x01(\x0b\x32$.com.geeksville.dapi.MissionResponse\x12:\n\x0cpingResponse\x18\x43 \x01(\x0b\x32$.com.geeksville.dapi.PingResponseMsg\"\xf4\x01\n\x07MsgCode\x12\x12\n\x0eMavlinkMsgCode\x10\x02\x12\x10\n\x0cLoginMsgCode\x10 \x12\x13\n\x0fSenderIdMsgCode\x10!\x12\x0f\n\x0bNoteMsgCode\x10\"\x12\x17\n\x13StartMissionMsgCode\x10#\x12\x16\n\x12StopMissionMsgCode\x10$\x12\x0f\n\x0bPingMsgCode\x10%\x12\x18\n\x14LoginResponseMsgCode\x10@\x12\x0f\n\x0bShowMsgCode\x10\x41\x12\x17\n\x13MissionResponseCode\x10\x42\x12\x17\n\x13PingResponseMsgCode\x10\x43*N\n\nAccessCode\x12\x0b\n\x07\x44\x45\x46\x41ULT\x10\x00\x12\x0b\n\x07PRIVATE\x10\n\x12\n\n\x06SHARED\x10\x14\x12\x0e\n\nRESEARCHER\x10\x1e\x12\n\n\x06PUBLIC\x10(*=\n\x10LoginRequestCode\x12\t\n\x05LOGIN\x10\x00\x12\n\n\x06\x43REATE\x10\x01\x12\x12\n\x0e\x43HECK_USERNAME\x10\x02\x42\x15\n\x13\x63om.geeksville.dapi')
+  serialized_pb='\n\x0cwebapi.proto\x12\x13\x63om.geeksville.dapi\"\xe9\x02\n\x08LoginMsg\x12\x33\n\x04\x63ode\x18\x01 \x02(\x0e\x32%.com.geeksville.dapi.LoginRequestCode\x12\x10\n\x08username\x18\x02 \x02(\t\x12\x10\n\x08password\x18\x03 \x01(\t\x12\r\n\x05\x65mail\x18\x04 \x01(\t\x12\x11\n\tstartTime\x18\x05 \x01(\x03\x12\x0f\n\x07gcsName\x18\x06 \x01(\t\x12\x17\n\x0fsoftwareVersion\x18\x07 \x01(\t\x12\x1a\n\x0fprotocolVersion\x18\x08 \x01(\x05:\x01\x31\x12\x43\n\x12\x64\x65\x66\x61ultViewPrivacy\x18\t \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x06PUBLIC\x12G\n\x15\x64\x65\x66\x61ultControlPrivacy\x18\n \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x07PRIVATE\x12\x0e\n\x06\x61piKey\x18\x0b \x01(\t\"\x17\n\x07NoteMsg\x12\x0c\n\x04note\x18\x01 \x02(\t\"\x90\x01\n\x07ShowMsg\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0b\n\x03url\x18\x02 \x01(\t\x12?\n\x08priority\x18\x03 \x02(\x0e\x32%.com.geeksville.dapi.ShowMsg.Priority:\x06MEDIUM\")\n\x08Priority\x12\x07\n\x03LOW\x10\x00\x12\n\n\x06MEDIUM\x10\n\x12\x08\n\x04HIGH\x10\x14\"\x97\x02\n\x10LoginResponseMsg\x12@\n\x04\x63ode\x18\x01 \x02(\x0e\x32\x32.com.geeksville.dapi.LoginResponseMsg.ResponseCode\x12-\n\x07message\x18\x02 \x01(\x0b\x32\x1c.com.geeksville.dapi.ShowMsg\x12\x15\n\rcallbackDelay\x18\x03 \x01(\x05\"{\n\x0cResponseCode\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x42\x41\x44_PASSWORD\x10\x01\x12\x0e\n\nCALL_LATER\x10\x02\x12\x14\n\x10NAME_UNAVAILABLE\x10\x03\x12\x19\n\x15PROTOCOL_INCOMPATIBLE\x10\x04\x12\x10\n\x0cSERVER_FAULT\x10\x05\"\xbd\x01\n\x0fStartMissionMsg\x12\r\n\x05notes\x18\x01 \x01(\t\x12=\n\x0bviewPrivacy\x18\x02 \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x07\x44\x45\x46\x41ULT\x12@\n\x0e\x63ontrolPrivacy\x18\x03 \x01(\x0e\x32\x1f.com.geeksville.dapi.AccessCode:\x07\x44\x45\x46\x41ULT\x12\x0c\n\x04keep\x18\x04 \x02(\x08\x12\x0c\n\x04uuid\x18\x05 \x01(\t\"-\n\x0eStopMissionMsg\x12\r\n\x05notes\x18\x02 \x01(\t\x12\x0c\n\x04keep\x18\x03 \x02(\x08\"@\n\x0fMissionResponse\x12-\n\x07message\x18\x02 \x01(\x0b\x32\x1c.com.geeksville.dapi.ShowMsg\"\x18\n\x07PingMsg\x12\r\n\x05nonce\x18\x01 \x02(\x11\" \n\x0fPingResponseMsg\x12\r\n\x05nonce\x18\x01 \x02(\x11\"B\n\nMavlinkMsg\x12\x14\n\x0csrcInterface\x18\x01 \x02(\x11\x12\x0e\n\x06packet\x18\x02 \x03(\x0c\x12\x0e\n\x06\x64\x65ltaT\x18\x03 \x01(\x03\"\xe2\x01\n\x0bSenderIdMsg\x12\x14\n\x0cgcsInterface\x18\x01 \x02(\x11\x12\r\n\x05sysId\x18\x02 \x02(\x05\x12\x13\n\x0bvehicleUUID\x18\x03 \x02(\t\x12\x19\n\x11\x63\x61nAcceptCommands\x18\x04 \x02(\x08\x12\x11\n\thumanName\x18\x05 \x01(\t\x12\x14\n\x0cmanufacturer\x18\x06 \x01(\t\x12\x13\n\x0bvehicleType\x18\x07 \x01(\t\x12\x15\n\rautopilotType\x18\x08 \x01(\t\x12\x17\n\x0fsoftwareVersion\x18\t \x01(\t\x12\x10\n\x08wantPipe\x18\n \x01(\x08\"\xfe\x06\n\x08\x45nvelope\x12\x33\n\x04type\x18\x01 \x01(\x0e\x32%.com.geeksville.dapi.Envelope.MsgCode\x12\x30\n\x07mavlink\x18\x02 \x01(\x0b\x32\x1f.com.geeksville.dapi.MavlinkMsg\x12,\n\x05login\x18  \x01(\x0b\x32\x1d.com.geeksville.dapi.LoginMsg\x12\x33\n\tsetSender\x18! \x01(\x0b\x32 .com.geeksville.dapi.SenderIdMsg\x12*\n\x04note\x18\" \x01(\x0b\x32\x1c.com.geeksville.dapi.NoteMsg\x12:\n\x0cstartMission\x18# \x01(\x0b\x32$.com.geeksville.dapi.StartMissionMsg\x12\x38\n\x0bstopMission\x18$ \x01(\x0b\x32#.com.geeksville.dapi.StopMissionMsg\x12*\n\x04ping\x18% \x01(\x0b\x32\x1c.com.geeksville.dapi.PingMsg\x12<\n\rloginResponse\x18@ \x01(\x0b\x32%.com.geeksville.dapi.LoginResponseMsg\x12*\n\x04show\x18\x41 \x01(\x0b\x32\x1c.com.geeksville.dapi.ShowMsg\x12=\n\x0fmissionResponse\x18\x42 \x01(\x0b\x32$.com.geeksville.dapi.MissionResponse\x12:\n\x0cpingResponse\x18\x43 \x01(\x0b\x32$.com.geeksville.dapi.PingResponseMsg\"\xf4\x01\n\x07MsgCode\x12\x12\n\x0eMavlinkMsgCode\x10\x02\x12\x10\n\x0cLoginMsgCode\x10 \x12\x13\n\x0fSenderIdMsgCode\x10!\x12\x0f\n\x0bNoteMsgCode\x10\"\x12\x17\n\x13StartMissionMsgCode\x10#\x12\x16\n\x12StopMissionMsgCode\x10$\x12\x0f\n\x0bPingMsgCode\x10%\x12\x18\n\x14LoginResponseMsgCode\x10@\x12\x0f\n\x0bShowMsgCode\x10\x41\x12\x17\n\x13MissionResponseCode\x10\x42\x12\x17\n\x13PingResponseMsgCode\x10\x43*N\n\nAccessCode\x12\x0b\n\x07\x44\x45\x46\x41ULT\x10\x00\x12\x0b\n\x07PRIVATE\x10\n\x12\n\n\x06SHARED\x10\x14\x12\x0e\n\nRESEARCHER\x10\x1e\x12\n\n\x06PUBLIC\x10(*=\n\x10LoginRequestCode\x12\t\n\x05LOGIN\x10\x00\x12\n\n\x06\x43REATE\x10\x01\x12\x12\n\x0e\x43HECK_USERNAME\x10\x02\x42\x15\n\x13\x63om.geeksville.dapi')
 
 _ACCESSCODE = _descriptor.EnumDescriptor(
   name='AccessCode',
@@ -45,8 +45,8 @@ _ACCESSCODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2398,
-  serialized_end=2476,
+  serialized_start=2414,
+  serialized_end=2492,
 )
 
 AccessCode = enum_type_wrapper.EnumTypeWrapper(_ACCESSCODE)
@@ -71,8 +71,8 @@ _LOGINREQUESTCODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2478,
-  serialized_end=2539,
+  serialized_start=2494,
+  serialized_end=2555,
 )
 
 LoginRequestCode = enum_type_wrapper.EnumTypeWrapper(_LOGINREQUESTCODE)
@@ -107,8 +107,8 @@ _SHOWMSG_PRIORITY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=514,
-  serialized_end=555,
+  serialized_start=530,
+  serialized_end=571,
 )
 
 _LOGINRESPONSEMSG_RESPONSECODE = _descriptor.EnumDescriptor(
@@ -144,8 +144,8 @@ _LOGINRESPONSEMSG_RESPONSECODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=714,
-  serialized_end=837,
+  serialized_start=730,
+  serialized_end=853,
 )
 
 _ENVELOPE_MSGCODE = _descriptor.EnumDescriptor(
@@ -201,8 +201,8 @@ _ENVELOPE_MSGCODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2152,
-  serialized_end=2396,
+  serialized_start=2168,
+  serialized_end=2412,
 )
 
 
@@ -283,6 +283,13 @@ _LOGINMSG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='apiKey', full_name='com.geeksville.dapi.LoginMsg.apiKey', index=10,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -293,7 +300,7 @@ _LOGINMSG = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=38,
-  serialized_end=383,
+  serialized_end=399,
 )
 
 
@@ -320,8 +327,8 @@ _NOTEMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=385,
-  serialized_end=408,
+  serialized_start=401,
+  serialized_end=424,
 )
 
 
@@ -363,8 +370,8 @@ _SHOWMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=411,
-  serialized_end=555,
+  serialized_start=427,
+  serialized_end=571,
 )
 
 
@@ -406,8 +413,8 @@ _LOGINRESPONSEMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=558,
-  serialized_end=837,
+  serialized_start=574,
+  serialized_end=853,
 )
 
 
@@ -462,8 +469,8 @@ _STARTMISSIONMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=840,
-  serialized_end=1029,
+  serialized_start=856,
+  serialized_end=1045,
 )
 
 
@@ -497,8 +504,8 @@ _STOPMISSIONMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1031,
-  serialized_end=1076,
+  serialized_start=1047,
+  serialized_end=1092,
 )
 
 
@@ -525,8 +532,8 @@ _MISSIONRESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1078,
-  serialized_end=1142,
+  serialized_start=1094,
+  serialized_end=1158,
 )
 
 
@@ -553,8 +560,8 @@ _PINGMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1144,
-  serialized_end=1168,
+  serialized_start=1160,
+  serialized_end=1184,
 )
 
 
@@ -581,8 +588,8 @@ _PINGRESPONSEMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1170,
-  serialized_end=1202,
+  serialized_start=1186,
+  serialized_end=1218,
 )
 
 
@@ -623,8 +630,8 @@ _MAVLINKMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1204,
-  serialized_end=1270,
+  serialized_start=1220,
+  serialized_end=1286,
 )
 
 
@@ -714,8 +721,8 @@ _SENDERIDMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1273,
-  serialized_end=1499,
+  serialized_start=1289,
+  serialized_end=1515,
 )
 
 
@@ -820,8 +827,8 @@ _ENVELOPE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1502,
-  serialized_end=2396,
+  serialized_start=1518,
+  serialized_end=2412,
 )
 
 _LOGINMSG.fields_by_name['code'].enum_type = _LOGINREQUESTCODE
