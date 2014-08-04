@@ -368,16 +368,22 @@ class APIModule(mp_module.MPModule):
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
             self.vehicle.mavrx_callback(m)
 
+        self.send_to_server(m)
+
+    def send_to_server(self, m):
         if (self.web is not None):
-            #logger.debug("to web: " + str(m))
             sysid = m.get_srcSystem()
             if sysid != self.web_serverid: # Never return packets that arrived from the server
                 try:
+                    #logger.debug("send to web: " + str(m))
                     self.web.filterMavlink(self.web_interface, m.get_msgbuf())
                 except IOError, e:
                     print "Lost connection to server"
                     # self.web.close()
                     self.web = None
+            else:
+                #logger.debug("ignore to: " + str(m))
+                pass
 
     def thread_remove(self, t):
         del self.threads[t.thread_num]
@@ -401,18 +407,25 @@ class APIModule(mp_module.MPModule):
         #for m in msg: print "#", hex(ord(m))
         decoded = self.master.mav.decode(msg)
         self.web_serverid = decoded.get_srcSystem()
-        logger.debug("sending for server: %s (sys=%d, comp=%d, seq=%d)" % (decoded,
-            decoded.get_srcSystem(), decoded.get_srcComponent(), decoded.get_seq()))
+        #logger.debug("from server: %s (sys=%d, comp=%d, seq=%d)" % (decoded, decoded.get_srcSystem(), decoded.get_srcComponent(), decoded.get_seq()))
 
         mav = self.master.mav
         # FIXME - mavproxy is slaming in its own sysid - until I fix the generator for mavlinkv10.py to add a sendRaw()
         # instead of the following we send using private state of the mav connection
         #mav.send(decoded)
         mav.file.write(msg)
-        mav.total_packets_sent += 1
-        mav.total_bytes_sent += len(msg)
-        if mav.send_callback:
-            mav.send_callback(decoded, *mav.send_callback_args, **mav.send_callback_kwargs)
+
+        if not self.is_controlling:
+            # The server wants to send a packet to the vehicle
+            mav.total_packets_sent += 1
+            mav.total_bytes_sent += len(msg)
+            if mav.send_callback:
+                mav.send_callback(decoded, *mav.send_callback_args, **mav.send_callback_kwargs)
+        else:
+            # Pretend that this packet from the server just arrived over a local interface
+            mav.total_packets_received += 1
+            if mav.callback:
+                mav.callback(decoded, *mav.callback_args, **mav.callback_kwargs)
 
     def web_track(self, username, password, vehicleid):
         """Start uploading live flight data to web service"""
@@ -429,6 +442,9 @@ class APIModule(mp_module.MPModule):
         u.loginName = username
         u.password = password
         u.vehicleId = vehicleid
+        # FIXME - this is a super nasty we we find packets the local mavproxy wants to send to server
+        # talk with Tridge and construct a better mechanism.  (Possibly make a new 'mav' binding?)
+        self.master.mav.set_send_callback(lambda m, master: self.send_to_server(m), self.master)
         self.__web_connect(u, True)
 
     def web_disconnect(self):
