@@ -172,16 +172,21 @@ class WebClient(object):
 
     def __rxWorker(self, rxcallback):
         logger.info("Listening to server")
-        while True:
-            e = self.link.readEnvelope()
-            if e.mavlink != None:
-                for p in e.mavlink.packet:
-                    #logger.debug("Received: " + p)
-                    rxcallback(p)
+        try:
+            while True:
+                e = self.link.readEnvelope()
+                if e.mavlink != None:
+                    for p in e.mavlink.packet:
+                        #logger.debug("Received: " + p)
+                        rxcallback(p)
+        except:
+            logger.error("Connection to server lost...")
+            self.link = None
 
     def close(self):
         self.link.stopMission(True)
         self.link.close()
 
     def filterMavlink(self, ifnum, bytes):
-        self.link.filterMavlink(ifnum, bytes)
+        if(self.link is not None):
+            self.link.filterMavlink(ifnum, bytes)

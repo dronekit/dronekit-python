@@ -264,7 +264,7 @@ class APIModule(mp_module.MPModule):
 
         self.add_command('api', self.cmd_api, "API commands", [ "<list>", "<start> (FILENAME)", "<stop> [THREAD_NUM]" ])
         self.add_command('web', self.cmd_web, "API web connections", [ "<track> (USERNAME) (PASSWORD) (VEHICLEID)",
-            "<control> (USERNAME) (PASSWORD) (VEHICLEID)" ])
+            "<control> (USERNAME) (PASSWORD) (VEHICLEID)", "<disconnect>" ])
         self.api = MPAPIConnection(self)
         self.vehicle = self.api.get_vehicles()[0]
         self.lat = None
@@ -431,11 +431,19 @@ class APIModule(mp_module.MPModule):
         u.vehicleId = vehicleid
         self.__web_connect(u, True)
 
+    def web_disconnect(self):
+        if self.web is not None:
+            self.web.close()
+            self.web = None
+            print("Disconnected from server")
+
     def __web_connect(self, u, wantPipe):
+        self.web_disconnect() # Drop any old connections
         try:
             self.web = WebClient(u)
             self.web.connect(lambda msg: self.handle_webmavlink(msg), wantPipe = wantPipe)
             self.is_controlling = wantPipe
+            print("Connected to server")
         except:
             print("Error, can not connect to server")
             self.web = None
@@ -467,11 +475,15 @@ class APIModule(mp_module.MPModule):
 
     def cmd_web(self, args):
         if len(args) < 1:
-            print("usage: web <track> ...")
+            print("usage: web <track|control|disconnect> ...")
             return
 
         if args[0] == "track":
             self.web_track(args[1], args[2], args[3])
+        elif args[0] == "control":
+            self.web_control(args[1], args[2], args[3])
+        elif args[0] == "disconnect":
+            self.web_disconnect()
         else:
             print("Invalid web subcommand")
 
