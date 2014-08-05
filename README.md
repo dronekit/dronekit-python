@@ -11,7 +11,7 @@ We'd love your feedback on the use of this API and are eager to evolve it to mee
 API please see:
 * Our [tutorial](http://dev.ardupilot.com/wiki/droneapi-tutorial/) on the ardupilot wiki.
 * The [overview document](https://docs.google.com/document/d/1ihKneLwA4hXmKS1W2pbG9lty_EAwbmy0giusUwQ8dto)
-* The [python autodocs](http://3drobotics.github.io/droneapi-python/)
+* The [python autodocs](http://diydrones.github.io/droneapi-python/)
 * The [python code](droneapi/lib/__init__.py) itself
 * A tiny ['hello world'](example/small_demo.py) application
 * A more complete ['follow-me'](example/follow_me.py) application
