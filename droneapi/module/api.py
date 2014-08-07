@@ -6,7 +6,7 @@ from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
-    Attitude, GPSInfo, Parameters, CommandSequence
+    Attitude, GPSInfo, Parameters, CommandSequence, APIException
 
 # Enable logging here (until this code can be moved into mavproxy)
 logging.basicConfig(level=logging.DEBUG)
@@ -116,10 +116,16 @@ class MPVehicle(Vehicle):
 
     @property
     def mode(self):
+        self.wait_init() # We must know vehicle type before this operation can work
+        return self.__get_mode()
+
+    def __get_mode(self):
+        """Private method to read current vehicle mode without polling"""
         return VehicleMode(self.__module.status.flightmode)
 
     @mode.setter
     def mode(self, v):
+        self.wait_init() # We must know vehicle type before this operation can work
         self.__master.set_mode(self.__mode_mapping[v.name])
 
     @property
@@ -214,6 +220,21 @@ class MPVehicle(Vehicle):
         vehicle.send_mavlink(msg)
         """
         return self.__module.master.mav
+
+    def wait_init(self):
+        """Wait for the vehicle to exit the initializing step"""
+        timeout = 30
+        pollinterval = 0.2
+        for i in range(0, int(timeout / pollinterval)):
+            # Don't let the user try to fly while the board is still booting
+            mode = self.__get_mode().name
+            print "mode is", mode
+            if mode != "INITIALISING" and mode != "MAV":
+                return
+
+            time.sleep(pollinterval)
+        raise APIException("Vehicle did not complete initialization")
+
 
 class MPAPIConnection(APIConnection):
     """

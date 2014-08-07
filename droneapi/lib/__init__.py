@@ -16,6 +16,12 @@ def local_connect():
     """
     return APIConnection()
 
+class APIException(Exception):
+    """Base class for DroneAPI related failures"""
+
+    def __init__(self, msg):
+        self.msg = msg
+
 class AuthInfo(object):
     """
     Base class for various authentication flavors.
