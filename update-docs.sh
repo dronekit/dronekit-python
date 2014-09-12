@@ -5,7 +5,7 @@ set -e
 python ./setup.py build
 echo Switching to doc tree
 cd docs
-make singlehtml
+make html
 cp -a _build/html /tmp/autodocs
 cd ..
 git checkout gh-pages
