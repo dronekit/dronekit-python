@@ -2,6 +2,7 @@
 
 rm -r /tmp/autodocs
 set -e
+python ./setup.py build
 echo Switching to doc tree
 cd docs
 make html

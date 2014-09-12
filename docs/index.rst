@@ -11,7 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: DroneApi
+.. automodule:: droneapi.lib
    :members:
    :inherited-members:
 
