@@ -39,13 +39,13 @@ class MPCommandSequence(CommandSequence):
 
     def download(self):
         '''Download all waypoints from the vehicle'''
+        self.wait_valid()
         self.__wp.fetch()
         # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_valid(self):
         '''Block the calling thread until waypoints have been downloaded'''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        print 'waiting for download'
         while (self.__wp.wp_op is not None) and not self.__module.api.exit:
             time.sleep(0.200)
 
