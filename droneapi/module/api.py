@@ -24,10 +24,23 @@ class MPParameters(Parameters):
         self.__module = module
 
     def __getitem__(self, name):
+        self.wait_valid()
         return self.__module.mav_param[name]
 
     def __setitem__(self, name, value):
+        self.wait_valid()
         self.__module.mpstate.functions.param_set(name, value)
+
+    def wait_valid(self):
+        '''Block the calling thread until parameters have been downloaded'''
+        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
+        pstate = self.__param.pstate
+        while (pstate.mav_param_count == 0 or len(pstate.mav_param_set) != pstate.mav_param_count) and not self.__module.api.exit:
+            time.sleep(0.200)
+
+    @property
+    def __param(self):
+        return self.__module.module('param')
 
 class MPCommandSequence(CommandSequence):
     """
