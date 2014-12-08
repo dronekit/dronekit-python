@@ -177,6 +177,10 @@ class MPVehicle(Vehicle):
         return self.__module.airspeed
 
     @property
+    def mount_status(self):
+        return [ self.__module.mount_pitch, self.__module.mount_yaw, self.__module.mount_roll ]
+
+    @property
     def channel_override(self):
         overrides = self.__rc.override
         # Only return entries that have a non zero override
@@ -319,6 +323,10 @@ class APIModule(mp_module.MPModule):
         self.yawspeed = None
         self.rollspeed = None
 
+        self.mount_pitch = None
+        self.mount_yaw = None
+        self.mount_roll = None
+
         self.rc_readback = {}
 
         self.last_waypoint = 0
@@ -398,6 +406,12 @@ class APIModule(mp_module.MPModule):
             set(6, m.chan6_raw)
             set(7, m.chan7_raw)
             set(8, m.chan8_raw)
+        elif typ == "MOUNT_STATUS":
+            self.mount_pitch = m.pointing_a / 100
+            self.mount_roll = m.pointing_b / 100
+            self.mount_yaw = m.pointing_c / 100
+            self.__on_change('mount')
+
 
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
             self.vehicle.mavrx_callback(m)
