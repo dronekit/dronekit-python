@@ -33,11 +33,17 @@ FIXME
 
 Max closed loop rate:
 * 20ms+/-300us when talking to SITL (every time we recieve a cmd_ack we immediately send a pair of ROI related msgs)
-* The less than 300us variablity makes me think SITL has some 20ms poll rate
+* The less than 300us variablity makes me think SITL has some 20ms poll rate - need to try with real vehicle
+
+Interval (sec) 0.019865
+MaxInterval (sec) 0.021927
+MinInterval (sec) 0.018421
+
 
 """
 
 global v
+
 
 def scatterplot(x,y):
     pyplot.plot(x,y,'b.')
@@ -46,22 +52,56 @@ def scatterplot(x,y):
     pyplot.show()
 
 
-def mavrx_debug_handler(message):
-    """Measure heartbeat periodically"""
-    mtype = message.get_type()
+def cur_usec():
+    """Return current time in usecs"""
     # t = time.time()
     dt = datetime.now()
     t = dt.minute * 60 + dt.second + dt.microsecond / (1e6)
+    return t
+
+class MeasureTime(object):
+    def __init__(self):
+        self.prevtime = cur_usec()
+        self.previnterval = 0
+        self.numcount = 0
+        self.reset()
+
+    def reset(self):
+        self.maxinterval = 0
+        self.mininterval = 10000
+
+    def update(self):
+        now = cur_usec()
+        self.numcount = self.numcount + 1
+        self.previnterval = now - self.prevtime
+        self.prevtime = now
+        self.maxinterval = max(self.previnterval, self.maxinterval)
+        self.mininterval = min(self.mininterval, self.previnterval)
+        print "Interval", self.previnterval
+        if (self.numcount % 100) == 0:
+            if self.numcount == 100:
+                # Ignore delays during startup
+                self.reset()
+            print "MaxInterval", self.maxinterval
+            print "MinInterval", self.mininterval
+
+
+acktime = MeasureTime()
+
+def mavrx_debug_handler(message):
+    """Measure heartbeat periodically"""
+    mtype = message.get_type()
+    global sendtime
 
     #if mtype == 'HEARTBEAT':
     if mtype == 'COMMAND_ACK':
         #traceback.print_stack()
-        print "Received", t
+        acktime.update()
         send_testpackets()
 
 
 def send_testpackets():
-        print "send ROI cmds"
+        #print "send ROI cmds"
 
         # create the SET_POSITION_TARGET_GLOBAL_INT command
         msg = v.message_factory.set_position_target_global_int_encode(
