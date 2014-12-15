@@ -245,7 +245,7 @@ class MPVehicle(Vehicle):
         for i in range(0, int(timeout / pollinterval)):
             # Don't let the user try to fly while the board is still booting
             mode = self.__get_mode().name
-            print "mode is", mode
+            # print "mode is", mode
             if mode != "INITIALISING" and mode != "MAV":
                 return
 
