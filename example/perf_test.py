@@ -77,11 +77,12 @@ class MeasureTime(object):
         self.prevtime = now
         self.maxinterval = max(self.previnterval, self.maxinterval)
         self.mininterval = min(self.mininterval, self.previnterval)
-        print "Interval", self.previnterval
+
         if (self.numcount % 100) == 0:
             if self.numcount == 100:
                 # Ignore delays during startup
                 self.reset()
+            print "Interval", self.previnterval
             print "MaxInterval", self.maxinterval
             print "MinInterval", self.mininterval
 
