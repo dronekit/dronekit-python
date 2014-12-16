@@ -63,4 +63,3 @@ def followme():
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
 
 followme()
-

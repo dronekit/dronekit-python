@@ -84,4 +84,3 @@ v.flush()
 v.ap_pin7_mode = "dout"
 v.ap_pin7_value = 1
 v.flush()
-
