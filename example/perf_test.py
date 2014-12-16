@@ -35,11 +35,33 @@ Max closed loop rate:
 * 20ms+/-300us when talking to SITL (every time we recieve a cmd_ack we immediately send a pair of ROI related msgs)
 * The less than 300us variablity makes me think SITL has some 20ms poll rate - need to try with real vehicle
 
+SITL
 Interval (sec) 0.019865
 MaxInterval (sec) 0.021927
 MinInterval (sec) 0.018421
 
+AVR plane load: 20ms+/-7ms
+Interval 0.02061
+MaxInterval 0.025496
+MinInterval 0.011533
 
+PX4 quad load on Edsion: 20ms +60ms -5ms (VERY HIGH VARIABILITY - TBD is it Edison or PX4)
+Interval 0.0281970000001
+MaxInterval 0.0786720000001
+MinInterval 0.0161290000001
+
+PX4 quad load on a pixhawk talking to my desktop - similar variability as with an Edison:
+Interval 0.01989
+MaxInterval 0.0688479999999
+MinInterval 0.00722900000005
+Interval 0.019929
+MaxInterval 0.0688479999999
+MinInterval 0.00722900000005
+Interval 0.0189700000001
+MaxInterval 0.0688479999999
+MinInterval 0.00722900000005
+
+mavproxy.py --master=/dev/ttyMFD1,115200 --cmd="api start perf_test.py"
 """
 
 global v
@@ -79,7 +101,7 @@ class MeasureTime(object):
         self.mininterval = min(self.mininterval, self.previnterval)
 
         if (self.numcount % 100) == 0:
-            if self.numcount == 100:
+            if self.numcount == 200:
                 # Ignore delays during startup
                 self.reset()
             print "Interval", self.previnterval
@@ -97,6 +119,7 @@ def mavrx_debug_handler(message):
     #if mtype == 'HEARTBEAT':
     if mtype == 'COMMAND_ACK':
         #traceback.print_stack()
+        #print "GOT ACK"
         acktime.update()
         send_testpackets()
 
@@ -107,7 +130,7 @@ def send_testpackets():
         # create the SET_POSITION_TARGET_GLOBAL_INT command
         msg = v.message_factory.set_position_target_global_int_encode(
                                                                                  0,       # time_boot_ms (not used)
-                                                                                 0, 0,    # target system, target component
+                                                                                 1, 1,    # target system, target component
                                                                                  mavutil.mavlink.MAV_FRAME_GLOBAL, # frame
                                                                                  0b1000000011000111,       # type_mask - enable velocity only
                                                                                  0, 0, 0, # x, y, z positions (not used)
@@ -120,7 +143,8 @@ def send_testpackets():
 
         # set ROI
         msg = v.message_factory.command_long_encode(
-                                                        0, 0,    # target system, target component
+                                                        1, 1,    # target system, target component
+                                                        #mavutil.mavlink.MAV_CMD_DO_SET_RELAY, #command
                                                         mavutil.mavlink.MAV_CMD_DO_SET_ROI, #command
                                                         0, #confirmation
                                                         0, 0, 0, 0, #params 1-4
@@ -147,6 +171,9 @@ print "GPS: %s" % v.gps_0
 print "Armed: %s" % v.armed
 print "groundspeed: %s" % v.groundspeed
 print "airspeed: %s" % v.airspeed
+
+import time
+time.sleep(30)
 
 # Use of the following method is not recommended (it is better to add observer callbacks to attributes) but if you need it
 # it is available...
@@ -189,4 +216,5 @@ print "Disarming..."
 v.armed = False
 v.flush()
 
+# send_testpackets()
 
