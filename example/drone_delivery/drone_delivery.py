@@ -1,11 +1,5 @@
 import os, os.path
-import random
 import simplejson
-import time
-import math
-import numpy
-import pid
-import pdb
 
 from pymavlink import mavutil
 import droneapi.lib
@@ -15,40 +9,37 @@ import cherrypy
 from cherrypy.process import wspbus, plugins
 from jinja2 import Environment, FileSystemLoader
 
-def get_fake_coords():
-	return [
-		[-117.03426361083983, 32.604675440554985],
-		[-117.01692581176758, 32.592527461735294],
-		[-117.00834274291992, 32.59325060181434],
-		[-116.99838638305664, 32.59122579488824],
-		[-116.99718475341797, 32.58601893844575],
-		[-116.99769973754883, 32.579799241291816],
-		[-116.9992446899414, 32.57531500590736],
-		[-117.00662612915038, 32.57502569269813]
-	]
-
-class DroneTrackerPlugin(plugins.SimplePlugin):
-	def __init__(self, bus, drone_klass):
-		plugins.SimplePlugin.__init__(self, bus)
-		self.drone = drone_klass()
-
-	def start(self):
-		self.bus.log('DroneAPI Start')
-
-	def stop(self):
-		self.bus.log('DroneAPI Stop')
+ROOT_FOLDER = '/home/user/Droneapi'
 
 class Drone(object):
-	def __init__(self):
-		self.init_time = time.time()
-		self.api = droneapi.lib.local_connect()
-		#pdb.set_trace()
-		#self.vehicle = self.api.get_vehicles()[0]
+	def __init__(self, home_coords):
+		self.api = local_connect()
+		self.vehicle = self.api.get_vehicles()[0]
+		self.commands = self.vehicle.commands
+		self.altitude = 30
+
+		# Fly drone to home location
+		self.vehicle.mode = VehicleMode('GUIDED')
+		self.goto(home_coords)
+
+	def goto(self, location, relative=None):
+		location_object = Location(
+			location[0], location[1],
+			self.altitude,
+			is_relative=relative
+		)
+		self.commands.goto(location_object)
+		self.vehicle.flush()
+		self.current_location = location_object
+
+	def get_location(self):
+		return [self.current_location.lat, self.current_location.lon]
 
 class Templates:
-	def __init__(self):
+	def __init__(self, home_coords):
+		self.home_coords = home_coords
 		self.options = self.get_options()
-		self.environment = Environment(loader=FileSystemLoader('html'))
+		self.environment = Environment(loader=FileSystemLoader( ROOT_FOLDER + 'html'))
 
 	def get_options(self):
 		return {
@@ -58,7 +49,7 @@ class Templates:
 			'format': 'png',
 			'access_token': 'pk.eyJ1IjoibXJwb2xsbyIsImEiOiJtUG0tRk9BIn0.AqAiefUV9fFYRo-w0jFR1Q',
 			'mapid': 'mrpollo.kfbnjbl0',
-			'home_coords': [-117.0068, 32.5738],
+			'home_coords': self.home_coords,
 			'menu': [
 				{'name': 'Home', 'location': '/'},
 				{'name': 'Track', 'location': '/track'},
@@ -77,67 +68,58 @@ class Templates:
 		self.options = self.get_options()
 		self.options['current_url'] = '/track'
 		self.options['current_coords'] = current_coords
-		json = simplejson.dumps(self.options)
-		self.options['json'] = json
+		self.options['json'] = simplejson.dumps(self.options)
 		return self.get_template('track')
 
-	def command(self):
+	def command(self, current_coords):
 		self.options = self.get_options()
 		self.options['current_url'] = '/command'
+		self.options['current_coords'] = current_coords
 		return self.get_template('command')
 
 	def get_template(self, file_name):
 		template = self.environment.get_template( file_name + '.html')
 		return template.render(options=self.options)
 
-	index.exposed = True
-
-
 class Webserver(object):
 	def __init__(self):
-		self.templates = Templates()
-		DroneTrackerPlugin(cherrypy.engine, Drone).subscribe()
+		home_coords = [32.5738, -117.0068]
+		self.templates = Templates(home_coords)
+		self.drone = Drone(home_coords)
 
 	@cherrypy.expose
 	def index(self):
 		return self.templates.index()
 
 	@cherrypy.expose
-	def track(self, lat=None, lon=None):
-		# FIX RANDOM COORDS
-		random_current_coords = get_fake_coords()
-		random.shuffle(random_current_coords)
-		current_coords = random_current_coords[0]
-
-		return self.templates.track(current_coords)
-
-	@cherrypy.expose
 	def command(self):
-		return self.templates.command()
+		return self.templates.command(self.drone.get_location())
 
 	@cherrypy.expose
 	@cherrypy.tools.json_out()
 	def vehicle(self):
-		# FIX RANDOM COORDS
-		random_current_coords = get_fake_coords()
-		random.shuffle(random_current_coords)
-		current_coords = random_current_coords[0]
+		return dict(position=self.drone.get_location())
 
-		# TOTALLY FAKE DATA
-		# NEED TO REMOVE THIS
-		# AND FIX THE PARAM NAMES
-		# FOR VEHICLE UPDATES
-		return dict(name='cool copter', position=current_coords)
+	@cherrypy.expose
+	def track(self, lat=None, lon=None):
+		# Get new coordinates from Vehicle
+		current_coords = self.drone.get_location()
 
-#if __name__ == '__main__':
+		# PROCESS POST REQUEST FROM COMMAND
+		if(lat != None and lon != None):
+			self.drone.goto([float(lat), float(lon)], True)
+
+		return self.templates.track(current_coords)
+
 conf = {
 	'/': {
 		'tools.sessions.on': True,
-		'tools.staticdir.root': os.path.abspath(os.getcwd())
+		'tools.staticdir.root': ROOT_FOLDER
 	 },
 	'/static': {
 		'tools.staticdir.on': True,
 		'tools.staticdir.dir': './html/assets'
 	}
 }
+
 cherrypy.quickstart(Webserver(), '/', conf)
