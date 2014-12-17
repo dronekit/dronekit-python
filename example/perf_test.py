@@ -35,7 +35,7 @@ Max closed loop rate:
 * 20ms+/-300us when talking to SITL (every time we recieve a cmd_ack we immediately send a pair of ROI related msgs)
 * The less than 300us variablity makes me think SITL has some 20ms poll rate - need to try with real vehicle
 
-SITL
+SITL copter load
 Interval (sec) 0.019865
 MaxInterval (sec) 0.021927
 MinInterval (sec) 0.018421
@@ -45,12 +45,12 @@ Interval 0.02061
 MaxInterval 0.025496
 MinInterval 0.011533
 
-PX4 quad load on Edsion: 20ms +60ms -5ms (VERY HIGH VARIABILITY - TBD is it Edison or PX4)
+PX4 quad load on Edsion: 20ms +60ms -5ms (VERY HIGH VARIABILITY - mostly due to px4 side - see below)
 Interval 0.0281970000001
 MaxInterval 0.0786720000001
 MinInterval 0.0161290000001
 
-PX4 quad load on a pixhawk talking to my desktop - similar variability as with an Edison:
+PX4 quad load on a pixhawk (a9defa35) talking to my desktop - similar variability as with an Edison:
 Interval 0.01989
 MaxInterval 0.0688479999999
 MinInterval 0.00722900000005
@@ -60,6 +60,45 @@ MinInterval 0.00722900000005
 Interval 0.0189700000001
 MaxInterval 0.0688479999999
 MinInterval 0.00722900000005
+
+or here's 20ish of the interval values seen on the px4 (a9defa35) Test
+Interval 0.020012
+Interval 0.0199689999999
+Interval 0.0229640000002
+Interval 0.0171049999999
+Interval 0.0198150000001
+Interval 0.0211049999998
+Interval 0.0199740000003
+Interval 0.0199459999999
+Interval 0.0199590000002
+Interval 0.0200379999997
+Interval 0.0200850000001
+Interval 0.0198839999998
+Interval 0.0200420000001
+Interval 0.0199539999999
+Interval 0.0200760000002
+Interval 0.0199029999999
+Interval 0.0200950000003
+Interval 0.0517199999999
+
+now testing with a plane load with a px4 (a9defa35) at 56kbps - highly variable 25 to 82ms
+Interval 0.0589850000001
+MaxInterval 0.0829760000001
+MinInterval 0.0258819999999
+
+but change to 115kbps and things are much better
+Interval 0.0201160000001
+MaxInterval 0.044656
+MinInterval 0.0150279999998
+
+and changing things to 500kbps everything is just peachie - 18ms
+Interval 0.018119
+MaxInterval 0.02527
+MinInterval 0.015737
+
+Recommendations:
+Run link as fast as you can 1500kbps?
+Turn on hw flow control (and use --rtscts on mavproxy)
 
 mavproxy.py --master=/dev/ttyMFD1,115200 --cmd="api start perf_test.py"
 """
@@ -100,6 +139,7 @@ class MeasureTime(object):
         self.maxinterval = max(self.previnterval, self.maxinterval)
         self.mininterval = min(self.mininterval, self.previnterval)
 
+        #print "Interval", self.previnterval
         if (self.numcount % 100) == 0:
             if self.numcount == 200:
                 # Ignore delays during startup
@@ -119,7 +159,7 @@ def mavrx_debug_handler(message):
     #if mtype == 'HEARTBEAT':
     if mtype == 'COMMAND_ACK':
         #traceback.print_stack()
-        #print "GOT ACK"
+        #print "GOT ACK", message
         acktime.update()
         send_testpackets()
 
