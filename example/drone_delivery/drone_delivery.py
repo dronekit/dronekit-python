@@ -9,7 +9,7 @@ import cherrypy
 from cherrypy.process import wspbus, plugins
 from jinja2 import Environment, FileSystemLoader
 
-ROOT_FOLDER = '/home/user/Droneapi'
+ROOT_FOLDER = '/home/user/Droneapi/'
 
 class Drone(object):
 	def __init__(self, home_coords):
@@ -81,7 +81,7 @@ class Templates:
 		template = self.environment.get_template( file_name + '.html')
 		return template.render(options=self.options)
 
-class Webserver(object):
+class DroneDelivery(object):
 	def __init__(self):
 		home_coords = [32.5738, -117.0068]
 		self.templates = Templates(home_coords)
@@ -122,4 +122,4 @@ conf = {
 	}
 }
 
-cherrypy.quickstart(Webserver(), '/', conf)
+cherrypy.quickstart(DroneDelivery(), '/', conf)
