@@ -15,7 +15,7 @@
 			<div class='row marketing'>
 				{% import 'mapbox.html' as mapbox%}
 				<div id='staticMap' class='col-lg-12'>
-					{{ mapbox.static_map_with_marker(options, options.home_coords, options.current_coords) }}
+					{{ mapbox.static_map_with_marker(options, options.current_coords, options.current_coords) }}
 				</div>
 			</div>
 			<div class='row marketing'>
@@ -41,8 +41,7 @@
 				var fixCoords = function(current_coords){
 					var new_coords = [];
 					for(var i = 0; i < current_coords.length; i++){
-						fixed_coord = parseFloat(current_coords[i]).toFixed(6);
-						new_coords.push(fixed_coord);
+						new_coords.push(parseFloat(current_coords[i]).toFixed(6));
 					}
 					return new_coords;
 				};
@@ -51,21 +50,24 @@
 					var imageUrl  = 'http://api.tiles.mapbox.com/v4/' +
 						options.mapid + '/' +
 						markers + '/' +
-						options.home_coords.join(',') + ',' +
+						current_coords.join(',') + ',' +
 						options.zoom + '/' +
 						options.width + 'x' + options.height + '.png' +
 						'?access_token=' + options.access_token;
 					return imageUrl;
 				};
 				var markerString = function(current_coords){
-					return 'pin-m-heliport+f86767(' + current_coords.join(',') + ')'
+					return 'pin-m-heliport+f86767(' + current_coords.reverse().join(',') + ')'
 				};
 
 				var options = JSON.parse('{{ options.json }}');
+				options.home_coords.reverse()
 				options.current_coords = fixCoords(options.current_coords);
 
 				$('#refresh-vehicle').bind('click', function(event){
+					event.preventDefault();
 					$.getJSON('/vehicle', function(data){
+						console.log('[Update] home: ', options.home_coords, ' vehicle: ', data.position);
 						$('#staticMap img').prop('src', mapboxStatic(fixCoords(data.position), options));
 						$('#lat').val(data.position[0]);
 						$('#lon').val(data.position[1]);
