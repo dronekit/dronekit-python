@@ -1,5 +1,7 @@
 # DroneAPI-python
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/diydrones/droneapi-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Build Status: [![Dependency Status](https://www.codeship.io/projects/869efe80-ae1a-0131-b6a4-527e64ff213a/status)](https://www.codeship.io/projects/19685)
 
 
