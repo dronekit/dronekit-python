@@ -437,7 +437,8 @@ class APIModule(mp_module.MPModule):
                 pass
 
     def thread_remove(self, t):
-        del self.threads[t.thread_num]
+        if t.thread_num in self.threads.keys():
+            del self.threads[t.thread_num]
 
     def thread_add(self, t):
         self.threads[t.thread_num] = t
@@ -448,7 +449,8 @@ class APIModule(mp_module.MPModule):
             print str(t)
 
     def cmd_kill(self, n):
-        self.threads[n].kill()
+        if self.threads[n].isAlive():
+            self.threads[n].kill()
 
     def get_connection(self):
         return self.api
