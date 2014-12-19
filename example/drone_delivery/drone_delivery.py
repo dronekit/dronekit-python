@@ -41,7 +41,6 @@ class Drone(object):
         self._log("Waiting for GPS Lock")
 
     def run(self):
-        self.vehicle.armed = True
         self.change_mode('GUIDED')
 
         if self.webserver_enabled is True:
