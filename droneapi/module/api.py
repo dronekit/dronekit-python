@@ -63,6 +63,15 @@ class MPCommandSequence(CommandSequence):
         while (self.__wp.wp_op is not None) and not self.__module.api.exit:
             time.sleep(0.200)
 
+    def takeoff(self, alt=None):
+        if alt is not None:
+            altitude = float(alt)
+            self.__module.master.mav.command_long_send(self.__module.target_system,
+                                                    self.__module.target_component,
+                                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                                                    0, 0, 0, 0, 0, 0, 0,
+                                                    altitude)
+
     def goto(self, l):
         if l.is_relative:
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
