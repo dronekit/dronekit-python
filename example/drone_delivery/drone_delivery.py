@@ -40,20 +40,39 @@ class Drone(object):
 
         self._log("Waiting for GPS Lock")
 
+    def takeoff(self, alt):
+        self._log("Taking off")
+        self.commands.takeoff(30.0)
+        self.vehicle.flush()
+
+    def arm(self, toggle=True):
+        if toggle:
+            self._log("Arming")
+        else:
+            self._log("Disarming")
+        self.vehicle.armed = True
+        self.vehicle.flush()
+
     def run(self):
+        self._log('Running initial boot sequence')
+        self.arm()
+        self.takeoff()
         self.change_mode('GUIDED')
 
         if self.webserver_enabled is True:
-            # Start web server if enabled
-            cherrypy.tree.mount(DroneDelivery(self), '/', config=cherrypy_conf)
+            self._run_server()
 
-            cherrypy.config.update({
-                'server.socket_port': 8080,
-                'server.socket_host': '0.0.0.0',
-                'log.screen': None
-             })
+    def _run_server():
+        # Start web server if enabled
+        cherrypy.tree.mount(DroneDelivery(self), '/', config=cherrypy_conf)
 
-            cherrypy.engine.start()
+        cherrypy.config.update({
+            'server.socket_port': 8080,
+            'server.socket_host': '0.0.0.0',
+            'log.screen': None
+         })
+
+        cherrypy.engine.start()
 
     def change_mode(self, mode):
         self._log("Mode: {0}".format(mode))
