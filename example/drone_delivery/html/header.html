@@ -1,0 +1,13 @@
+{% macro list_item(name, location='#', active=False) -%}
+	<li class='{{ 'active' if active else '' }}'>
+		<a href="{{location}}">{{name}}</a>
+	</li>
+{%- endmacro %}
+
+{% macro navigation(list, current_url, class='') -%}
+	<ul class='{{class}}'>
+		{%- for item in list %}
+			{{ list_item(item.name, item.location, (item.location == current_url)) }}
+		{%- endfor %}
+	</ul>
+{%- endmacro %}

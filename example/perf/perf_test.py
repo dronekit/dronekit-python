@@ -257,4 +257,3 @@ v.armed = False
 v.flush()
 
 # send_testpackets()
-

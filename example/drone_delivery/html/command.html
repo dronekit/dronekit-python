@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		{% include 'head.html' %}
+	</head>
+	<body>
+		<div class='container'>
+			{% import 'header.html' as header %}
+			<div class='header'>
+				<nav>
+					{{ header.navigation(options.menu, options.current_url, 'nav nav-pills pull-right') }}
+				</nav>
+				<h3 class='text-muted'>DroneAPI Demos {{options.current_url}} </h3>
+			</div>
+			<div class='row marketing'>
+				<div class='col-lg-12'>
+					<div id="map"></div>
+				</div>
+				<div class='col-lg-12'>
+					<form class="form-inline" action="/track" method="POST">
+						<div class='form-group'>
+							<input class='form-control' type="text" name="lat" id="lat" placeholder="Latitude" value="" />
+						</div>
+						<div class='form-group'>
+							<input class='form-control' type="text" name="lon" id="lon" placeholder="Longitude" value="" />
+						</div>
+						<button type="submit" class="btn btn-default">Go</button>
+					</form>
+				</div>
+			</div>
+			<footer class='footer'>
+				<p>&copy; 3D Robotics Inc.</p>
+			</div>
+		</div>
+		{% include 'bottom-scripts.html' %}
+		<script type="text/javascript" charset="utf-8">
+			L.mapbox.accessToken = '{{options.access_token}}';
+			var currentCoords = [{{ options.current_coords[0] }}, {{ options.current_coords[1] }}];
+			var homeCoords = [{{ options.home_coords[0] }}, {{ options.home_coords[1] }}];
+			var homeMarker = L.marker(homeCoords, {
+				icon: L.mapbox.marker.icon({
+					'marker-size': 'small',
+					'marker-symbol': 'building',
+					'marker-color': '#fa0'
+				})
+			});
+			var vehicleMarker = function(location){
+				return L.marker(location, {
+					'marker-size': 'large',
+					'marker-symbol': 'heliport',
+					'marker-color': '#fa0'
+				})
+			}
+			var map = L.mapbox.map('map', '{{options.mapid}}');
+			var userMarker = L.marker([0, 0], {
+				icon: L.mapbox.marker.icon({
+					'marker-color': '#f86767'
+				}),
+				draggable: true
+			});
+
+			homeMarker.addTo(map);
+			vehicleMarker(currentCoords).addTo(map);
+			userMarker.addTo(map);
+			map.setView(homeCoords, {{ options.zoom }});
+			map.on('click', function(event) {
+				userMarker.setLatLng(event.latlng)
+				$('#lat').val(event.latlng.lat);
+				$('#lon').val(event.latlng.lng);
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		{% include 'head.html' %}
+	</head>
+	<body>
+		<div class='container'>
+			{% import 'header.html' as header %}
+			<div class='header'>
+				<nav>
+					{{ header.navigation(options.menu, options.current_url, 'nav nav-pills pull-right') }}
+				</nav>
+				<h3 class='text-muted'>DroneAPI Demos {{options.current_url}} </h3>
+			</div>
+			<div class='row marketing'>
+				{% import 'mapbox.html' as mapbox%}
+				<div id='staticMap' class='col-lg-12'>
+					{{ mapbox.static_map_with_marker(options, options.current_coords, options.current_coords) }}
+				</div>
+			</div>
+			<div class='row marketing'>
+				<div class='col-lg-12'>
+					<form class="form-inline">
+						<div class='form-group'>
+							<input disabled class='form-control' type="text" name="lat" id="lat" placeholder="Latitude" value="{{ options.current_coords[0] }}" />
+						</div>
+						<div class='form-group'>
+							<input disabled class='form-control' type="text" name="lon" id="lon" placeholder="Longitude" value="{{ options.current_coords[1] }}" />
+						</div>
+						<button id='refresh-vehicle' class='btn btn-default'>Update</button>
+					</form>
+				</div>
+			</div>
+			<footer class='footer'>
+				<p>&copy; 3D Robotics Inc.</p>
+			</footer>
+		</div>
+		{% include 'bottom-scripts.html' %}
+		<script type="text/javascript" charset="utf-8">
+			(function($){
+				var fixCoords = function(current_coords){
+					var new_coords = [];
+					for(var i = 0; i < current_coords.length; i++){
+						new_coords.push(parseFloat(current_coords[i]).toFixed(6));
+					}
+					return new_coords;
+				};
+				var mapboxStatic = function(current_coords, options){
+					var markers = markerString(current_coords);
+					var imageUrl  = 'http://api.tiles.mapbox.com/v4/' +
+						options.mapid + '/' +
+						markers + '/' +
+						current_coords.join(',') + ',' +
+						options.zoom + '/' +
+						options.width + 'x' + options.height + '.png' +
+						'?access_token=' + options.access_token;
+					return imageUrl;
+				};
+				var markerString = function(current_coords){
+					return 'pin-m-heliport+f86767(' + current_coords.reverse().join(',') + ')'
+				};
+
+				var options = JSON.parse('{{ options.json }}');
+				options.home_coords.reverse()
+				options.current_coords = fixCoords(options.current_coords);
+
+				$('#refresh-vehicle').bind('click', function(event){
+					event.preventDefault();
+					$.getJSON('/vehicle', function(data){
+						console.log('[Update] home: ', options.home_coords, ' vehicle: ', data.position);
+						$('#staticMap img').prop('src', mapboxStatic(fixCoords(data.position), options));
+						$('#lat').val(data.position[0]);
+						$('#lon').val(data.position[1]);
+					});
+				});
+			}(jQuery));
+		</script>
+	</body>
+</html>

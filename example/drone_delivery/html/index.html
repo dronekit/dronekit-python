@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		{% include 'head.html' %}
+	</head>
+	<body>
+		<div class='container'>
+			{% import 'header.html' as header %}
+			<div class='header'>
+				<nav>
+					{{ header.navigation(options.menu, options.current_url, 'nav nav-pills pull-right') }}
+				</nav>
+				<h3 class='text-muted'>DroneAPI Demos {{options.current_url}} </h3>
+			</div>
+			<div class='jumbotron'>
+				<h1>Drone Delivery App</h1>
+				<p class='lead'>
+					Track and Command a drone to delivery packages from a web app
+				</p>
+				<p>
+					<a class='btn btn-lg btn-success' href='/track'>Track</a>
+					<a class='btn btn-lg btn-info' href='/command'>Command</a>
+				</p>
+			</div>
+			<footer class='footer'>
+				<p>&copy; 3D Robotics Inc.</p>
+			</div>
+		</div>
+		{% include 'bottom-scripts.html' %}
+	</body>
+</html>
