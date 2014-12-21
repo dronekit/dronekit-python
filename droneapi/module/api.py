@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 import traceback
@@ -342,6 +343,8 @@ class APIModule(mp_module.MPModule):
         self.web = None
         self.web_interface = 0
         self.web_serverid = None
+
+        self.local_path = os.path.dirname(os.getcwd())
         print("DroneAPI loaded")
 
     def __on_change(self, *args):
@@ -434,7 +437,8 @@ class APIModule(mp_module.MPModule):
                 pass
 
     def thread_remove(self, t):
-        del self.threads[t.thread_num]
+        if t.thread_num in self.threads.keys():
+            del self.threads[t.thread_num]
 
     def thread_add(self, t):
         self.threads[t.thread_num] = t
@@ -445,7 +449,8 @@ class APIModule(mp_module.MPModule):
             print str(t)
 
     def cmd_kill(self, n):
-        self.threads[n].kill()
+        if self.threads[n].isAlive():
+            self.threads[n].kill()
 
     def get_connection(self):
         return self.api
@@ -529,10 +534,22 @@ class APIModule(mp_module.MPModule):
                 # Just kill the youngest
                 self.cmd_kill(max(self.threads.keys))
         elif args[0] == "start":
-            if len(args) != 2:
-                print("usage: api load <filename>")
+            if len(args) < 2:
+                print("usage: api start <filename> <local_path:optional>")
                 return
-            g = { "local_connect" : self.get_connection }
+
+            g = {
+                "local_connect" : self.get_connection,
+                "local_path": self.local_path
+            }
+
+            # define local_path in target file
+            # this helps to add context to apps
+            # that need to load external resources
+            # w/o relative paths
+            if len(args) == 3:
+                g["local_path"] = args[2]
+
             APIThread(self, lambda: execfile(args[1], g), args[1])
         else:
             print("Invalid api subcommand")

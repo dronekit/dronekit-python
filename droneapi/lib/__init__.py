@@ -2,6 +2,8 @@
 import threading
 from pymavlink import mavutil
 
+local_path = ''
+
 def web_connect(authinfo):
     """
     Connect to the central dronehub server
