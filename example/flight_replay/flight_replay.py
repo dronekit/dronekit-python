@@ -1,17 +1,18 @@
 #
-# This is a small example of the python drone API
+# This is an example of talking to Droneshare to receive a past flight, and then 'replaying' that flight by sending waypoints
+# to the vehicle that approximates the stored flight log.
 # Usage:
 # * mavproxy.py
 # * module load api
-# * api start small-demo.py
+# * api start flight_replay.py <missionid>
+# (Where mission ID is a numeric mission number from a public droneshare flight)
 #
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
 import json, urllib, math
 
-api_server = "http://localhost:8080"
+api_server = "https://api.3drobotics.com"
 api_key = "a8948c11.9e44351f6c0aa7e3e2ff6d00b14a71c5"
-
 
 # First get an instance of the API endpoint
 api = local_connect()
@@ -89,18 +90,15 @@ def replay_mission(payload):
         cmds.add(cmd)
     v.flush()
 
-# Now download the vehicle waypoints
-cmds = v.commands
-cmds.wait_valid()
+if len(local_arguments) != 1:
+    print 'Error: usage "api start flight_replay.py <missionid>"'
+else:
+    # Now download the vehicle waypoints
+    cmds = v.commands
+    cmds.wait_valid()
 
-mission_id = 197
-max_freq = 0.1
-json = download_messages(mission_id, max_freq)
-print "JSON downloaded..."
-replay_mission(json)
-
-# Now change the vehicle into auto mode
-v.mode = VehicleMode("AUTO")
-
-# Always call flush to guarantee that previous writes to the vehicle have taken place
-v.flush()
+    mission_id = 197
+    max_freq = 0.1
+    json = download_messages(mission_id, max_freq)
+    print "JSON downloaded..."
+    replay_mission(json)
