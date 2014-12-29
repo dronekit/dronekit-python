@@ -568,20 +568,14 @@ class APIModule(mp_module.MPModule):
                 self.cmd_kill(max(self.threads.keys))
         elif args[0] == "start":
             if len(args) < 2:
-                print("usage: api start <filename> <local_path:optional>")
+                print("usage: api start <filename> [arguments]")
                 return
 
             g = {
                 "local_connect" : self.get_connection,
-                "local_path": self.local_path
+                "local_path": os.path.dirname(os.path.abspath(args[1])), # The path to the executable script dir (so scripts can construct relative paths)
+                "local_arguments": args[2:]
             }
-
-            # define local_path in target file
-            # this helps to add context to apps
-            # that need to load external resources
-            # w/o relative paths
-            if len(args) == 3:
-                g["local_path"] = args[2]
 
             APIThread(self, lambda: execfile(args[1], g), args[1])
         else:
