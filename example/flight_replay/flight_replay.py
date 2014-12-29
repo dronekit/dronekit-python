@@ -54,7 +54,7 @@ def download_messages(mission_id, max_freq = 1.0):
     f.close()
     return j
 
-def replay_mision(payload):
+def replay_mission(payload):
     """Given mission JSON, set a series of wpts approximating the previous flight"""
     # Pull out just the global position msgs
     messages = payload['messages']
@@ -71,6 +71,7 @@ def replay_mision(payload):
 
     print "Genrating %s waypoints from replay..." % len(messages)
     cmds = v.commands
+    cmds.clear()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
@@ -79,19 +80,18 @@ def replay_mision(payload):
         # we just slam in a conservative crusing altitude
         altitude = 30.0 # pt['alt']
         cmd = mavutil.mavlink.MAVLink_mission_item_message(0,
-                                                         1,
+                                                         0,
                                                          0,
                                                          mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
                                                          mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
                                                          0, 0, 0, 0, 0, 0,
                                                          lat, lon, altitude)
-        v[1 + i] = cmd
+        cmds.add(cmd)
+    v.flush()
 
 # Now download the vehicle waypoints
 cmds = v.commands
 cmds.wait_valid()
-print "Home WP: %s" % cmds[0]
-print "Current dest: %s" % cmds.next
 
 mission_id = 197
 max_freq = 0.1

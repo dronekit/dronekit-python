@@ -85,6 +85,19 @@ class MPCommandSequence(CommandSequence):
                                                2, 0, 0, 0, 0, 0,
                                                l.lat, l.lon, l.alt)
 
+    def clear(self):
+        '''Clears the command list'''
+        self.wait_valid()
+        self.__wp.wploader.clear()
+        self.__module.vehicle.wpts_dirty = True
+
+    def add(self, cmd):
+        '''Add a new command at the end of the command list'''
+        self.wait_valid()
+        self.__module.fix_targets(cmd)
+        self.__wp.wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.vehicle.wpts_dirty = True
+
     @property
     def __wp(self):
         return self.__module.module('wp')
@@ -111,7 +124,7 @@ class MPCommandSequence(CommandSequence):
 
     def __setitem__(self, index, value):
         self.__wp.wploader.set(value, index)
-        # BIG FIXME - mark as dirty/send on next flush
+        self.__module.vehicle.wpts_dirty = True
 
 class MPVehicle(Vehicle):
     def __init__(self, module):
@@ -119,6 +132,13 @@ class MPVehicle(Vehicle):
         self.__module = module
         self._parameters = MPParameters(module)
         self._waypoints = None
+        self.wpts_dirty = False
+
+    def flush(self):
+        if self.wpts_dirty:
+            print "sending wpts"
+            self.__module.module('wp').send_all_waypoints()
+            self.wpts_dirty = False
 
     #
     # Private sugar methods
@@ -221,11 +241,7 @@ class MPVehicle(Vehicle):
         return self._waypoints
 
     def send_mavlink(self, message):
-        status = self.__module.mpstate.status
-        if hasattr(message, 'target_system'):
-            message.target_system = status.target_system
-        if hasattr(message, 'target_component'):
-            message.target_component = status.target_component
+        self.__module.fix_targets(message)
         self.__module.master.mav.send(message)
 
     @property
@@ -355,6 +371,14 @@ class APIModule(mp_module.MPModule):
 
         self.local_path = os.path.dirname(os.getcwd())
         print("DroneAPI loaded")
+
+    def fix_targets(self, message):
+        """Set correct target IDs for our vehicle"""
+        status = self.mpstate.status
+        if hasattr(message, 'target_system'):
+            message.target_system = status.target_system
+        if hasattr(message, 'target_component'):
+            message.target_component = status.target_component
 
     def __on_change(self, *args):
         for a in args:

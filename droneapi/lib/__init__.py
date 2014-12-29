@@ -426,6 +426,14 @@ class CommandSequence(object):
         '''
         pass
 
+    def clear(self):
+        '''Clears the command list'''
+        pass
+
+    def add(self, cmd):
+        '''Add a new command at the end of the command list'''
+        pass
+
     @property
     def count(self):
         '''return number of waypoints'''
