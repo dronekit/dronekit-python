@@ -305,6 +305,13 @@ class APIThread(threading.Thread):
         self.name = "APIThread-%s" % self.thread_num
         self.module.thread_add(self)
 
+        # DroneAPI might generate many commands, which in turn generate ots of acks and status text, in the interest of speed we ignore processing those messages
+        try:
+            self.module.mpstate.rx_blacklist.add('COMMAND_ACK')
+            self.module.mpstate.rx_blacklist.add('STATUSTEXT')
+        except:
+            pass # Silently work with old mavproxies
+
     def kill(self):
         """Ask the thread to exit.  The thread must check threading.current_thread().exit periodically"""
         print "Asking %s to exit..." % self.name
@@ -317,6 +324,12 @@ class APIThread(threading.Thread):
         except Exception as e:
             print("Exception in %s: %s" % (self.name, str(e)))
             traceback.print_exc()
+
+        try:
+            self.module.mpstate.rx_blacklist.remove('COMMAND_ACK')
+            self.module.mpstate.rx_blacklist.remove('STATUSTEXT')
+        except:
+            pass # Silently work with old mavproxies
         self.module.thread_remove(self)
 
     def __str__(self):
