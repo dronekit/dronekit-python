@@ -1,9 +1,11 @@
 import unittest
+import os
 from droneapi.lib.CloudClient import *
 
 class CloudClientTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
-        self.api = CloudClient('eb34bd67.megadroneshare')
+        api_key = os.environ['DRONEAPI_KEY']
+        self.api = CloudClient(api_key)
         super(CloudClientTest, self).__init__(*args, **kwargs)
 
     def setUp(self):
