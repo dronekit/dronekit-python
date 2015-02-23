@@ -35,4 +35,4 @@ request = urllib2.Request("https://api.3drobotics.com/api/v1/mission/upload/" + 
 # Test api_key is bound to either localhost or droneshare.com
 request.add_header('Referer', 'http://localhost/')
 # Actually do the request, and get the response
-print urllib2.urlopen(request).read()
+#print urllib2.urlopen(request).read()
