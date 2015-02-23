@@ -24,7 +24,7 @@ params = {
     'password': 'secretsecret8',
     'email': 'kevinh+pytest@geeksville.com',
     'fullName': 'Bob Bumblesticks',
-    'api_key': 'YOURDEVCODE.YOURAPPKEY'
+    'api_key': 'eb34bd67.megadroneshare'
     }
 datagen, headers = poster.encode.multipart_encode(MultipartParam.from_params(params) + [file])
 
@@ -32,5 +32,7 @@ datagen, headers = poster.encode.multipart_encode(MultipartParam.from_params(par
 
 vehicle = str(uuid.uuid1(clock_seq = 0))
 request = urllib2.Request("https://api.3drobotics.com/api/v1/mission/upload/" + vehicle, datagen, headers)
+# Test api_key is bound to either localhost or droneshare.com
+request.add_header('Referer', 'http://localhost/')
 # Actually do the request, and get the response
 print urllib2.urlopen(request).read()
