@@ -1,10 +1,10 @@
 import unittest
 from droneapi.lib.CloudClient import *
 
-class CloudClientTestCase(unittest.TestCase):
+class CloudClientTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         self.api = CloudClient('eb34bd67.megadroneshare')
-        super(CloudClientTestCase, self).__init__(*args, **kwargs)
+        super(CloudClientTest, self).__init__(*args, **kwargs)
 
     def setUp(self):
         """Create simple data set with headers"""
