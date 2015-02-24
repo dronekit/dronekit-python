@@ -188,9 +188,9 @@ class HasObservers(object):
                     o(attr_name)
                 except TypeError as e:
                     # This is commonly called by a bad argument list
-                    print "TypeError calling observer: ", e
+                    print("TypeError calling observer: ", e)
                 except Exception as e:
-                    print "Error calling observer: ", e
+                    print("Error calling observer: ", e)
 
 class Vehicle(HasObservers):
     """
