@@ -8,7 +8,7 @@ This is an interesting demo that uses our web API to query raw flight data from 
 
 In this case, we pick some public flight from Droneshare:
 
-[screenshot](flight_replay_example.png "Example flight #101")
+![screenshot](flight_replay_example.png "Example flight #101")
 
 You'll notice that the mission number for this flight is 101.
 
@@ -16,6 +16,7 @@ Now we'll launch [flight_replay.py](../flight_replay/flight_replay.py) and ask i
 
 One possible use of some variant of this tool to replay your old flights at your regular test field.
 
+<pre>
 STABILIZE> api start flight_replay.py 101
 STABILIZE> JSON downloaded...
 Genrating 95 waypoints from replay...
@@ -31,6 +32,7 @@ Sent waypoint 94 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 
 Sent all 95 waypoints
 Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
 APM: flight plan received
+</pre>
 
 ## How it works
 
