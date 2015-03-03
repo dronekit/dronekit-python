@@ -97,7 +97,7 @@ else:
     cmds = v.commands
     cmds.wait_valid()
 
-    mission_id = 197
+    mission_id = int(local_arguments[0])
     max_freq = 0.1
     json = download_messages(mission_id, max_freq)
     print "JSON downloaded..."
