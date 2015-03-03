@@ -16,7 +16,7 @@ This basic '[hello-world](documentation/hello-world-demo.md)' demo will show you
 
 ## Demo 1: Basic vehicle control
 
-The next [demo](documentation/simple-demo-goto.mdcp ) builds on what you learned in demo zero, to actually tell the vehicle to go someplace.
+The next [demo](documentation/simple-demo-goto.md ) builds on what you learned in demo zero, to actually tell the vehicle to go someplace.
 
 ## Demo 2: Drone delivery the easy way
 

@@ -43,7 +43,7 @@ You should be able to reach your new webserver at http://localhost:8080.  It wil
 
 ### Using attribute observers
 
-All attributes in DroneAPI can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, drone_delivery.py calls:
+All attributes in DroneAPI can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, [drone_delivery.py](../drone_delivery/drone_delivery.py) calls:
 
 <pre>
 self.vehicle.add_attribute_observer('location', self.location_callback)
