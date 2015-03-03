@@ -8,7 +8,7 @@ See the installation [instructions](documentation/install.md).
 
 You can use DroneAPI with either a physical vehicle (pixhawk, Iris, etc...) or a simulated vehicle.  For instructions on using our simulator see this [link](http://dev.ardupilot.com/wiki/simulation-2/setting-up-sitl-using-vagrant/).
 
-FIXME - explain that the demos build on each other, so go in sequence
+These demos build on each other, so it is best to start with demo 0 and after you work through that move on to the next demo.  As you experiment with these demos it is probably helpful to refer to the python API [documentation](https://diydrones.github.io/droneapi-python/).
 
 ## Demo 0: Hello world
 
