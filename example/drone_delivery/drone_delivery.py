@@ -40,7 +40,7 @@ class Drone(object):
 
         self._log("Waiting for GPS Lock")
 
-    def takeoff(self, alt):
+    def takeoff(self):
         self._log("Taking off")
         self.commands.takeoff(30.0)
         self.vehicle.flush()
@@ -62,7 +62,7 @@ class Drone(object):
         if self.webserver_enabled is True:
             self._run_server()
 
-    def _run_server():
+    def _run_server(self):
         # Start web server if enabled
         cherrypy.tree.mount(DroneDelivery(self), '/', config=cherrypy_conf)
 
