@@ -136,7 +136,6 @@ class MPVehicle(Vehicle):
 
     def flush(self):
         if self.wpts_dirty:
-            print "sending wpts"
             self.__module.module('wp').send_all_waypoints()
             self.wpts_dirty = False
 
@@ -305,9 +304,16 @@ class APIThread(threading.Thread):
         self.name = "APIThread-%s" % self.thread_num
         self.module.thread_add(self)
 
+        # DroneAPI might generate many commands, which in turn generate ots of acks and status text, in the interest of speed we ignore processing those messages
+        try:
+            self.module.mpstate.rx_blacklist.add('COMMAND_ACK')
+            self.module.mpstate.rx_blacklist.add('STATUSTEXT')
+        except:
+            pass # Silently work with old mavproxies
+
     def kill(self):
         """Ask the thread to exit.  The thread must check threading.current_thread().exit periodically"""
-        print "Asking %s to exit..." % self.name
+        print("Asking %s to exit..." % self.name)
         self.exit = True
 
     def run(self):
@@ -317,6 +323,12 @@ class APIThread(threading.Thread):
         except Exception as e:
             print("Exception in %s: %s" % (self.name, str(e)))
             traceback.print_exc()
+
+        try:
+            self.module.mpstate.rx_blacklist.remove('COMMAND_ACK')
+            self.module.mpstate.rx_blacklist.remove('STATUSTEXT')
+        except:
+            pass # Silently work with old mavproxies
         self.module.thread_remove(self)
 
     def __str__(self):
@@ -391,7 +403,7 @@ class APIModule(mp_module.MPModule):
         for t in self.threads.values():
             t.join(5)
             if t.is_alive():
-                print "WARNING: Timed out waiting for %s to exit." % t
+                print("WARNING: Timed out waiting for %s to exit." % t)
 
     def mavlink_packet(self, m):
         typ = m.get_type()
@@ -461,8 +473,8 @@ class APIModule(mp_module.MPModule):
                 try:
                     #logger.debug("send to web: " + str(m))
                     self.web.filterMavlink(self.web_interface, m.get_msgbuf())
-                except IOError, e:
-                    print "Lost connection to server"
+                except IOError:
+                    print("Lost connection to server")
                     # self.web.close()
                     self.web = None
             else:
@@ -477,9 +489,9 @@ class APIModule(mp_module.MPModule):
         self.threads[t.thread_num] = t
 
     def cmd_list(self):
-        print "API Threads:"
+        print("API Threads:")
         for t in self.threads.values():
-            print str(t)
+            print("  " + str(t))
 
     def cmd_kill(self, n):
         if self.threads[n].isAlive():

@@ -179,14 +179,18 @@ class HasObservers(object):
     def notify_observers(self, attr_name):
         """
         (For subclass use only) Tell observers that the named attribute has changed.
-
-        FIXME would it make sense just to override __setattr__?
         """
         # print "Notify: " + attr_name
         l = self.__observers.get(attr_name)
         if l is not None:
             for o in l:
-                o(attr_name)
+                try:
+                    o(attr_name)
+                except TypeError as e:
+                    # This is commonly called by a bad argument list
+                    print("TypeError calling observer: ", e)
+                except Exception as e:
+                    print("Error calling observer: ", e)
 
 class Vehicle(HasObservers):
     """

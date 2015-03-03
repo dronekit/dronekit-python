@@ -24,7 +24,7 @@ params = {
     'password': 'secretsecret8',
     'email': 'kevinh+pytest@geeksville.com',
     'fullName': 'Bob Bumblesticks',
-    'api_key': 'YOURDEVCODE.YOURAPPKEY'
+    'api_key': 'APPID.DEVKEY' # DONT FORGET YOUR KEY
     }
 datagen, headers = poster.encode.multipart_encode(MultipartParam.from_params(params) + [file])
 
