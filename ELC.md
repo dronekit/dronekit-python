@@ -129,8 +129,25 @@ A ground control station is one of the most critical tools for managing a drone.
 We will be running/editing [this](example/gcs/microgcs.py) code.
 
 ### Commands to run
-```bash
+After launching MAVProxy (see previous lesson), just run "api start microgcs.py"
+
 ```
+kevinh@kevin-server:~/development/drone/droneapi-python/example/gcs$ mavproxy.py --master=localhost:14550 --map --console
+Logging to mav.tlog
+Running script /home/kevinh/.mavinit.scr
+DroneAPI loaded
+Loaded module droneapi.module.api
+Loaded module console
+Loaded module map
+STABILIZE> Received 451 parameters
+STABILIZE> api start microgcs.py
+```
+
+You should then see our small crummy GUI:
+
+![screenshot](example/gcs/screenshot.png)
+
+Clicking on either of the two buttons should tell the vehicle to change flight modes.
 
 ## Doing this for real
 
