@@ -10,9 +10,11 @@ This package contains the python language bindings for the drone API and the ass
 
 We'd love your feedback on the use of this API and are eager to evolve it to meet your needs.  For documentation on how to use this
 API please see:
+
+* The new DroneKit-python [website](http://python.dronekit.io/)
 * Our [tutorial](http://dev.ardupilot.com/wiki/droneapi-tutorial/) on the ardupilot wiki.
 * The [overview document](https://docs.google.com/document/d/1ihKneLwA4hXmKS1W2pbG9lty_EAwbmy0giusUwQ8dto)
-* The [python autodocs](http://diydrones.github.io/droneapi-python/)
+* The [python autodocs](http://python.dronekit.io/automodule.html)
 * The [python code](droneapi/lib/__init__.py) itself
 * Example code can be found here: ['example/'](example/)
     * Beginner ['hello world'](example/small_demo/small_demo.py)
