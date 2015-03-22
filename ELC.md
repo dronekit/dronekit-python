@@ -17,7 +17,7 @@ Note: We use vagrant to simplify the installation process.  If your laptop is ru
 ### Commands to install prerequisites
 ```bash
 # Install prerequisites
-sudo apt-get install python-dev vagrant ssh virtualbox python-opencv python-wxgtk
+sudo apt-get install python-dev vagrant ssh virtualbox python-opencv python-wxgtk2.8
 
 # droneapi and its MAVProxy container are both installed via PIP with
 # the following command.
@@ -25,6 +25,9 @@ sudo pip install --upgrade droneapi
 
 # We will use the ardupilot source to run our simulator in the next section
 git clone https://github.com/diydrones/ardupilot.git
+
+# We will be referring to some example code included in the git repository
+git clone https://github.com/diydrones/dronekit-python.git
 
 # We would like mavproxy to automatically load the DroneAPI module
 # when it starts
@@ -41,7 +44,11 @@ vagrant up
 
 # This command actually connects to our running vagrant VM and asks
 # it to start running
-vagrant ssh -c "sim_vehicle.sh -j 2"
+vagrant ssh -c "sim_vehicle.sh -w -j 2"
+
+# Note: the -w parameter tells the simulator to init to a set of reasonable
+# default parameters.  On future invocations you can omit this option for
+# faster startup.
 
 ```
 
@@ -91,7 +98,7 @@ Launch the mavproxy shell (do this in a new window) that we will use to run our 
 
 # We downloaded the droneapi-python repo earlier, to have access
 # to the example code.
-cd droneapi-python/example/simple_goto/
+cd dronekit-python/example/simple_goto/
 
 # Start mavproxy - connecting to the mavlink port in the simulator
 mavproxy.py --master=localhost:14550 --map --console
