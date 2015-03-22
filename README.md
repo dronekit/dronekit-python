@@ -25,11 +25,6 @@ API please see:
     * Advanced ['drone_delivery'](example/drone_delivery/)
     * Advanced ['follow-me'](example/follow_me/)
 
-## WARNING
-
-This is an early draft of the drone API.  It is likely that various interfaces will move around over the next couple of months, so
-please send feedback and expect some changes...
-
 Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
 
 Contact: Kevin Hester, [kevin@3drobotics.com](mailto:kevin@3drobotics.com)
