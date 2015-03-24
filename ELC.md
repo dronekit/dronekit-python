@@ -102,6 +102,13 @@ cd dronekit-python/example/simple_goto/
 
 # Start mavproxy - connecting to the mavlink port in the simulator
 mavproxy.py --master=localhost:14550 --map --console
+
+# It is worth noting if you wanted to connect to a real vehicle rather than
+# the simulator you would use a slightly different option:
+# --master=/dev/ttyUSB0,57600
+# See the links under "More Resources" for a tutorial showing how to connect
+# an on vehicle coprocessor and run DroneAPI code in that environment.
+
 ```
 
 At this point you should be inside a MAVProxy interactive shell.  You should see a map window showing the simulated vehicle sitting somewhere in Australia.
