@@ -9,8 +9,9 @@ In practice, you don't really want to use this follow-me implementation, rather 
 
 Before running this demo you'll need to make sure your computer has the gpsd service installed.
 
-Ubuntu install
-------------------
+*Ubuntu install*
+
+::
 
     apt-get install gpsd gpsd-clients
 
@@ -18,7 +19,8 @@ You can then plug in a USB GPS and run the "xgps" client to confirm that it is w
 
 Once your GPS is plugged in you can start follow-me by running the following command inside of MAVProxy:
 
-:: 
+::
+
 	RTL> api start follow_me.py
 	RTL> Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
 	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
