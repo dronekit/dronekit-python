@@ -26,7 +26,7 @@ def followme():
         # Now get our vehicle (we assume the user is trying to control the virst vehicle attached to the GCS)
         v = api.get_vehicles()[0]
 
-        # Don't let the user try to fly while the board is still boogint
+        # Don't let the user try to fly while the board is still booting
         if v.mode.name == "INITIALISING":
             print "Vehicle still booting, try again later"
             return
