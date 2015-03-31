@@ -3,4 +3,5 @@
 droneapi.egg-info
 dist
 build
+*~
 

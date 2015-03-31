@@ -1,22 +1,25 @@
 Getting Started
-==================
+===============
 
 The best way to prototype apps for drones is to use a simulated vehicle. APM provides a Software-In-The-Loop (SITL) environment, which simulates a copter or plane, in Linux.
 
 If you want to test your app in real life, you should also grab a ready to fly copter from the  `3D Robotics Store <http://store.3drobotics.com>`_.
 
+
 Set up a simulated vehicle
-------------------
+--------------------------
+
 
 Dependencies
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 If you are using Mac OSX or Windows, you need to set up a virtual Linux machine to run SITL. 
 
 A popular virtual machine manager for running SITL is `Virtual Box <https://www.virtualbox.org/>`_. A virtual machine running Ubuntu Linux 13.04 or later works great.
 
+
 Set up SITL on Linux
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 Please see `instructions here <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ to set up SITL on Ubuntu.
 
@@ -32,13 +35,14 @@ Once you have the simulated vehicle running, enter the following commands. (You 
 
 
 Installing DroneKit
-------------------
+-------------------
 
 If you are using a virtual vehicle to prototype, it is recommended that you install DroneKit on that virtual environment where you are running SITL.
 
 If you are planning to run DroneKit on an onboard computer, make sure that the onboard computer run a variant of Linux that support Python and can install Python packages from the internet.
 
-Linux Dependencies
+
+Linux dependencies
 ~~~~~~~~~~~~~~~~~~
 
 If you are running Ubuntu or Debian Linux you can get all the DroneKit dependencies by running:
@@ -47,8 +51,9 @@ If you are running Ubuntu or Debian Linux you can get all the DroneKit dependenc
 
     sudo apt-get install pip python-numpy python-opencv python-serial python-pyparsing python-wxgtk2.8
 
-OSX Dependencies
-~~~~~~~~~~~~~~~~~~
+
+OSX dependencies
+~~~~~~~~~~~~~~~~
 
 If you're on Mac OSX, you can use `Homebrew <http://brew.sh/>`_ to install WXMac.
 
@@ -68,8 +73,9 @@ On OSX you need to uninstall python-dateutil since osx comes bundled with a vers
 
     pip uninstall python-dateutil
 
-Windows Dependencies
-~~~~~~~~~~~~~~~~~~
+
+Windows dependencies
+~~~~~~~~~~~~~~~~~~~~
 
 The windows installation is a little more involved, but not too hard.
 
@@ -91,7 +97,7 @@ Open the folder where you installed WinPython, run "*WinPython Control Panel*" a
 	pip install droneapi
 
 Install MAVProxy
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 When developing new DroneKit Python code the easiest approach is to run it inside of MAVProxy, a lightweight CLI tool to send MAVLink messages. Learn more about MAVProxy `here <http://tridge.github.io/MAVProxy/>`_. 
 
@@ -101,8 +107,9 @@ Install MAVProxy with the following command:
 
     sudo pip install MAVProxy
 
+
 Set up DroneKit
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 The DroneKit library is available on the public pypi repository. You can use the PyPi tool to install.
 
@@ -112,7 +119,7 @@ The DroneKit library is available on the public pypi repository. You can use the
 
 
 Setting up DroneKit on a companion computer
-------------------
+-------------------------------------------
 
 A companion computer can augment the processing power and flexibility of the autopilot, allowing you to perform tasks like computer vision and directly control the drone through a low latency link with the flight controller.
 

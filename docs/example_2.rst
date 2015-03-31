@@ -1,11 +1,13 @@
 Second Demo: Drone Delivery
-===============
+===========================
 
-This demonstration is a bit more extensive.  It is a [CherryPy](http://www.cherrypy.org) based web application that mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude longitude.
+This demonstration is a bit more extensive.  It is a `CherryPy <http://www.cherrypy.org>`_ based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude.
 
-New functionality demonstrated here includes:
+New functionality demonstrated by this example includes:
+
 * Using attribute observers to be notified of vehicle state changes.
-* Starting cherrypy from a DroneKit application
+* Starting *CherryPy* from a DroneKit application.
+
 
 Starting the demo
 ------------------
@@ -32,7 +34,7 @@ The demonstration is started similar to the previous tutorials.  You should see 
 	GPS lock at 0 meters
 
 Screenshots
-------------------
+-----------
 
 You should be able to reach your new webserver at http://localhost:8080. It will look like the following:
 
@@ -42,11 +44,12 @@ You should be able to reach your new webserver at http://localhost:8080. It will
 
 .. image:: https://github.com/diydrones/droneapi-python/raw/master/example/documentation/drone-delivery-command.png
 
+
 Looking at the code
-------------------
+-------------------
 
 Using attribute observers
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/diydrones/droneapi-python/blob/master/example/drone_delivery/drone_delivery.py>`_ calls:
 
@@ -65,13 +68,13 @@ All attributes in DroneKit can have observers - this is the primary mechanism yo
         self.current_location = location
 
 
-This results in DroneKit calling our location_callback method any time the location attribute gets changed.
+This results in DroneKit calling our ``location_callback`` method any time the location attribute gets changed.
 
-Starting cherrypy from a DroneKit application
-~~~~~~~~~~~~~~~~~~
+Starting CherryPy from a DroneKit application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We start running a web server by calling cherrypy.engine.start().
+We start running a web server by calling ``cherrypy.engine.start()``.
 
-CherryPy is a very small and simple webserver.  It is probably best to refer to their eight line `tutorial <http://www.cherrypy.org/>`_ for more information.
+*CherryPy* is a very small and simple webserver.  It is probably best to refer to their eight line `tutorial <http://www.cherrypy.org/>`_ for more information.
 
 Next we'll look at the basics of using the webservice and the local vehicle API to 'replay' a flight which has been uploaded to `Droneshare <http://droneshare.com>`_.

@@ -1,5 +1,5 @@
 Fourth Demo: Follow Me
-===============
+======================
 
 This is a significantly more complex example – showing closed-loop control of the vehicle. It will use a USB GPS attached to your laptop to have the vehicle follow you as you walk around a field.
 
@@ -15,7 +15,7 @@ Before running this demo you'll need to make sure your computer has the gpsd ser
 
     apt-get install gpsd gpsd-clients
 
-You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running droneapi-python/example/run-fake-gps.sh.
+You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running *droneapi-python/example/run-fake-gps.sh*.
 
 Once your GPS is plugged in you can start follow-me by running the following command inside of MAVProxy:
 
@@ -33,4 +33,5 @@ These debugging messages will appear every two seconds - when a new target posit
 
 The source code for this example is a good starting point for your own application, from here you can use all python language features and libraries (OpenCV, classes, lots of packages etc...)
 
-Next, take a look at the full DroneKit Python doc for more information.
+Next, take a look at the full :doc:`DroneKit Python doc <automodule>` for more information.
+
