@@ -115,7 +115,7 @@ The DroneKit library is available on the public pypi repository. You can use the
 
 ::
 
-    pip install droneapi-python
+    pip install droneapi
 
 
 Setting up DroneKit on a companion computer
