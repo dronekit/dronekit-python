@@ -1,5 +1,5 @@
-DroneKit Python Doc
-===================
+DroneKit-Python API Reference
+=============================
 
 
 .. automodule:: droneapi.lib
