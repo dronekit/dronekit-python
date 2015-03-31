@@ -1,18 +1,19 @@
 Third Demo: Flight Replay
-===============
+=========================
 
 This is an interesting demo that uses our web API to query raw flight data from a particular flight.
 
-Starting the demo
-------------------
 
-In this case, we pick some public flight from Droneshare:
+Starting the demo
+-----------------
+
+In this case, we pick some public flight from `Droneshare <http://www.droneshare.com/>`_:
 
 .. image:: https://github.com/diydrones/droneapi-python/raw/master/example/documentation/flight_replay_example.png
 
 You'll notice that the mission number for this flight is 101.
 
-Now we'll launch [flight_replay.py](../flight_replay/flight_replay.py) and ask it to try and 'replay' mission 101.  It will ask the web server for representative points from the flight, parse the JSON response and use that data to generate 100 waypoints we would like our vehicle to hit.  For safety rather than using the altitude from the original flight we instead ask our vehicle to fly at a height of 30 meters.
+Now we'll launch **flight_replay.py** (/example/flight_replay/flight_replay.py) and ask it to try and 'replay' mission 101.  It will ask the web server for representative points from the flight, parse the JSON response and use that data to generate 100 waypoints we would like our vehicle to hit.  For safety rather than using the altitude from the original flight we instead ask our vehicle to fly at a height of 30 meters.
 
 One possible use of some variant of this tool to replay your old flights at your regular test field.
 
@@ -34,8 +35,9 @@ One possible use of some variant of this tool to replay your old flights at your
 	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
 	APM: flight plan received
 
+
 How it works
-------------------
+------------
 
 Getting the points
 ~~~~~~~~~~~~~~~~~~
@@ -53,11 +55,12 @@ The following simple function asks for the droneshare flight data:
 
 Some comments:
 
-* max_freq is used to throttle the messages found in the raw flight data to a lower message rate
-* _decode_dict is a utility function found on stack overflow which extracts usable strings from unicode encoded JSON (see flight_replay.py for its implementation).
+* ``max_freq`` is used to throttle the messages found in the raw flight data to a lower message rate
+* ``_decode_dict`` is a utility function found on stack overflow which extracts usable strings from unicode encoded JSON (see `flight_replay.py <https://github.com/hamishwillee/dronekit-python/blob/master/example/flight_replay/flight_replay.py>`_ for its implementation).
+
 
 Setting the new waypoints
-------------------
+-------------------------
 
 We generate up to 100 wpts for the vehicle with the following code:
 
@@ -83,4 +86,5 @@ We generate up to 100 wpts for the vehicle with the following code:
         cmds.add(cmd)
     v.flush()
 
-Next we'll work with existing Linux services (gpsd) to add a new drone based feature called Follow Me.
+
+Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :doc:`Follow Me <example_4>`.
