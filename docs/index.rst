@@ -6,9 +6,11 @@
 Welcome to DroneKit-Python's documentation!
 ===========================================
 
-DroneKit-Python provides interfaces for creating  applications that run on an onboard Linux computer communicating directly to the autopilot of 3DR-powered vehicles or applications that run on a personal computer communicating with vehicles over a wireless connection.
+DroneKit's Python API helps you create powerful apps for both ground and air-based control of UAVs.
 
-DroneKit is compatible with all vehicles using the `MAVLink protocol <http://qgroundcontrol.org/mavlink/start>`_. This includes most vehicles made by 3DR and other members of the `DroneCode foundation <https://www.dronecode.org/about/project-members>`_.
+The API makes it easy for your ground station apps to get information from UAVs and automate new kinds of flight behaviour. DroneKit-Python code running on a UAV's `Companion Computer <http://dev.ardupilot.com/wiki/companion-computers/>`_ can further augment the autopilot — performing tasks that are both computationally intensive and require a low-latency link (e.g. computer vision). 
+
+DroneKit is compatible with all vehicles using the `MAVLink protocol <http://qgroundcontrol.org/mavlink/start>`_ (including most vehicles made by 3DR and other members of the `DroneCode foundation <https://www.dronecode.org/about/project-members>`_). The APIs can be used in ground-based person computers running Windows, Linux or Mac OS X and with *Companion Computers* running Linux. 
 
 Contents:
 
@@ -22,3 +24,7 @@ Contents:
    example_3
    example_4
    automodule
+
+
+
+
