@@ -49,7 +49,7 @@ If you are running Ubuntu or Debian Linux you can get all the DroneKit dependenc
 
 ::
 
-    sudo apt-get install pip python-numpy python-opencv python-serial python-pyparsing python-wxgtk2.8
+    sudo apt-get install python-pip python-numpy python-opencv python-serial python-pyparsing python-wxgtk2.8
 
 
 OSX dependencies
