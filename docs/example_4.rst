@@ -33,5 +33,5 @@ These debugging messages will appear every two seconds - when a new target posit
 
 The source code for this example is a good starting point for your own application, from here you can use all python language features and libraries (OpenCV, classes, lots of packages etc...)
 
-Next, take a look at the full :doc:`DroneKit Python doc <automodule>` for more information.
+Next, take a look at the full :doc:`DroneKit-Python API Reference <automodule>` for more information.
 
