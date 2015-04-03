@@ -8,7 +8,7 @@ This package contains the python language bindings for the drone API and the ass
 
 ## Users wanted!
 
-We'd love your [feedback and suggestions](https://github.com/diydrones/dronekit-python/issues) about this API and are eager to evolve it to meet your needs.  
+We'd love your [feedback and suggestions](https://github.com/diydrones/dronekit-python/issues) about this API and are eager to evolve it to meet your needs.
 
 For documentation on how to use this API please see:
 
@@ -27,7 +27,6 @@ For documentation on how to use this API please see:
     * Advanced ['drone_delivery'](example/drone_delivery/)
     * Advanced ['follow-me'](example/follow_me/)
 
-	
 [Stack Overflow](http://stackoverflow.com/questions/tagged/dronekit-python) is the best place to ask for *technical support* on how to use the API.
 
 Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
