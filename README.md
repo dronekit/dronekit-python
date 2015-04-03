@@ -27,7 +27,6 @@ For documentation on how to use this API please see:
     * Advanced ['drone_delivery'](example/drone_delivery/)
     * Advanced ['follow-me'](example/follow_me/)
 
-
 [Stack Overflow](http://stackoverflow.com/questions/tagged/dronekit-python) is the best place to ask for *technical support* on how to use the API.
 
 Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
