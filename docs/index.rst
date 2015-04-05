@@ -18,6 +18,7 @@ Contents:
    :maxdepth: 2
 
    getting_started
+   Supported Companion Computers <http://dev.ardupilot.com/wiki/companion-computers>
    first_app
    example_1
    example_2

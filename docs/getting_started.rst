@@ -118,12 +118,5 @@ The DroneKit library is available on the public pypi repository. You can use the
     pip install droneapi
 
 
-Setting up DroneKit on a companion computer
--------------------------------------------
-
-A companion computer can augment the processing power and flexibility of the autopilot, allowing you to perform tasks like computer vision and directly control the drone through a low latency link with the flight controller.
-
-You can see `instructions here <http://dev.ardupilot.com/wiki/companion-computers/>`_ for how to set up your companion computer.
-
 Congrats! You've set up DroneKit on your computer. Next we'll look at running your first app.
 
