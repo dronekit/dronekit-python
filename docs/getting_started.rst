@@ -27,37 +27,6 @@ Odroid
 
 
 
-Set up a simulated vehicle
---------------------------
-The best way to prototype apps for drones is to use a simulated vehicle. APM provides a Software-In-The-Loop (SITL) environment, which simulates a copter or plane, in Linux.
-
-If you want to test your app in real life, you should also grab a ready to fly copter from the  `3D Robotics Store <http://store.3drobotics.com>`_.
-
-
-
-Dependencies
-~~~~~~~~~~~~
-
-If you are using Mac OSX or Windows, you need to set up a virtual Linux machine to run SITL. 
-
-A popular virtual machine manager for running SITL is `Virtual Box <https://www.virtualbox.org/>`_. A virtual machine running Ubuntu Linux 13.04 or later works great.
-
-
-Set up SITL on Linux
-~~~~~~~~~~~~~~~~~~~~
-
-Please see `instructions here <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ to set up SITL on Ubuntu.
-
-Once you have the simulated vehicle running, enter the following commands. (You only have to do this once)
-
-1. Load a default set of parameters
-2. Disable the arming check
-
-::
-
-    STABILIZE>param load ../Tools/autotest/copter_params.parm
-    STABILIZE>param set ARMING_CHECK 0
-
 
 Installing DroneKit
 -------------------
@@ -143,5 +112,36 @@ The DroneKit library is available on the public pypi repository. You can use the
     pip install droneapi
 
 
-Congrats! You've set up DroneKit on your computer. Next we'll look at running your first app.
 
+Set up a simulated vehicle
+--------------------------
+The best way to prototype apps for drones is to use a simulated vehicle. APM provides a Software-In-The-Loop (SITL) environment, which simulates a copter or plane, in Linux.
+
+If you want to test your app in real life, you should also grab a ready to fly copter from the  `3D Robotics Store <http://store.3drobotics.com>`_.
+
+
+
+Dependencies
+~~~~~~~~~~~~
+
+If you are using Mac OSX or Windows, you need to set up a virtual Linux machine to run SITL.
+
+A popular virtual machine manager for running SITL is `Virtual Box <https://www.virtualbox.org/>`_. A virtual machine running Ubuntu Linux 13.04 or later works great.
+
+
+Set up SITL on Linux
+~~~~~~~~~~~~~~~~~~~~
+
+Please see `instructions here <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ to set up SITL on Ubuntu.
+
+Once you have the simulated vehicle running, enter the following commands. (You only have to do this once)
+
+1. Load a default set of parameters
+2. Disable the arming check
+
+::
+
+    STABILIZE>param load ../Tools/autotest/copter_params.parm
+    STABILIZE>param set ARMING_CHECK 0
+
+Congrats! You've set up DroneKit and a simulator on your computer. Next we'll look at running your first app.
