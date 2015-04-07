@@ -42,7 +42,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'DroneKit Air: Python'
-copyright = u'2014, Kevin Hester'
+copyright = u'2015, 3D Robotics'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -187,6 +187,7 @@ latex_documents = [
   ('index', 'DroneKit.tex', u'DroneKit Documentation',
    u'Kevin Hester', 'manual'),
 ]
+
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
