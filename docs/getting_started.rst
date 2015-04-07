@@ -1,37 +1,31 @@
 Getting Started
 ===============
 
-The best way to prototype apps for drones is to use a simulated vehicle. APM provides a Software-In-The-Loop (SITL) environment, which simulates a copter or plane, in Linux.
+On-board apps for drones typically run on a Linux-based "companion computer" that communicates with the autopilot via a serial port.  However, you may find it easier to first prototype your app on a standard Mac, Windows, or Linux 
+computer using a simulated autopilot, a process called "Software in the Loop Simulation" (SITL). This document will show you how to do both of these.
 
-If you want to test your app in real life, you should also grab a ready to fly copter from the  `3D Robotics Store <http://store.3drobotics.com>`_.
+Supported Companion Computers
+-----------------------------
 
+RaspberryPi
+~~~~~~~~~~~
+* `Communicating with Raspberry Pi via MAVLink <http://dev.ardupilot.com/wiki/companion-computers/raspberry-pi-via-mavlink/>`_
+* `Making a Mavlink WiFi bridge using the Raspberry Pi <http://dev.ardupilot.com/wiki/companion-computers/raspberry-pi-via-mavlink/making-a-mavlink-wifi-bridge-using-the-raspberry-pi/>`_
 
-Set up a simulated vehicle
---------------------------
-
-
-Dependencies
+Intel Edison
 ~~~~~~~~~~~~
+* `Edison for drones <http://dev.ardupilot.com/wiki/companion-computers/edison-for-drones/>`_
 
-If you are using Mac OSX or Windows, you need to set up a virtual Linux machine to run SITL. 
+BeagleBoneBlack
+~~~~~~~~~~~~~~~~
+* `BeaglePilot <http://dev.ardupilot.com/wiki/companion-computers/beaglepilot/>`_
 
-A popular virtual machine manager for running SITL is `Virtual Box <https://www.virtualbox.org/>`_. A virtual machine running Ubuntu Linux 13.04 or later works great.
+Odroid
+~~~~~~
+* `Communicating with ODroid via MAVLink <http://dev.ardupilot.com/wiki/companion-computers/odroid-via-mavlink/>`_
+* `ODroid Wifi Access Point for sharing files via Samba <http://dev.ardupilot.com/wiki/companion-computers/odroid-via-mavlink/odroid-wifi-access-point-for-sharing-files-via-samba/>`_
 
 
-Set up SITL on Linux
-~~~~~~~~~~~~~~~~~~~~
-
-Please see `instructions here <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ to set up SITL on Ubuntu.
-
-Once you have the simulated vehicle running, enter the following commands. (You only have to do this once)
-
-1. Load a default set of parameters
-2. Disable the arming check
-
-::
-
-    STABILIZE>param load ../Tools/autotest/copter_params.parm
-    STABILIZE>param set ARMING_CHECK 0
 
 
 Installing DroneKit
@@ -118,12 +112,36 @@ The DroneKit library is available on the public pypi repository. You can use the
     pip install droneapi
 
 
-Setting up DroneKit on a companion computer
--------------------------------------------
 
-A companion computer can augment the processing power and flexibility of the autopilot, allowing you to perform tasks like computer vision and directly control the drone through a low latency link with the flight controller.
+Set up a simulated vehicle
+--------------------------
+The best way to prototype apps for drones is to use a simulated vehicle. APM provides a Software-In-The-Loop (SITL) environment, which simulates a copter or plane, in Linux.
 
-You can see `instructions here <http://dev.ardupilot.com/wiki/companion-computers/>`_ for how to set up your companion computer.
+If you want to test your app in real life, you should also grab a ready to fly copter from the  `3D Robotics Store <http://store.3drobotics.com>`_.
 
-Congrats! You've set up DroneKit on your computer. Next we'll look at running your first app.
 
+
+Dependencies
+~~~~~~~~~~~~
+
+If you are using Mac OSX or Windows, you need to set up a virtual Linux machine to run SITL. 
+
+A popular virtual machine manager for running SITL is `Virtual Box <https://www.virtualbox.org/>`_. A virtual machine running Ubuntu Linux 13.04 or later works great.
+
+
+Set up SITL on Linux
+~~~~~~~~~~~~~~~~~~~~
+
+Please see `instructions here <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ to set up SITL on Ubuntu.
+
+Once you have the simulated vehicle running, enter the following commands. (You only have to do this once)
+
+1. Load a default set of parameters
+2. Disable the arming check
+
+::
+
+    STABILIZE>param load ../Tools/autotest/copter_params.parm
+    STABILIZE>param set ARMING_CHECK 0
+
+Congrats! You've set up DroneKit and a simulator on your computer. Next we'll look at running your first app.
