@@ -1,3 +1,4 @@
+=========================
 Third Demo: Flight Replay
 =========================
 
@@ -5,7 +6,7 @@ This is an interesting demo that uses our web API to query raw flight data from 
 
 
 Starting the demo
------------------
+=================
 
 In this case, we pick some public flight from `Droneshare <http://www.droneshare.com/>`_:
 
@@ -37,10 +38,10 @@ One possible use of some variant of this tool to replay your old flights at your
 
 
 How it works
-------------
+============
 
 Getting the points
-~~~~~~~~~~~~~~~~~~
+------------------
 
 The following simple function asks for the droneshare flight data:
 
@@ -60,7 +61,7 @@ Some comments:
 
 
 Setting the new waypoints
--------------------------
+=========================
 
 We generate up to 100 wpts for the vehicle with the following code:
 

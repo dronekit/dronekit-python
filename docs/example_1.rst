@@ -1,10 +1,11 @@
+========================
 First Demo: Simple Go To
 ========================
 
 This little demonstration just tells the vehicle to fly to a couple of different locations in the world.  You can edit the code to pick a latitude and longitude close to your position.
 
 Running the example
--------------------
+===================
 
 Once Mavproxy is running and the API is loaded, you can run this small example by typing: ``api start simple_goto.py``
 
@@ -20,7 +21,7 @@ It will tell your vehicle to start flying to a particular latitude and longitude
 
 
 How does it work?
------------------
+=================
 
 The key code in this demo is the following:
 

@@ -1,3 +1,4 @@
+===========================
 Second Demo: Drone Delivery
 ===========================
 
@@ -10,7 +11,7 @@ New functionality demonstrated by this example includes:
 
 
 Starting the demo
-------------------
+=================
 
 The demonstration is started similar to the previous tutorials.  You should see output that looks like the following:
 
@@ -34,7 +35,7 @@ The demonstration is started similar to the previous tutorials.  You should see 
 	GPS lock at 0 meters
 
 Screenshots
------------
+===========
 
 You should be able to reach your new webserver at http://localhost:8080. It will look like the following:
 
@@ -46,10 +47,10 @@ You should be able to reach your new webserver at http://localhost:8080. It will
 
 
 Looking at the code
--------------------
+===================
 
 Using attribute observers
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/diydrones/droneapi-python/blob/master/example/drone_delivery/drone_delivery.py>`_ calls:
 
@@ -71,7 +72,7 @@ All attributes in DroneKit can have observers - this is the primary mechanism yo
 This results in DroneKit calling our ``location_callback`` method any time the location attribute gets changed.
 
 Starting CherryPy from a DroneKit application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 We start running a web server by calling ``cherrypy.engine.start()``.
 
