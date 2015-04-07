@@ -8,14 +8,16 @@ This package contains the python language bindings for the drone API and the ass
 
 ## Users wanted!
 
-We'd love your feedback on the use of this API and are eager to evolve it to meet your needs.  For documentation on how to use this
-API please see:
+We'd love your [feedback and suggestions](https://github.com/diydrones/dronekit-python/issues) about this API and are eager to evolve it to meet your needs.  
+
+For documentation on how to use this API please see:
 
 * The new DroneKit-python [website](http://python.dronekit.io/)
-* Our [tutorial](http://dev.ardupilot.com/wiki/droneapi-tutorial/) on the ardupilot wiki.
+* Our [tutorial](http://dev.ardupilot.com/wiki/droneapi-tutorial/) on the ardupilot wiki
 * The [overview document](https://docs.google.com/document/d/1ihKneLwA4hXmKS1W2pbG9lty_EAwbmy0giusUwQ8dto)
 * The [python autodocs](http://python.dronekit.io/automodule.html)
 * The [python code](droneapi/lib/__init__.py) itself
+* Answers to [technical support queries](http://stackoverflow.com/questions/tagged/dronekit-python) on Stack Overflow.
 * Example code can be found here: ['example/'](example/)
     * Beginner ['hello world'](example/small_demo/small_demo.py)
     * Beginner ['simple_goto'](example/simple_goto/simple_goto.py)
@@ -25,6 +27,7 @@ API please see:
     * Advanced ['drone_delivery'](example/drone_delivery/)
     * Advanced ['follow-me'](example/follow_me/)
 
-Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
+	
+[Stack Overflow](http://stackoverflow.com/questions/tagged/dronekit-python) is the best place to ask for *technical support* on how to use the API.
 
-Contact: Kevin Hester, [kevin@3drobotics.com](mailto:kevin@3drobotics.com)
+Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
