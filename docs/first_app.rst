@@ -1,5 +1,7 @@
+====================
 Running the Examples
-===============
+====================
+
 
 With your drone connected via SITL or USB, you can verify the DroneKit installation by running the example apps that come with the source of DroneKit Python.
 
@@ -16,28 +18,28 @@ Let's run a small example app to verify our connection with the drone:
 
 
 Starting MAVProxy
-------------------
+=================
 
 When developing new DroneAPI python code the easiest approach is to run it inside of MAVProxy. 
 
 So launch MAVProxy with the correct options for talking to your vehicle:
 
 Linux computer connected to the vehicle via USB
-~~~~~~~~~~~~~~~~~~
+-----------------------------------------------
 
 ::
 
     mavproxy.py --master=/dev/ttyUSB0
 
 SITL Linux connected to the vehicle via UDP
-~~~~~~~~~~~~~~~~~~
+-------------------------------------------
 
 ::
 
     mavproxy.py
 
 OSX computer connected to the vehicle via USB
-~~~~~~~~~~~~~~~~~~
+---------------------------------------------
 
 ::
 
@@ -45,7 +47,7 @@ OSX computer connected to the vehicle via USB
 
 
 Windows computer connected to the vehicle via USB
-~~~~~~~~~~~~~~~~~~
+-------------------------------------------------
 
 ::
 
@@ -55,7 +57,7 @@ Windows computer connected to the vehicle via USB
 For other connection options see the `MAVProxy documentation <http://tridge.github.io/MAVProxy/>`_.
 
 Loading DroneKit
-------------------
+================
 
 The API includes a mavproxy module to allow you to load (and reload) your custom application into mavproxy.
 
@@ -74,7 +76,7 @@ We recommend adding this line to the mavproxy startup script in ~/.mavinit.scr.
     echo "module load droneapi.module.api" >> ~/.mavinit.scr
 
 Running the example
-------------------
+===================
 
 The first example we will run is a very small application that just reads some vehicle state and then changes the vehicle mode to AUTO (to start following prestored waypoints).
 
