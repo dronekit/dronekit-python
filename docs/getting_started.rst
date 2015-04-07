@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-On-board apps for drones typically run on a Linux-based "companion computer" that communicates with the autopilot via a serial port.  However, you may find it easier to first prototype your app on standard Mac, Windows, or Linux 
+On-board apps for drones typically run on a Linux-based "companion computer" that communicates with the autopilot via a serial port.  However, you may find it easier to first prototype your app on a standard Mac, Windows, or Linux 
 computer, using a simulated autopilot, a process called "Software in the Loop Simulation" (SITL). This document will show you how to do both of these.
 
 Supported Companion Computers
