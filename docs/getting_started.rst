@@ -116,7 +116,6 @@ The DroneKit library is available on the public pypi repository. You can use the
     pip install droneapi
 
 
-
 Set up a simulated vehicle
 ==========================
 The best way to prototype apps for drones is to use a simulated vehicle. APM provides a Software-In-The-Loop (SITL) environment, which simulates a copter or plane, in Linux.
