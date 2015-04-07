@@ -255,7 +255,7 @@ class Vehicle(HasObservers):
     This change will be nice in two ways:
 
     * we can hide (eventually we can deprecate) any notion of rc channel
-    numbers at all.
+      numbers at all.
     * vehicles can eventually define new 'channels' for overridden values.
 
     Remaining FIXMEs:
@@ -295,10 +295,10 @@ class Vehicle(HasObservers):
         """PLACEHOLDER
 
         Access to historical missions will not be included in the release 1 python API, they will only be accessible
-        from the REST API.  (This is based on the most likely use-cases wanting a REST interface)
+		from the REST API.  (This is based on the most likely use-cases wanting a REST interface)
 
         :param query_params: Some TBD set of arguments that can be used to find a past mission
-        :returns Mission -- the mission
+        :return: Mission -- the mission
         """
         return Mission()
 
@@ -307,7 +307,7 @@ class Vehicle(HasObservers):
         """
         Returns an object that can be used to create 'raw' mavlink messages that are appropriate for this vehicle.
         These message types are defined in the central Mavlink github repository.  For example, a Pixhawk understands
-        the following messages: (from https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml).
+        the following messages: (from https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml). ::
 
           <message id="153" name="IMAGE_TRIGGER_CONTROL">
                <field type="uint8_t" name="enable">0 to disable, 1 to enable</field>

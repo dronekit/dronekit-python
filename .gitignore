@@ -3,5 +3,5 @@
 droneapi.egg-info
 dist
 build
+.vagrant
 *~
-
