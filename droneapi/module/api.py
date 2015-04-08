@@ -386,11 +386,11 @@ class APIModule(mp_module.MPModule):
 
     def fix_targets(self, message):
         """Set correct target IDs for our vehicle"""
-        status = self.mpstate.status
+        settings = self.mpstate.settings
         if hasattr(message, 'target_system'):
-            message.target_system = status.target_system
+            message.target_system = settings.target_system
         if hasattr(message, 'target_component'):
-            message.target_component = status.target_component
+            message.target_component = settings.target_component
 
     def __on_change(self, *args):
         for a in args:
