@@ -25,7 +25,7 @@ Contents:
    example_3
    example_4
    contributing
-   automodule
+   API Reference <automodule>
 
 
 
