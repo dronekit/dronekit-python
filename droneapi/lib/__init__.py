@@ -8,7 +8,7 @@ def web_connect(authinfo):
     """
     Connect to the central dronehub server
 
-    :param authinfo: A AuthInfo container (contains username, password, challenge info, etc...)
+    :param AuthInfo authinfo: A container for authentication information (username, password, challenge info, etc.)
     """
     return APIConnection()
 
@@ -19,7 +19,7 @@ def local_connect():
     return APIConnection()
 
 class APIException(Exception):
-    """Base class for DroneAPI related failures"""
+    """Base class for DroneAPI related exceptions."""
 
     def __init__(self, msg):
         self.msg = msg
@@ -27,7 +27,10 @@ class APIException(Exception):
 class AuthInfo(object):
     """
     Base class for various authentication flavors.
-    Initially only simple username & password auth are supported
+	
+    Currently only simple username & password authentication are supported
+	
+    :param object: username/password values.
     """
     def __init__(self, username, password):
         self.username = username
@@ -35,17 +38,20 @@ class AuthInfo(object):
 
 class ConnectionInfo(object):
     """
-    Connection information for contacting the local vehicle
+    Connection information for contacting the local vehicle.
+	
+	.. todo:: ConnectionInfo - what is the format of the options?
     """
     def __init__(self, mavproxy_options):
         self.maxproxy_options = mavproxy_options
 
 class Attitude(object):
     """
-    Attitude information
+    Attitude information.
 
-    pitch/yaw/roll in radians
-
+    :param pitch: Pitch in radians
+    :param yaw: Yaw in radians
+    :param roll: Roll in radians
     """
     def __init__(self, pitch, yaw, roll):
         self.pitch = pitch
@@ -57,10 +63,12 @@ class Attitude(object):
 
 class Location(object):
     """
-    A location object -
+    A location object.
 
-    FIXME, possibly add a vector3 representation
+    .. todo:: FIXME: Location class - possibly add a vector3 representation.
 
+    :param lat: Latitude
+    :param lon: Longitude
     :param alt: Altitude in meters (either relative or absolute)
     :param is_relative: True if the specified altitude is relative to a 'home' location
     """
@@ -77,7 +85,7 @@ class GPSInfo(object):
     """
     Standard information available about GPS
 
-    FIXME - possibly normalize eph/epv?  report fix type as string?
+    .. todo:: FIXME: GPSInfo class - possibly normalize eph/epv?  report fix type as string?
     """
     def __init__(self, eph, epv, fix_type, satellites_visible):
         self.eph = eph
@@ -112,15 +120,15 @@ class APIConnection(object):
     """
     An API provider.
 
-    This is the top level API connection returned from localConnect() or webConnect().  You should not manually create instances of
+    This is the top level API connection returned from :py:func:`local_connect()` or :py:func:`web_connect()`.  You should not manually create instances of
     this class.
     """
 
     def get_vehicles(self, query=None):
         """
-        Find a set of vehicles that are controllable from this connection.
+        Get the set of vehicles that are controllable from this connection.
 
-        :param query: This parameter will be documented with the web API, for now just use the default
+        :param query: This parameter will be documented with the web API, for now just use the default.
         """
         # return [ Vehicle(), Vehicle() ]
         raise Exception("Subclasses must override")
@@ -134,7 +142,7 @@ class APIConnection(object):
         of GCS applications where the user wants control of what scripts are running, this property provides a standard way of
         checking for exit requests.
 
-        FIXME - should this be private, or even part of the drone api at all?
+        .. todo:: FIXME: APIConnection.exit - should this be private, or even part of the drone api at all?
         """
         return threading.current_thread().exit
 
@@ -146,16 +154,19 @@ class HasObservers(object):
     """
     Provides callback based notification on attribute changes.
 
-    The argument list for observer is observer(attr_name).
+    The argument list for observer is ``observer(attr_name)``.
     """
     def add_attribute_observer(self, attr_name, observer):
         """
-        Add an attribute observer.  Note: attribute changes will only be published for
-        changes due to some other entity.  They will not be published for changes made by the local API client.
-        (This is done to prevent redundant notification for local changes)
+        Add an attribute observer.  
+		
+        .. note:: 
+            Attribute changes will only be published for
+            changes due to some other entity.  They will not be published for changes made by the local API client.
+            (This is done to prevent redundant notification for local changes)
 
-        :param attr_name: the attribute to watch
-        :param observer: the callback to invoke when change is detected
+        :param attr_name: The attribute to watch
+        :param observer: The callback to invoke when change is detected
         """
         l = self.__observers.get(attr_name)
         if l is None:
@@ -199,15 +210,15 @@ class Vehicle(HasObservers):
     Asynchronous notification on change of vehicle state is available by registering observers (callbacks) for attribute or
     parameter changes.
 
-    Most vehicle state is exposed through python attributes.  (i.e. vehicle.location, etc...)  And most of these attributes are
+    Most vehicle state is exposed through python attributes.  (i.e. ``vehicle.location``, etc.)  And most of these attributes are
     auto populated based on the capabilities of the particular autopilot we are talking to.
 
-    Particular autopilots/vehicles may define different attributes from this standard list (extra batteries, GPIOs, etc...)
+    Particular autopilots/vehicles may define different attributes from this standard list (extra batteries, GPIOs, etc.)
     However if a standard attribute is defined it must follow the rules specified below.
 
     To prevent name clashes the following naming convention should be used:
-    ap_<name> - For autopilot specific parameters (apm 2.5, pixhawk etc...).  Example:
-    user_<name> - For user specific parameters
+    ``ap_<name>`` - For autopilot specific parameters (apm 2.5, pixhawk etc...).  Example:
+    ``user_<name>`` - For user specific parameters
 
     Standard attributes & types:
 
@@ -219,16 +230,18 @@ class Vehicle(HasObservers):
     attitude          Attitude
     velocity          a three element list [ vx, vy, vz ] (in meter/sec)
     mode              VehicleMode
-    airspeed          double (FIXME - should this move somewhere else?)
+    airspeed          double
     groundspeed       double
     gps_0             GPSInfo
     battery_0_soc     double
     battery_0_volt    double
     armed             boolean
-    channel_override  Dictionary (channelName -> value) (where channel name is 1,2,3, etc...)
+    channel_override  Dictionary (channelName -> value) (where channel name is 1,2,3, etc.)
     channel_readback  Dictionary (channelName -> value) (read only)
     ================= =======================================================
 
+    .. todo:: FIXME: Should airspeed value move somewhere else from "Standard attributes & types" table?
+	
     Autopilot specific attributes & types:
 
     ================= =======================================================
@@ -238,30 +251,36 @@ class Vehicle(HasObservers):
     ap_pin5_value     double (0, 1, 2.3 etc...)
     ================= =======================================================
 
-    channel_override/channel_readback documentation:
-    In the previous version of this API I used the 'tried and true'
-    rc_override terminology.  However I've changed rc_override to be
-    channel_override with a dictionary as the argument.
-    (This idea is from @rmackay9 - thanks!)
+    **channel_override/channel_readback documentation:**
+	
+    The channel_override attribute takes a dictionary argument defining the channels to be overridden, and their new values. For example: ::
 
-    Strings will be defined per vehicle type ('pitch', 'yaw', 'roll' etc...)
-    and rather than setting channel 3 to 1400 (for instance), you will pass
-    in a dict with 'throttle':1200.  If you do not want to override particular
-    channels, you should not populate them in the dictionary.
+        the_vehicle.channel_override = { "1" : 900, "4" : 1000 }
 
-    It is worth noting by using a single dictionary it is guaranteed that all
-    multi-channel changes are updated atomically.
+    All multi-channel updates are atomic. Channels that are not specified in the dictionary are not overridden.		
 
-    This change will be nice in two ways:
+    .. versionchanged:: 1.0
+	
+        This update replaces rc_override with channel_override/channel_readback documentation
 
-    * we can hide (eventually we can deprecate) any notion of rc channel
-      numbers at all.
-    * vehicles can eventually define new 'channels' for overridden values.
 
-    Remaining FIXMEs:
+    .. todo:: 
+	
+        channel_override/channel_readback documentation
 
-    * FIXME - how to address the units issue?  Merely with documentation or some other way?
-    * FIXME - is there any benefit of using lists rather than tuples for these attributes
+        In a future update strings will be defined per vehicle type ('pitch', 'yaw', 'roll' etc...)
+        and rather than setting channel 3 to 1400 (for instance), you will pass in a dict with
+        'throttle':1200.  
+      
+        This change will be useful in two ways:
+		
+        * we can hide (eventually we can deprecate) any notion of rc channel numbers at all.
+        * vehicles can eventually define new 'channels' for overridden values.
+		
+        FIXME: Remaining channel_override/channel_readback FIXMEs:
+		
+        * how to address the units issue?  Merely with documentation or some other way?
+        * is there any benefit of using lists rather than tuples for these attributes
 
     """
 
@@ -287,27 +306,33 @@ class Vehicle(HasObservers):
         """Delete this vehicle object.
 
         This requests deletion of the object on the server, this operation may throw an exception on failure (i.e. for
-        local connections or insufficient user permissions)
+        local connections or insufficient user permissions).
         """
         pass
 
     def get_mission(self, query_params):
-        """PLACEHOLDER
+        """
+        Returns an object providing access to historical missions.
 
-        Access to historical missions will not be included in the release 1 python API, they will only be accessible
-		from the REST API.  (This is based on the most likely use-cases wanting a REST interface)
-
-        :param query_params: Some TBD set of arguments that can be used to find a past mission
-        :return: Mission -- the mission
+        .. warning:: Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface). The :class:`Mission` class has an empty implementation in DroneKit-Python release 1. 
+	
+        :param query_params: Some set of arguments that can be used to find a past mission
+        :return: Mission - the mission object.
+		
+        .. todo:: FIXME: get_mission needs to be updated when class Mission is implemented. The warning needs to be removed and the values of the query_params specified.
+		
+		
         """
         return Mission()
 
     @property
     def message_factory(self):
         """
-        Returns an object that can be used to create 'raw' mavlink messages that are appropriate for this vehicle.
-        These message types are defined in the central Mavlink github repository.  For example, a Pixhawk understands
-        the following messages: (from https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml). ::
+        Returns an object that can be used to create 'raw' MAVLink messages that are appropriate for this vehicle.
+        These message types are defined in the central MAVLink github repository.  For example, a Pixhawk understands
+        the following messages: (from https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml). 
+		
+        ::
 
           <message id="153" name="IMAGE_TRIGGER_CONTROL">
                <field type="uint8_t" name="enable">0 to disable, 1 to enable</field>
@@ -316,18 +341,20 @@ class Vehicle(HasObservers):
         The name of the factory method will always be the lower case version of the message name with _encode appended.
         Each field in the xml message definition must be listed as arguments to this factory method.  So for this example
         message, the call would be:
+		
+        ::		
 
-        msg = vehicle.message_factory.image_trigger_control_encode(True)
-        vehicle.send_mavlink(msg)
+            msg = vehicle.message_factory.image_trigger_control_encode(True)
+            vehicle.send_mavlink(msg)
         """
         None
 
     def send_mavlink(self, message):
         """
-        This is an advanced/low-level method to send raw mavlink to the vehicle.
+        This is an advanced/low-level method to send raw MAVLink to the vehicle.
 
         This method is included as an 'escape hatch' to allow developers to make progress if we've somehow missed providing
-        some essentential operation in the rest of this API.  Callers do not need to populate sysId/componentId/crc in the packet,
+        some essential operation in the rest of this API.  Callers do not need to populate sysId/componentId/crc in the packet,
         this method will take care of that before sending.
 
         If you find yourself needing to use this mathod please contact the drone-platform google group and
@@ -339,19 +366,25 @@ class Vehicle(HasObservers):
 
     def set_mavlink_callback(self, callback):
         """
-        Provides asynchronous notification when any mavlink packet is received from this vehice.
+        Provides asynchronous notification when any MAVLink packet is received from this vehicle.
 
-        Note: This method is implemented - but we hope you don't need it.
-        Because of the async attribute/waypoint/parameter notifications there is no need for
-        API clients to see raw mavlink.  Did I miss any use cases?  Feedback?
+        .. note:: 
+
+            This method is implemented - but we hope you don't need it.
+		
+            Because of the async attribute/waypoint/parameter notifications there should be no need for
+            API clients to see raw MAVLink.  Please provide feedback if we missed a use-case.
         """
         self.mavrx_callback = callback
 
     def flush(self):
-        """It is important to understand that setting attributes/changing vehicle state may occur over a slow link.
+        """
+        It is important to understand that setting attributes/changing vehicle state may occur over a slow link.
+		
         It is _not_ guaranteed that the effects of previous commands will be visible from reading vehicle attributes unless
-        flush() is called first.  After the return from flush any writes are guaranteed to have completed (or thrown an
-        exception) and future reads will see their effects."""
+        ``flush()`` is called first.  After the return from flush any writes are guaranteed to have completed (or thrown an
+        exception) and future reads will see their effects.
+        """
         pass
 
 #===============================================================================
@@ -383,8 +416,12 @@ class Mission(object):
     """
     Access to historical missions.
 
-    PLACEHOLDER - will not be included in the release 1 python API, they will only be accessible
-    from the REST API.  (This is based on the most likely use-cases wanting a REST interface)"""
+    .. warning:: This function is a *placeholder*. It has no implementation in DroneKit-Python release 1. 
+	
+	    Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
+		
+    .. todo:: FIXME: Mission class needs to be updated when it is implemented (after DroneKit Python release 1).
+    """
     pass
 
 class Parameters(HasObservers):
@@ -392,14 +429,14 @@ class Parameters(HasObservers):
     The set of named parameters for the vehicle.
 
     Attribute names are generated automatically based on parameter names.  Standard get/set operations can be performed.
-    Operations are not guaranteed to be complete until flush() is called on the parent Vehicle object.
+    Operations are not guaranteed to be complete until :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
     """
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
     A waypoint object.
 
-    FIXME - for now we just inherit the standard mavlink mission item contents
+    .. todo:: FIXME: Command class - for now we just inherit the standard MAVLink mission item contents.
     """
     pass
 
@@ -408,10 +445,11 @@ class CommandSequence(object):
     A sequence of vehicle waypoints.
 
     Operations include 'array style' indexed access to the various contained Waypoints.
-    Any changes by the client are not guaranteed to be complete until flush() is called on the parent Vehicle object.
+	
+    Any changes by the client are not guaranteed to be complete until :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
 
-    Waypoints are not downloaded from vehicle until download() is called.  Fetch starts a (potentially asynchronous)
-    waypoint download.  If you'd like to block your thread until the download is completed, call wait_valid()
+    Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  Fetch starts a (potentially asynchronous)
+    waypoint download.  If you'd like to block your thread until the download is completed, call :py:func:`wait_valid()`. 
     """
 
     def download(self):
