@@ -24,6 +24,7 @@ Contents:
    example_2
    example_3
    example_4
+   contributing
    automodule
 
 
