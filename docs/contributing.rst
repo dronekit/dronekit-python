@@ -49,45 +49,42 @@ The instructions below explain how to get the documentation source, and build it
 
     git clone https://github.com/YOUR-REPOSITORY/dronekit-python.git
 	
-* Navigate to the root of *dronekit-python* and start the Vagrant VM:  
+* Navigate to the root of *dronekit-python* and start the Vagrant VM:
+  ::
+  
+	cd /your-path-to-clone/dronekit-python/
+	vagrant up
 
-	::
-
-		cd /your-path-to-clone/dronekit-python/
-		vagrant up
-
-	.. note:: This may take a long time to complete the first time it is run  — Vagrant needs to download the virtual machine and then set up Sphinx.
+  .. note:: This may take a long time to complete the first time it is run  — Vagrant needs to download the virtual machine and then set up Sphinx.
 	
 * When the VM is running, you can build the source by entering the following command in the prompt: 
+  ::
 
+	vagrant ssh -c "cd /vagrant/docs && make html"
+		
+  The files will be built by :program:`Sphinx`, and will appear on the host system in :file:`<clone-path>/dronekit-python/docs/\_build/html/`. To preview, simply open them in a Web browser.
+	
+  .. note:: 
+
+	The ``vagrant ssh -c "cd /vagrant/docs && make html"`` command starts (and closes) an SSH session with the VM. If you plan on building the source a number of times it is much faster to keep the session open: 
+		
 	::
 
-		vagrant ssh -c "cd /vagrant/docs && make html"
-		
-	The files will be built by :program:`Sphinx`, and will appear on the host system in :file:`<clone-path>/dronekit-python/docs/\_build/html/`. To preview, simply open them in a Web browser.
-	
-	.. note:: 
-
-		The ``vagrant ssh -c "cd /vagrant/docs && make html"`` command starts (and closes) an SSH session with the VM. If you plan on building the source a number of times it is much faster to keep the session open: 
-		
-		::
-
-			vagrant ssh        # Open an SSH session with the Vagrant VM
-			cd /vagrant/docs   # Navigate to the docs root (contains Sphinx configuration files)
-			make html          # Build the HTML
-			...                # Repeat "make html" as many time as needed
-			make html          
-			exit               # Close the SSH session.
+		vagrant ssh        # Open an SSH session with the Vagrant VM
+		cd /vagrant/docs   # Navigate to the docs root (contains Sphinx configuration files)
+		make html          # Build the HTML
+		...                # Repeat "make html" as many time as needed
+		make html          
+		exit               # Close the SSH session.
 
 			
 	
 * When you are finished you can suspend the VM. Next time you need to build more HTML simply restart it (this is a fast operation):
-
-	::
-
-		vagrant suspend   #Suspend the VM
-		vagrant resume    #Restart the VM
-		vagrant ssh -c "cd /vagrant/docs && make html"   #Build files when needed.
+  ::
+  
+	vagrant suspend   #Suspend the VM
+	vagrant resume    #Restart the VM
+	vagrant ssh -c "cd /vagrant/docs && make html"   #Build files when needed.
 
 	
 * After making changes, follow the normal process to submit them to the project (i.e.commit and push them to your fork on Github, and then create a pull request on Github to the project repository).
