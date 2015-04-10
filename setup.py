@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '1.1.0'
+version = '1.1.1'
 
 ext_modules = []
 
@@ -12,7 +12,7 @@ setup (name = 'droneapi',
        long_description = '''Python language bindings for the DroneApi (includes the droneapi MAVProxy module)''',
        url = 'https://github.com/diydrones/droneapi-python',
        author = '3D Robotics',
-       install_requires = [ 'pymavlink',
+       install_requires = [ 'pymavlink >= 1.1.50',
                             'MAVProxy >= 1.4.13',
                             'protobuf >= 2.5.0' ],
        author_email = 'kevinh@geeksville.com',
