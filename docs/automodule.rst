@@ -16,5 +16,4 @@ DroneKit-Python API Reference
 
 
 
-
 .. todolist::
