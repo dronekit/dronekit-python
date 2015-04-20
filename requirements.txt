@@ -2,5 +2,6 @@ numpy==1.9.1
 poster==0.8.1
 protobuf==2.6.1
 requests==2.5.1
-pymavlink>=1.1.39
+pymavlink>=1.1.50
 sphinx-3dr-theme>=0.0.6
+MAVProxy>=1.4.13
