@@ -1,20 +1,21 @@
 # Demo: GUIDED Mode Setting Speed and Yaw
 
-This little demonstration shows how to fly the vehicle using the GUIDED mode directly specifying the speed components and the yaw direction. It is a different approach than to fly the vehicle in GUIDED mode specifying the position (i.e. [simple goto](http://python.dronekit.io/example_1.html), [code here](https://github.com/diydrones/dronekit-python/blob/master/example/simple_goto/simple_goto.py)) or in AUTO mode.
+This example shows how to fly a vehicle in GUIDED mode, controlling movement by setting the vehicle speed components and yaw direction.
 
-This one is a useful modality in cases when the vehicle is guided by a companion computer and it has to autonomously reach a target with position unknown.
+**Note:** Other approaches for guiding a vehicle are to set the target position in GUIDED mode (i.e. [simple goto](http://python.dronekit.io/example_1.html), [code here](https://github.com/diydrones/dronekit-python/blob/master/example/simple_goto/simple_goto.py)) or to use AUTO mode and set waypoints. The approach in this example is useful when the precise position of the target is unknown.
 
-In this demo, the vehicle will fly following a square path and a diamond-shaped one. While following the square path, the heading of the vehicle is changed according to the flying direction; while following the diamond-shaped path, the heading remains fixed.
 
 ## Running the example
 
-Once Mavproxy is running and the API is loaded, you can run this small example by typing ```api start guided_set_speed_yaw.py```, if you start the simulator in the same folder of the file otherwise, if you start the the simulator in a different folder, you have to specify the full path to the file, something like ```api start /home/user/git/dronekit-python/example/guided_set_speed_yaw/guided_set_speed_yaw.py```. 
+Once MAVProxy is running and the API is loaded, you can run the example by typing: ```api start full_path_to_file``` 
 
-The program will automatically arm the vehicle and start the demo: at first, it waits for a GPS lock (```Waiting for GPS...```), then to receive a location update (```Waiting for location...```) and finally it arms the vehicle (```Arming...``` and ```Waiting for arming cycle completes...```). After that, it will lift off and ascend 5 meters then it will start the demo.
+If you started the DroneKit MAVProxy prompt in a directory containing the example script you can start it using: ```api start guided_set_speed_yaw.py```. Otherwise you may have to specify the full path (something like): ```api start /home/user/git/dronekit-python/example/guided_set_speed_yaw/guided_set_speed_yaw.py```. 
 
-If it does not arm, type ```arm throttle``` manually in the Mavproxy console.
+The program will automatically arm the vehicle and start the demo. First it waits for a GPS lock (```Waiting for GPS...```), then to receive a location update (```Waiting for location...```) and finally it arms the vehicle (```Arming...``` and ```Waiting for arming cycle completes...```). The vehicle will then lift off and ascend 5 meters. It flies at a constant speed in a square path (North, East, South, West) and then in a diamond-shaped path. While following the square path, the heading of the vehicle is changed according to the flying direction; while following the diamond-shaped path, the heading remains fixed. When it has completed both paths, the vehicle lands.
 
-After starting the simulator, you should see something like:
+If it does not arm, type ```arm throttle``` manually in the MAVProxy console.
+
+After starting the simulator, the console output should look something like:
 
 ```
 + mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550 --out 127.0.0.1:14551 --cmd= --aircraft xtest --console --map
@@ -53,11 +54,11 @@ APIThread-0 exiting...
 
 ## How does it work?
 
-The GUIDED mode is a flying modality that allows a vehicle to fly autonomously without a predefined a mission. It allows a user, a GCS (ground control station) or a companion computer to control the vehicle and give new instructions to react to new events or situations.
+The GUIDED mode allows a vehicle to fly autonomously without a predefined a mission. This enables a GCS (ground control station) or a companion computer to control the vehicle "on the fly", reacting to new events or situations as they occur.
 
-When flying in this modality, the SET_POSITION_TARGET_LOCAL_NED and MAV_CMD_CONDITION_YAW commands are useful to instruct the vehicle to move along to a specific direction towards a target or a point without knowing its coordinates.
+The example uses this mode, and calls the  [SET_POSITION_TARGET_LOCAL_NED](https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED) and [MAV_CMD_CONDITION_YAW](http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_condition_yaw) commands to control the vehicle direction and speed.
 
-The key code in this demo are the following functions:
+The key code is captured in the following functions:
 
 ```
 # send_nav_velocity - send nav_velocity command to vehicle to request it fly in specified direction
@@ -99,22 +100,19 @@ def condition_yaw(heading):
     vehicle.flush()
 ```
 
-The function **send_nav_velocity** generates a **set_position_target_local_ned** MAVLink message which is used to directly specify the speed components to the vehicle.
+The function ``send_nav_velocity()`` generates a ``SET_POSITION_TARGET_LOCAL_NED`` MAVLink message which is used to directly specify the speed components to the vehicle.
 
-When using **mavutil.mavlink.MAV_FRAME_BODY_NED**, the speed components vx and vy are parallel to the North and East directions, not to the the front and side of the vehicle. The vz component is perpendicular to the plane of vx and vy, with a positive value towards the ground, following the right-hand convention. For more info, check [NED](http://en.wikipedia.org/wiki/North_east_down).
+When using ``mavutil.mavlink.MAV_FRAME_BODY_NED``, the speed components ``vx`` and ``vy`` are parallel to the North and East directions, not to the the front and side of the vehicle. The ``v``z component is perpendicular to the plane of ``vx`` and ``vy``, with a positive value towards the ground, following the right-hand convention. For more information about this frame of reference, see this wikipedia article on [NED](http://en.wikipedia.org/wiki/North_east_down).
 
-The **type_mask** parameter is a bitmask to indicate which dimensions should be ignored by the vehicle. A 0 means that the dimension is enabled, a 1 means ignored. In the example the value 0b0000111111000111 is used to enable the speed components.
+The ``type_mask`` parameter is a bitmask to indicate which dimensions are used/ignored by the vehicle (0 means that the dimension is enabled, 1 means ignored). In the example the value 0b0000111111000111 is used to enable the speed components.
 
-Check [SET_POSITION_TARGET_LOCAL_NED](https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED) for more info on the command.
-
-The function **condition_yaw** generates a **MISSION_ITEM** message carrying a **MAV_CMD_CONDITION_YAW** payload. It allows to specify a yaw direction for the vehicle. In the example, absolute angles are used. Therefore a heading of 0 means North.
-
-Check [MISSION_ITEM](https://pixhawk.ethz.ch/mavlink/#MISSION_ITEM) and [MAV_CMD](https://pixhawk.ethz.ch/mavlink/) for more info on the command.
+The function ``condition_yaw()`` generates a [MISSION_ITEM](https://pixhawk.ethz.ch/mavlink/#MISSION_ITEM) message carrying a ``MAV_CMD_CONDITION_YAW`` payload. It allows to specify a yaw direction for the vehicle. In the example, absolute angles are used. Therefore a heading of 0 means North.
 
 Other useful links:
-- GUIDED mode for [copters](http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/ac2_guidedmode/)
-- GUIDED mode for [plane](http://plane.ardupilot.com/wiki/flying/flight-modes/#guided)
-- MAVLink mission command messages, i.e. [mav_condition_yaw](http://planner.ardupilot.com/wiki/mavlink-mission-command-messages/#mav_cmd_condition_yaw)
+- GUIDED mode for [Copter](http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/ac2_guidedmode/).
+- GUIDED mode for [Plane](http://plane.ardupilot.com/wiki/flying/flight-modes/#guided).
+- [MAVLink mission command messages](http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd) (e.g. [MAV_CMD_CONDITION_YAW](http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_condition_yaw)).
+
 
 ## Testbed settings
 
@@ -143,4 +141,4 @@ Ardupilot version: [c7394568](https://github.com/diydrones/ardupilot/commit/c739
 
 ## Other info
 
-At the time of writing, the acceleration and yaw parameters of **set_position_target_local_ned** are ignored in [GCS_Mavlink.pde](https://github.com/diydrones/ardupilot/blob/master/ArduCopter/GCS_Mavlink.pde#L1343).
+At the time of writing, the acceleration and yaw parameters of ``set_position_target_local_ned()`` are ignored in [GCS_Mavlink.pde](https://github.com/diydrones/ardupilot/blob/master/ArduCopter/GCS_Mavlink.pde#L1343).
