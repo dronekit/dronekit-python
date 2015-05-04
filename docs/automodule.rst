@@ -1,3 +1,5 @@
+.. _api_reference:
+
 =============================
 DroneKit-Python API Reference
 =============================

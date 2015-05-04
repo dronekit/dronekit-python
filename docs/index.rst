@@ -19,11 +19,7 @@ Contents:
    :maxdepth: 2
 
    getting_started
-   first_app
-   example_1
-   example_2
-   example_3
-   example_4
+   examples/index
    about/contributing
    API Reference <automodule>
 

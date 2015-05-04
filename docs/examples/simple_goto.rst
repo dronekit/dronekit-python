@@ -1,5 +1,5 @@
 ========================
-First Demo: Simple Go To
+Example: Simple Go To
 ========================
 
 This little demonstration just tells the vehicle to fly to a couple of different locations in the world.  You can edit the code to pick a latitude and longitude close to your position.

@@ -1,5 +1,6 @@
+.. _example_follow_me:
 ======================
-Fourth Demo: Follow Me
+Example: Follow Me
 ======================
 
 This is a significantly more complex example – showing closed-loop control of the vehicle. It will use a USB GPS attached to your laptop to have the vehicle follow you as you walk around a field.
@@ -34,5 +35,5 @@ These debugging messages will appear every two seconds - when a new target posit
 
 The source code for this example is a good starting point for your own application, from here you can use all python language features and libraries (OpenCV, classes, lots of packages etc...)
 
-Next, take a look at the full :doc:`DroneKit-Python API Reference <automodule>` for more information.
+Next, take a look at the full :ref:`api_reference` for more information.
 
