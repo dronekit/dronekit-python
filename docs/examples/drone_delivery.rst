@@ -1,5 +1,5 @@
 ===========================
-Second Demo: Drone Delivery
+Example: Drone Delivery
 ===========================
 
 This demonstration is a bit more extensive.  It is a `CherryPy <http://www.cherrypy.org>`_ based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude.

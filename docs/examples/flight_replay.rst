@@ -1,5 +1,5 @@
 =========================
-Third Demo: Flight Replay
+Example: Flight Replay
 =========================
 
 This is an interesting demo that uses our web API to query raw flight data from a particular flight.
@@ -88,4 +88,4 @@ We generate up to 100 wpts for the vehicle with the following code:
     v.flush()
 
 
-Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :doc:`Follow Me <example_4>`.
+Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :ref:`Follow Me <example_follow_me>`.
