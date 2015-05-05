@@ -6,32 +6,6 @@ On-board apps for drones typically run on a Linux-based "companion computer" tha
 computer using a simulated autopilot, a process called "Software in the Loop Simulation" (SITL). This document will show you how to do both of these.
 
 
-Supported Companion Computers
-=============================
-
-
-RaspberryPi
------------
-
-* `Communicating with Raspberry Pi via MAVLink <http://dev.ardupilot.com/wiki/companion-computers/raspberry-pi-via-mavlink/>`_
-* `Making a Mavlink WiFi bridge using the Raspberry Pi <http://dev.ardupilot.com/wiki/companion-computers/raspberry-pi-via-mavlink/making-a-mavlink-wifi-bridge-using-the-raspberry-pi/>`_
-
-Intel Edison
-------------
-
-* `Edison for drones <http://dev.ardupilot.com/wiki/companion-computers/edison-for-drones/>`_
-
-BeagleBoneBlack
----------------
-
-* `BeaglePilot <http://dev.ardupilot.com/wiki/companion-computers/beaglepilot/>`_
-
-Odroid
-------
-* `Communicating with ODroid via MAVLink <http://dev.ardupilot.com/wiki/companion-computers/odroid-via-mavlink/>`_
-* `ODroid Wifi Access Point for sharing files via Samba <http://dev.ardupilot.com/wiki/companion-computers/odroid-via-mavlink/odroid-wifi-access-point-for-sharing-files-via-samba/>`_
-
-
 Installing DroneKit
 ===================
 
