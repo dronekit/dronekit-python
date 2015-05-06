@@ -18,7 +18,7 @@ Now we'll launch **flight_replay.py** (/example/flight_replay/flight_replay.py) 
 
 One possible use of some variant of this tool to replay your old flights at your regular test field.
 
-:: 
+::
 
 	STABILIZE> api start flight_replay.py 101
 	STABILIZE> JSON downloaded...
@@ -87,3 +87,14 @@ We generate up to 100 waypoints for the vehicle with the following code:
         cmds.add(cmd)
     v.flush()
 
+
+Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :ref:`Follow Me <example_follow_me>`.
+
+
+Source code
+===========
+
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/flight_replay/flight_replay.py>`_):
+
+.. include:: ../../example/flight_replay/flight_replay.py
+    :literal:
