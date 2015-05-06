@@ -1,4 +1,5 @@
 .. _example_follow_me:
+
 ======================
 Example: Follow Me
 ======================
@@ -37,3 +38,11 @@ The source code for this example is a good starting point for your own applicati
 
 Next, take a look at the full :ref:`api_reference` for more information.
 
+
+Source code
+===========
+
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/follow_me/follow_me.py>`_):
+
+.. include:: ../../example/follow_me/follow_me.py
+    :literal:

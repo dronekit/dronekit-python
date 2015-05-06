@@ -79,3 +79,12 @@ We start running a web server by calling ``cherrypy.engine.start()``.
 *CherryPy* is a very small and simple webserver.  It is probably best to refer to their eight line `tutorial <http://www.cherrypy.org/>`_ for more information.
 
 Next we'll look at the basics of using the webservice and the local vehicle API to 'replay' a flight which has been uploaded to `Droneshare <http://droneshare.com>`_.
+
+
+Source code
+===========
+
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/drone_delivery/drone_delivery.py>`_):
+
+.. include:: ../../example/drone_delivery/drone_delivery.py
+    :literal:
