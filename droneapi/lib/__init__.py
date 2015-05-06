@@ -557,12 +557,13 @@ class Vehicle(HasObservers):
         return self._parameters
 
     def delete(self):
-        """Delete this vehicle object.
+        """
+        Delete this vehicle object.
 
-        This requests deletion of the object on the server, this operation may throw an exception on failure (i.e. for
+        This requests deletion of the Vehicle object on the server. This operation may throw an exception on failure (i.e. for
         local connections or insufficient user permissions).
 		
-        .. todo:: Confirm whether this is public or not, and what it means in the context of a companion computer.
+        It is not supported for local connections.
         """
         pass
 
