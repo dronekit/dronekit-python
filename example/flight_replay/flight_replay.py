@@ -7,7 +7,7 @@
 # * api start flight_replay.py <missionid>
 # (Where mission ID is a numeric mission number from a public droneshare flight)
 #
-from droneapi.lib import VehicleMode
+from droneapi.lib import Command
 from pymavlink import mavutil
 import json, urllib, math
 
@@ -16,7 +16,7 @@ api_key = "a8948c11.9e44351f6c0aa7e3e2ff6d00b14a71c5"
 
 # First get an instance of the API endpoint
 api = local_connect()
-# get our vehicle - when running with mavproxy it only knows about one vehicle (for now)
+# Get our vehicle - when running with MAVProxy it only knows about one vehicle (for now)
 v = api.get_vehicles()[0]
 
 
@@ -34,7 +34,7 @@ def _decode_list(data):
     return rv
 
 def _decode_dict(data):
-    """A utility function for decoding JSON strings from unicode"""
+    """A utility function for decoding JSON strings from Unicode"""
     rv = {}
     for key, value in data.iteritems():
         if isinstance(key, unicode):
@@ -70,7 +70,7 @@ def replay_mission(payload):
         shorter = [messages[i] for i in xrange(0, num_points, step)]
         messages = shorter
 
-    print "Genrating %s waypoints from replay..." % len(messages)
+    print "Generating %s waypoints from replay..." % len(messages)
     cmds = v.commands
     cmds.clear()
     for i in xrange(0, len(messages)):
@@ -78,15 +78,15 @@ def replay_mission(payload):
         lat = pt['lat']
         lon = pt['lon']
         # To prevent accidents we don't trust the altitude in the original flight, instead
-        # we just slam in a conservative crusing altitude
+        # we just put in a conservative cruising altitude.
         altitude = 30.0 # pt['alt']
-        cmd = mavutil.mavlink.MAVLink_mission_item_message(0,
-                                                         0,
-                                                         0,
-                                                         mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-                                                         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                                                         0, 0, 0, 0, 0, 0,
-                                                         lat, lon, altitude)
+        cmd = Command( 0,
+                       0,
+                       0,
+                       mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                       mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                       0, 0, 0, 0, 0, 0,
+                       lat, lon, altitude)
         cmds.add(cmd)
     v.flush()
 

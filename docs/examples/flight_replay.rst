@@ -63,11 +63,11 @@ Some comments:
 Setting the new waypoints
 =========================
 
-We generate up to 100 wpts for the vehicle with the following code:
+We generate up to 100 waypoints for the vehicle with the following code:
 
 ::
 
-    print "Genrating %s waypoints from replay..." % len(messages)
+    print "Generating %s waypoints from replay..." % len(messages)
     cmds = v.commands
     cmds.clear()
     for i in xrange(0, len(messages)):
@@ -75,17 +75,15 @@ We generate up to 100 wpts for the vehicle with the following code:
         lat = pt['lat']
         lon = pt['lon']
         # To prevent accidents we don't trust the altitude in the original flight, instead
-        # we just slam in a conservative crusing altitude
+        # we just put in a conservative cruising altitude.
         altitude = 30.0 # pt['alt']
-        cmd = mavutil.mavlink.MAVLink_mission_item_message(0,
-                                                         0,
-                                                         0,
-                                                         mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-                                                         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                                                         0, 0, 0, 0, 0, 0,
-                                                         lat, lon, altitude)
+        cmd = Command( 0,
+                       0,
+                       0,
+                       mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                       mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                       0, 0, 0, 0, 0, 0,
+                       lat, lon, altitude)
         cmds.add(cmd)
     v.flush()
 
-
-Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :ref:`Follow Me <example_follow_me>`.
