@@ -8,7 +8,7 @@ DroneKit-Python API Reference
 .. automodule:: droneapi.lib
    :members:
    :inherited-members:
-   :exclude-members: Mission, get_mission, ConnectionInfo, web_connect, AuthInfo
+   :exclude-members: Mission, get_mission, ConnectionInfo, web_connect, AuthInfo, delete
    
 
 
