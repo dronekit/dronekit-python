@@ -37,3 +37,12 @@ It tells the vehicle to fly to a specified lat/long and hover at that location (
 
 
 Building on the basic vehicle control you just learned, we now show how to write a small web application that allows you to command a drone to fly to a particular location.
+
+
+Source code
+===========
+
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/simple_goto/simple_goto.py>`_):
+
+.. include:: ../../example/simple_goto/simple_goto.py
+    :literal:
