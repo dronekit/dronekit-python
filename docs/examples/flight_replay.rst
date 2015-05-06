@@ -89,3 +89,12 @@ We generate up to 100 wpts for the vehicle with the following code:
 
 
 Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :ref:`Follow Me <example_follow_me>`.
+
+
+Source code
+===========
+
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/flight_replay/flight_replay.py>`_):
+
+.. include:: ../../example/flight_replay/flight_replay.py
+    :literal:
