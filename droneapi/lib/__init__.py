@@ -403,7 +403,7 @@ class Vehicle(HasObservers):
 
     .. py:attribute:: gps_0
 
-        GPS position information (:py:class:`GPSInfo`).
+        GPS position information (:py:class:`GPSInfo`). ``None`` if there is no GPS lock.
 
 
     .. py:attribute:: battery_0_soc
@@ -618,15 +618,13 @@ class Vehicle(HasObservers):
 
     def send_mavlink(self, message):
         """
-        This is an advanced/low-level method to send raw MAVLink to the vehicle. The :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` 
-        can be used to create messages in the appropriate format.
+        This method is used to send raw MAVLink "custom messages" to the vehicle. 
 
-        This method is included as an 'escape hatch' to allow developers to make progress if we've somehow missed providing
-        some essential operation in the rest of this API.  Callers do not need to populate sysId/componentId/crc in the packet,
-        this method will take care of that before sending.
-
-        If you find yourself needing to use this method please contact the drone-platform google group and
-        we'll see if we can support the operation you needed in some future revision of the API.
+        The function can send arbitrary messages/commands to a vehicle at any time and in any vehicle mode. It is particularly useful for
+        controlling vehicles outside of missions (for example, in GUIDED mode).
+		
+        The :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` is used to create messages in the appropriate format. 
+        Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
 
         :param: message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>`.  
             There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
