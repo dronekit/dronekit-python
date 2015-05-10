@@ -1,7 +1,8 @@
 .. _supported-companion-computers:
-=============================
+
+===================
 Companion Computers
-=============================
+===================
 
 A companion computer is a device that travels on-board the vehicle and controls/communicates with the autopilot over a low-latency link. 
 Apps running on a companion computer can perform computationally intensive or time-sensitive tasks, and add much greater intelligence
