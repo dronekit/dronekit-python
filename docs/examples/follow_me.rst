@@ -1,8 +1,8 @@
 .. _example_follow_me:
 
-======================
+==================
 Example: Follow Me
-======================
+==================
 
 This is a significantly more complex example – showing closed-loop control of the vehicle. It will use a USB GPS attached to your laptop to have the vehicle follow you as you walk around a field.
 
@@ -14,7 +14,7 @@ Before running this demo you'll need to make sure your computer has the gpsd ser
 
 *Ubuntu install*
 
-::
+.. code-block:: bash
 
     apt-get install gpsd gpsd-clients
 
@@ -22,7 +22,7 @@ You can then plug in a USB GPS and run the "xgps" client to confirm that it is w
 
 Once your GPS is plugged in you can start follow-me by running the following command inside of MAVProxy:
 
-::
+.. code-block:: bash
 
 	RTL> api start follow_me.py
 	RTL> Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
