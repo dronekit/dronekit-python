@@ -11,7 +11,8 @@ query vehicle state and parameters, and how to control a vehicle using missions 
 
    running_examples
    Simple Goto <simple_goto>
-   Follow Me <follow_me>
+   Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
+   Set Speed & Yaw (GUIDED) <guided-set-speed-yaw-demo>
 
