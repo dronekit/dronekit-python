@@ -39,11 +39,11 @@ Screenshots
 
 You should be able to reach your new webserver at http://localhost:8080. It will look like the following:
 
-.. image:: https://github.com/diydrones/droneapi-python/raw/master/example/documentation/drone-delivery-splash.png
+.. image:: drone-delivery-splash.png
 
-.. image:: https://github.com/diydrones/droneapi-python/raw/master/example/documentation/drone-delivery-track.png
+.. image:: drone-delivery-track.png
 
-.. image:: https://github.com/diydrones/droneapi-python/raw/master/example/documentation/drone-delivery-command.png
+.. image:: drone-delivery-command.png
 
 
 Looking at the code
