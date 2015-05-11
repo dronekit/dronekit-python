@@ -123,6 +123,8 @@ Launch *MAVProxy* with the correct options for talking to your vehicle (simulate
      - MAVProxy command
    * - Linux computer connected to the vehicle via USB
      - ``mavproxy.py --master=/dev/ttyUSB0``
+   * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
+     - ``mavproxy.py --master=/dev/ttyAMA0 --baudrate 57600``
    * - SITL Linux connected to the vehicle via UDP
      - ``mavproxy.py --master=127.0.0.1:14550``
    * - OSX computer connected to the vehicle via USB
