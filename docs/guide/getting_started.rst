@@ -51,6 +51,7 @@ installed when you get DroneKit-Python from the public PyPi repository:
 .. code:: bash
 
     sudo pip install droneapi
+
 	
 
 .. tip:: 
@@ -80,6 +81,7 @@ Install DroneKit-Python and its remaining dependencies (including `MAVProxy <htt
 
     pip install numpy pyparsing
     pip install droneapi
+	
 
 
 Installing DroneKit on Windows
@@ -141,12 +143,21 @@ For other connection options see the `MAVProxy documentation <http://tridge.gith
 Loading DroneKit
 ================
 
-*DroneKit* is implemented as a *MAVProxy* module. You can automatically load this into *MAVProxy*
-by adding it to the startup script (**~/.mavinit.scr**):
+*DroneKit* is implemented as a *MAVProxy* module. You can automatically load this module into *MAVProxy*
+by `adding it to the startup script <http://tridge.github.io/MAVProxy/mavinit.html>`_ (**mavinit.scr**).
+
+Linux/MAC OSX:
 
 .. code:: bash
 
     echo "module load droneapi.module.api" >> ~/.mavinit.scr
+
+Windows:
+
+.. code:: bash
+
+    echo module load droneapi.module.api >> %HOMEPATH%\AppData\Local\MAVProxy\mavinit.scr
+	
 	
 Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* every time you need it:
 
@@ -156,6 +167,7 @@ Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* eve
 	MANUAL> module load droneapi.module.api
 	DroneAPI loaded
 	MANUAL>
+
 
 
 .. _getting-started-running_examples:

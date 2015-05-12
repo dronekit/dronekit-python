@@ -71,7 +71,7 @@ Install the *WinPython* package and DroneKit on your Windows computer:
 
        pip uninstall python-dateutil
        pip install droneapi
-       echo "module load droneapi.module.api" >> ~/.mavinit.scr
+       echo module load droneapi.module.api >> %HOMEPATH%\AppData\Local\MAVProxy\mavinit.scr
 
 		
 Run an app
