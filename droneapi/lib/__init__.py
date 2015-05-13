@@ -13,15 +13,17 @@ The code snippet below shows how to obtain an instance of the (first) connected 
     # Get the first connected vehicle from the APIConnection
     vehicle = api.get_vehicles()[0]
 
-:py:class:`Vehicle <droneapi.lib.Vehicle>` provides access to vehicle *state* through python attributes (e.g. :py:attr:`Vehicle.location <droneapi.lib.Vehicle.location>`) 
+:py:class:`Vehicle <droneapi.lib.Vehicle>` provides access to vehicle *state* through python attributes 
+(e.g. :py:attr:`Vehicle.location <droneapi.lib.Vehicle.location>`) 
 and to settings/parameters though the :py:attr:`Vehicle.parameters <droneapi.lib.Vehicle.parameters>` attribute. 
-Asynchronous notification on vehicle state-change is available by registering observers (callbacks) for attribute or parameter changes.
+Asynchronous notification on vehicle attribute changes is available by registering observers.
 
 :py:class:`Vehicle <droneapi.lib.Vehicle>` provides two main ways to control vehicle movement and other operations:
     
 * Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` attribute 
   (see :py:class:`CommandSequence <droneapi.lib.CommandSequence>` for more information).
-* Direct control of movement outside of missions is also supported. To set a target position you can use :py:func:`CommandSequence.goto <droneapi.lib.CommandSequence.goto>`. 
+* Direct control of movement outside of missions is also supported. To set a target position you can use 
+  :py:func:`CommandSequence.goto <droneapi.lib.CommandSequence.goto>`. 
   Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages 
   (:py:func:`Vehicle.send_mavlink <droneapi.lib.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <droneapi.lib.Vehicle.message_factory>`).
 
@@ -119,7 +121,8 @@ class Location(object):
     """
     A location object.
 
-    The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_. The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
+    The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_. 
+    The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
 
     For example, a location object might be defined as:
 
@@ -154,10 +157,7 @@ class GPSInfo(object):
     :param IntType fix_type: 0-1: no fix, 2: 2D fix, 3: 3D fix
     :param IntType satellites_visible: Number of satellites visible.
 
-    .. todo:: FIXME: GPSInfo class - possibly normalize eph/epv?  report fix type as string?
-
-    .. todo:: Confirm the values returned if value unknown by GPS. Confirm descriptions. Confirm  units. For eph "If unknown, set to: TBD ?Max value of type" , "If unknown, set to: TBD  ?Max value of IntType?". fpr satellites visible:  If unknown, set to 255
-        
+    .. todo:: FIXME: GPSInfo class - possibly normalize eph/epv?  report fix type as string?        
     """
     def __init__(self, eph, epv, fix_type, satellites_visible):
         self.eph = eph
@@ -176,7 +176,9 @@ class VehicleMode(object):
     The flight mode determines the behaviour of the vehicle, and what commands it can obey. For example, 
     the AUTO mode is used (on all vehicle platforms) when executing stored waypoint missions.
 
-    The set of supported flight modes is vehicle-specific. For information about what modes are supported on each platform see: `Copter <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/>`_, `Plane <http://plane.ardupilot.com/wiki/flying/flight-modes/>`_, `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_.
+    The set of supported flight modes is vehicle-specific. For information about what modes are supported on each platform see: 
+    `Copter <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/>`_, `Plane <http://plane.ardupilot.com/wiki/flying/flight-modes/>`_, 
+    `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_.
 
     The :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` can be queried for the current mode. The code snippet below shows how to observe changes to the mode:
 	
@@ -349,8 +351,7 @@ class Vehicle(HasObservers):
     """
     The main vehicle API
 
-    Asynchronous notification on change of vehicle state is available by registering observers (callbacks) for attribute or
-    parameter changes.
+    Asynchronous notification on change of vehicle state is available by registering observers (callbacks) for attribute changes.
 
     Most vehicle state is exposed through python attributes (e.g. ``vehicle.location``). Most of these attributes are
     auto-populated based on the capabilities of the connected autopilot/vehicle.
@@ -371,12 +372,6 @@ class Vehicle(HasObservers):
 
         Current :py:class:`Location`.
 
-    .. py:attribute:: waypoint_home
-
-        Home waypoint/position (:py:class:`Command`).
-
-        .. todo:: Confirm the type - I think it is a command, not waypoint as originally listed in table. 
-
 
     .. py:attribute:: attitude
 
@@ -385,7 +380,7 @@ class Vehicle(HasObservers):
 
     .. py:attribute:: velocity
 
-        Current velocity as a three element list [ vx, vy, vz ] (in meter/sec).
+        Current velocity as a three element list ``[ vx, vy, vz ]`` (in meter/sec).
 
 
     .. py:attribute:: mode
@@ -408,21 +403,9 @@ class Vehicle(HasObservers):
         GPS position information (:py:class:`GPSInfo`).
 
 
-    .. py:attribute:: battery_0_soc
-
-        Not implemented (``double``).
-		
-        .. todo:: Not implemented - update when this closed: https://github.com/diydrones/dronekit-python/issues/71
-
-    .. py:attribute:: battery_0_volt
-
-        Not implemented (``double``).
-		
-        .. todo:: Not implemented - update when this closed: https://github.com/diydrones/dronekit-python/issues/71
-
     .. py:attribute:: armed
 
-        This attribute can be used to get and set the ``armed` state of the vehicle (``boolean``).
+        This attribute can be used to get and set the ``armed`` state of the vehicle (``boolean``).
 		
         The code below shows how to read the state, and to arm/disam the vehicle:
 		
@@ -438,13 +421,19 @@ class Vehicle(HasObservers):
             vehicle.armed = True
 
 
+    .. py:attribute:: mount_status
+
+        Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``. 
+		
+        The values in the list are set to ``None`` if no mount is configured.
+			
         
     .. py:attribute:: channel_override
 	
         .. warning::
 		
-            RC override may be useful for simulating user input and when implementing certain types of joystick control. It should not be used 
-            for direct control of vehicle channels unless there is no other choice! 
+            RC override may be useful for simulating user input and when implementing certain types of joystick control. 
+            It should not be used for direct control of vehicle channels unless there is no other choice! 
 
             Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally
             set the desired position or direction/speed.
@@ -532,6 +521,10 @@ class Vehicle(HasObservers):
         .. py:attribute:: ap_pin5_value
 
             ? double (0, 1, 2.3 etc...)
+			
+    .. todo:: Add battery and charge information if this is closed: https://github.com/diydrones/dronekit-python/issues/102
+	
+    .. todo:: Add waypoint_home attribute IF this is added: https://github.com/diydrones/dronekit-python/issues/105
 
     """
 
@@ -575,7 +568,10 @@ class Vehicle(HasObservers):
 
         Returns an object providing access to historical missions.
 
-        .. warning:: Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface). The :class:`Mission` class has an empty implementation in DroneKit-Python release 1. 
+        .. warning:: 
+		
+            Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a 
+            REST interface). The :class:`Mission` class has an empty implementation in DroneKit-Python release 1. 
 
         :param query_params: Some set of arguments that can be used to find a past mission
         :return: Mission - the mission object.
@@ -708,7 +704,9 @@ class Mission(object):
 
 class Parameters(HasObservers):
     """
-    This object is used to get and set the values of named parameters for a vehicle. See the following links for information on the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_).
+    This object is used to get and set the values of named parameters for a vehicle. See the following links for information about
+    the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, 
+    `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
 	
     Attribute names are generated automatically based on parameter names.  The example below shows how to get and set the value of a parameter.
     Note that 'set' operations are not guaranteed to be complete until :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
@@ -722,8 +720,15 @@ class Parameters(HasObservers):
         vehicle.parameters['THR_MIN']=100
         vehicle.flush()
 
-    .. todo:: Check above is correct. It isn't really attribute names, but the index key for parameters that are based on parameters names. Also, why does this HasObservers.
-    .. todo:: Why does this implement HasObservers? How would you observe them?
+    .. note:: 
+	
+        At time of writing ``Parameters`` does not implement the observer methods, and change notification for parameters
+        is not supported.
+		
+    .. todo:: 
+
+        Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
+        https://github.com/diydrones/dronekit-python/issues/107
     """
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
@@ -741,11 +746,18 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0,-34.364114, 149.166022, 30)
 
 	
-    :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network. Set this to zero (broadcast) when communicating with a companion computer. 
-    :param target_component: The id of a component the message should be routed to within the target system (for example, the camera). Set to zero (broadcast) in most cases.
-    :param seq: The sequence number within the mission (the autopilot will reject messages sent out of sequence). This should be set to zero as the API will automatically set the correct value when uploading a mission.
-    :param frame: The frame of reference used for the location parameters (x, y, z). In most cases this will be ``mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT``, which uses the WGS84 global coordinate system for latitude and longitude, but sets altitude as relative to the home position in metres (home altitude = 0). For more information `see the wiki here <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#frames_of_reference>`_.
-    :param command: The specific mission command (e.g. ``mavutil.mavlink.MAV_CMD_NAV_WAYPOINT``). The supported commands (and command parameters are listed `on the wiki <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/>`_.    
+    :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network. 
+        Set this to zero (broadcast) when communicating with a companion computer. 
+    :param target_component: The id of a component the message should be routed to within the target system 
+        (for example, the camera). Set to zero (broadcast) in most cases.
+    :param seq: The sequence number within the mission (the autopilot will reject messages sent out of sequence). 
+        This should be set to zero as the API will automatically set the correct value when uploading a mission.
+    :param frame: The frame of reference used for the location parameters (x, y, z). In most cases this will be 
+        ``mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT``, which uses the WGS84 global coordinate system for latitude and longitude, but sets altitude 
+        as relative to the home position in metres (home altitude = 0). For more information `see the wiki here 
+        <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#frames_of_reference>`_.
+    :param command: The specific mission command (e.g. ``mavutil.mavlink.MAV_CMD_NAV_WAYPOINT``). The supported commands (and command parameters 
+        are listed `on the wiki <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/>`_.    
     :param current: Set to zero (not supported).
     :param autocontinue: Set to zero (not supported).
     :param param1: Command specific parameter (depends on specific `Mission Command (MAV_CMD) <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/>`_).
@@ -767,7 +779,9 @@ class CommandSequence(object):
 
     Operations include 'array style' indexed access to the various contained waypoints.
 
-    The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` attribute. Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous; use :py:func:`wait_valid()` to block your thread until the download is complete.
+    The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` attribute. 
+    Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous; 
+    use :py:func:`wait_valid()` to block your thread until the download is complete.
 	
     The code to download the commands from a vehicle is shown below:
 	
@@ -783,7 +797,8 @@ class CommandSequence(object):
         cmds.download()
         cmds.wait_valid()
 
-    The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
+    The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until 
+    :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
 
     .. code:: python
 
