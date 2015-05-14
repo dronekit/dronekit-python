@@ -52,7 +52,21 @@ Set up the simulated vehicle
        APM: PreArm: RC not calibrated
        ...
 
+.. _disable-arming-checks:
 
+6. Load a default set of parameters and disable the arming check:
+
+   .. code:: bash
+       
+       STABILIZE>param load ../Tools/autotest/copter_params.parm
+       STABILIZE>param set ARMING_CHECK 0
+
+   .. note:: 
+   
+       SITL simulates (by default) a vehicle that may not pass the arming check. This change makes the simulated
+       vehicle more forgiving, which allows the examples to arm and run. 
+	   
+       You should never disable the arming check in a script or on a real vehicle.
 
 Install Python and DroneKit
 ===========================
