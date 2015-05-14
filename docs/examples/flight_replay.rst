@@ -10,7 +10,7 @@ Starting the demo
 
 In this case, we pick some public flight from `Droneshare <http://www.droneshare.com/>`_:
 
-.. image:: https://github.com/diydrones/droneapi-python/raw/master/example/documentation/flight_replay_example.png
+.. image:: flight_replay_example.png
 
 You'll notice that the mission number for this flight is 101.
 
