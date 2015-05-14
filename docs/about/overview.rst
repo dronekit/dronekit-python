@@ -31,7 +31,7 @@ The API provides classes and methods to:
 
 - Get a list of connected vehicles.
 - Get and set vehicle state/telemetry and parameter information.
-- Receive asynchronous notification of state/parameter changes.
+- Receive asynchronous notification of state changes.
 - Create and manage waypoint missions (AUTO mode).
 - Guide a UAV to specified position (GUIDED mode).
 - Send arbitrary custom messages to control UAV movement and other hardware (GUIDED mode).
