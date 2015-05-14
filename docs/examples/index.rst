@@ -1,9 +1,12 @@
+.. _example-toc:
+
 ========
 Examples
 ========
 
-This section contains a number of useful DroneKit-Python examples, which show how to use the API to 
-query vehicle state and parameters, and how to control a vehicle using missions and custom commands.
+This section contains the documentation for a number of useful DroneKit-Python examples. These demonstrate common use-cases, 
+and show (among other things) how to use the API to query vehicle state and parameters, and how to control a vehicle 
+during missions and outside missions using custom commands.
 
 
 .. toctree::
@@ -14,4 +17,5 @@ query vehicle state and parameters, and how to control a vehicle using missions 
    Follow Me <follow_me>
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
+
 

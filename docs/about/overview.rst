@@ -37,7 +37,7 @@ The API provides classes and methods to:
 - Send arbitrary custom messages to control UAV movement and other hardware (GUIDED mode).
 - Override RC channel settings.
 
-A complete API reference is available :ref:`here <api-reference>`.
+A complete API reference is available :ref:`here <api_reference>`.
 
 
 Technical support

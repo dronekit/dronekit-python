@@ -11,7 +11,6 @@ After reading, you will understand what the kit offers and the opportunities it 
    :maxdepth: 1
 
    overview
-   companion-computers
    release_notes
    contributing
    license
