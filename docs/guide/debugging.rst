@@ -15,6 +15,10 @@ more challenging:
 
 That said, it is possible to effectively debug DroneKit apps. The main methods are discussed below.
 
+.. note:: 
+
+    We are actively working to improve debugging on DroneKit-Python! You can track progress and suggestions
+    on `Github Issue #118 <https://github.com/diydrones/dronekit-python/issues/118>`_.
 
 
 Print/log statements
@@ -61,8 +65,7 @@ When you run the app, the code will stop at the marked line:
     AUTO> > c:\users\hamis_000\documents\vagranttesting\tmpdeleteme\small_demo.py(20)<module>()
     -> print "Location: %s" % v.location
 	
-Press **Enter** to bring up the **(Pdb)** prompt. This is where you can enter 
-`debugger commands <https://docs.python.org/2/library/pdb.html#debugger-commands>`_ to step through the code, show stack traces,
+Press **Enter** to bring up the **(Pdb)** prompt. This is where you can enter the commands to step through the code, show stack traces,
 etc. For example the console output below shows the **w** command being used to output the current stack trace.
 
 .. code:: bash
@@ -75,7 +78,9 @@ etc. For example the console output below shows the **w** command being used to 
     c:\users\hamis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\site-packages\droneapi\module\api.py(592)<lambda>()
     -> APIThread(self, lambda: execfile(args[1], g), args[1])
 	
-
+The available `debugger commands are listed here <https://docs.python.org/2/library/pdb.html#debugger-commands>`_. For more information 
+about *pdb* see the `Python Debugger site <https://docs.python.org/2/library/pdb.html>`_.
+	
 .. note::
 
     *Pdb* commands must be entered in the **(Pdb)** prompt. If you press "Enter" in an empty prompt the previous command will be called
