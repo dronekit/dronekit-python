@@ -1,42 +1,117 @@
+.. _example-vehicle-state:
+
 ======================
 Example: Vehicle State
 ======================
 
-This little demonstration just tells the vehicle to fly to a couple of different locations in the world.  You can edit the code to pick a latitude and longitude close to your position.
+This example shows how to get/set vehicle attribute, parameter and channel-override information, 
+how to observe vehicle attribute changes, and how to get the home position.
+
+The guide topic :ref:`vehicle-information` provides a more detailed explanation of how the API
+should be used.
+
 
 Running the example
 ===================
 
-Once Mavproxy is running and the API is loaded, you can run this small example by typing: ``api start simple_goto.py``
+The vehicle and DroneKit should be set up as described in the :ref:`quick-start` or :ref:`get-started`.
+If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
+that the example can run.
 
-It will tell your vehicle to start flying to a particular latitude and longitude stored in the file (though for safety the take-off command is not included - you must manually tell vehicle to fly).  On the mavproxy console you should see:
+Once MAVProxy is running and the API is loaded, you can start the example by typing: ``api start vehicle_state.py``.
 
-::
+.. note:: 
 
-	STABILIZE> api start simple_goto.py
-	STABILIZE> Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-	GUIDED> Mode GUIDED
-	APIThread-0 exiting...
-	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
+    The command above assumes you started the *MAVProxy* prompt in a directory containing the example script. If not, 
+    you will have to specify the full path to the script (something like):
+    ``api start /home/user/git/dronekit-python/example/vehicle_state/vehicle_state.py``.
+
+
+On the *MAVProxy* console you should see (something like):
+
+.. code:: bash
+
+    MAV> api start vehicle_state.py
+    STABILIZE>
+
+    Get all vehicle attribute values:
+     Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
+     Velocity: [0.06, -0.07, 0.0]
+     GPS: GPSInfo:fix=3,num_sat=10
+     groundspeed: 0.0
+     airspeed: 0.0
+     mount_status: [None, None, None]
+     Mode: STABILIZE
+     Armed: False
+    Set Vehicle.mode=GUIDED (currently: STABILIZE)
+     Waiting for mode change ...
+    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
+    GUIDED> Mode GUIDED
+    Set Vehicle.armed=True (currently: False)
+     Waiting for arming...
+    APM: ARMING MOTORS
+    APM: Initialising APM...
+    Got MAVLink msg: COMMAND_ACK {command : 400, result : 0}
+    ARMED
+
+    Add mode attribute observer for Vehicle.mode
+     Set mode=STABILIZE (currently: GUIDED)
+     Wait 2s so callback invoked before observer removed
+    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
+    STABILIZE> Mode STABILIZE
+     CALLBACK: Mode changed to:  STABILIZE
+
+    Get home location
+    Requesting 0 waypoints t=Fri May 15 11:35:58 2015 now=Fri May 15 11:35:58 2015
+     Home WP: MISSION_ITEM {target_system : 255, target_component : 0, seq : 0, frame : 0, command : 16, current : 0, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x : -35.3632621765, y : 149.165237427, z : 583.729980469}
+
+    Read vehicle param 'THR_MIN': 130.0
+    Write vehicle param 'THR_MIN' : 10
+    timeout setting THR_MIN to 10.000000
+    Read new value of param 'THR_MIN': 10.0
+
+    Overriding RC channels for roll and yaw
+     Current overrides are: {'1': 900, '4': 1000}
+     Channel default values: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
+     Cancelling override
+
+    Reset vehicle atributes/parameters and exit
+    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
+    APM: DISARMING MOTORS
+    Got MAVLink msg: COMMAND_ACK {command : 400, result : 0}
+    DISARMED
+    timeout setting THR_MIN to 130.000000
+    APIThread-0 exiting...
+
 
 
 How does it work?
 =================
 
-The key code in this demo is the following:
+The guide topic :ref:`vehicle-information` provides an explanation of how this code works.
 
-::
+.. INTERNAL COMMENT: 
 
-	vehicle.mode    = VehicleMode("GUIDED")
-	origin          = Location(-34.364114, 149.166022, 30, is_relative=True)
-
-	commands.goto(origin)
-	vehicle.flush()
-
-It tells the vehicle to fly to a specified lat/long and hover at that location (30 meters in the air).  ``is_relative=True`` is the default and is recommended - it means that the altitude (30 meters) is *relative* to the vehicle home location.  If you had set ``is_relative`` to ``false``, it would have told the vehicle to fly to a specified mean-sea-level which is probably not what you want unless you are next to an ocean.
+    Normally we'd highlight code here but all of it is worth of highlight, and we do that in the
+    linked guide
 
 
-Building on the basic vehicle control you just learned, we now show how to write a small web application that allows you to command a drone to fly to a particular location.
+Known issues
+============
+
+This example works around the :ref:`known issues in the API <api-information-known-issues>`. 
+Provided that the vehicle is connected and able to arm, it should run through to completion.
+
+Two cases where you may observe issues are:
+
+* You will see an error ``Timeout setting THR_MIN to 10.000000``. This can be ignored because the value is actually set. 
+  See `#12 Timeout error when setting a parameter <https://github.com/diydrones/dronekit-python/issues/12>`_ for information. 
+* When the observer sets the mode callback, it waits two seconds after changing the mode before removing the observer
+  (to ensure that the callback function is run before the observer is removed). In this time you may see the callback being 
+  called twice even though the mode is only changed once. 
+  See `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/diydrones/dronekit-python/issues/60>`_ 
+  for more information.
+
 
 
 Source code
@@ -47,244 +122,3 @@ The full source code at documentation build-time is listed below (`current versi
 .. literalinclude:: ../../example/vehicle_state/vehicle_state.py
    :language: python
 	
-	
-	
-SOME NOTES/EXAMPLES TO KEEP
-===========================
-
-NOTE - annoying timeout setting in parameter
-Get named vehicle parameters
-Read param THR_MIN: 10.0
-timeout setting THR_MIN to 10.000000
-Read param THR_MIN: 10.0
-Read param THR_MIN: 10.0
-
-MENTION VERY ANNOYING BUG WHEN THERE IS A DELAY - in observer
-
-# Another callback example - this time "generic"
-def attribute_callback(attribute):
-    print "Generic callback - '%s' changed: %s" % (attribute, getattr(v, attribute) )
-	
-
-# Set callback observer for mode
-v.add_attribute_observer('armed', attribute_callback)	
-
-
-
-
-
-
-################
-	
-
-
-#NOTES
-#YOu can't set armed in AUTO
-#YOu can't switch back to AUTO mode if you are armed?
-#YOu don't get an error for setting armed if in a mode you can't do it. So you need to check. 
-# Removed cmds.next - this should go in another example
-		
-		
-#print "Disarming..."
-#v.armed = False
-#v.flush()
-
-#Bugs
-#Perhaps report these in the documentation for the example? Include heartbeat bug.
-
-##################################
-
-Include missing bits that 
-
-##  Generic message handler
-##   NOTE: Use of set_mavlink_callback is not recommended. Use add_attribute_observer instead where possible.
-##         Observer commented out below because at time of writing there is no way to turn it off!
-
-def mavrx_debug_handler(message):
-    """A demo of receiving raw MAVLink messages"""
-    print "[Script] Received", message
-
-#print "[Script] Display all MAVLink messages"
-#v.set_mavlink_callback(mavrx_debug_handler)
-
-
-Missing 
-
-
-
-"""
-
-print "Disarming..."
-v.armed = False
-v.flush()
-while v.armed and not api.exit:
-    print "Waiting for disarming..."
-    time.sleep(1)
-
-
-print "Arming..."
-v.armed = True
-v.flush()
-while not v.armed and not api.exit:
-    print "Waiting for arming..."
-    time.sleep(1)
-	
-	
-# Example callback for when Vehicle.armed changes
-def armed_callback(attribute):
-    print "Armed-state changed: ", v.armed
-
-# Add observer for Vehicle.armed parameter		
-v.add_attribute_observer('armed', armed_callback)
-
-print "Disarming..."
-v.armed = False
-v.flush()
-while v.armed and not api.exit:
-    print "Waiting for disarming..."
-    time.sleep(1)
-
-
-print "Arming..."
-v.armed = True
-v.flush()
-while not v.armed and not api.exit:
-    print "Waiting for arming..."
-    time.sleep(1)
-
-v.remove_attribute_observer('armed', armed_callback)
-
-
-
-
-print "ADDING ATT OBSERVER"		
-v.add_attribute_observer('mode', attribute_callback)
-time.sleep(5)
-print "Now change the vehicle into AUTO mode"		
-v.mode = VehicleMode("AUTO")
-v.flush()
-time.sleep(5)
-print "MYMODE SHOULD BE AUTO:", v.mode
-
-print "Now change the vehicle into STABILIZE mode"
-v.mode = VehicleMode("STABILIZE")
-v.flush()
-time.sleep(5)
-
-v.remove_attribute_observer('mode', attribute_callback)
-print "ending in 5"
-time.sleep(5)
-print "ended"
-
-# Now download the vehicle waypoints
-cmds = v.commands
-cmds.download()
-cmds.wait_valid()
-print "Home WP: %s" % cmds[0]
-print "Current dest: %s" % cmds.next
-
-"""
-
-
-
-
-Scratchpad
-
-
-# Change the vehicle into GUIDED mode
-print " CHANGE TO GUIDED MODE" 
-print " Initial mode: %s" % v.mode.name
-v.mode = VehicleMode("GUIDED")
-# Always call flush to guarantee that previous writes to the vehicle have taken place
-v.flush()
-
-while not v.mode.name=='GUIDED' and not api.exit:
-    print " mode: %s" % v.mode.name
-    print " Waiting for guided..."
-    time.sleep(1)
-
-
-	
-# Change the vehicle into AUTO mode
-print " CHANGE TO AUTO MODE" 
-print " Initial mode: %s" % v.mode.name
-v.mode = VehicleMode("AUTO")
-# Always call flush to guarantee that previous writes to the vehicle have taken place
-v.flush()
-
-while not v.mode.name=='AUTO' and not api.exit:
-    print " mode: %s" % v.mode.name
-    print " Waiting for AUTO..."
-    time.sleep(1)
-	
-	
-# Change the vehicle into STABILIZE mode
-print " CHANGE TO STABILIZE MODE" 
-print " Initial mode: %s" % v.mode
-v.mode = VehicleMode("STABILIZE")
-# Always call flush to guarantee that previous writes to the vehicle have taken place
-v.flush()
-
-while not v.mode.name=='STABILIZE' and not api.exit:
-    print " mode: %s" % v.mode.name
-    print "Waiting for stabilize..."
-    time.sleep(1)
-	
-	
-	
-print "NEW TEST"
-
-print " Set mode GUIDED - current %s" % v.mode.name
-v.mode = VehicleMode("GUIDED")
-v.flush()
-print " Set mode AUTO - current %s" % v.mode.name
-v.mode = VehicleMode("AUTO")
-v.flush()
-print " Set mode STABILIZE - current %s" % v.mode.name
-v.mode = VehicleMode("STABILIZE")
-v.flush()	
-print " Set mode GUIDED - current %s" % v.mode.name
-v.mode = VehicleMode("GUIDED")
-v.flush()
-print " DONE current %s" % v.mode.name
-time.sleep(1)
-print " DONE current %s" % v.mode.name
-time.sleep(1)
-print " DONE current %s" % v.mode.name
-time.sleep(1)
-print " DONE current %s" % v.mode.name
-time.sleep(1)
-print " DONE current %s" % v.mode.name
-
-print " Arming vehicle..."
-v.armed = True
-v.flush()
-
-
-
--------
-print "  New Mode: %s" % v.mode
-time.sleep(5)
-print " Arming vehicle..."
-v.armed = True
-v.flush()
-print "  Armed: %s" % v.armed
-time.sleep(5)
-print " Disarming vehicle..."
-v.armed = False
-v.flush()
-print "  Armed: %s" % v.armed
-
-time.sleep(5)
-
-
-
-
-print "Disarming..."
-v.armed = False
-v.flush()
-
-#remove observer
-v.remove_attribute_observer('armed', attribute_callback)
-
-print 'ENDED'
