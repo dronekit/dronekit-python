@@ -20,7 +20,7 @@ This topic explains how to get, set and observe vehicle state and parameter info
 Attributes
 ==========
 
-Vehicle state information is generally exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
+Vehicle state information is exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
 "standard" attributes: 
 :py:attr:`Vehicle.location <droneapi.lib.Vehicle.location>`, 
 :py:attr:`Vehicle.attitude <droneapi.lib.Vehicle.attitude>`,
@@ -59,9 +59,10 @@ The code fragment below shows how to read and print all the attributes. The valu
     print "Mode: %s" % v.mode.name    # settable
     print "Armed: %s" % v.armed    # settable
 
-If one of these attributes cannot be retrieved or is invalid (for example, if there was no GPS lock or if no camera mount is configured) then the returned object will contain
-``None`` values for its members (e.g. :py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>` would return
-a :py:class:`GPSInfo <droneapi.lib.GPSInfo>` with ``None`` values for ``eph``, ``satellites_visible`` etc.)
+If one of these attributes cannot be retrieved or is invalid then the returned object will contain
+``None`` values for its members (for example, if there was no GPS lock then 
+:py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>` would return a :py:class:`GPSInfo <droneapi.lib.GPSInfo>` 
+with ``None`` values for ``eph``, ``satellites_visible`` etc.)
 	
 .. todo:: we need to be able to verify mount_status works/setup.
 
@@ -75,8 +76,8 @@ Setting attributes
 Only the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>` 
 attributes can be written.
 
-The attributes are set simply by assigning a value, and then calling :py:func:`Vehicle.flush() <droneapi.lib.Vehicle.flush>`
-to force DroneKit to send outstanding messages.
+The attributes are set by assigning a value. Calling :py:func:`Vehicle.flush() <droneapi.lib.Vehicle.flush>`
+then forces DroneKit to send outstanding messages.
 
 .. code:: python
 
@@ -117,14 +118,14 @@ monitor changes to velocity and other vehicle state without the need for polling
 
 .. warning::
 
-    There is currently `a defect #60 <https://github.com/diydrones/dronekit-python/issues/60>`_ that means that after an 
-    observer is triggered, the notification function is called on every heartbeat until it the observer removed (whether or not the value changes).
+    There is currently `a defect (#60) <https://github.com/diydrones/dronekit-python/issues/60>`_ that means that after an 
+    observer is triggered, the callback function is run on every heartbeat (whether or not the observed attribute changes).
 
 Observers are added using :py:func:`Vehicle.add_attribute_observer() <droneapi.lib.Vehicle.add_attribute_observer>`, 
 specifying the name of the attribute to observe and a callback function. The same string is passed to the callback
 when it is notified. Observers are removed using :py:func:`remove_attribute_observer() <droneapi.lib.Vehicle.remove_attribute_observer>`.
 
-The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <droneapi.lib.Vehicle.location>` attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the it is first notified.
+The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <droneapi.lib.Vehicle.location>` attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
 
 .. code:: python
      
@@ -150,14 +151,17 @@ The code snippet below shows how to add (and remove) a callback function to obse
 Parameters
 ==========
 
-Vehicle parameters (settings) are stored in the autopilot EEPROM, and control vehicle configuration and behaviour. These can be read and set using the 
-:py:attr:`Vehicle.parameters <droneapi.lib.Vehicle.parameters>` attribute (and instance of :py:class:`Parameters <droneapi.lib.Parameters>`).
+Vehicle parameters provide the information used to configure the autopilot for the vehicle-specific hardware/capabilities. 
+These can be read and set using the :py:attr:`Vehicle.parameters <droneapi.lib.Vehicle.parameters>` 
+attribute (a :py:class:`Parameters <droneapi.lib.Parameters>` object).
 
 .. tip:: 
 
-    The full lists of what parameters are supported on each platform are available in the topics `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, 
-    `Plane Parameters <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, and `Rover Parameters <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_. The lists are 
-    automatically generated from the latest ArduPilot source code, and may contain parameters which are not yet in the stable released versions of the code.
+    `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, 
+    `Plane Parameters <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, 
+    and `Rover Parameters <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_ list all the supported parameters for each platform. 
+    The lists are automatically generated from the latest ArduPilot source code, and may contain parameters 
+    that are not yet in the stable released versions of the code.
 
 
 
@@ -214,8 +218,8 @@ The *Home location* is set when a vehicle is armed and first gets a good locatio
 as the target when the vehicle does a "return to launch". In Copter missions (and most Plane) missions, the altitude of 
 waypoints is set relative to this position.
 
-Unlike other Vehicle state information, the home location is accessed as the 0 index value of 
-:py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>`, as shown below:
+Unlike other vehicle state information, the home location is accessed as the 0 index value of 
+:py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>`:
 
 .. code:: python
     
@@ -236,6 +240,8 @@ Discommended APIs
 This section describes methods that we recommend you do not use! In general they are provided to handle the (hopefully rare)
 cases where the "proper" API is missing some needed functionality.
 
+If you have to use these methods please `provide feedback explaining why <https://github.com/diydrones/dronekit-python/issues>`_.
+
 
 .. _vehicle_state_set_mavlink_callback:
 
@@ -247,8 +253,7 @@ notification when any *MAVLink* packet is received from this vehicle.
 
 .. tip::
 
-    Use :ref:`attribute observers <vehicle_state_observe_attributes>` instead of this method where possible. If you have 
-    to use this method please `provide feedback explaining why <https://github.com/diydrones/dronekit-python/issues>`_.
+    Use :ref:`attribute observers <vehicle_state_observe_attributes>` instead of this method where possible. 
 
 
 The code snippet below shows how to set a “demo” callback function as the callback handler:
