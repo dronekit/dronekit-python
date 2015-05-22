@@ -823,10 +823,27 @@ class CommandSequence(object):
             lat, lon, altitude)
         cmds.add(cmd)
         vehicle.flush()	
+		
 
+    .. py:function:: takeoff(altitude)
+	
+        .. note:: This function should only be used on Copter vehicles.
 
+        Take off and fly the vehicle to the specified altitude (in metres) and then wait for another command. 
 
-    .. todo:: HW Add CommandSequence.takeoff - should be in public API: https://github.com/diydrones/dronekit-python/issues/64
+        The vehicle must be in ``GUIDED`` mode and armed before this is called.
+
+        There is no mechanism for notification when the correct altitude is reached, and if another command arrives
+        before that point (e.g. :py:func:`goto`) it will be run instead. 
+
+        .. warning:: 
+
+            Apps should code to ensure that the vehicle will reach a safe altitude before other commands are executed.
+            A good example is provided in the guide topic :ref:`taking-off`.
+
+        :param altitude: Target height, in metres.
+
+        .. todo:: This is a hack. The actual function should be defined here. See https://github.com/diydrones/dronekit-python/issues/64
     """
 
     def download(self):
@@ -844,6 +861,7 @@ class CommandSequence(object):
 		This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
 		'''
         pass
+
 
     def goto(self, location):
         '''
