@@ -13,6 +13,7 @@ during missions and outside missions using custom commands.
    :maxdepth: 1
 
    running_examples
+   Vehicle State <vehicle_state>
    Simple Goto <simple_goto>
    Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>

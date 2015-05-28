@@ -181,29 +181,36 @@ Running an app/example
 Once the *MAVProxy* console is running, you can start a script by entering: **api start full_path_and_filename_to_script**. If you started
 *MAVProxy* in the same directory as the script you can just specify its filename.
 
-.. warning:: This example doesn't arm the motors, but in general don't run examples indoors on a real vehicle unless you have first removed its propellers. 
+.. warning:: 
 
-For this example, download :download:`small_demo.py <../../example/small_demo/small_demo.py>`. This example just reads some vehicle state 
-and then changes the vehicle mode to AUTO. Start *MAVProxy*  in the same directory as **small_demo.py**:
+    This example doesn't take off, but it does arm the motors. Don't run any example indoors on a real vehicle 
+    unless you have first removed its propellers. 
+
+For this example, download :download:`vehicle_state.py <../../example/vehicle_state/vehicle_state.py>` (the 
+:ref:`example <example-vehicle-state>` just reads and writes some :ref:`vehicle state and parameters <vehicle-information>`).
+Start *MAVProxy*  in the same directory as **vehicle_state.py**.
+
+The output should look something like that shown below
 
 .. code-block:: bash
    :emphasize-lines: 1
-  
-	MANUAL> api start small_demo.py
-	Mode: VehicleMode:MANUAL
-	Location: Location:lat=21.2938874,lon=-157.8501416,alt=0.189999997616,is_relative=None
-	Attitude: Attitude:-0.286077767611,-3.01412272453,0.261489063501
-	GPS: GPSInfo:fix=1,num_sat=0
-	Param: 75.0
-	waiting for download
-	Requesting 10 waypoints t=Mon Mar 31 09:41:39 2014 now=Mon Mar 31 09:41:39 2014
-	Home WP: MISSION_ITEM {target_system : 255, target_component : 0, seq : 0, frame : 0, command : 16, current : 1, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x : 21.2921352386, y : -157.848922729, z : 89.1800003052}
-	APIThread-0 exiting...
-	APM: Non-Nav command ID updated to #255 idx=1
-	waypoint 1
-	AUTO>
 
-The vehicle is now in AUTO mode.
+    MANUAL> api start vehicle_state.py
+    STABILIZE>
+
+    Get all vehicle attribute values:
+     Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
+     Velocity: [0.06, -0.07, 0.0]
+     GPS: GPSInfo:fix=3,num_sat=10
+     groundspeed: 0.0
+     airspeed: 0.0
+     mount_status: [None, None, None]
+     Mode: STABILIZE
+     Armed: False
+    Set Vehicle.mode=GUIDED (currently: STABILIZE)
+     Waiting for mode change ...
+    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
+    ...
 
 
 
