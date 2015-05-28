@@ -173,14 +173,23 @@ class VehicleMode(object):
     """
     This object is used to get and set the current "flight mode". 
 	
-    The flight mode determines the behaviour of the vehicle, and what commands it can obey. For example, 
-    the AUTO mode is used (on all vehicle platforms) when executing stored waypoint missions.
+    The flight mode determines the behaviour of the vehicle and what commands it can obey.
+    The recommended flight modes for *DroneKit-Python* apps depend on the vehicle type:
+	
+    * Copter apps should use ``AUTO`` mode for "normal" waypoint missions and ``GUIDED`` mode otherwise.
+    * Plane and Rover apps should use the ``AUTO`` mode in all cases, re-writing the mission commands if "dynamic" 
+      behaviour is required (they support only a limited subset of commands in ``GUIDED`` mode).
+    * Some modes like ``RETURN_TO_LAUNCH`` can be used on all platforms. Care should be taken 
+      when using manual modes as these may require remote control input from the user.
+	
+    The available set of supported flight modes is vehicle-specific (see 
+    `Copter <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/>`_,
+    `Plane <http://plane.ardupilot.com/wiki/flying/flight-modes/>`_, 
+    `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_). If an unsupported mode is set the script
+    will raise a ``KeyError`` exception.
 
-    The set of supported flight modes is vehicle-specific. For information about what modes are supported on each platform see: 
-    `Copter <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/>`_, `Plane <http://plane.ardupilot.com/wiki/flying/flight-modes/>`_, 
-    `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_.
-
-    The :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` can be queried for the current mode. The code snippet below shows how to observe changes to the mode:
+    The :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` attribute can be queried for the current mode. The code snippet
+    below shows how to read (print) and observe changes to the mode:
 	
     .. code:: python
 
@@ -200,6 +209,8 @@ class VehicleMode(object):
 		
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
+
+    For more information on getting/setting/observing the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
 
     .. py:attribute:: name 
 
