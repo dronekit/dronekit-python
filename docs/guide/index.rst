@@ -11,4 +11,5 @@ The guide contains how-to documentation for using the DroneKit-Python API. These
     getting_started
     companion-computers
     vehicle_state_and_parameters
+    taking_off
     debugging
