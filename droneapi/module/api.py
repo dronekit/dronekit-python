@@ -7,7 +7,7 @@ from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
-    Attitude, GPSInfo, Parameters, CommandSequence, APIException
+    Attitude, GPSInfo, Parameters, CommandSequence, APIException, Battery
 
 # Enable logging here (until this code can be moved into mavproxy)
 logging.basicConfig(level=logging.DEBUG)
@@ -173,6 +173,10 @@ class MPVehicle(Vehicle):
     @property
     def location(self):
         return Location(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+
+    @property
+    def battery(self):
+        return Battery(self.__module.voltage, self.__module.current, self.__module.level)
 
     @property
     def velocity(self):
@@ -365,6 +369,10 @@ class APIModule(mp_module.MPModule):
         self.mount_yaw = None
         self.mount_roll = None
 
+        self.voltage = None
+        self.current = None
+        self.level = None
+
         self.rc_readback = {}
 
         self.last_waypoint = 0
@@ -436,6 +444,11 @@ class APIModule(mp_module.MPModule):
             self.yawspeed = m.yawspeed
             self.rollspeed = m.rollspeed
             self.__on_change('attitude')
+        elif typ == "SYS_STATUS":
+            self.voltage = m.voltage_battery
+            self.current = m.current_battery
+            self.level = m.battery_remaining
+            self.__on_change('battery')
         elif typ == "HEARTBEAT":
             self.__on_change('mode', 'armed')
         elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:

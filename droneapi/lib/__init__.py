@@ -169,6 +169,26 @@ class GPSInfo(object):
         return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type, self.satellites_visible)
 
 
+class Battery(object):
+    """
+    Battery info available
+
+    :param battery_voltage: Battery voltage in millivolts
+    :param battery_current: Battery current, in 10 * milliamperes, -1: autopilot does not measure the current
+    :param battery_level: Remaining battery energy, -1: autopilot estimate the remaining battery
+    """
+    def __init__(self, voltage, current, level):
+        self.voltage = float(voltage) / 1000.0
+        if current != -1:
+            self.current = float(current) / 100.0
+        else:
+            self.current = current
+        self.level = level
+
+    def __str__(self):
+        return "Battery voltage: {}, current: {}, level: {}".format(self.voltage, self.current, self.level)
+
+
 class VehicleMode(object):
     """
     This object is used to get and set the current "flight mode". 
