@@ -18,14 +18,14 @@ For documentation on how to use this API please see:
 * The [python autodocs](http://python.dronekit.io/automodule.html)
 * The [python code](droneapi/lib/__init__.py) itself
 * Answers to [technical support queries](http://stackoverflow.com/questions/tagged/dronekit-python) on Stack Overflow.
-* Example code can be found here: ['example/'](example/)
-    * Beginner ['hello world'](example/small_demo/small_demo.py)
-    * Beginner ['simple_goto'](example/simple_goto/simple_goto.py)
-    * Beginner ['flight_replay'](example/flight_replay/flight_replay.py)
-    * Beginner ['gcs'](example/gcs/microgcs.py)
-    * Beginner ['sketch'](example/sketch/client_sketch.py)
-    * Advanced ['drone_delivery'](example/drone_delivery/)
-    * Advanced ['follow-me'](example/follow_me/)
+* Example code can be found here: ['example/'](examples/)
+    * Beginner ['hello world'](examples/small_demo/small_demo.py)
+    * Beginner ['simple_goto'](examples/simple_goto/simple_goto.py)
+    * Beginner ['flight_replay'](examples/flight_replay/flight_replay.py)
+    * Beginner ['gcs'](examples/gcs/microgcs.py)
+    * Beginner ['sketch'](examples/sketch/client_sketch.py)
+    * Advanced ['drone_delivery'](examples/drone_delivery/)
+    * Advanced ['follow-me'](examples/follow_me/)
 
 [Stack Overflow](http://stackoverflow.com/questions/tagged/dronekit-python) is the best place to ask for *technical support* on how to use the API.
 
