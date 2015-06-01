@@ -91,10 +91,10 @@ Install the *WinPython* package and DroneKit on your Windows computer:
 Run an app
 ==========
 
-This section shows how to run a DroneKit-Python app in `MAVProxy <http://tridge.github.io/MAVProxy/>`_ (*DroneKit* is implemented as a MAVProxy module). For this example, download :download:`small_demo.py <../example/small_demo/small_demo.py>` or one of our :ref:`other examples <example-toc>`.
+This section shows how to run a DroneKit-Python app in `MAVProxy <http://tridge.github.io/MAVProxy/>`_ (*DroneKit* is implemented as a MAVProxy module). For this example, download :download:`vehicle_state.py <../examples/vehicle_state/vehicle_state.py>` or one of our :ref:`other examples <example-toc>`.
 
 	   
-7. Navigate to the directory containing the script you want to run (e.g. **small_demo.py**).
+7. Navigate to the directory containing the script you want to run (e.g. **vehicle_state.py**).
 
 8. Start *MAVProxy*, specifying the URL where SITL will send UDP packets as shown:
 
@@ -114,17 +114,17 @@ This section shows how to run a DroneKit-Python app in `MAVProxy <http://tridge.
 
 
 	   
-9. Start the *small_demo.py* example (as this is in the directory in which you ran *MAVProxy*, no file path is needed):
+9. Start the *vehicle_state.py* example (as this is in the directory in which you ran *MAVProxy*, no file path is needed):
 
    .. code:: bash
 
-       STABILIZE> api start small_demo.py
+       STABILIZE> api start vehicle_state.py
 
    The output should look something like that shown below:
 
    .. code:: bash
  
-       STABILIZE> api start /vagrant/small_demo.py
+       STABILIZE> api start /vagrant/vehicle_state.py
        STABILIZE> Mode: VehicleMode:STABILIZE
        Location: Location:lat=-35.363261,lon=149.16523,alt=0.0,is_relative=False
        ...

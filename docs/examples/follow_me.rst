@@ -18,7 +18,7 @@ Before running this demo you'll need to make sure your computer has the gpsd ser
 
     apt-get install gpsd gpsd-clients
 
-You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running *droneapi-python/example/run-fake-gps.sh*.
+You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running *droneapi-python/examples/run-fake-gps.sh*.
 
 Once your GPS is plugged in you can start follow-me by running the following command inside of MAVProxy:
 
@@ -42,7 +42,7 @@ Next, take a look at the full :ref:`api_reference` for more information.
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/follow_me/follow_me.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/follow_me/follow_me.py>`_):
 
-.. include:: ../../example/follow_me/follow_me.py
+.. include:: ../../examples/follow_me/follow_me.py
     :literal:

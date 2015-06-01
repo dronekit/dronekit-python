@@ -52,7 +52,7 @@ Looking at the code
 Using attribute observers
 -------------------------
 
-All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/diydrones/droneapi-python/blob/master/example/drone_delivery/drone_delivery.py>`_ calls:
+All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/diydrones/droneapi-python/blob/master/examples/drone_delivery/drone_delivery.py>`_ calls:
 
 :: 
 
@@ -84,7 +84,7 @@ Next we'll look at the basics of using the webservice and the local vehicle API 
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/drone_delivery/drone_delivery.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/drone_delivery/drone_delivery.py>`_):
 
-.. include:: ../../example/drone_delivery/drone_delivery.py
+.. include:: ../../examples/drone_delivery/drone_delivery.py
     :literal:
