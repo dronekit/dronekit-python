@@ -91,7 +91,7 @@ Install the *WinPython* package and DroneKit on your Windows computer:
 Run an app
 ==========
 
-This section shows how to run a DroneKit-Python app in `MAVProxy <http://tridge.github.io/MAVProxy/>`_ (*DroneKit* is implemented as a MAVProxy module). For this example, download :download:`vehicle_state.py <../example/vehicle_state/vehicle_state.py>` or one of our :ref:`other examples <example-toc>`.
+This section shows how to run a DroneKit-Python app in `MAVProxy <http://tridge.github.io/MAVProxy/>`_ (*DroneKit* is implemented as a MAVProxy module). For this example, download :download:`vehicle_state.py <../examples/vehicle_state/vehicle_state.py>` or one of our :ref:`other examples <example-toc>`.
 
 	   
 7. Navigate to the directory containing the script you want to run (e.g. **vehicle_state.py**).

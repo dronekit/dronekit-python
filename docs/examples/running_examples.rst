@@ -17,7 +17,7 @@ The easiest way to get the DroneKit example source code is to clone the **dronek
 
     git clone http://github.com/diydrones/droneapi-python.git
 
-The examples are stored in the subdirectories of **/dronekit-python/example/**.
+The examples are stored in the subdirectories of **/dronekit-python/examples/**.
 	
 
 

@@ -186,7 +186,7 @@ Once the *MAVProxy* console is running, you can start a script by entering: **ap
     This example doesn't take off, but it does arm the motors. Don't run any example indoors on a real vehicle 
     unless you have first removed its propellers. 
 
-For this example, download :download:`vehicle_state.py <../../example/vehicle_state/vehicle_state.py>` (the 
+For this example, download :download:`vehicle_state.py <../../examples/vehicle_state/vehicle_state.py>` (the 
 :ref:`example <example-vehicle-state>` just reads and writes some :ref:`vehicle state and parameters <vehicle-information>`).
 Start *MAVProxy*  in the same directory as **vehicle_state.py**.
 

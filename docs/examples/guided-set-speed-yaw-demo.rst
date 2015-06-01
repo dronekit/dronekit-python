@@ -25,7 +25,7 @@ Once MAVProxy is running and the API is loaded, you can run the example by typin
 If you started the DroneKit MAVProxy prompt in a directory containing the example script you can start it using:
 ``api start guided_set_speed_yaw.py``. 
 Otherwise you may have to specify the full path (something like):
-``api start /home/user/git/dronekit-python/example/guided_set_speed_yaw/guided_set_speed_yaw.py``.
+``api start /home/user/git/dronekit-python/examples/guided_set_speed_yaw/guided_set_speed_yaw.py``.
 
 The program will automatically arm the vehicle and start the demo. First it waits for a GPS lock 
 (``Waiting for GPS...``), then to receive a location update (``Waiting for location...``) and finally 
@@ -49,7 +49,7 @@ After starting the simulator, the console output should look something like:
     -> module load droneapi.module.api
     DroneAPI loaded
     Loaded module droneapi.module.api
-    -> api start /home/user/git/dronekit-python/example/guided_set_speed_yaw/guided_set_speed_yaw.py
+    -> api start /home/user/git/dronekit-python/examples/guided_set_speed_yaw/guided_set_speed_yaw.py
     Waiting for GPS...
     Loaded module console
     Loaded module map
@@ -198,7 +198,7 @@ At the time of writing, the acceleration and yaw parameters of
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/guided_set_speed_yaw/guided_set_speed_yaw.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/guided_set_speed_yaw/guided_set_speed_yaw.py>`_):
 
-.. include:: ../../example/guided_set_speed_yaw/guided_set_speed_yaw.py
+.. include:: ../../examples/guided_set_speed_yaw/guided_set_speed_yaw.py
     :literal:
