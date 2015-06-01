@@ -24,7 +24,7 @@ Once MAVProxy is running and the API is loaded, you can start the example by typ
 
     The command above assumes you started the *MAVProxy* prompt in a directory containing the example script. If not, 
     you will have to specify the full path to the script (something like):
-    ``api start /home/user/git/dronekit-python/example/vehicle_state/vehicle_state.py``.
+    ``api start /home/user/git/dronekit-python/examples/vehicle_state/vehicle_state.py``.
 
 
 On the *MAVProxy* console you should see (something like):
@@ -117,8 +117,8 @@ Two cases where you may observe issues are:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/example/simple_goto/simple_goto.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
 	
-.. literalinclude:: ../../example/vehicle_state/vehicle_state.py
+.. literalinclude:: ../../examples/vehicle_state/vehicle_state.py
    :language: python
 	
