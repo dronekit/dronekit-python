@@ -38,9 +38,10 @@ On the *MAVProxy* console you should see (something like):
      Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
      Velocity: [0.06, -0.07, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
-     groundspeed: 0.0
-     airspeed: 0.0
-     mount_status: [None, None, None]
+     Groundspeed: 0.0
+     Airspeed: 0.0
+     Mount status: [None, None, None]
+     Battery: Battery voltage: 12590, current: 0, level: 99
      Mode: STABILIZE
      Armed: False
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
