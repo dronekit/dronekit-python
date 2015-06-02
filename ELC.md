@@ -88,7 +88,7 @@ STABILIZE>
 
 ### Code to refer-to/use/edit
 
-We will be running/editing [this](example/simple_goto/simple_goto.py) code.
+We will be running/editing [this](examples/simple_goto/simple_goto.py) code.
 
 ### Commands to start MAVProxy
 
@@ -98,7 +98,7 @@ Launch the mavproxy shell (do this in a new window) that we will use to run our 
 
 # We downloaded the droneapi-python repo earlier, to have access
 # to the example code.
-cd dronekit-python/example/simple_goto/
+cd dronekit-python/examples/simple_goto/
 
 # Start mavproxy - connecting to the mavlink port in the simulator
 mavproxy.py --master=localhost:14550 --map --console
@@ -140,13 +140,13 @@ A ground control station is one of the most critical tools for managing a drone.
 
 ### Code to refer-to/use/edit
 
-We will be running/editing [this](example/gcs/microgcs.py) code.
+We will be running/editing [this](examples/gcs/microgcs.py) code.
 
 ### Commands to run
 After launching MAVProxy (see previous lesson), just run "api start microgcs.py"
 
 ```
-kevinh@kevin-server:~/development/drone/droneapi-python/example/gcs$ mavproxy.py --master=localhost:14550 --map --console
+kevinh@kevin-server:~/development/drone/droneapi-python/examples/gcs$ mavproxy.py --master=localhost:14550 --map --console
 Logging to mav.tlog
 Running script /home/kevinh/.mavinit.scr
 DroneAPI loaded
@@ -159,7 +159,7 @@ STABILIZE> api start microgcs.py
 
 You should then see our small crummy GUI:
 
-![screenshot](example/gcs/screenshot.png)
+![screenshot](examples/gcs/screenshot.png)
 
 Clicking on either of the two buttons should tell the vehicle to change flight modes.
 
@@ -179,4 +179,4 @@ vehicle it is best to have a safety pilot.  Let that person use the RC controlle
 
 ## More resources / Next steps
 
-* [@mrpollo](https://github.com/mrpollo) and [@kaitlynhova](https://github.com/kaitlynhova) have prepared a very nice site with more tutorials and our python documentation at [python.dronekit.io](http://python.dronekit.io/).  
+* [@mrpollo](https://github.com/mrpollo) and [@kaitlynhova](https://github.com/kaitlynhova) have prepared a very nice site with more tutorials and our python documentation at [python.dronekit.io](http://python.dronekit.io/).
