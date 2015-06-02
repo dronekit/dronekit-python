@@ -26,5 +26,5 @@ setup (name = 'droneapi',
                     ],
        license='apache',
        packages = ['droneapi', 'droneapi.module', 'droneapi.lib' ],
-       # doesn't work: package_data={'droneapi': ['example/*']},
+       # doesn't work: package_data={'droneapi': ['examples/*']},
        ext_modules = ext_modules)

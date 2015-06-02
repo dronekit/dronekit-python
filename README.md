@@ -18,7 +18,7 @@ For documentation on how to use this API please see:
 * The [python autodocs](http://python.dronekit.io/automodule.html)
 * The [python code](droneapi/lib/__init__.py) itself
 * Answers to [technical support queries](http://stackoverflow.com/questions/tagged/dronekit-python) on Stack Overflow.
-* Example code can be found here: ['example/'](examples/)
+* Example code can be found here: ['examples/'](examples/)
     * Beginner ['hello world'](examples/small_demo/small_demo.py)
     * Beginner ['simple_goto'](examples/simple_goto/simple_goto.py)
     * Beginner ['flight_replay'](examples/flight_replay/flight_replay.py)
