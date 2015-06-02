@@ -34,6 +34,12 @@ Installing DroneKit
 
 *DroneKit* can be installed on Linux, Windows and Mac OSX. 
 
+.. tip::  *pip* will be used to install pacakages. It can be installed by executing the following
+    
+.. code:: bash
+
+    sudo easy_install pip
+
 
 Installing DroneKit on Linux
 ----------------------------
