@@ -2,7 +2,7 @@
 
 [![Dependency Status](https://www.codeship.io/projects/869efe80-ae1a-0131-b6a4-527e64ff213a/status)](https://www.codeship.io/projects/19685)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/diydrones/droneapi-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/diydrones/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This package contains the python language bindings for the drone API and the associated MAVProxy module.
 
