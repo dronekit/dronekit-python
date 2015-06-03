@@ -15,11 +15,12 @@ This documentation provides everything you need to :ref:`get started <get-starte
 Contents:
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 4
 
     Introduction <about/index>
     quick_start
     guide/index
     examples/index
+    contributing/index
     API Reference <automodule>
 

@@ -1,41 +1,37 @@
-.. _contributing:
-
-============
-Contributing
-============
-
-DroneKit is an open-source project. We welcome any contribution that will improve the API — adding new features and making it easier to use. 
-
-
-Getting started
-================
-
-The dronekit-python project is `hosted on Github here <https://github.com/diydrones/dronekit-python/>`_. This where you get the source code, and is the best place to raise `bug reports and enhancement suggestions <https://github.com/diydrones/dronekit-python/issues>`_.
-
-.. tip:: Before starting new work, first create an issue in Github so it can be tracked and discussed! 
-
-In addition to creating defect reports, a good starting point is to work on the `open issues <https://github.com/diydrones/dronekit-python/issues>`_ on Github. In particular, :ref:`documentation issues <contributing-to-documentation>` can be resolved without a deep knowledge of the code, and will help you learn more about the project.
-
-
-How to submit changes
-=====================
-
-Contributors should fork the main project Github repository and contribute changes back to the project using pull requests:
-
-* Ideas should be discussed with the project team first (using an issue) 
-* Pull requests should be as small and focussed as possible to make them easier to review
-* Rebase your code against the main project before submission to make integration easier
-
-
-
 .. _contributing-to-documentation:
 
-Contributing to the API documentation
-=====================================
+=================================
+Contributing to the Documentation
+=================================
 
-One of the best ways that you can help is by improving this documentation.  
+One of the best ways that you can help is by improving this documentation.  Here we explain
+the documentation system, how to build the documents locally, and how to submit your changes.
 
-The documentation source files are `stored in Github <https://github.com/diydrones/dronekit-python/tree/master/docs>`_. The content is written in plain-text files (file-extension :file:`.rst`) using `reStructuredText <http://sphinx-doc.org/rest.html>`_ markup, and is compiled into HTML using the `Sphinx Documentation Generator <http://sphinx-doc.org/index.html>`_. As with any other contributions to this project, you should fork the main project Github repository and contribute changes back to the project using pull requests.
+
+Documentation system overview
+=============================
+
+The documentation source files are `stored in Github <https://github.com/diydrones/dronekit-python/tree/master/docs>`_. 
+The content is written in plain-text files (file-extension :file:`.rst`) using 
+`reStructuredText <http://sphinx-doc.org/rest.html>`_ markup, and is compiled into HTML using the 
+`Sphinx Documentation Generator <http://sphinx-doc.org/index.html>`_. 
+
+Submitting changes
+==================
+
+The process and requirements for submitting changes to the documentation are **the same** as when 
+:ref:`contributing to the source code <contributing_api>`. 
+
+As when submitting source code you should fork the main project Github repository and 
+contribute changes back to the project using pull requests. The changes should be tested
+locally (by :ref:`building the docs <contributing_building_docs>`) before being submitted.
+
+See :ref:`contributing_api` for more information. 
+
+.. _contributing_building_docs:
+
+Building the docs
+=================
 
 We've made it very easy to get started by providing a `Vagrant <https://www.vagrantup.com/>`_ based setup for :program:`Sphinx`. Using :program:`Vagrant` you can work with source files on your host machine using a familiar :program:`git` client and text editor, and then invoke :program:`Sphinx` in the :program:`Vagrant` VM to compile the source to HTML.
 
@@ -88,14 +84,20 @@ The instructions below explain how to get the documentation source, and build it
 	vagrant resume    #Restart the VM
 	vagrant ssh -c "cd /vagrant/docs && make html"   #Build files when needed.
 
-	
-* After making changes, follow the normal process to submit them to the project (i.e.commit and push them to your fork on Github, and then create a pull request on Github to the project repository).
 
-	
-	
-		
-		
+Style guide
+===========
+
+.. tip:: 
+
+    This guide is evolving. The most important guidance we can give is 
+    to *copy the existing style of reference, guide and example material*!
 
 
+#. Use US English for spelling.
 
+#. Use emphasis sparingly (italic, bold, underline). 
 
+#. Use `Sphinx semantic markup <http://sphinx-doc.org/markup/inline.html#other-semantic-markup>`_ to mark up *types* of text (key-presses, file names etc.)
+
+#. Use double backticks (``) around ``inline code`` items.
