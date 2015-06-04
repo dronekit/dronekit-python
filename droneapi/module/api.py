@@ -210,6 +210,10 @@ class MPVehicle(Vehicle):
             self.__master.arducopter_disarm()
 
     @property
+    def system_status(self):
+        return self.__module.system_status
+
+    @property
     def groundspeed(self):
         return self.__module.groundspeed
 
@@ -355,6 +359,7 @@ class APIModule(mp_module.MPModule):
             "<control> (USERNAME) (PASSWORD) (VEHICLEID)", "<disconnect>" ])
         self.api = MPAPIConnection(self)
         self.vehicle = self.api.get_vehicles()[0]
+        self.system_status = None
         self.lat = None
         self.lon = None
         self.alt = None
@@ -461,6 +466,7 @@ class APIModule(mp_module.MPModule):
             self.level = m.battery_remaining
             self.__on_change('battery')
         elif typ == "HEARTBEAT":
+            self.system_status = m.system_status
             self.__on_change('mode', 'armed')
         elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
             self.last_waypoint = m.seq
