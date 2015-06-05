@@ -15,7 +15,7 @@ This documentation provides everything you need to :ref:`get started <get-starte
 Contents:
 
 .. toctree::
-    :maxdepth: 4
+    :maxdepth: 2
 
     Introduction <about/index>
     quick_start
