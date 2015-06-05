@@ -6,7 +6,7 @@ Contributing
 
 DroneKit is an open-source project. We welcome any contribution that will improve the API and make it easier to use. 
 
-The articles below explain some of the :ref:`opportunities <contributing_getting_started>` for working on the project, how to :ref:`contribute to the API <contributing_api>` or the :ref:`documentation <contributing-to-documentation>`, and how to set up a :ref:`development environment on Linux <dronekit_development_linux>` or :ref:`Windows/OS X <dronekit_development_vagrant>` (using Vagrant).
+The articles below explain some of the :ref:`opportunities <contributing_getting_started>` for working on the project, how to :ref:`contribute to the API <contributing_api>` or the :ref:`documentation <contributing-to-documentation>`, and how to set up a :ref:`development environment on Linux <dronekit_development_linux>` or :ref:`Windows <dronekit_development_windows>`.
 
 
 .. toctree::
