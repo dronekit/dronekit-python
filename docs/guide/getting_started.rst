@@ -34,6 +34,7 @@ Installing DroneKit
 
 *DroneKit* can be installed on Linux, Windows and Mac OSX. 
 
+.. _getting_started_installing_dronekit_linux:
 
 Installing DroneKit on Linux
 ----------------------------

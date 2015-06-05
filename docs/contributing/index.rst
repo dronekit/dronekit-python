@@ -15,8 +15,8 @@ The articles below explain some of the :ref:`opportunities <contributing_getting
     getting_started
     contributions_api
     contributions_documentation
-    Development Environment (Windows/MacOSX) <developer_setup_vagrant>
-    Development Environment (Linux) <developer_setup_linux>
+    developer_setup_windows
+    developer_setup_linux
 
 
 

@@ -35,7 +35,7 @@ rebuilding your git branch and running it against SITL. The links below provide 
 to set up a development environment on your development computer:
 
 * :ref:`dronekit_development_linux`
-* :ref:`dronekit_development_vagrant` (Windows and MacOSX)
+* :ref:`dronekit_development_windows`
 
 .. note:: At time of writing (June 2015) we do not yet have formal acceptance tests (unit tests, system tests).
 
