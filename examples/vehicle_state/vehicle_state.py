@@ -22,9 +22,10 @@ print " Location: %s" % v.location
 print " Attitude: %s" % v.attitude
 print " Velocity: %s" % v.velocity
 print " GPS: %s" % v.gps_0
-print " groundspeed: %s" % v.groundspeed
-print " airspeed: %s" % v.airspeed
-print " mount_status: %s" % v.mount_status
+print " Groundspeed: %s" % v.groundspeed
+print " Airspeed: %s" % v.airspeed
+print " Mount status: %s" % v.mount_status
+print " Battery: %s" % v.battery
 print " Mode: %s" % v.mode.name    # settable
 print " Armed: %s" % v.armed    # settable
 
