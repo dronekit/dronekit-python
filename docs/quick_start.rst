@@ -73,7 +73,7 @@ Install Python and DroneKit
 
 Install the *WinPython* package and DroneKit on your Windows computer:
 
-5. Run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ for your platform (win32 vs win64)
+5. Run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ (**v2.7**) for your platform (win32 vs win64)
 
 6. Open the folder where you installed WinPython, run *WinPython Control Panel* and choose **Advanced/Register Distribution** (to register it as the preferred interpreter for your machine):
 

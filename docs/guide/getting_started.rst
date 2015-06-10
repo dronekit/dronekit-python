@@ -34,6 +34,7 @@ Installing DroneKit
 
 *DroneKit* can be installed on Linux, Windows and Mac OSX. 
 
+.. _getting_started_installing_dronekit_linux:
 
 Installing DroneKit on Linux
 ----------------------------
@@ -92,7 +93,7 @@ You will need remove *python-dateutil* as the installation comes bundled with a 
 
 The steps to install this package and our add-on modules are:
 
-1. Run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ for your platform (win32 vs win64)
+1. Run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ (**v2.7**) for your platform (win32 vs win64)
 
 2. Register the python that came from *WinPython* as the preferred interpreter for your machine:
 

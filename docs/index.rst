@@ -21,5 +21,6 @@ Contents:
     quick_start
     guide/index
     examples/index
+    contributing/index
     API Reference <automodule>
 
