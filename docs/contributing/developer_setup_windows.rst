@@ -5,8 +5,7 @@ Building DroneKit-Python on Windows
 ===================================
 
 The setup for *developing* DroneKit-Python on Windows is almost the same as for *using* 
-DroneKit-Python. We therefore recommend that you start by following the instructions in the :ref:`get-started` and/or 
-:ref:`quick-start`. 
+DroneKit-Python. We therefore recommend that you start by following the instructions in the :ref:`get-started`. 
 
 When you've got DroneKit and a vehicle (simulated or real) communicating, you can 
 then build and install your own fork of DroneKit, as discussed below.

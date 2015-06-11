@@ -23,7 +23,7 @@ to use more appropriate positions for your own vehicle.
 Running the example
 ===================
 
-The vehicle and DroneKit should be set up as described in the :ref:`quick-start` or :ref:`get-started`.
+The vehicle and DroneKit should be set up as described in :ref:`get-started`.
 
 If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run.

@@ -18,7 +18,6 @@ Contents:
     :maxdepth: 2
 
     Introduction <about/index>
-    quick_start
     guide/index
     examples/index
     contributing/index

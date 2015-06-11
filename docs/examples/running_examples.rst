@@ -2,7 +2,7 @@
 Running the Examples
 ====================
 
-To run the examples you will need to set up DroneKit as described in :ref:`get-started` or the :ref:`quick-start`. 
+To run the examples you will need to set up DroneKit as described in :ref:`get-started`. 
 Once you have the `source code <https://github.com/diydrones/dronekit-python/tree/master/example>`_, examples are 
 started as described in the *Getting Started* section :ref:`getting-started-running_examples`.
 
