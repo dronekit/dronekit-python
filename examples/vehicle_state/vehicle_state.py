@@ -26,9 +26,35 @@ print " Groundspeed: %s" % v.groundspeed
 print " Airspeed: %s" % v.airspeed
 print " Mount status: %s" % v.mount_status
 print " Battery: %s" % v.battery
+print " System status: %s" % v.system_status
 print " Mode: %s" % v.mode.name    # settable
 print " Armed: %s" % v.armed    # settable
 
+
+def system_status_string(status):
+    """
+    Convenience function to get a string for the system_status.
+    """
+    status_string="Unknown status"
+    if v.system_status == mavutil.mavlink.MAV_STATE_UNINIT:
+        status_string = "MAV_STATE_UNINIT: Uninitialized system - state is unknown."
+    if v.system_status == mavutil.mavlink.MAV_STATE_BOOT:
+        status_string = "MAV_STATE_BOOT: System is booting up."
+    if v.system_status == mavutil.mavlink.MAV_STATE_CALIBRATING:
+        status_string = "MAV_STATE_CALIBRATING: System is calibrating and not flight-ready."
+    if v.system_status == mavutil.mavlink.MAV_STATE_STANDBY:
+        status_string = "MAV_STATE_STANDBY: System is grounded and on standby. Ready to launch."
+    if v.system_status == mavutil.mavlink.MAV_STATE_ACTIVE:
+        status_string = "MAV_STATE_ACTIVE: System is active and may be airborne. Motors are engaged."
+    if v.system_status == mavutil.mavlink.MAV_STATE_CRITICAL:
+        status_string = "MAV_STATE_CRITICAL: System is in a non-normal flight mode but can still navigate."
+    if v.system_status == mavutil.mavlink.MAV_STATE_EMERGENCY:
+        status_string = "MAV_STATE_EMERGENCY: System is in a non-normal flight mode. We're going down."
+    if v.system_status == mavutil.mavlink.MAV_STATE_POWEROFF:
+        status_string = "MAV_STATE_POWEROFF: System has started its power-down sequence."
+    return status_string
+
+print "Current Status:", system_status_string(v.system_status)
 
 # Set vehicle mode and armed attributes (the only settable attributes)
 print "Set Vehicle.mode=GUIDED (currently: %s)" % v.mode.name 
@@ -44,7 +70,6 @@ v.flush()
 while not v.armed and not api.exit:
     print " Waiting for arming..."
     time.sleep(1)
-
 
 # Show how to add and remove and attribute observer callbacks (using mode as example) 
 def mode_callback(attribute):
@@ -96,7 +121,7 @@ v.flush()
 
 
 ## Reset variables to sensible values.
-print "\nReset vehicle atributes/parameters and exit"
+print "\nReset vehicle attributes/parameters and exit"
 v.mode = VehicleMode("STABILIZE")
 v.armed = False
 v.parameters['THR_MIN']=130

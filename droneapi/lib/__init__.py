@@ -476,6 +476,58 @@ class Vehicle(HasObservers):
         The values in the list are set to ``None`` if no mount is configured.
 
 
+    .. py:attribute:: system_status
+
+        Gets the ``system_status`` value from the most recently received `heartbeat <https://pixhawk.ethz.ch/mavlink/#HEARTBEAT>`_ message.
+
+        This attribute provides high-level information about whether the vehicle is on the ground, flying, in failsafe, etc. For example,
+        you can check if the vehicle is in a critical state as shown:
+
+        .. code:: python
+
+            from pymavlink import mavutil
+            ...
+
+            if v.system_status == mavutil.mavlink.MAV_STATE_CRITICAL:
+                print "DON'T PANIC!"
+
+        The possible values of the status are defined in the `MAV_STATE <https://pixhawk.ethz.ch/mavlink/>`_ enum (reproduced below).
+
+        .. list-table:: MAV_STATE enum.
+           :widths: 5 25 75
+           :header-rows: 1
+
+           * - Value
+             - Field name
+             - Description
+           * - 0
+             - ``MAV_STATE_UNINIT``
+             - Uninitialized system - state is unknown.
+           * - 1
+             - ``MAV_STATE_BOOT``
+             - System is booting up.
+           * - 2
+             - ``MAV_STATE_CALIBRATING``
+             - System is calibrating and not flight-ready.
+           * - 3
+             - ``MAV_STATE_STANDBY``
+             - System is grounded and on standby. It can be launched any time.
+           * - 4
+             - ``MAV_STATE_ACTIVE``
+             - System is active and might be already airborne. Motors are engaged.
+           * - 5
+             - ``MAV_STATE_CRITICAL``
+             - System is in a non-normal flight mode. It can however still navigate.
+           * - 6
+             - ``MAV_STATE_EMERGENCY``
+             - System is in a non-normal flight mode. It has lost control over all
+               or parts of the airframe. It is in mayday and going down.
+           * - 7
+             - ``MAV_STATE_POWEROFF``
+             - System just initialized its power-down sequence and will shut down now.
+
+
+
     .. py:attribute:: battery
 
         Current system :py:class:`Battery` status.

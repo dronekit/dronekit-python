@@ -41,9 +41,11 @@ On the *MAVProxy* console you should see (something like):
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery voltage: 12590, current: 0, level: 99
+     Battery: Battery:voltage=12.587,current=0.0,level=98
+     System status: 3
      Mode: STABILIZE
      Armed: False
+    Current Status: MAV_STATE_STANDBY: System is grounded and on standby. It can be launched any time.
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
     Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
