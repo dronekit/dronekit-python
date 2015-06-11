@@ -68,7 +68,8 @@ If you're on Mac OSX, you can use `Homebrew <http://brew.sh/>`_ to install *WXMa
 
 .. code:: bash
 
-    brew install wxmac wxpython
+    brew tap homebrew/science
+    brew install wxmac wxpython opencv
 	
 Uninstall *python-dateutil* (OSX and Windows come bundled with a version that is not supported for some dependencies):
 
