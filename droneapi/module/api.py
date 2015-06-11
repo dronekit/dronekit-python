@@ -9,7 +9,7 @@ from MAVProxy.modules.lib import mp_module
 from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
     Attitude, GPSInfo, Parameters, CommandSequence, APIException, Battery, \
-    Rangefinder
+    Rangefinder, SystemStatus
 
 # Enable logging here (until this code can be moved into mavproxy)
 logging.basicConfig(level=logging.DEBUG)
@@ -466,7 +466,7 @@ class APIModule(mp_module.MPModule):
             self.level = m.battery_remaining
             self.__on_change('battery')
         elif typ == "HEARTBEAT":
-            self.system_status = m.system_status
+            self.system_status = SystemStatus(m.system_status)
             self.__on_change('mode', 'armed')
         elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
             self.last_waypoint = m.seq

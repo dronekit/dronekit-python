@@ -1018,3 +1018,36 @@ class CommandSequence(object):
         .. INTERNAL NOTE: (implementation provided by subclass)
         """
         pass
+
+class SystemStatus(object):
+    """
+    A simple way to work with MAV_STATE messages
+
+    Supported properties:
+
+    ============= ======================================
+    Name          Description
+    ============= ======================================
+    mav_state     int
+    ============= ======================================
+
+    """
+    STATES = {
+            mavutil.mavlink.MAV_STATE_UNINIT: '[MAV_STATE_UNINIT]: Uninitialized system, state is unknown.',
+            mavutil.mavlink.MAV_STATE_BOOT: '[MAV_STATE_BOOT]: System is booting up.',
+            mavutil.mavlink.MAV_STATE_CALIBRATING: '[MAV_STATE_CALIBRATING]: System is calibrating and not flight-ready.',
+            mavutil.mavlink.MAV_STATE_STANDBY: '[MAV_STATE_STANDBY]: System is grounded and on standby. It can be launched any time.',
+            mavutil.mavlink.MAV_STATE_ACTIVE: '[MAV_STATE_ACTIVE]: System is active and might be already airborne. Motors are engaged.',
+            mavutil.mavlink.MAV_STATE_CRITICAL: '[MAV_STATE_CRITICAL]: System is in a non-normal flight mode. It can however still navigate.',
+            mavutil.mavlink.MAV_STATE_EMERGENCY: '[MAV_STATE_EMERGENCY]: System is in a non-normal flight mode. It lost control over parts or over the whole airframe. It is in mayday and going down.',
+            mavutil.mavlink.MAV_STATE_POWEROFF: '[MAV_STATE_POWEROFF]: System just initialized its power-down sequence, will shut down now.',
+            }
+
+    def __init__(self, mav_state):
+        self.status = mav_state
+
+    def __eq__(self, other):
+        return self.status == other
+
+    def __str__(self):
+        return self.STATES[self.status]
