@@ -4,28 +4,24 @@
 Getting Started
 ===============
 
-DroneKit-Python apps are typically run on Linux-based :ref:`companion computers <supported-companion-computers>` that travel on the vehicle and communicate with the autopilot via a serial port. However, it is usually easier to first prototype your app on a standard Mac, Windows, or Linux computer using a simulated autopilot. The instructions in this document apply to both scenarios.
+DroneKit-Python apps are typically run on Linux-based *companion computers* that travel 
+on the vehicle and communicate with the autopilot via a serial port. However, during development it is usually easier to 
+prototype apps on a standard Mac, Windows, or Linux computer using a *simulated* autopilot. 
 
-.. tip:: If you want to develop for *DroneKit* on Windows using a simulated autopilot, our :ref:`quick-start` shows how to get up and running fast!
+
+This topic explains how to set up and run DroneKit-Python (within MAVProxy) on the different host operating systems
+and then run a basic DroneKit app. 
+
+
 
 
 Setting up the vehicle/autopilot
-=================================
+================================
 
-The topic :ref:`supported-companion-computers` has links to a number of tested hardware/software configurations for onboard Linux computers. These  
-include information about how to set up the hardware and physically connect to the vehicle. 
+For information on how to set up a vehicle (real and simulated) see:
 
-If you wish to use a simulated vehicle, the Software-In-The-Loop (SITL) environment can be used to simulate a Copter, Plane, or Rover. It runs natively on Linux, 
-but can also run on Linux hosted in a virtual machine:
-
-* `Setting up SITL on Linux <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ (for Linux).
-* :ref:`QuickStart: Set up the simulated vehicle <vagrant-sitl-from-full-image>` (for Windows or Mac OSX). 
-
-  .. note::
-
-      The method used in the QuickStart is fast and reliable because it uses Vagrant to load an image that is pre-built and fully configured with SITL. 
-      Other approaches are described in the wiki topics `Setting up SITL using Vagrant <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/setting-up-sitl-using-vagrant/>`_ 
-      and `Setting up SITL on Windows <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/setting-up-sitl-on-windows/>`_.
+* :ref:`supported-companion-computers` for links to tested hardware/software configurations for a number of onboard Linux computers. 
+* :ref:`sitle_setup` for links explaining how to set up a simulated vehicle for Copter, Plane, or Rover.
 
 
 
@@ -70,6 +66,7 @@ If you're on Mac OSX, you can use `Homebrew <http://brew.sh/>`_ to install *WXMa
 
     brew tap homebrew/science
     brew install wxmac wxpython opencv
+
 	
 Uninstall *python-dateutil* (OSX and Windows come bundled with a version that is not supported for some dependencies):
 
@@ -94,15 +91,19 @@ You will need remove *python-dateutil* as the installation comes bundled with a 
 
 The steps to install this package and our add-on modules are:
 
-1. Run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ (**v2.7**) for your platform (win32 vs win64)
+#. Download and run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ (**v2.7**) for your platform (win32 vs win64).
+   
+   * Run the installer as an administrator (**Right-click** on file, select **Run as Administrator**). 
+   * When prompted for the destination location, specify **C:\Program Files (x86)** 
+     (the default location is under the Downloads folder).
 
-2. Register the python that came from *WinPython* as the preferred interpreter for your machine:
+#. Register the python that came from *WinPython* as the preferred interpreter for your machine:
 
    Open the folder where you installed WinPython, run *WinPython Control Panel* and choose **Advanced/Register Distribution**.
 
    .. image:: http://dev.ardupilot.com/wp-content/uploads/sites/6/2014/03/Screenshot-from-2014-09-03-083816.png
 
-3. Install DroneKit-Python and its remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_) from the public PyPi repository:
+#. Install DroneKit-Python and its remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_) from the public PyPi repository:
 
    Open the *WinPython Command Prompt* and run the following two commands:
 
@@ -129,7 +130,7 @@ Launch *MAVProxy* with the correct options for talking to your vehicle (simulate
      - ``mavproxy.py --master=/dev/ttyUSB0``
    * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
      - ``mavproxy.py --master=/dev/ttyAMA0 --baudrate 57600``
-   * - SITL Linux connected to the vehicle via UDP
+   * - SITL connected to the vehicle via UDP
      - ``mavproxy.py --master=127.0.0.1:14550``
    * - OSX computer connected to the vehicle via USB
      - ``mavproxy.py --master=/dev/cu.usbmodem1``	 
@@ -145,8 +146,9 @@ For other connection options see the `MAVProxy documentation <http://tridge.gith
 Loading DroneKit
 ================
 
-*DroneKit* is implemented as a *MAVProxy* module. You can automatically load this module into *MAVProxy*
-by `adding it to the startup script <http://tridge.github.io/MAVProxy/mavinit.html>`_ (**mavinit.scr**).
+*DroneKit* is implemented as a *MAVProxy* module (MAVProxy is installed automatically with DroneKit). 
+The best way to load the *DroneKit* module into *MAVProxy* is to 
+`add it to the startup script <http://tridge.github.io/MAVProxy/mavinit.html>`_ (**mavinit.scr**).
 
 Linux/MAC OSX:
 
@@ -213,34 +215,3 @@ The output should look something like that shown below
      Waiting for mode change ...
     Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
     ...
-
-
-
-.. _viewing_uav_on_map:
-
-Watching the action
-====================
-
-Watching your DroneKit script run inside *MAVProxy* is useful, but you can go one step further and watch the behaviour of your simulated vehicle in *Mission Planner*. 
-
-To do this you first need to get SITL to output to an additional UDP port of your computer:
-
-* Find the network IP address of your Windows computer (you can get this by running *ipconfig* in the *Windows Command Prompt*). 
-* In the command prompt *for your simulated environment* (SITL), add the IP address of the host computer (e.g. 192.168.2.10) and an unused port (e.g. 145502) as an output:
-  
-  .. code:: bash
-   
-      output add 192.168.2.10:14552
-
-Then connect Mission Planner to this UDP port:  
-	  
-* `Download and install Mission Planner <http://ardupilot.com/downloads/?did=82>`_
-* Ensure the selection list at the top right of the Mission Planner screen says *UDP* and then select the **Connect** button next to it. 
-  When prompted, enter the port number (in this case 14552).
-  
-  .. figure:: MissionPlanner_ConnectPort.png
-      :width: 50 %
-
-      Mission Planner: Listen Port Dialog
-
-After connecting, vehicle parameters will be loaded into *Mission Planner* and the vehicle is displayed on the map.
