@@ -31,10 +31,10 @@ print " Mode: %s" % v.mode.name    # settable
 print " Armed: %s" % v.armed    # settable
 
 
-# when trying to compare v.system_status with enum from mavlink
-# it will always yeild the enum instead of string value
+# Printing Vehicle.system_status returns a string. Otherwise the attribute yields a 
+# MAV_STATE enum value that can be used for comparisons (as shown below).
 if v.system_status == mavutil.mavlink.MAV_STATE_STANDBY:
-    print 'Standing by waiting instructions'
+    print 'Standing by - waiting for instructions'
 
 # Set vehicle mode and armed attributes (the only settable attributes)
 print "Set Vehicle.mode=GUIDED (currently: %s)" % v.mode.name

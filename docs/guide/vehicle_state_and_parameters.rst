@@ -67,10 +67,14 @@ The code fragment below shows how to read and print all the attributes. The valu
 If these attributes cannot be retrieved or are invalid then the returned object will usually contain
 ``None`` values for its members (for example, if there was no GPS lock then 
 :py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>` would return a :py:class:`GPSInfo <droneapi.lib.GPSInfo>` 
-with ``None`` values for ``eph``, ``satellites_visible`` etc.) One exception is the
-:py:attr:`Vehicle.system_status <droneapi.lib.Vehicle.system_status>`, which will return the
-last value retrieved if the heartbeat fails.
-	
+with ``None`` values for ``eph``, ``satellites_visible`` etc.)
+
+The :py:attr:`Vehicle.system_status <droneapi.lib.Vehicle.system_status>` has slightly different behaviour from the other attributes:
+
+* It will return the last value retrieved if the heartbeat fails (rather than ``None``).
+* The attribute returns a ``MAV_STATE`` enum value for comparisons, and a human-readable string for the state when printed.
+
+
 .. todo:: we need to be able to verify mount_status works/setup.
 
 
