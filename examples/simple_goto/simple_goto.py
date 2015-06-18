@@ -27,14 +27,16 @@ def arm_and_takeoff(aTargetAltitude):
     while vehicle.gps_0.fix_type < 2:
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
-		
+        
     print "Arming motors"
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
     vehicle.flush()
 
-    while not vehicle.armed and not api.exit:
+    while not vehicle.armed:
+        if api.exit: #check to make sure mavproxy hasn't commanded us to stop
+            api.stop()
         print " Waiting for arming..."
         time.sleep(1)
 
@@ -44,7 +46,9 @@ def arm_and_takeoff(aTargetAltitude):
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
-    while not api.exit:
+    while True:
+        if api.exit: #check to make sure mavproxy hasn't commanded us to stop
+            api.stop()
         print " Altitude: ", vehicle.location.alt
         if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
