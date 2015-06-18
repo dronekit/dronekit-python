@@ -294,6 +294,9 @@ class MPAPIConnection(APIConnection):
     def get_vehicles(self, query=None):
         return [ self.__vehicle ]
 
+    def stop(self):
+        raise SystemExit('script commanded itself to stop')
+
 class APIThread(threading.Thread):
     def __init__(self, module, fn, description):
         super(APIThread, self).__init__()
@@ -323,7 +326,9 @@ class APIThread(threading.Thread):
     def run(self):
         try:
             self.fn()
-            print("%s exiting..." % self.name)
+            print("%s exiting, script finished" % self.name)
+        except SystemExit as e:
+            print("%s exiting, %s" % (self.name, e.args[0]))
         except Exception as e:
             print("Exception in %s: %s" % (self.name, str(e)))
             traceback.print_exc()
