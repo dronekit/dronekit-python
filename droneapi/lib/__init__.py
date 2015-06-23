@@ -192,9 +192,24 @@ class Battery(object):
         return "Battery:voltage={},current={},level={}".format(self.voltage, self.current, self.level)
 
 
+class Rangefinder(object):
+    """
+    Rangefinder readings.
+
+    :param distance: Distance.
+    :param voltage: Voltage.
+    """
+    def __init__(self, distance, voltage):
+        self.distance = distance
+        self.voltage = voltage
+
+    def __str__(self):
+        return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
+
+
 class VehicleMode(object):
     """
-    This object is used to get and set the current "flight mode". 
+    This object is used to get and set the current "flight mode".
 
     The flight mode determines the behaviour of the vehicle and what commands it can obey.
     The recommended flight modes for *DroneKit-Python* apps depend on the vehicle type:
@@ -330,7 +345,7 @@ class HasObservers(object):
         :param attr_name: The attribute to watch.
         :param observer: The callback to invoke when a change in the attribute is detected.
 
-        .. todo:: Check that the defect for endless repetition after thread closes is fixed: https://github.com/diydrones/dronekit-python/issues/74		
+        .. todo:: Check that the defect for endless repetition after thread closes is fixed: https://github.com/diydrones/dronekit-python/issues/74
         """
         l = self.__observers.get(attr_name)
         if l is None:
@@ -456,7 +471,7 @@ class Vehicle(HasObservers):
 
     .. py:attribute:: mount_status
 
-        Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``. 
+        Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``.
 
         The values in the list are set to ``None`` if no mount is configured.
 
@@ -465,13 +480,13 @@ class Vehicle(HasObservers):
 
         Current system :py:class:`Battery` status.
 
-  
+
     .. py:attribute:: channel_override
 
         .. warning::
 
-            RC override may be useful for simulating user input and when implementing certain types of joystick control. 
-            It should not be used for direct control of vehicle channels unless there is no other choice! 
+            RC override may be useful for simulating user input and when implementing certain types of joystick control.
+            It should not be used for direct control of vehicle channels unless there is no other choice!
 
             Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally
             set the desired position or direction/speed.
@@ -481,15 +496,15 @@ class Vehicle(HasObservers):
 
         To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
 
-        The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters: 
-        `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_, 
-        `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/#rcmap__parameters>`_ , 
+        The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters:
+        `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_,
+        `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/#rcmap__parameters>`_ ,
         `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/#rcmap__parameters>`_).
 
-        The remaining channel values are configurable, and their purpose can be determined using the 
-        `RCn_FUNCTION parameters <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/>`_. 
-        In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the channel can be 
-        `mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be 
+        The remaining channel values are configurable, and their purpose can be determined using the
+        `RCn_FUNCTION parameters <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/>`_.
+        In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the channel can be
+        `mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be
         controlled by normal autopilot code).
 
         An example of setting and clearing the override is given below:
@@ -514,8 +529,8 @@ class Vehicle(HasObservers):
 
             https://github.com/diydrones/dronekit-python/issues/72
 
-        .. todo:: 
-    
+        .. todo::
+
             channel_override/channel_readback documentation
 
             In a future update strings will be defined per vehicle type ('pitch', 'yaw', 'roll' etc...)
@@ -572,9 +587,9 @@ class Vehicle(HasObservers):
         """
         Gets the editable waypoints for this vehicle (the current "mission").
 
-        This can be used to get, create, and modify a mission. It can also be used for direct control of vehicle position 
-        (outside missions) using the :py:func:`goto <droneapi.lib.CommandSequence.goto>` method. 
-        
+        This can be used to get, create, and modify a mission. It can also be used for direct control of vehicle position
+        (outside missions) using the :py:func:`goto <droneapi.lib.CommandSequence.goto>` method.
+
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
         None
@@ -603,9 +618,9 @@ class Vehicle(HasObservers):
 
         Returns an object providing access to historical missions.
 
-        .. warning:: 
+        .. warning::
 
-            Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a 
+            Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a
 
         :param query_params: Some set of arguments that can be used to find a past mission
         :return: Mission - the mission object.
@@ -639,7 +654,7 @@ class Vehicle(HasObservers):
             msg = vehicle.message_factory.image_trigger_control_encode(True)
             vehicle.send_mavlink(msg)
 
-        There is no need to specify the system id, component id or sequence number of messages (if defined in the message type) as the 
+        There is no need to specify the system id, component id or sequence number of messages (if defined in the message type) as the
         API will set these appropriately when the message is sent.
 
         .. todo:: When I have a custom message guide topic. Link from here to it.
@@ -655,7 +670,7 @@ class Vehicle(HasObservers):
         The function can send arbitrary messages/commands to a vehicle at any time and in any vehicle mode. It is particularly useful for
         controlling vehicles outside of missions (for example, in GUIDED mode).
 
-        The :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` is used to create messages in the appropriate format. 
+        The :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
         Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
 
         :param: message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>`.
@@ -677,7 +692,7 @@ class Vehicle(HasObservers):
 
         The code snippet below shows how to set a "demo" callback function as the callback handler:
 
-        .. code:: python		
+        .. code:: python
 
             # Demo callback handler for raw MAVLink messages
             def mavrx_debug_handler(message):
@@ -754,12 +769,12 @@ class Parameters(HasObservers):
         vehicle.parameters['THR_MIN']=100
         vehicle.flush()
 
-    .. note:: 
+    .. note::
 
         At time of writing ``Parameters`` does not implement the observer methods, and change notification for parameters
         is not supported.
 
-    .. todo:: 
+    .. todo::
 
         Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
         https://github.com/diydrones/dronekit-python/issues/107
@@ -780,9 +795,9 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0,-34.364114, 149.166022, 30)
 
 
-    :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network. 
-        Set this to zero (broadcast) when communicating with a companion computer. 
-    :param target_component: The id of a component the message should be routed to within the target system 
+    :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network.
+        Set this to zero (broadcast) when communicating with a companion computer.
+    :param target_component: The id of a component the message should be routed to within the target system
         (for example, the camera). Set to zero (broadcast) in most cases.
     :param seq: The sequence number within the mission (the autopilot will reject messages sent out of sequence).
         This should be set to zero as the API will automatically set the correct value when uploading a mission.
@@ -845,7 +860,7 @@ class CommandSequence(object):
             0, 0, 0, 0, 0, 0,
             lat, lon, altitude)
         cmds.add(cmd)
-        vehicle.flush()	
+        vehicle.flush()
 
     .. py:function:: takeoff(altitude)
 
@@ -943,5 +958,3 @@ class CommandSequence(object):
         .. INTERNAL NOTE: (implementation provided by subclass)
         """
         pass
-
-
