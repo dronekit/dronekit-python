@@ -430,7 +430,7 @@ print("Position North 0 East 100")
 goto(0, 100)
 
 print("Position North -80 West 50")
-goto(-80, -50, goto_position_target_global_int)
+goto(-80, -50)
 
 
 
@@ -452,15 +452,15 @@ print("Position South 100 West 130")
 
 print("Set speed to 5m/s.")
 set_speed(5)
-goto(-100, -130)
+goto(-100, -130, goto_position_target_global_int)
 
 print("Set speed to 15m/s (max).")
 set_speed(15)
 print("Position South 0 East 200")
-goto(0, 260)
+goto(0, 260, goto_position_target_global_int)
 
 print("Set speed to 10m/s (max).")
-set_speed(10)
+set_speed(10, goto_position_target_global_int)
 
 print("Position North 100 West 130")
 goto(100, -130, goto_position_target_global_int)
