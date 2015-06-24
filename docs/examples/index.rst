@@ -15,9 +15,10 @@ during missions and outside missions using custom commands.
    running_examples
    Vehicle State <vehicle_state>
    Simple Goto <simple_goto>
+   Guided Movement and Commands <guided-set-speed-yaw-demo>
    Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
-   Set Speed & Yaw (GUIDED) <guided-set-speed-yaw-demo>
+
 
 
