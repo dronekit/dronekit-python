@@ -13,4 +13,5 @@ The guide contains how-to documentation for using the DroneKit-Python API. These
     Simulated Vehicle <sitl_setup>
     vehicle_state_and_parameters
     taking_off
+    copter/guided_mode
     debugging
