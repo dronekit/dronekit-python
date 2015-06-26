@@ -303,9 +303,10 @@ Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission
         vehicle.send_mavlink(msg)
         vehicle.flush()
 
-The ROI is "reset" when the mode or the method used to control movement is changed. If you've set a yaw or region-of-interest value then this will be set to the default (vehicle faces the direction of travel).
+From Copter 3.2.1 you can explicitly reset the ROI by sending the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command with zero in all values. The vehicle will then face the direction of travel.
 
-		
+The ROI (and yaw) is also reset when the mode, or the command used to control movement, is changed.
+
 
 .. _guided_mode_copter_set_home:
 
