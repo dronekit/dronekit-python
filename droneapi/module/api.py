@@ -66,6 +66,8 @@ class MPCommandSequence(CommandSequence):
     def takeoff(self, alt=None):
         if alt is not None:
             altitude = float(alt)
+            if math.isnan(alt) or math.isinf(alt):
+                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
             self.__module.master.mav.command_long_send(self.__module.target_system,
                                                     self.__module.target_component,
                                                     mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
