@@ -100,6 +100,24 @@ class MPCommandSequence(CommandSequence):
         self.__wp.wploader.add(cmd, comment = 'Added by DroneAPI')
         self.__module.vehicle.wpts_dirty = True
 
+    def command_ack(self, timeout = 0.5):
+        #wait indefinitely
+        if timeout is None: 
+            while self.__module.command_ack is None:
+                pass
+            result = self.__module.command_ack
+            self.__module.command_ack = None #reset cmd_ack
+            return result
+
+        #wait for timeout
+        start = time.time()
+        while (time.time() - start) < timeout and self.__module.command_ack is None:
+            pass
+        result = self.__module.command_ack
+        self.__module.command_ack = None #reset cmd_ack
+        return result
+
+
     @property
     def __wp(self):
         return self.__module.module('wp')
@@ -312,7 +330,6 @@ class APIThread(threading.Thread):
 
         # DroneAPI might generate many commands, which in turn generate ots of acks and status text, in the interest of speed we ignore processing those messages
         try:
-            self.module.mpstate.rx_blacklist.add('COMMAND_ACK')
             self.module.mpstate.rx_blacklist.add('STATUSTEXT')
         except:
             pass # Silently work with old mavproxies
@@ -331,7 +348,6 @@ class APIThread(threading.Thread):
             traceback.print_exc()
 
         try:
-            self.module.mpstate.rx_blacklist.remove('COMMAND_ACK')
             self.module.mpstate.rx_blacklist.remove('STATUSTEXT')
         except:
             pass # Silently work with old mavproxies
@@ -383,6 +399,8 @@ class APIModule(mp_module.MPModule):
         self.epv = None
         self.satellites_visible = None
         self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
+
+        self.command_ack = None
 
         self.next_thread_num = 0  # Monotonically increasing
         self.threads = {}  # A map from int ID to thread object
@@ -474,6 +492,8 @@ class APIModule(mp_module.MPModule):
             self.mount_roll = m.pointing_b / 100
             self.mount_yaw = m.pointing_c / 100
             self.__on_change('mount')
+        elif typ == "COMMAND_ACK":
+            self.command_ack = m.result
 
 
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
