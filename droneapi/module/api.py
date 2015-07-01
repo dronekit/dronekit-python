@@ -7,7 +7,8 @@ from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.WebClient import *
 from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
-    Attitude, GPSInfo, Parameters, CommandSequence, APIException, Battery
+    Attitude, GPSInfo, Parameters, CommandSequence, APIException, Battery, \
+    Rangefinder
 
 # Enable logging here (until this code can be moved into mavproxy)
 logging.basicConfig(level=logging.DEBUG)
@@ -179,6 +180,10 @@ class MPVehicle(Vehicle):
     @property
     def battery(self):
         return Battery(self.__module.voltage, self.__module.current, self.__module.level)
+
+    @property
+    def rangefinder(self):
+        return Rangefinder(self.__module.rngfnd_distance, self.__module.rngfnd_voltage)
 
     @property
     def velocity(self):
@@ -384,6 +389,9 @@ class APIModule(mp_module.MPModule):
         self.satellites_visible = None
         self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
 
+        self.rngfnd_distance = None
+        self.rngfnd_voltage = None
+
         self.next_thread_num = 0  # Monotonically increasing
         self.threads = {}  # A map from int ID to thread object
 
@@ -474,6 +482,10 @@ class APIModule(mp_module.MPModule):
             self.mount_roll = m.pointing_b / 100
             self.mount_yaw = m.pointing_c / 100
             self.__on_change('mount')
+        elif typ == "RANGEFINDER":
+            self.rngfnd_distance = m.distance
+            self.rngfnd_voltage = m.voltage
+            self.__on_change('rangefinder')
 
 
         if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
