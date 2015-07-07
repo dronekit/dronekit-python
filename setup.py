@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '1.3.0'
+version = '1.3.1'
 
 ext_modules = []
 
