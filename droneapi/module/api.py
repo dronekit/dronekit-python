@@ -3,6 +3,7 @@ import time
 import threading
 import traceback
 import logging
+import math
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
 from droneapi.lib.WebClient import *
