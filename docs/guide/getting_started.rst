@@ -72,14 +72,14 @@ Uninstall *python-dateutil* (OSX and Windows come bundled with a version that is
 
 .. code:: bash
 
-    pip uninstall python-dateutil
+    sudo pip uninstall python-dateutil
 
 Install DroneKit-Python and its remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_) from the public PyPi repository:
 
 .. code:: bash
 
-    pip install numpy pyparsing
-    pip install droneapi
+    sudo pip install numpy pyparsing
+    sudo pip install droneapi
 	
 
 
