@@ -15,8 +15,11 @@ Running the example
 ===================
 
 The vehicle and DroneKit should be set up as described in :ref:`get-started`.
-If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
-that the example can run.
+
+If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
+that the example can run. You can also `add a virtual rangefinder <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
+(otherwise the :py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
+and voltage). 
 
 Once MAVProxy is running and the API is loaded, you can start the example by typing: ``api start vehicle_state.py``.
 
@@ -42,6 +45,9 @@ On the *MAVProxy* console you should see (something like):
      Airspeed: 0.0
      Mount status: [None, None, None]
      Battery: Battery voltage: 12590, current: 0, level: 99
+     Rangefinder: Rangefinder: distance=0.189999997616, voltage=0.0190000012517
+     Rangefinder distance: 0.189999997616
+     Rangefinder voltage: 0.0190000012517
      Mode: STABILIZE
      Armed: False
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
@@ -76,7 +82,7 @@ On the *MAVProxy* console you should see (something like):
      Channel default values: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
      Cancelling override
 
-    Reset vehicle atributes/parameters and exit
+    Reset vehicle attributes/parameters and exit
     Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
     APM: DISARMING MOTORS
     Got MAVLink msg: COMMAND_ACK {command : 400, result : 0}
