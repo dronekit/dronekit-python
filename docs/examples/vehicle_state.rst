@@ -118,7 +118,7 @@ Two cases where you may observe issues are:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
 	
 .. literalinclude:: ../../examples/vehicle_state/vehicle_state.py
    :language: python
