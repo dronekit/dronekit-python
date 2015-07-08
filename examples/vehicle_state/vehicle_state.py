@@ -5,7 +5,7 @@
 # Usage:
 # * mavproxy.py
 # * module load api
-# * api start vehicle-state.py
+# * api start vehicle_state.py
 #
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
