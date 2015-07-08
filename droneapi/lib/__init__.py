@@ -196,8 +196,8 @@ class Rangefinder(object):
     """
     Rangefinder readings.
 
-    :param distance: Distance.
-    :param voltage: Voltage.
+    :param distance: Distance (metres). ``None`` if the vehicle doesn't have a rangefinder.
+    :param voltage: Voltage (volts). ``None`` if the vehicle doesn't have a rangefinder.
     """
     def __init__(self, distance, voltage):
         self.distance = distance
@@ -479,6 +479,11 @@ class Vehicle(HasObservers):
     .. py:attribute:: battery
 
         Current system :py:class:`Battery` status.
+
+
+    .. py:attribute:: rangefinder
+
+        :py:class:`Rangefinder` distance and voltage values. 
 
 
     .. py:attribute:: channel_override
