@@ -6,3 +6,5 @@ build
 .vagrant
 *~
 .idea
+*.pyc
+
