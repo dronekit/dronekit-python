@@ -1,6 +1,6 @@
 # DroneKit-python (formerly DroneAPI-python)
 
-[![Windows Build status](https://img.shields.io/appveyor/ci/tcr3dr/dronekit-python.svg?label=windows)](https://ci.appveyor.com/project/tcr3dr/dronekit-python/branch/master)
+[![Windows Build status](https://img.shields.io/appveyor/ci/3drobotics/dronekit-python.svg?label=windows)](https://ci.appveyor.com/project/3drobotics/dronekit-python/branch/master)
 [![OS X Build Status](https://img.shields.io/travis/diydrones/dronekit-python.svg?label=os%20x)](https://travis-ci.org/diydrones/dronekit-python)
 [![Linux Build Status](https://img.shields.io/circleci/project/diydrones/dronekit-python.svg?label=linux)](https://circleci.com/gh/diydrones/dronekit-python)
 
