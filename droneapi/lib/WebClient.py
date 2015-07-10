@@ -8,6 +8,13 @@ import threading
 
 logger = logging.getLogger(__name__)
 
+# Not defined on Windows in Python for some reason.
+# https://github.com/Perl/perl5/blob/blead/win32/include/sys/socket.h#L35
+if sys.platform == 'win32':
+    MSG_WAITALL = 0x8
+else:
+    MSG_WAITALL = socket.MSG_WAITALL
+
 def delimitProtobuf(src):
     """Python protobuf bindings are missing writeDelimited, this is a workaround to add a delimiter"""
     from google.protobuf.internal import encoder
@@ -27,7 +34,7 @@ def readDelimited(sock):
     # We now know size of our msg, but we might have unused bytes from the delimeter
     numextra = delimsize - pos
     numtoread = payloadsize - numextra
-    payload = delimbytes[pos:] + sock.recv(numtoread, socket.MSG_WAITALL)
+    payload = delimbytes[pos:] + sock.recv(numtoread, MSG_WAITALL)
     msg = Envelope()
     #print "payloadsize=%d, pos=%d, numextra=%d, numtoread=%d, paylen=%d" % (payloadsize, pos, numextra, numtoread, len(payload))
     msg.ParseFromString(payload)
