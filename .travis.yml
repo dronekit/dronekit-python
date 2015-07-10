@@ -7,7 +7,10 @@ install:
   - (a; sudo pip2 install nose );z
 script:
   - (a; sudo python setup.py install );z
-  - (a; cd tests; nosetests );z
+  - |-
+    (a; cd tests
+    nosetests
+     );z
 git:
   depth: 10
 language: objective-c
