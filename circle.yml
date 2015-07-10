@@ -4,7 +4,7 @@ dependencies:
   override:
     - sudo python setup.py install:
         environment: {}
-    - cd tests; nosetests:
+    - "cd tests\nnosetests\n":
         environment: {}
   pre:
     - sudo pip2 install nose:
