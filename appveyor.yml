@@ -1,0 +1,16 @@
+environment:
+  global: {}
+init: []
+install:
+  - cmd: 'setlocal & python -m pip install pip -U & endlocal'
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose numpy & endlocal"
+build_script:
+  - cmd: 'setlocal & python setup.py install & endlocal'
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & cd tests & nosetests & endlocal"
+clone_depth: 10
+cache:
+  - '%CYG_CACHE%'
+test: 'off'
+branches:
+  only:
+    - master

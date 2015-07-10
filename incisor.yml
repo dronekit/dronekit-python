@@ -1,0 +1,25 @@
+builds:
+  - os: windows
+    stages:
+      setup:
+        - python -m pip install pip -U
+        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & pip2 install nose numpy
+      build:
+        - python setup.py install
+        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & cd tests & nosetests
+
+  - os: linux
+    stages:
+      setup:
+        - sudo pip2 install nose
+      build:
+        - sudo python setup.py install
+        - cd tests; nosetests
+
+  - os: osx
+    stages:
+      setup:
+        - sudo pip2 install nose
+      build:
+        - sudo python setup.py install
+        - cd tests; nosetests
