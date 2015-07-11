@@ -2,12 +2,16 @@ machine:
   environment: {}
 dependencies:
   override:
-    - sudo python setup.py install:
+    - python setup.py install:
         environment: {}
-    - "cd tests\nnosetests\n":
+    - nosetests tests/web:
+        environment: {}
+    - cd tests; python -m sitl:
         environment: {}
   pre:
-    - sudo pip2 install nose:
+    - pip2 install nose psutil:
+        environment: {}
+    - 'pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git':
         environment: {}
 test:
   override:
