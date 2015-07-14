@@ -3,27 +3,29 @@ builds:
     stages:
       setup:
         - python -m pip install pip -U
-        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & pip2 install nose numpy
+        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & pip2 install nose numpy psutil
+        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git
       build:
         - python setup.py install
-        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & cd tests & nosetests
+        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & nosetests tests\web
+        - SET PATH=%PYTHON%;c:\Python27\Scripts;%PATH% & cd tests & python -m sitl
 
   - os: linux
     stages:
       setup:
-        - sudo pip2 install nose
+        - pip2 install nose psutil
+        - pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git
       build:
-        - sudo python setup.py install
-        - |
-          cd tests
-          nosetests
+        - python setup.py install
+        - nosetests tests/web
+        - cd tests; python -m sitl
 
   - os: osx
     stages:
       setup:
-        - sudo pip2 install nose
+        - sudo pip2 install nose psutil
+        - sudo pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git
       build:
         - sudo python setup.py install
-        - |
-          cd tests
-          nosetests
+        - nosetests tests/web
+        - cd tests; python -m sitl
