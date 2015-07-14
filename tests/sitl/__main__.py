@@ -66,7 +66,11 @@ def wrap_fd(pipeout):
         return (str(pipeout), None)
 
 def lets_run_a_test(name):
-    sitl = Popen(['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353'], stdout=PIPE, stderr=PIPE)
+    sitl_args = ['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    if sys.platform == 'win32':
+        sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
+    else:
+        sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE)
     bg.append(sitl)
 
     while sitl.poll() == None:
@@ -100,12 +104,37 @@ def lets_run_a_test(name):
     sys.stdout.flush()
     sys.stderr.flush()
 
-    timeout = 300
+    # APPVEYOR = SLOW
+    timeout = 15*60 if sys.platform == 'win32' else 5*60
     try:
-        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760', '--cmd=module load droneapi.module.api; ; api start testlib.py'], cwd=testpath, env=newenv, stdout=PIPE, stderr=PIPE)
+        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'], cwd=testpath, env=newenv, stdin=PIPE, stdout=PIPE)#, stderr=PIPE)
         bg.append(p)
-        wait_timeout(p, timeout)
-    except TimeoutExpired:
+
+        while p.poll() == None:
+            line = p.stdout.readline()
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            if 'parameters' in line:
+                break
+
+        # TODO this sleep is only for us to waiting until
+        # all parameters to be received; would prefer to 
+        # move this to testlib.py and happen asap
+        time.sleep(3)
+        p.stdin.write('module load droneapi.module.api\n')
+        p.stdin.write('param set ARMING_CHECK 0\n')
+        p.stdin.write('api start testlib.py\n')
+        p.stdin.flush()
+
+        while True:
+            nextline = p.stdout.readline()
+            if nextline == '' and p.poll() != None:
+                break
+            sys.stdout.write(nextline)
+            sys.stdout.flush()
+
+        # wait_timeout(p, timeout)
+    except RuntimeError:
         kill(p.pid)
         p.returncode = 143
         print('Error: Timeout after ' + str(timeout) + ' seconds.')
