@@ -1,5 +1,6 @@
 environment:
-  global: {}
+  global:
+    SITL_SPEEDUP: aggressive
 init: []
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"

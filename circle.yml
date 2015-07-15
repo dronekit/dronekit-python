@@ -1,5 +1,6 @@
 machine:
-  environment: {}
+  environment:
+    SITL_SPEEDUP: simple
 dependencies:
   override:
     - python setup.py install:
