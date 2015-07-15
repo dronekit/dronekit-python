@@ -67,7 +67,15 @@ def wrap_fd(pipeout):
 
 def lets_run_a_test(name):
     sitl_args = ['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+
+    speedup = os.environ.get('TEST_SPEEDUP', '1')
+    rate = os.environ.get('TEST_RATE', '200')
+    sitl_args += ['--speedup', str(speedup), '-r', str(rate)]
+
+    # Change CPU core affinity.
+    # TODO change affinity on osx/linux
     if sys.platform == 'win32':
+        # 0x14 = 0b1110 = all cores except cpu 1
         sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
     else:
         sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE)
@@ -104,36 +112,47 @@ def lets_run_a_test(name):
     sys.stdout.flush()
     sys.stderr.flush()
 
-    # APPVEYOR = SLOW
-    timeout = 15*60 if sys.platform == 'win32' else 5*60
+    mavproxy_verbose = False
+    timeout = 5*60
+
     try:
-        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'], cwd=testpath, env=newenv, stdin=PIPE, stdout=PIPE)#, stderr=PIPE)
+        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'], cwd=testpath, env=newenv, stdin=PIPE, stdout=PIPE, stderr=PIPE if not mavproxy_verbose else None)
         bg.append(p)
 
+        # TODO this sleep is only for us to waiting until
+        # all parameters to be received; would prefer to
+        # move this to testlib.py and happen asap
         while p.poll() == None:
             line = p.stdout.readline()
-            sys.stdout.write(line)
-            sys.stdout.flush()
+            if mavproxy_verbose:
+                sys.stdout.write(line)
+                sys.stdout.flush()
             if 'parameters' in line:
                 break
 
-        # TODO this sleep is only for us to waiting until
-        # all parameters to be received; would prefer to 
-        # move this to testlib.py and happen asap
         time.sleep(3)
-        p.stdin.write('module load droneapi.module.api\n')
+
+        # NOTE these are *very inappropriate settings*
+        # to make on a real vehicle. They are leveraged
+        # exclusively for simulation. Take heed!!!
         p.stdin.write('param set ARMING_CHECK 0\n')
+        p.stdin.write('param set FS_THR_ENABLE 0\n')
+        p.stdin.write('param set FS_GCS_ENABLE 0\n')
+        p.stdin.write('param set EKF_CHECK_THRESH 0\n')
+
+        p.stdin.write('module load droneapi.module.api\n')
         p.stdin.write('api start testlib.py\n')
         p.stdin.flush()
 
-        while True:
-            nextline = p.stdout.readline()
-            if nextline == '' and p.poll() != None:
-                break
-            sys.stdout.write(nextline)
-            sys.stdout.flush()
-
-        # wait_timeout(p, timeout)
+        if mavproxy_verbose:
+            while True:
+                nextline = p.stdout.readline()
+                if nextline == '' and p.poll() != None:
+                    break
+                sys.stdout.write(nextline)
+                sys.stdout.flush()
+        else:
+            wait_timeout(p, timeout)
     except RuntimeError:
         kill(p.pid)
         p.returncode = 143
@@ -148,17 +167,29 @@ def lets_run_a_test(name):
     bg.remove(sitl)
 
     if p.returncode != 0:
-        print('[runner] ...aborting with dronekit error code ' + str(p.returncode))
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.exit(p.returncode)
-    
-    print('[runner] ...success.')
-    time.sleep(5)
+        print('[runner] ...failed with dronekit error code ' + str(p.returncode))
+    else:
+        print('[runner] ...success.')
 
-for i in os.listdir(testpath):
-    if i.startswith('test_') and i.endswith('.py'):
-        lets_run_a_test(i[:-3])
+    sys.stdout.flush()
+    sys.stderr.flush()
+    time.sleep(5)
+    return p.returncode
+
+retry = int(os.environ.get('TEST_RETRY', '1'))
+for path in os.listdir(testpath):
+    if path.startswith('test_') and path.endswith('.py'):
+        name = path[:-3]
+        i = retry
+        while True:
+            ret = lets_run_a_test(name)
+            if ret == 0:
+                break
+            i = i - 1
+            if i == 0:
+                print('[runner] aborting after failed test.')
+                sys.exit(ret)
+            print('[runner] retrying %s %s more times' % (name, i, ))
 
 print('[runner] finished.')
 sys.stdout.flush()
