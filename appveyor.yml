@@ -2,7 +2,7 @@ environment:
   global: {}
 init: []
 cache:
-  - "c:/Users/appveyor/.pip-wheelhouse"
+  - "c:\\Users\\appveyor\\.pip-wheelhouse"
 install:
   - ps: |
       New-Item -ItemType Directory -Force -Path c:\Users\appveyor\pip\
