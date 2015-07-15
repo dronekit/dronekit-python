@@ -1,17 +1,25 @@
 environment:
   global: {}
 init: []
+cache:
+  - "c:/Users/appveyor/.pip-wheelhouse"
 install:
-  - cmd: 'setlocal & python -m pip install pip -U & endlocal'
+  - ps: |
+      New-Item -ItemType Directory -Force -Path c:\Users\appveyor\pip\
+      @'
+      [global]
+      find-links = file://c:/Users/appveyor/.pip-wheelhouse
+
+      [wheel]
+      wheel-dir = c:/Users/appveyor/.pip-wheelhouse
+      '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
+  - cmd: 'setlocal & python -m pip install pip wheel -U & endlocal'
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 wheel numpy & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose numpy psutil & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git & endlocal"
 build_script:
   - cmd: 'setlocal & python setup.py install & endlocal'
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & cd tests & python -m sitl & endlocal"
 clone_depth: 10
-cache:
-  - '%CYG_CACHE%'
 test: 'off'
 branches:
   only:
