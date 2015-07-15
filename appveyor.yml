@@ -19,6 +19,8 @@ install:
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git & endlocal"
 build_script:
   - cmd: 'setlocal & python setup.py install & endlocal'
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & cd tests & python -u -m sitl & endlocal"
 clone_depth: 10
 test: 'off'
 branches:
