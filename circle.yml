@@ -1,13 +1,15 @@
 machine:
   environment:
-    SITL_SPEEDUP: simple
+    TEST_SPEEDUP: 10
+    TEST_RATE: 200
+    TEST_RETRY: 1
 dependencies:
   override:
     - python setup.py install:
         environment: {}
     - nosetests tests/web:
         environment: {}
-    - cd tests; python -m sitl:
+    - cd tests; python -um sitl:
         environment: {}
   pre:
     - pip2 install nose psutil:

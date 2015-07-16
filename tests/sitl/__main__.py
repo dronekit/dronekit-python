@@ -68,20 +68,15 @@ def wrap_fd(pipeout):
 def lets_run_a_test(name):
     sitl_args = ['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
 
-    # If we want to run ahead of time or on slow systems
-    if os.environ.get('SITL_SPEEDUP', '') == 'aggressive':
-        # A 20x multiplier and increase framerate to 400
-        # (These settings were tuned for Appveyor Windows CI.)
-        sitl_args += ['--speedup', '20', '-r', '400']
-    elif os.environ.get('SITL_SPEEDUP', '') == 'simple':
-        # A 4x multiplier
-        sitl_args += ['--speedup', '4']
+    speedup = os.environ.get('TEST_SPEEDUP', '1')
+    rate = os.environ.get('TEST_RATE', '200')
+    sitl_args += ['--speedup', str(speedup), '-r', str(rate)]
 
     # Change CPU core affinity.
     # TODO change affinity on osx/linux
     if sys.platform == 'win32':
         # 0x14 = 0b1110 = all cores except cpu 1
-        sitl = Popen(['start', '/affinity', '0x14', '/high', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
+        sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
     else:
         sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE)
     bg.append(sitl)
@@ -172,17 +167,29 @@ def lets_run_a_test(name):
     bg.remove(sitl)
 
     if p.returncode != 0:
-        print('[runner] ...aborting with dronekit error code ' + str(p.returncode))
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.exit(p.returncode)
-    
-    print('[runner] ...success.')
-    time.sleep(5)
+        print('[runner] ...failed with dronekit error code ' + str(p.returncode))
+    else:
+        print('[runner] ...success.')
 
-for i in os.listdir(testpath):
-    if i.startswith('test_') and i.endswith('.py'):
-        lets_run_a_test(i[:-3])
+    sys.stdout.flush()
+    sys.stderr.flush()
+    time.sleep(5)
+    return p.returncode
+
+retry = int(os.environ.get('TEST_RETRY', '1'))
+for path in os.listdir(testpath):
+    if path.startswith('test_') and path.endswith('.py'):
+        name = path[:-3]
+        i = retry
+        while True:
+            ret = lets_run_a_test(name)
+            if ret == 0:
+                break
+            i = i - 1
+            if i == 0:
+                print('[runner] aborting after failed test.')
+                sys.exit(ret)
+            print('[runner] retrying %s %s more times' % (name, i, ))
 
 print('[runner] finished.')
 sys.stdout.flush()
