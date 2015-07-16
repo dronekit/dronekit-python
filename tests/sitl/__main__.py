@@ -14,20 +14,6 @@ import signal
 import time
 import psutil
 
-def wait_timeout(proc, seconds):
-    """Wait for a process to finish, or raise exception after timeout"""
-    start = time.time()
-    end = start + seconds
-    interval = min(seconds / 1000.0, .25)
-
-    while True:
-        result = proc.poll()
-        if result is not None:
-            return result
-        if time.time() >= end:
-            raise RuntimeError("Process timed out")
-        time.sleep(interval)
-
 def kill(proc_pid):
     process = psutil.Process(proc_pid)
     for proc in process.children(recursive=True):
@@ -54,6 +40,67 @@ atexit.register(cleanup_processes)
 
 testpath = os.path.dirname(__file__)
 
+from threading import Thread
+from Queue import Queue, Empty
+
+class NonBlockingStreamReader:
+
+    def __init__(self, stream):
+        '''
+        stream: the stream to read from.
+                Usually a process' stdout or stderr.
+        '''
+
+        self._s = stream
+        self._q = Queue()
+
+        def _populateQueue(stream, queue):
+            '''
+            Collect lines from 'stream' and put them in 'quque'.
+            '''
+
+            while True:
+                line = stream.readline()
+                if line:
+                    queue.put(line)
+                else:
+                    break
+
+        self._t = Thread(target = _populateQueue,
+                args = (self._s, self._q))
+        self._t.daemon = True
+        self._t.start() #start collecting lines from the stream
+
+    def readline(self, timeout = None):
+        try:
+            return self._q.get(block = timeout is not None,
+                    timeout = timeout)
+        except Empty:
+            return None
+
+class UnexpectedEndOfStream(Exception):
+    pass
+
+def wait_timeout(proc, seconds, verbose):
+    """Wait for a process to finish, or raise exception after timeout"""
+    start = time.time()
+    end = start + seconds
+    interval = min(seconds / 1000.0, .25)
+
+    stdout = NonBlockingStreamReader(proc.stdout)
+    while True:
+        # Read text in verbose mode. Also sleep for a bit.
+        nextline = stdout.readline(interval)
+        if nextline and verbose:
+            sys.stdout.write(nextline)
+            sys.stdout.flush()
+
+        # Poll for end of text.
+        result = proc.poll()
+        if result is not None:
+            return result
+        if time.time() >= end:
+            raise RuntimeError("Process timed out")
 
 def wrap_fd(pipeout):
     # Prepare to pass to child process
@@ -112,11 +159,13 @@ def lets_run_a_test(name):
     sys.stdout.flush()
     sys.stderr.flush()
 
-    mavproxy_verbose = False
+    mavproxy_verbose = os.environ.get('TEST_VERBOSE', '0') != '0'
     timeout = 5*60
 
     try:
-        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'], cwd=testpath, env=newenv, stdin=PIPE, stdout=PIPE, stderr=PIPE if not mavproxy_verbose else None)
+        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'],
+            cwd=testpath, env=newenv, stdin=PIPE, stdout=PIPE,
+            stderr=PIPE if not mavproxy_verbose else None)
         bg.append(p)
 
         # TODO this sleep is only for us to waiting until
@@ -144,15 +193,7 @@ def lets_run_a_test(name):
         p.stdin.write('api start testlib.py\n')
         p.stdin.flush()
 
-        if mavproxy_verbose:
-            while True:
-                nextline = p.stdout.readline()
-                if nextline == '' and p.poll() != None:
-                    break
-                sys.stdout.write(nextline)
-                sys.stdout.flush()
-        else:
-            wait_timeout(p, timeout)
+        wait_timeout(p, timeout, mavproxy_verbose)
     except RuntimeError:
         kill(p.pid)
         p.returncode = 143
