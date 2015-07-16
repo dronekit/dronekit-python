@@ -218,7 +218,9 @@ def lets_run_a_test(name):
     return p.returncode
 
 retry = int(os.environ.get('TEST_RETRY', '1'))
-for path in os.listdir(testpath):
+filelist = sys.argv[1:] if len(sys.argv) > 1 else os.listdir(testpath)
+for path in filelist:
+    assert os.path.isfile(os.path.join(testpath, path)), '"%s" is not a valid test file' % (path,)
     if path.startswith('test_') and path.endswith('.py'):
         name = path[:-3]
         i = retry
