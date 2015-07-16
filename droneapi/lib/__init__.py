@@ -351,7 +351,8 @@ class HasObservers(object):
         if l is None:
             l = []
             self.__observers[attr_name] = l
-        l.append(observer)
+        if not observer in l:
+            l.append(observer)
 
     def remove_attribute_observer(self, attr_name, observer):
         """
