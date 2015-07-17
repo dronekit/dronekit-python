@@ -853,6 +853,7 @@ class CommandSequence(object):
 
         cmds = vehicle.commands
         cmds.clear()
+        vehicle.flush()
         lat = -34.364114,
         lon = 149.166022
         altitude = 30.0
@@ -921,6 +922,13 @@ class CommandSequence(object):
     def clear(self):
         '''
         Clear the command list.
+
+        .. warning::
+
+            Call ``flush()`` immediately after clearing the commands/before adding new commands (see
+            `#132 for more information <https://github.com/diydrones/dronekit-python/issues/132>`_).
+
+        .. todo:: The above note should be removed when https://github.com/diydrones/dronekit-python/issues/132 fixed
         '''
         pass
 
