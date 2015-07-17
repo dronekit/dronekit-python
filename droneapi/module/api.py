@@ -494,7 +494,7 @@ class APIModule(mp_module.MPModule):
             self.__on_change('rangefinder')
 
 
-        if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
+        if (self.vehicle is not None) and getattr(self.vehicle, 'mavrx_callback', None):
             self.vehicle.mavrx_callback(m)
 
         self.send_to_server(m)
