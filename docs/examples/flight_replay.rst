@@ -70,6 +70,7 @@ We generate up to 100 waypoints for the vehicle with the following code:
     print "Generating %s waypoints from replay..." % len(messages)
     cmds = v.commands
     cmds.clear()
+    v.flush()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
@@ -96,5 +97,7 @@ Source code
 
 The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/flight_replay/flight_replay.py>`_):
 
-.. include:: ../../examples/flight_replay/flight_replay.py
-    :literal:
+
+.. literalinclude:: ../../examples/flight_replay/flight_replay.py
+   :language: python
+	
