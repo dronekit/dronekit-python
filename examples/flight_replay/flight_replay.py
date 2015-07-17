@@ -1,12 +1,17 @@
-#
-# This is an example of talking to Droneshare to receive a past flight, and then 'replaying' that flight by sending waypoints
-# to the vehicle that approximates the stored flight log.
-# Usage:
-# * mavproxy.py
-# * module load api
-# * api start flight_replay.py <missionid>
-# (Where mission ID is a numeric mission number from a public droneshare flight)
-#
+"""
+flight_replay.py: 
+
+An example of talking to Droneshare to receive a past flight, and then 'replaying' 
+that flight by sending waypoints to a vehicle.
+
+Start this example as shown below, specifying the 
+missionid (a numeric mission number from a public droneshare flight):
+
+    api start flight_replay.py <missionid>
+
+Full documentation is provided at http://python.dronekit.io/examples/flight_replay.html
+"""
+
 from droneapi.lib import Command
 from pymavlink import mavutil
 import json, urllib, math
@@ -73,6 +78,7 @@ def replay_mission(payload):
     print "Generating %s waypoints from replay..." % len(messages)
     cmds = v.commands
     cmds.clear()
+    v.flush()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
