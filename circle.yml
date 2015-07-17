@@ -11,7 +11,7 @@ dependencies:
         environment: {}
     - nosetests tests/unit:
         environment: {}
-    - cd tests; python -um sitl:
+    - python -m tests.sitl:
         environment: {}
   pre:
     - pip2 install nose psutil mock:
