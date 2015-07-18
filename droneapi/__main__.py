@@ -75,19 +75,13 @@ def demo(local_connect):
     # Remove observer - specifying the attribute and previously registered callback function
     v.remove_attribute_observer('mode', mode_callback)  
 
-    # TODO
-    #
-    #
-    #
-    return
 
-
-    #  Get Vehicle Home location ((0 index in Vehicle.commands)
-    print "\nGet home location" 
-    cmds = v.commands
-    cmds.download()
-    cmds.wait_valid()
-    print " Home WP: %s" % cmds[0]
+    # #  Get Vehicle Home location ((0 index in Vehicle.commands)
+    # print "\nGet home location" 
+    # cmds = v.commands
+    # cmds.download()
+    # cmds.wait_valid()
+    # print " Home WP: %s" % cmds[0]
 
 
     #  Get/Set Vehicle Parameters
@@ -98,19 +92,19 @@ def demo(local_connect):
     print "Read new value of param 'THR_MIN': %s" % v.parameters['THR_MIN']
 
 
-    # Overriding an RC channel
-    # NOTE: CHANNEL OVERRIDES may be useful for simulating user input and when implementing certain types of joystick control. 
-    #DO NOT use unless there is no other choice (there almost always is!)
-    print "\nOverriding RC channels for roll and yaw"
-    v.channel_override = { "1" : 900, "4" : 1000 }
-    v.flush()
-    print " Current overrides are:", v.channel_override
-    print " Channel default values:", v.channel_readback  # All channel values before override
+    # # Overriding an RC channel
+    # # NOTE: CHANNEL OVERRIDES may be useful for simulating user input and when implementing certain types of joystick control. 
+    # #DO NOT use unless there is no other choice (there almost always is!)
+    # print "\nOverriding RC channels for roll and yaw"
+    # v.channel_override = { "1" : 900, "4" : 1000 }
+    # v.flush()
+    # print " Current overrides are:", v.channel_override
+    # print " Channel default values:", v.channel_readback  # All channel values before override
 
-    # Cancel override by setting channels to 0
-    print " Cancelling override"
-    v.channel_override = { "1" : 0, "4" : 0 }
-    v.flush()
+    # # Cancel override by setting channels to 0
+    # print " Cancelling override"
+    # v.channel_override = { "1" : 0, "4" : 0 }
+    # v.flush()
 
 
     ## Reset variables to sensible values.
@@ -196,7 +190,20 @@ class MPFakeState:
             'flightmode': 'AUTO',
             'armed': False,
         })()
+
+        self.mav_param = {} 
+
+        # Weird
         self.mpstate = self
+        self.functions = self
+
+    def module(self, which):
+        # psyche
+        return self
+
+    def param_set(self, name, value):
+        #TODO
+        pass
 
     def loop(self):
         print('Await heartbeat.')
@@ -205,9 +212,12 @@ class MPFakeState:
         send_heartbeat(self.master)
         request_data_stream_send(self.master)
 
-        params = {
-            "values": None
-        }
+        params = type('PState',(object,),{
+            "mav_param_count": -1,
+            "mav_param_set": []
+        })()
+        self.mav_param = {}
+        self.pstate = params
         self.master.mav.param_request_list_send(self.master.target_system, self.master.target_component)
 
         def mavlink_thread():
@@ -232,10 +242,13 @@ class MPFakeState:
 
                     if msg.get_type() not in swallow:
                         if msg.get_type() == 'PARAM_VALUE':
-                            if not params['values']:
-                                params['values'] = [None]*msg.param_count
+                            if params.mav_param_count == -1:
+                                params.mav_param_count = msg.param_count
+                                params.mav_param_set = []
                             try:
-                                params['values'][msg.param_index] = msg
+                                params.mav_param_set += [None]*(msg.param_index - (len(params.mav_param_set) - 1))
+                                params.mav_param_set[msg.param_index] = msg
+                                self.mav_param[msg.param_id] = msg
                             except:
                                 import traceback
                                 traceback.print_exc()
@@ -254,8 +267,8 @@ class MPFakeState:
 
         while True:
             time.sleep(0.1)
-            if params['values'] and None not in params['values']:
-                print('Completed list of %s params' % (len(params['values']),))
+            if params.mav_param_count == len(params.mav_param_set):
+                print('Completed list of %s params' % (params.mav_param_count,))
                 print('Starting dronekit.')
 
                 def local_connect():
