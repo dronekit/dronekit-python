@@ -143,7 +143,7 @@ class MPFakeState:
                             try:
                                 params.mav_param_set += [None]*(msg.param_index - (len(params.mav_param_set) - 1))
                                 params.mav_param_set[msg.param_index] = msg
-                                self.mav_param[msg.param_id] = msg
+                                self.mav_param[msg.param_id] = msg.param_value
                             except:
                                 import traceback
                                 traceback.print_exc()
