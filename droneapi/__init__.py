@@ -190,5 +190,5 @@ class MPFakeState:
 def local_connect():
     import droneapi.module.api as api
     state = MPFakeState()
-    api.init(state)
+    # api.init(state)
     return state.prepare()
