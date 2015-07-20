@@ -8,11 +8,12 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
+from droneapi import local_connect
 from droneapi.lib import VehicleMode, Location
 from pymavlink import mavutil
-from testlib import assert_equals
+from nose.tools import assert_equals
 
-def test_goto(local_connect):
+def test_goto():
     api = local_connect()
     vehicle = api.get_vehicles()[0]
 
