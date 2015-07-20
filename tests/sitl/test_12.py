@@ -1,3 +1,4 @@
+from droneapi import local_connect
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
 import time
@@ -8,7 +9,7 @@ from testlib import assert_equals
 def current_milli_time():
     return int(round(time.time() * 1000))
 
-def test_timeout(local_connect):
+def test_timeout():
     v = local_connect().get_vehicles()[0]
 
     value = v.parameters['THR_MIN']
