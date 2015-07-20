@@ -96,9 +96,26 @@ class MPFakeState:
         # psyche
         return self
 
-    def param_set(self, name, value):
-        #TODO
-        pass
+    def param_set(self, name, value, retries=3):
+        # TODO dumbly reimplement this using timeout loops
+        # because we should actually be awaiting an ACK of PARAM_VALUE
+        # changed, but we don't have a proper ack structure, we'll
+        # instead just wait until the value itself was changed
+
+        name = name.upper()
+        value = float(value)
+        success = False
+        while retries > 0:
+            retries -= 1
+            self.master.param_set_send(name.upper(), value)
+            tstart = time.time()
+            while time.time() - tstart < 1:
+                if self.mav_param[name] == value:
+                    return True
+                time.sleep(0.1)
+        
+        print("Timeout setting parameter %s to %f" % (name, value))
+        return False
 
     def prepare(self):
         print('Await heartbeat.')
@@ -139,10 +156,10 @@ class MPFakeState:
                         if msg.get_type() == 'PARAM_VALUE':
                             if params.mav_param_count == -1:
                                 params.mav_param_count = msg.param_count
-                                params.mav_param_set = []
+                                params.mav_param_set = [None]*msg.param_count
                             try:
-                                params.mav_param_set += [None]*(msg.param_index - (len(params.mav_param_set) - 1))
-                                params.mav_param_set[msg.param_index] = msg
+                                if msg.param_index < msg.param_count:
+                                    params.mav_param_set[msg.param_index] = msg
                                 self.mav_param[msg.param_id] = msg.param_value
                             except:
                                 import traceback
@@ -167,7 +184,8 @@ class MPFakeState:
                 print('Starting dronekit.')
                 break
 
-        return FakeAPI(self)
+        self.api = FakeAPI(self)
+        return self.api
 
 def local_connect():
     import droneapi.module.api as api
