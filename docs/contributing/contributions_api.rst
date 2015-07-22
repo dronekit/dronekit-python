@@ -30,27 +30,27 @@ repository and contribute changes back to the project master branch using pull r
 Test code
 =========
 
-Test code should be used to verify new and changed functionality. The links below provide information on how to set up a development environment on your development computer. Changes to DroneKit can then be tested locally. 
+Test code should be used to verify new and changed functionality. There are three test suites in DroneKit-Python:
+
+* **Unit tests** (:file:`tests/unit`) — verify all code paths of the API. 
+* **Integration tests** (:file:`tests/sitl`) — verify real-world code, examples, and documentation as they would perform in a real environment.
+* **Web client tests** (:file:`tests/web`) — specifically verify the Python library's capability to talk to `DroneKit Cloud <http://cloud.dronekit.io>`_.
+
+Setting up local testing
+------------------------
+
+The links below provide information on how to set up a development environment on your development computer. Changes to DroneKit can then be tested locally. 
 
 * :ref:`dronekit_development_linux`
 * :ref:`dronekit_development_windows`
 
---------------
-Test Structure
---------------
+Several of the test suites use `nose <https://nose.readthedocs.org/en/latest/>`_, a Python library for writing test scripts and a command line tool for running these. When setting up your dev environment, all test dependencies will have been installed (via :file:`requirements.txt`).
 
-There are three test suites in DroneKit Python.
 
-* ``tests/unit`` — **Unit tests** verify all code paths of the API. 
-* ``tests/sitl`` — **Integration tests** verify real-world code, examples, and documentation as they would perform in a real environment.
-* ``tests/web`` — **Web client** tests specifically verify the Python library's capability to talk to `DroneKit Cloud <http://cloud.dronekit.io>`_.
+Unit tests
+----------
 
-Several of these test suites use `nose <https://nose.readthedocs.org/en/latest/>`_, a Python library for writing test scripts and a command line tool for running these. When setting up your dev environment, all test dependencies will have been installed (via requirements.txt).
-
-Unit Tests
-^^^^^^^^^^^
-
-Unit tests use ``nosetests``. On any OS, type this in the command line to run, then see a summary of, all unit tests:
+Unit tests use *nosetests*. On any OS, enter the following command on a terminal/prompt to run the unit tests (and display a summary of the results):
 
 .. code:: bash
 
@@ -59,8 +59,9 @@ Unit tests use ``nosetests``. On any OS, type this in the command line to run, t
 
 For unit tests, `mock <https://docs.python.org/dev/library/unittest.mock.html>`_ is used to simulate objects and APIs and ensure correct results.
 
-Writing a new Test
-""""""""""""""""""
+
+Writing a new unit test
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Good unit tests should:
 
@@ -68,19 +69,21 @@ Good unit tests should:
 #. Verify all code paths that code can take.
 #. Be concise and straightforward.
 
-Create any file named `test_XXX.py` in the tests/unit folder to add it as a test. Feel free to copy from existing tests to get started. When `nosetests` is run, it will add your new test to its summary.
+Create any file named :file:`test_XXX.py` in the :file:`tests/unit` folder to add it as a test. Feel free to copy from existing tests to get started. When *nosetests* is run, it will add your new test to its summary.
 
-Integrated Tests
-^^^^^^^^^^^^^^^^
 
-Integrated tests use a custom test runner that is similar to ``nosetests``. On any OS, type this in the command line to run, then see a summary of, all integrated tests:
+
+Integration tests
+-----------------
+
+Integrated tests use a custom test runner that is similar to *nosetests*. On any OS, enter the following command on a terminal/prompt to run all the integrated tests (and display summary results):
 
 .. code:: bash
 
     cd dronekit-python
     python -um tests.sitl
 
-Integrated tests use the SITL environment to run DroneKit tests against a simulated copter. Because these tests emulate a copter in real-time, you can set several environment variables to tweak the environment code is run in:
+Integrated tests use the SITL environment to run DroneKit tests against a simulated Copter. Because these tests emulate Copter in real-time, you can set several environment variables to tweak the environment that code is run in:
 
 #. ``TEST_SPEEDUP`` - Speedup factor to SITL. Default is ``TEST_SPEEDUP=1``. You can increase this factor to speed up how long your tests take to run.
 #. ``TEST_RATE`` - Sets framerate. Default is ``TEST_RATE=200`` for copter, 50 for rover, 50 for plane.
@@ -92,8 +95,8 @@ You can choose to test specific files by passing them as arguments:
 
     python -um tests.sitl test_1.py test2_.py ...
 
-Writing a new Test
-""""""""""""""""""
+Writing a new integration test
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Integration tests should be written or improved whenever:
 
@@ -101,7 +104,7 @@ Integration tests should be written or improved whenever:
 #. Example code or documentation has been added.
 #. A feature could not be tested by unit tests alone (e.g. timing issues, mode changing, etc.)
 
-You can write a new integrated test by adding a file with the naming scheme ``test_XXX.py`` to the ``tests/sitl`` directory. In this file, functions with the prefix ``test_`` will be called with the `local_connect` parameter. For example:
+You can write a new integrated test by adding a file with the naming scheme :file:`test_XXX.py` to the :file:`tests/sitl` directory. In this file, functions with the prefix ``test_`` will be called with the ``local_connect`` parameter. For example:
 
 .. code:: python
 
@@ -113,12 +116,14 @@ You can write a new integrated test by adding a file with the naming scheme ``te
         # Simple parameter checks
         assert_equals(type(v.parameters['THR_MIN']), float)
 
-This checks to see that the parameter object is of type float. Use assertions to test your code is consistent. Avoiding printing any data from your test.
+This checks to see that the parameter object is of type `float`. Use assertions to test your code is consistent. Avoiding printing any data from your test.
 
-Web Client Tests
-^^^^^^^^^^^^^^^^
 
-Web client tests use ``nosetests``. To run these, you will need to sign up for API keys from `cloud.dronekit.io <https://cloud.dronekit.io/>`_. With these, you can export to your enviroment a variable called DRONEAPI_KEY in the format `<id>.<key>`:
+Web-Client tests
+----------------
+
+Web client tests use *nosetests*. To run these, you will need to sign up for API keys from `cloud.dronekit.io <https://cloud.dronekit.io/>`_. 
+With these, you can export a variable called ``DRONEAPI_KEY`` (with the format ``<id>.<key>``) to your environment:
 
 .. code:: bash
 
@@ -126,7 +131,7 @@ Web client tests use ``nosetests``. To run these, you will need to sign up for A
     set DRONEAPI_KEY=<id>.<key>      # works on Windows cmd.exe
     $env:DRONEAPI_KEY="<id>.<key>"   # works on Windows Powershell
 
-On any OS, type this in the command line to run, then see a summary of, all unit tests: 
+On any OS, enter the following command on a terminal/prompt to run the web-client tests (and display summary results):
 
 .. code:: bash
 
