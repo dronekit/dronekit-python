@@ -17,7 +17,7 @@ builds:
         - pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git
       build:
         - python setup.py install
-        - nosetests tests/web
+        - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests tests/web'
         - cd tests; python -m sitl
 
   - os: osx
