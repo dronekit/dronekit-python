@@ -13,7 +13,7 @@ script:
   - (a; sudo python setup.py install );z
   - (a; nosetests tests/web );z
   - (a; nosetests tests/unit );z
-  - (a; cd tests; python -um sitl );z
+  - (a; python -m tests.sitl );z
 git:
   depth: 10
 language: objective-c
