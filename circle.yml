@@ -9,10 +9,12 @@ dependencies:
         environment: {}
     - nosetests tests/web:
         environment: {}
+    - nosetests tests/unit:
+        environment: {}
     - cd tests; python -um sitl:
         environment: {}
   pre:
-    - pip2 install nose psutil:
+    - pip2 install nose psutil mock:
         environment: {}
     - 'pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git':
         environment: {}

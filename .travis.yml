@@ -7,11 +7,12 @@ env:
 install:
   - 'a() { set -e; }'
   - "z() { E=$?; test $E -eq 0 && return 0; printf \"\\n\\033[1;31mThe command failed with exit code $?.\\033[0m\"; set -e; return $E; }"
-  - (a; sudo pip2 install nose psutil );z
+  - (a; sudo pip2 install nose psutil mock );z
   - '(a; sudo pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git );z'
 script:
   - (a; sudo python setup.py install );z
   - (a; nosetests tests/web );z
+  - (a; nosetests tests/unit );z
   - (a; cd tests; python -um sitl );z
 git:
   depth: 10

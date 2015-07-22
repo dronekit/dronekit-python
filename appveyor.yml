@@ -18,11 +18,12 @@ install:
       '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
   - cmd: 'setlocal & python -m pip install pip wheel -U & endlocal'
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 wheel numpy & endlocal"
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose numpy psutil & endlocal"
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose numpy psutil mock & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git & endlocal"
 build_script:
   - cmd: 'setlocal & python setup.py install & endlocal'
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\unit & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & cd tests & python -um sitl & endlocal"
 clone_depth: 10
 test: 'off'
