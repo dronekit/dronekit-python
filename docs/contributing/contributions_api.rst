@@ -46,6 +46,13 @@ The links below provide information on how to set up a development environment o
 
 Several of the test suites use `nose <https://nose.readthedocs.org/en/latest/>`_, a Python library for writing test scripts and a command line tool for running these. When setting up your dev environment, all test dependencies will have been installed (via :file:`requirements.txt`).
 
+For several tests, you may be required to set an **environment variable**. In your command line, you can set the name of a variable to equal a value using the following invocation, depending on your OS:
+
+.. code:: bash
+
+    export NAME=VALUE      # works on OS X and Linux
+    set NAME=VALUE         # works on Windows cmd.exe
+    $env:NAME = "VALUE"    # works on Windows Powershell
 
 Unit tests
 ----------
@@ -71,7 +78,19 @@ Good unit tests should:
 
 Create any file named :file:`test_XXX.py` in the :file:`tests/unit` folder to add it as a test. Feel free to copy from existing tests to get started. When *nosetests* is run, it will add your new test to its summary.
 
+Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/diydrones/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
 
+Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as `assert_equals`` from the ``nose.tools`` module:
+
+.. code:: python
+
+    from nose.tools import assert_equals
+
+    def test_this(the_number_two):
+        assert the_number_two > 0, '2 should be greater than zero!'
+        assert_equals(the_number_two, 2, '2 should equal two!'
+
+Please add documentation to each test function describing what behavior it verifies.
 
 Integration tests
 -----------------
@@ -116,20 +135,32 @@ You can write a new integrated test by adding a file with the naming scheme :fil
         # Simple parameter checks
         assert_equals(type(v.parameters['THR_MIN']), float)
 
-This checks to see that the parameter object is of type `float`. Use assertions to test your code is consistent. Avoiding printing any data from your test.
+This checks to see that the parameter object is of type `float`.
 
+Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/diydrones/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
 
-Web-Client tests
+Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as `assert_equals`` from the ``testlib`` module:
+
+.. code:: python
+
+    from testlib import assert_equals
+
+    def test_this(the_number_two):
+        assert the_number_two > 0, '2 should be greater than zero!'
+        assert_equals(the_number_two, 2, '2 should equal two!'
+
+Please add documentation to each test function describing what behavior it verifies.
+
+Web client tests
 ----------------
 
+.. warning:: 
+
+    The web client library is being rewritten. Please `discuss with the project team 
+    <https://github.com/diydrones/dronekit-python/issues>`_ if you intend to develop with or for the present version of the web client.
+
 Web client tests use *nosetests*. To run these, you will need to sign up for API keys from `cloud.dronekit.io <https://cloud.dronekit.io/>`_. 
-With these, you can export a variable called ``DRONEAPI_KEY`` (with the format ``<id>.<key>``) to your environment:
-
-.. code:: bash
-
-    export DRONEAPI_KEY=<id>.<key>   # works on OS X and Linux
-    set DRONEAPI_KEY=<id>.<key>      # works on Windows cmd.exe
-    $env:DRONEAPI_KEY="<id>.<key>"   # works on Windows Powershell
+With these, export a variable named ``DRONEAPI_KEY`` with a value in the format ``<id>.<key>`` to your environment.
 
 On any OS, enter the following command on a terminal/prompt to run the web-client tests (and display summary results):
 
