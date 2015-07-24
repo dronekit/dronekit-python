@@ -80,7 +80,7 @@ Create any file named :file:`test_XXX.py` in the :file:`tests/unit` folder to ad
 
 Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/diydrones/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
 
-Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as `assert_equals`` from the ``nose.tools`` module:
+Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` from the ``nose.tools`` module:
 
 .. code:: python
 
