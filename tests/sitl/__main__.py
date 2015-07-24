@@ -163,7 +163,18 @@ def lets_run_a_test(name):
     timeout = 5*60
 
     try:
-        p = Popen([sys.executable, '-m', 'MAVProxy.mavproxy', '--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'],
+        if sys.platform == 'win32':
+            try:
+                # Try to find installed Python MAVProxy module.
+                import imp
+                imp.find_module('MAVProxy')
+                mavprog = [sys.executable, '-m', 'MAVProxy.mavproxy']
+            except:
+                # Uses mavproxy.exe instead.
+                mavprog = ['mavproxy']
+        else:
+            mavprog = [sys.executable, '-m', 'MAVProxy.mavproxy']
+        p = Popen(mavprog + ['--logfile=' + tempfile.mkstemp()[1], '--master=tcp:127.0.0.1:5760'],
             cwd=testpath, env=newenv, stdin=PIPE, stdout=PIPE,
             stderr=PIPE if not mavproxy_verbose else None)
         bg.append(p)
