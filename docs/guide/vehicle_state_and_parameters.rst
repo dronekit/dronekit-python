@@ -25,17 +25,19 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.location <droneapi.lib.Vehicle.location>`, 
 :py:attr:`Vehicle.attitude <droneapi.lib.Vehicle.attitude>`,
 :py:attr:`Vehicle.velocity <droneapi.lib.Vehicle.velocity>`,
-:py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>`,
 :py:attr:`Vehicle.airspeed <droneapi.lib.Vehicle.airspeed>`,
 :py:attr:`Vehicle.groundspeed <droneapi.lib.Vehicle.groundspeed>`,
 :py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>`,
-:py:attr:`Vehicle.armed <droneapi.lib.Vehicle.location>`,
-:py:attr:`Vehicle.location <droneapi.lib.Vehicle.armed>`,
-:py:attr:`Vehicle.mount_status <droneapi.lib.Vehicle.mount_status>`.
+:py:attr:`Vehicle.mount_status <droneapi.lib.Vehicle.mount_status>`,
+:py:attr:`Vehicle.battery <droneapi.lib.Vehicle.battery>`,
+:py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>`,
+:py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>`,
+:py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>`.
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>` and :ref:`observed <vehicle_state_observe_attributes>`, 
 but only the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>` 
 status can be :ref:`written <vehicle_state_set_attributes>`.
+
 
 
 .. _vehicle_state_read_attributes:
@@ -48,21 +50,35 @@ The code fragment below shows how to read and print all the attributes. The valu
 
 .. code:: python
     
-    # v is an instance of the Vehicle class
-    print "Location: %s" % v.location
-    print "Attitude: %s" % v.attitude
-    print "Velocity: %s" % v.velocity
-    print "GPS: %s" % v.gps_0
-    print "groundspeed: %s" % v.groundspeed
-    print "airspeed: %s" % v.airspeed
-    print "mount_status: %s" % v.mount_status
-    print "Mode: %s" % v.mode.name    # settable
-    print "Armed: %s" % v.armed    # settable
+    # vehicle is an instance of the Vehicle class
+    print "Location: %s" % vehicle.location
+    print "Attitude: %s" % vehicle.attitude
+    print "Velocity: %s" % vehicle.velocity
+    print "GPS: %s" % vehicle.gps_0
+    print "Groundspeed: %s" % vehicle.groundspeed
+    print "Airspeed: %s" % vehicle.airspeed
+    print "Mount status: %s" % vehicle.mount_status
+    print "Battery: %s" % vehicle.battery
+    print "Rangefinder: %s" % vehicle.rangefinder
+    print "Rangefinder distance: %s" % vehicle.rangefinder.distance
+    print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
+    print "Mode: %s" % vehicle.mode.name    # settable
+    print "Armed: %s" % vehicle.armed    # settable
 
-If one of these attributes cannot be retrieved or is invalid then the returned object will contain
+
+If an attribute cannot be retrieved then the returned object will contain
 ``None`` values for its members (for example, if there was no GPS lock then 
 :py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>` would return a :py:class:`GPSInfo <droneapi.lib.GPSInfo>` 
-with ``None`` values for ``eph``, ``satellites_visible`` etc.)
+with ``None`` values for ``eph``, ``satellites_visible`` etc.) 
+Attributes will also return  ``None`` if the associated hardware is not present on the connected device. 
+
+.. tip::
+
+    If you're using a :ref:`simulated vehicle <sitle_setup>` you can add support for optional hardware including
+    `rangefinders <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
+    and `optical flow sensors <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_optical_flow_sensor>`_.
+
+
 	
 .. todo:: we need to be able to verify mount_status works/setup.
 
@@ -82,8 +98,8 @@ then forces DroneKit to send outstanding messages.
 .. code:: python
 
     #disarm the vehicle
-    v.armed = False
-    v.flush()  # Flush to ensure changes are sent to autopilot
+    vehicle.armed = False
+    vehicle.flush()  # Flush to ensure changes are sent to autopilot
 
 
 .. warning::
@@ -99,10 +115,10 @@ to confirm they have changed before proceeding.
 
 .. code:: python
     
-    v.mode = VehicleMode("GUIDED")
-    v.armed = True
-    v.flush()  # Flush to ensure changes are sent to autopilot
-    while not v.mode.name=='GUIDED' and not v.armed and not api.exit:
+    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.armed = True
+    vehicle.flush()  # Flush to ensure changes are sent to autopilot
+    while not vehicle.mode.name=='GUIDED' and not vehicle.armed and not api.exit:
         print " Getting ready to take off ..."
         time.sleep(1)
     
@@ -113,13 +129,8 @@ to confirm they have changed before proceeding.
 Observing attribute changes
 ---------------------------
 
-You can observe any of the attributes and will receive notification if their values change.  This allows you to 
-monitor changes to velocity and other vehicle state without the need for polling.
-
-.. warning::
-
-    There is currently `a defect (#60) <https://github.com/diydrones/dronekit-python/issues/60>`_ that means that after an 
-    observer is triggered, the callback function is run on every heartbeat (whether or not the observed attribute changes).
+You can observe any of the attributes and will receive notification every time a value is received from the connected vehicle.  
+This allows you to monitor changes to velocity and other vehicle state without the need for polling.
 
 Observers are added using :py:func:`Vehicle.add_attribute_observer() <droneapi.lib.Vehicle.add_attribute_observer>`, 
 specifying the name of the attribute to observe and a callback function. The same string is passed to the callback
@@ -131,18 +142,35 @@ The code snippet below shows how to add (and remove) a callback function to obse
      
     # Callback function. The parameter is the name of the observed attribute (a string)
     def location_callback(attribute):
-        print " CALLBACK: Location changed to: ", v.location
+        print " CALLBACK: Location changed to: ", vehicle.location
 
     # Add a callback. The first parameter the name of the observed attribute (a string).
-    v.add_attribute_observer('location', location_callback)	
+    vehicle.add_attribute_observer('location', location_callback)	
 
     # Wait 2s so callback can be notified before the observer is removed
     time.sleep(2)
 
     # Remove observer - specifying the attribute and previously registered callback function
-    v.remove_attribute_observer('location', location_callback)	
+    vehicle.remove_attribute_observer('location', location_callback)	
 
 
+The callback is triggered `every time a message is received from the vehicle <https://github.com/diydrones/dronekit-python/issues/60>`_ 
+(whether or not the observed attribute changes). Callback code may therefore choose to cache the result and only report changes. 
+For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>` changes.
+
+.. code:: python
+
+    last_rangefinder_distance=0
+	
+    def rangefinder_callback(rangefinder):
+        global last_rangefinder_distance
+        if last_rangefinder_distance == round(vehicle.rangefinder.distance, 1):
+            return
+        last_rangefinder_distance = round(vehicle.rangefinder.distance, 1)
+        print " Rangefinder (metres): %s" % last_rangefinder_distance
+	
+
+    vehicle.add_attribute_observer('rangefinder', rangefinder_callback)	
 
 
 
@@ -223,7 +251,7 @@ Unlike other vehicle state information, the home location is accessed as the 0 i
 
 .. code:: python
     
-    cmds = v.commands
+    cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
     print " Home WP: %s" % cmds[0]
@@ -265,7 +293,7 @@ The code snippet below shows how to set a “demo” callback function as the ca
         print "Received", message
 
     # Set MAVLink callback handler (after getting Vehicle instance)                     
-    v.set_mavlink_callback(mavrx_debug_handler)
+    vehicle.set_mavlink_callback(mavrx_debug_handler)
 
 
 .. warning:: 
@@ -303,18 +331,18 @@ An example of setting and clearing overrides is given below:
 .. code:: python
     
     # Override the channel for roll and yaw
-    v.channel_override = { "1" : 900, "4" : 1000 }
-    v.flush()
+    vehicle.channel_override = { "1" : 900, "4" : 1000 }
+    vehicle.flush()
 	
     #print current override values
-    print "Current overrides are:", v.channel_override
+    print "Current overrides are:", vehicle.channel_override
 
     # Print channel values (values if overrides removed)
-    print "Channel default values:", v.channel_readback  
+    print "Channel default values:", vehicle.channel_readback  
     
     # Cancel override by setting channels to 0
-    v.channel_override = { "1" : 0, "4" : 0 }
-    v.flush()	
+    vehicle.channel_override = { "1" : 0, "4" : 0 }
+    vehicle.flush()	
 
 
 
