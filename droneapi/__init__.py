@@ -179,7 +179,7 @@ class MPFakeState:
 
         while True:
             time.sleep(0.1)
-            if params.mav_param_count == len(params.mav_param_set):
+            if params.mav_param_count > 0 and None not in params.mav_param_set:
                 print('Completed list of %s params' % (params.mav_param_count,))
                 print('Starting dronekit.')
                 break
