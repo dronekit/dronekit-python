@@ -34,6 +34,4 @@ xcopy /E /Y %PROTOBUFDIR%\google .\google\
 
 
 rem -----Build the Installer-----
-"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /dMyAppVersion=%VERSION% -compile droneapi_installer.iss
-
-pause
+"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" /dMyAppVersion=%VERSION% droneapi_installer.iss
