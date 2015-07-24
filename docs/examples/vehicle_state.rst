@@ -14,7 +14,7 @@ should be used.
 Running the example
 ===================
 
-The vehicle and DroneKit should be set up as described in :ref:`get-started`.
+The vehicle and DroneKit should be set up as described in the :ref:`quick-start` or :ref:`get-started`.
 If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run.
 
@@ -41,9 +41,11 @@ On the *MAVProxy* console you should see (something like):
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery voltage: 12590, current: 0, level: 99
+     Battery: Battery:voltage=12.587,current=0.0,level=98
+     System status: [MAV_STATE_STANDBY]: System is grounded and on standby. It can be launched any time.
      Mode: STABILIZE
      Armed: False
+    Standing by - waiting for instructions
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
     Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
@@ -118,8 +120,8 @@ Two cases where you may observe issues are:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
-	
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
+    
 .. literalinclude:: ../../examples/vehicle_state/vehicle_state.py
    :language: python
-	
+

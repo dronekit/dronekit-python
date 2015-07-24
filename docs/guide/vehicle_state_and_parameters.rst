@@ -31,7 +31,9 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>`,
 :py:attr:`Vehicle.armed <droneapi.lib.Vehicle.location>`,
 :py:attr:`Vehicle.location <droneapi.lib.Vehicle.armed>`,
-:py:attr:`Vehicle.mount_status <droneapi.lib.Vehicle.mount_status>`.
+:py:attr:`Vehicle.mount_status <droneapi.lib.Vehicle.mount_status>`,
+:py:attr:`Vehicle.battery <droneapi.lib.Vehicle.battery>`,
+:py:attr:`Vehicle.system_status <droneapi.lib.Vehicle.system_status>`.
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>` and :ref:`observed <vehicle_state_observe_attributes>`, 
 but only the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>` 
@@ -53,17 +55,26 @@ The code fragment below shows how to read and print all the attributes. The valu
     print "Attitude: %s" % v.attitude
     print "Velocity: %s" % v.velocity
     print "GPS: %s" % v.gps_0
-    print "groundspeed: %s" % v.groundspeed
-    print "airspeed: %s" % v.airspeed
-    print "mount_status: %s" % v.mount_status
+    print "Groundspeed: %s" % v.groundspeed
+    print "Airspeed: %s" % v.airspeed
+    print "Mount status: %s" % v.mount_status
+    print "Battery: %s" % v.battery
+    print "System status: %s" % v.system_status
     print "Mode: %s" % v.mode.name    # settable
     print "Armed: %s" % v.armed    # settable
 
-If one of these attributes cannot be retrieved or is invalid then the returned object will contain
+
+If these attributes cannot be retrieved or are invalid then the returned object will usually contain
 ``None`` values for its members (for example, if there was no GPS lock then 
 :py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>` would return a :py:class:`GPSInfo <droneapi.lib.GPSInfo>` 
 with ``None`` values for ``eph``, ``satellites_visible`` etc.)
-	
+
+The :py:attr:`Vehicle.system_status <droneapi.lib.Vehicle.system_status>` has slightly different behaviour from the other attributes:
+
+* It will return the last value retrieved if the heartbeat fails (rather than ``None``).
+* The attribute returns a ``MAV_STATE`` enum value for comparisons, and a human-readable string for the state when printed.
+
+
 .. todo:: we need to be able to verify mount_status works/setup.
 
 

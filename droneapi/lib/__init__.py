@@ -192,21 +192,6 @@ class Battery(object):
         return "Battery:voltage={},current={},level={}".format(self.voltage, self.current, self.level)
 
 
-class Rangefinder(object):
-    """
-    Rangefinder readings.
-
-    :param distance: Distance.
-    :param voltage: Voltage.
-    """
-    def __init__(self, distance, voltage):
-        self.distance = distance
-        self.voltage = voltage
-
-    def __str__(self):
-        return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
-
-
 class VehicleMode(object):
     """
     This object is used to get and set the current "flight mode".
@@ -474,6 +459,70 @@ class Vehicle(HasObservers):
         Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``.
 
         The values in the list are set to ``None`` if no mount is configured.
+
+
+    .. py:attribute:: system_status
+
+        Gets the ``system_status`` value from the most recently received `heartbeat <https://pixhawk.ethz.ch/mavlink/#HEARTBEAT>`_ message.
+
+        This attribute provides high-level information about whether the vehicle is on the ground, flying, in failsafe, etc. For example,
+        to check if the vehicle is in a critical state:
+
+        .. code:: python
+
+            from pymavlink import mavutil
+            ...
+
+            if v.system_status == mavutil.mavlink.MAV_STATE_CRITICAL:
+                print "DON'T PANIC!"
+
+        If printed, the attribute returns a human-readable string containing both the ``MAV_STATE`` enum name and a description. For example:
+
+        .. code:: bash
+
+           [MAV_STATE_STANDBY]: System is grounded and on standby. It can be launched any time.
+ 
+
+        The possible values of the status are defined in the `MAV_STATE <https://pixhawk.ethz.ch/mavlink/>`_ enum (reproduced below).
+
+        .. list-table:: MAV_STATE enum.
+           :widths: 5 25 75
+           :header-rows: 1
+
+           * - Value
+             - Field name
+             - Description
+           * - 0
+             - ``MAV_STATE_UNINIT``
+             - Uninitialized system - state is unknown.
+           * - 1
+             - ``MAV_STATE_BOOT``
+             - System is booting up.
+           * - 2
+             - ``MAV_STATE_CALIBRATING``
+             - System is calibrating and not flight-ready.
+           * - 3
+             - ``MAV_STATE_STANDBY``
+             - System is grounded and on standby. It can be launched any time.
+           * - 4
+             - ``MAV_STATE_ACTIVE``
+             - System is active and might be already airborne. Motors are engaged.
+           * - 5
+             - ``MAV_STATE_CRITICAL``
+             - System is in a non-normal flight mode. It can however still navigate.
+           * - 6
+             - ``MAV_STATE_EMERGENCY``
+             - System is in a non-normal flight mode. It has lost control over all
+               or parts of the airframe. It is in mayday and going down.
+           * - 7
+             - ``MAV_STATE_POWEROFF``
+             - System just initialized its power-down sequence and will shut down now.
+
+
+        .. note:: 
+
+            This attribute is of type :py:class:`SystemStatus <droneapi.lib.SystemStatus>`.
+
 
 
     .. py:attribute:: battery
@@ -853,7 +902,6 @@ class CommandSequence(object):
 
         cmds = vehicle.commands
         cmds.clear()
-        vehicle.flush()
         lat = -34.364114,
         lon = 149.166022
         altitude = 30.0
@@ -922,13 +970,6 @@ class CommandSequence(object):
     def clear(self):
         '''
         Clear the command list.
-
-        .. warning::
-
-            Call ``flush()`` immediately after clearing the commands/before adding new commands (see
-            `#132 for more information <https://github.com/diydrones/dronekit-python/issues/132>`_).
-
-        .. todo:: The above note should be removed when https://github.com/diydrones/dronekit-python/issues/132 fixed
         '''
         pass
 
@@ -966,3 +1007,32 @@ class CommandSequence(object):
         .. INTERNAL NOTE: (implementation provided by subclass)
         """
         pass
+
+class SystemStatus(object):
+    """
+    A convenience class (transparently) used by :py:func:`Vehicle.system_status <droneapi.lib.Vehicle.system_status>` for working with ``MAV_STATE`` messages.
+
+    The class provides a human readable string for the system state when ``Vehicle.system_status`` is printed, and an enum value otherwise (for comparison).
+
+    :param int mav_state: The current system ``MAV_STATE`` enum.
+
+    """
+    STATES = {
+            mavutil.mavlink.MAV_STATE_UNINIT: '[MAV_STATE_UNINIT]: Uninitialized system, state is unknown.',
+            mavutil.mavlink.MAV_STATE_BOOT: '[MAV_STATE_BOOT]: System is booting up.',
+            mavutil.mavlink.MAV_STATE_CALIBRATING: '[MAV_STATE_CALIBRATING]: System is calibrating and not flight-ready.',
+            mavutil.mavlink.MAV_STATE_STANDBY: '[MAV_STATE_STANDBY]: System is grounded and on standby. It can be launched any time.',
+            mavutil.mavlink.MAV_STATE_ACTIVE: '[MAV_STATE_ACTIVE]: System is active and might be already airborne. Motors are engaged.',
+            mavutil.mavlink.MAV_STATE_CRITICAL: '[MAV_STATE_CRITICAL]: System is in a non-normal flight mode. It can however still navigate.',
+            mavutil.mavlink.MAV_STATE_EMERGENCY: '[MAV_STATE_EMERGENCY]: System is in a non-normal flight mode. It lost control over parts or over the whole airframe. It is in mayday and going down.',
+            mavutil.mavlink.MAV_STATE_POWEROFF: '[MAV_STATE_POWEROFF]: System just initialized its power-down sequence, will shut down now.',
+            }
+
+    def __init__(self, mav_state):
+        self.status = mav_state
+
+    def __eq__(self, other):
+        return self.status == other
+
+    def __str__(self):
+        return self.STATES[self.status]

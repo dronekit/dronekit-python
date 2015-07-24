@@ -1,7 +1,7 @@
 #
-# This example shows how to use DroneKit-Python to get and set vehicle state, parameter and channel-override information. 
-# It also demonstrates how to observe vehicle attribute (state) changes. 
-# 
+# This example shows how to use DroneKit-Python to get and set vehicle state, parameter and channel-override information.
+# It also demonstrates how to observe vehicle attribute (state) changes.
+#
 # Usage:
 # * mavproxy.py
 # * module load api
@@ -26,34 +26,39 @@ print " Groundspeed: %s" % v.groundspeed
 print " Airspeed: %s" % v.airspeed
 print " Mount status: %s" % v.mount_status
 print " Battery: %s" % v.battery
+print " System status: %s" % v.system_status
 print " Mode: %s" % v.mode.name    # settable
 print " Armed: %s" % v.armed    # settable
 
 
+# Printing Vehicle.system_status returns a string. Otherwise the attribute yields a 
+# MAV_STATE enum value that can be used for comparisons (as shown below).
+if v.system_status == mavutil.mavlink.MAV_STATE_STANDBY:
+    print 'Standing by - waiting for instructions'
+
 # Set vehicle mode and armed attributes (the only settable attributes)
-print "Set Vehicle.mode=GUIDED (currently: %s)" % v.mode.name 
+print "Set Vehicle.mode=GUIDED (currently: %s)" % v.mode.name
 v.mode = VehicleMode("GUIDED")
 v.flush()  # Flush to guarantee that previous writes to the vehicle have taken place
 while not v.mode.name=='GUIDED' and not api.exit:  #Wait until mode has changed
     print " Waiting for mode change ..."
     time.sleep(1)
 
-print "Set Vehicle.armed=True (currently: %s)" % v.armed 
+print "Set Vehicle.armed=True (currently: %s)" % v.armed
 v.armed = True
 v.flush()
 while not v.armed and not api.exit:
     print " Waiting for arming..."
     time.sleep(1)
 
-
-# Show how to add and remove and attribute observer callbacks (using mode as example) 
+# Show how to add and remove and attribute observer callbacks (using mode as example)
 def mode_callback(attribute):
     print " CALLBACK: Mode changed to: ", v.mode.name
 
-print "\nAdd mode attribute observer for Vehicle.mode" 
-v.add_attribute_observer('mode', mode_callback)	
+print "\nAdd mode attribute observer for Vehicle.mode"
+v.add_attribute_observer('mode', mode_callback)
 
-print " Set mode=STABILIZE (currently: %s)" % v.mode.name 
+print " Set mode=STABILIZE (currently: %s)" % v.mode.name
 v.mode = VehicleMode("STABILIZE")
 v.flush()
 
@@ -61,11 +66,11 @@ print " Wait 2s so callback invoked before observer removed"
 time.sleep(2)
 
 # Remove observer - specifying the attribute and previously registered callback function
-v.remove_attribute_observer('mode', mode_callback)	
+v.remove_attribute_observer('mode', mode_callback)
 
 
 #  Get Vehicle Home location ((0 index in Vehicle.commands)
-print "\nGet home location" 
+print "\nGet home location"
 cmds = v.commands
 cmds.download()
 cmds.wait_valid()
@@ -81,7 +86,7 @@ print "Read new value of param 'THR_MIN': %s" % v.parameters['THR_MIN']
 
 
 # Overriding an RC channel
-# NOTE: CHANNEL OVERRIDES may be useful for simulating user input and when implementing certain types of joystick control. 
+# NOTE: CHANNEL OVERRIDES may be useful for simulating user input and when implementing certain types of joystick control.
 #DO NOT use unless there is no other choice (there almost always is!)
 print "\nOverriding RC channels for roll and yaw"
 v.channel_override = { "1" : 900, "4" : 1000 }
@@ -96,7 +101,7 @@ v.flush()
 
 
 ## Reset variables to sensible values.
-print "\nReset vehicle atributes/parameters and exit"
+print "\nReset vehicle attributes/parameters and exit"
 v.mode = VehicleMode("STABILIZE")
 v.armed = False
 v.parameters['THR_MIN']=130
