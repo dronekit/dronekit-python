@@ -1,16 +1,16 @@
 # DroneKit-python (formerly DroneAPI-python)
 
 [![Windows Build status](https://img.shields.io/appveyor/ci/3drobotics/dronekit-python.svg?label=windows)](https://ci.appveyor.com/project/3drobotics/dronekit-python/branch/master)
-[![OS X Build Status](https://img.shields.io/travis/diydrones/dronekit-python.svg?label=os%20x)](https://travis-ci.org/diydrones/dronekit-python)
-[![Linux Build Status](https://img.shields.io/circleci/project/diydrones/dronekit-python.svg?label=linux)](https://circleci.com/gh/diydrones/dronekit-python)
+[![OS X Build Status](https://img.shields.io/travis/dronekit/dronekit-python.svg?label=os%20x)](https://travis-ci.org/dronekit/dronekit-python)
+[![Linux Build Status](https://img.shields.io/circleci/project/dronekit/dronekit-python.svg?label=linux)](https://circleci.com/gh/dronekit/dronekit-python)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/diydrones/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dronekit/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This package contains the python language bindings for the drone API and the associated MAVProxy module.
 
 ## Users wanted!
 
-We'd love your [feedback and suggestions](https://github.com/diydrones/dronekit-python/issues) about this API and are eager to evolve it to meet your needs.
+We'd love your [feedback and suggestions](https://github.com/dronekit/dronekit-python/issues) about this API and are eager to evolve it to meet your needs.
 
 For documentation on how to use this API please see:
 

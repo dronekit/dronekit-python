@@ -95,7 +95,7 @@ Next we'll work with existing Linux services (gpsd) to add a new drone based fea
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/flight_replay/flight_replay.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/flight_replay/flight_replay.py>`_):
 
 
 .. literalinclude:: ../../examples/flight_replay/flight_replay.py

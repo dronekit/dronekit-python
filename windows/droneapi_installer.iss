@@ -4,7 +4,7 @@
 #define MyAppName "DroneKit"
 ; #define MyAppVersion "1"
 #define MyAppPublisher "3D Robotics, Inc"
-#define MyAppURL "https://github.com/diydrones/dronekit-python"
+#define MyAppURL "https://github.com/dronekit/dronekit-python"
 #define MyAppExeName ""
 
 [Setup]

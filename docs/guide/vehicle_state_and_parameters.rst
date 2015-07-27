@@ -107,7 +107,7 @@ then forces DroneKit to send outstanding messages.
     After ``flush()`` returns the message is guaranteed to have been sent to the autopilot, but it is **not guaranteed to succeed**. 
     For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks.
 	
-    While the autopilot does send information about the success (or failure) of the request, this is `not currently handled by DroneKit <https://github.com/diydrones/dronekit-python/issues/114>`_.
+    While the autopilot does send information about the success (or failure) of the request, this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
 
 
 Code should not assume that an attempt to set an attribute will succeed. The example code snippet below polls the attribute values
@@ -154,7 +154,7 @@ The code snippet below shows how to add (and remove) a callback function to obse
     vehicle.remove_attribute_observer('location', location_callback)	
 
 
-The callback is triggered `every time a message is received from the vehicle <https://github.com/diydrones/dronekit-python/issues/60>`_ 
+The callback is triggered `every time a message is received from the vehicle <https://github.com/dronekit/dronekit-python/issues/60>`_ 
 (whether or not the observed attribute changes). Callback code may therefore choose to cache the result and only report changes. 
 For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>` changes.
 
@@ -227,12 +227,12 @@ Vehicle parameters are set as shown in the code fragment below, using the parame
 Observing parameter changes
 ---------------------------
 
-At time of writing :py:class:`Parameters <droneapi.lib.Parameters>` does `not support <https://github.com/diydrones/dronekit-python/issues/107>`_ observing parameter changes.
+At time of writing :py:class:`Parameters <droneapi.lib.Parameters>` does `not support <https://github.com/dronekit/dronekit-python/issues/107>`_ observing parameter changes.
 		
 .. todo:: 
 
     Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
-    https://github.com/diydrones/dronekit-python/issues/107
+    https://github.com/dronekit/dronekit-python/issues/107
 
 
 
@@ -268,7 +268,7 @@ Discommended APIs
 This section describes methods that we recommend you do not use! In general they are provided to handle the (hopefully rare)
 cases where the "proper" API is missing some needed functionality.
 
-If you have to use these methods please `provide feedback explaining why <https://github.com/diydrones/dronekit-python/issues>`_.
+If you have to use these methods please `provide feedback explaining why <https://github.com/dronekit/dronekit-python/issues>`_.
 
 
 .. _vehicle_state_set_mavlink_callback:
@@ -298,7 +298,7 @@ The code snippet below shows how to set a “demo” callback function as the ca
 
 .. warning:: 
 
-    At time of writing there is no way to `disable this callback <https://github.com/diydrones/dronekit-python/issues/115>`_.
+    At time of writing there is no way to `disable this callback <https://github.com/dronekit/dronekit-python/issues/115>`_.
 
 
 .. _vehicle_state_channel_override:
@@ -354,11 +354,11 @@ Known issues
 
 Below are a number of bugs and known issues related to vehicle state and settings:
 
-* `#12 Timeout error when setting a parameter <https://github.com/diydrones/dronekit-python/issues/12>`_
-* `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/diydrones/dronekit-python/issues/60>`_
-* `#107 Add implementation for observer methods in Parameter class <https://github.com/diydrones/dronekit-python/issues/107>`_ 
-* `#114 DroneKit has no method for detecting command failure <https://github.com/diydrones/dronekit-python/issues/114>`_
-* `#115 No way to disable the callback set_mavlink_callback <https://github.com/diydrones/dronekit-python/issues/115>`_
+* `#12 Timeout error when setting a parameter <https://github.com/dronekit/dronekit-python/issues/12>`_
+* `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/dronekit/dronekit-python/issues/60>`_
+* `#107 Add implementation for observer methods in Parameter class <https://github.com/dronekit/dronekit-python/issues/107>`_ 
+* `#114 DroneKit has no method for detecting command failure <https://github.com/dronekit/dronekit-python/issues/114>`_
+* `#115 No way to disable the callback set_mavlink_callback <https://github.com/dronekit/dronekit-python/issues/115>`_
 
 
-Other API issues and improvement suggestions can viewed on `github here <https://github.com/diydrones/dronekit-python/issues>`_. 
+Other API issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 

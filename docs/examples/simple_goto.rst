@@ -133,7 +133,7 @@ To return to the home position and land, we set the mode to ``RTL``:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
 
 .. literalinclude:: ../../examples/simple_goto/simple_goto.py
     :language: python

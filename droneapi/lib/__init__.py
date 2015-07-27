@@ -345,7 +345,7 @@ class HasObservers(object):
         :param attr_name: The attribute to watch.
         :param observer: The callback to invoke when a change in the attribute is detected.
 
-        .. todo:: Check that the defect for endless repetition after thread closes is fixed: https://github.com/diydrones/dronekit-python/issues/74
+        .. todo:: Check that the defect for endless repetition after thread closes is fixed: https://github.com/dronekit/dronekit-python/issues/74
         """
         l = self.__observers.get(attr_name)
         if l is None:
@@ -532,7 +532,7 @@ class Vehicle(HasObservers):
 
         .. todo:: Add note to the examples/guide like warning above not to use this mechanism except as intended:
 
-            https://github.com/diydrones/dronekit-python/issues/72
+            https://github.com/dronekit/dronekit-python/issues/72
 
         .. todo::
 
@@ -579,7 +579,7 @@ class Vehicle(HasObservers):
             ? double (0, 1, 2.3 etc...)
 
 
-    .. todo:: Add waypoint_home attribute IF this is added: https://github.com/diydrones/dronekit-python/issues/105
+    .. todo:: Add waypoint_home attribute IF this is added: https://github.com/dronekit/dronekit-python/issues/105
 
     """
 
@@ -782,7 +782,7 @@ class Parameters(HasObservers):
     .. todo::
 
         Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
-        https://github.com/diydrones/dronekit-python/issues/107
+        https://github.com/dronekit/dronekit-python/issues/107
     """
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
@@ -886,7 +886,7 @@ class CommandSequence(object):
 
         :param altitude: Target height, in metres.
 
-        .. todo:: This is a hack. The actual function should be defined here. See https://github.com/diydrones/dronekit-python/issues/64
+        .. todo:: This is a hack. The actual function should be defined here. See https://github.com/dronekit/dronekit-python/issues/64
     """
 
     def download(self):
@@ -931,9 +931,9 @@ class CommandSequence(object):
         .. warning::
 
             Call ``flush()`` immediately after clearing the commands/before adding new commands (see
-            `#132 for more information <https://github.com/diydrones/dronekit-python/issues/132>`_).
+            `#132 for more information <https://github.com/dronekit/dronekit-python/issues/132>`_).
 
-        .. todo:: The above note should be removed when https://github.com/diydrones/dronekit-python/issues/132 fixed
+        .. todo:: The above note should be removed when https://github.com/dronekit/dronekit-python/issues/132 fixed
         '''
         pass
 

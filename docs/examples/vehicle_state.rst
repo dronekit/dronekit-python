@@ -112,11 +112,11 @@ Provided that the vehicle is connected and able to arm, it should run through to
 Two cases where you may observe issues are:
 
 * You will see an error ``Timeout setting THR_MIN to 10.000000``. This can be ignored because the value is actually set. 
-  See `#12 Timeout error when setting a parameter <https://github.com/diydrones/dronekit-python/issues/12>`_ for information. 
+  See `#12 Timeout error when setting a parameter <https://github.com/dronekit/dronekit-python/issues/12>`_ for information. 
 * When the observer sets the mode callback, it waits two seconds after changing the mode before removing the observer
   (to ensure that the callback function is run before the observer is removed). In this time you may see the callback being 
   called twice even though the mode is only changed once. 
-  See `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/diydrones/dronekit-python/issues/60>`_ 
+  See `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/dronekit/dronekit-python/issues/60>`_ 
   for more information.
 
 
@@ -124,7 +124,7 @@ Two cases where you may observe issues are:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
 	
 .. literalinclude:: ../../examples/vehicle_state/vehicle_state.py
    :language: python

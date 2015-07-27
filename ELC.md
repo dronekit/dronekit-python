@@ -27,7 +27,7 @@ sudo pip install --upgrade droneapi
 git clone https://github.com/diydrones/ardupilot.git
 
 # We will be referring to some example code included in the git repository
-git clone https://github.com/diydrones/dronekit-python.git
+git clone https://github.com/dronekit/dronekit-python.git
 
 # We would like mavproxy to automatically load the DroneAPI module
 # when it starts

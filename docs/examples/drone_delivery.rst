@@ -84,7 +84,7 @@ Next we'll look at the basics of using the webservice and the local vehicle API 
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/drone_delivery/drone_delivery.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/drone_delivery/drone_delivery.py>`_):
 
 .. include:: ../../examples/drone_delivery/drone_delivery.py
     :literal:

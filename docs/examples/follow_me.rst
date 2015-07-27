@@ -42,7 +42,7 @@ Next, take a look at the full :ref:`api_reference` for more information.
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/follow_me/follow_me.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/follow_me/follow_me.py>`_):
 
 .. include:: ../../examples/follow_me/follow_me.py
     :literal:

@@ -344,7 +344,7 @@ ArduPilot version:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/diydrones/dronekit-python/blob/master/examples/guided_set_speed_yaw/guided_set_speed_yaw.py>`_):
+The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/guided_set_speed_yaw/guided_set_speed_yaw.py>`_):
 
 .. literalinclude:: ../../examples/guided_set_speed_yaw/guided_set_speed_yaw.py
     :language: python
