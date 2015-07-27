@@ -709,6 +709,22 @@ class Vehicle(HasObservers):
         """
         self.mavrx_callback = callback
 
+    def unset_mavlink_callback(self):
+        """
+        Clears the asynchronous notification added by set_mavlink_callback.
+
+        The code snippet below shows how to set, then clear, a MAVLink callback function.
+
+        .. code:: python
+            # Set MAVLink callback handler (after getting Vehicle instance)
+            vehicle.set_mavlink_callback(mavrx_debug_handler)
+
+            # Remove the MAVLink callback handler. Callback will not be
+            # called after this point.
+            vehicle.unset_mavlink_callback()
+        """
+        self.mavrx_callback = None
+
     def flush(self):
         """
         It is important to understand that setting attributes/changing vehicle state may occur over a slow link.
