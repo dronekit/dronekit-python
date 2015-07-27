@@ -18,7 +18,7 @@ That said, it is possible to effectively debug DroneKit apps. The main methods a
 .. note:: 
 
     We are actively working to improve debugging on DroneKit-Python! You can track progress and suggestions
-    on `Github Issue #118 <https://github.com/diydrones/dronekit-python/issues/118>`_.
+    on `Github Issue #118 <https://github.com/dronekit/dronekit-python/issues/118>`_.
 
 
 Print/log statements

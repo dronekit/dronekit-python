@@ -11,7 +11,7 @@ The script uses the "Requests" module to make the API requests: http://docs.pyth
 Github API doc for getting latest release: https://developer.github.com/v3/repos/releases/#get-the-latest-release
     GET /repos/:owner/:repo/releases/latest
 
-Where our release is: https://github.com/diydrones/dronekit-python/releases/tag/1.1.1
+Where our release is: https://github.com/dronekit/dronekit-python/releases/tag/1.1.1
 """
 
 import requests  # for making API requests

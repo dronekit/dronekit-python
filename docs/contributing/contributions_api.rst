@@ -9,13 +9,13 @@ This article provides a high level overview of how to contribute changes to the 
 .. tip:: 
 
     We highly recommend that changes and ideas are `discussed with the project team 
-    <https://github.com/diydrones/dronekit-python/issues>`_ before starting work! 
+    <https://github.com/dronekit/dronekit-python/issues>`_ before starting work! 
 
 
 Submitting changes
 ==================
 
-Contributors should fork the main `diydrones/dronekit-python/ <https://github.com/diydrones/dronekit-python>`_ 
+Contributors should fork the main `dronekit/dronekit-python/ <https://github.com/dronekit/dronekit-python>`_ 
 repository and contribute changes back to the project master branch using pull requests
 
 * Changes should be :ref:`tested locally <contributing-test-code>` before submission.
@@ -78,7 +78,7 @@ Good unit tests should:
 
 Create any file named :file:`test_XXX.py` in the :file:`tests/unit` folder to add it as a test. Feel free to copy from existing tests to get started. When *nosetests* is run, it will add your new test to its summary.
 
-Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/diydrones/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
+Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/dronekit/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
 
 Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` from the ``nose.tools`` module:
 
@@ -137,7 +137,7 @@ You can write a new integrated test by adding a file with the naming scheme :fil
 
 This checks to see that the parameter object is of type `float`.
 
-Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/diydrones/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
+Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/dronekit/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
 
 Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` from the ``testlib`` module:
 
@@ -157,7 +157,7 @@ Web client tests
 .. warning:: 
 
     The web client library is being rewritten. Please `discuss with the project team 
-    <https://github.com/diydrones/dronekit-python/issues>`_ if you intend to develop with or for the present version of the web client.
+    <https://github.com/dronekit/dronekit-python/issues>`_ if you intend to develop with or for the present version of the web client.
 
 Web client tests use *nosetests*. To run these, you will need to sign up for API keys from `cloud.dronekit.io <https://cloud.dronekit.io/>`_. 
 With these, export a variable named ``DRONEAPI_KEY`` with a value in the format ``<id>.<key>`` to your environment.

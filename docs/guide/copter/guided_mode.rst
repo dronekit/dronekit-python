@@ -353,9 +353,9 @@ The *home location* is updated immediately in ArduPilot, but the change may not 
 Command acknowledgements and response values
 --------------------------------------------
 
-ArduPilot typically sends a command acknowledgement indicating whether a command was received, and whether it was accepted or rejected. At time of writing there is no way to intercept this acknowledgement in the API (`#168 <https://github.com/diydrones/dronekit-python/pull/168>`_).
+ArduPilot typically sends a command acknowledgement indicating whether a command was received, and whether it was accepted or rejected. At time of writing there is no way to intercept this acknowledgement in the API (`#168 <https://github.com/dronekit/dronekit-python/pull/168>`_).
 
-Some MAVLink messages request information from the autopilot, and expect the result to be returned in another message. At time of writing you can send the request (provided the message is handled by the AutoPilot in GUIDED mode) but there is no way to intercept the response in DroneKit-Python (`#169 <https://github.com/diydrones/dronekit-python/issues/169>`_).
+Some MAVLink messages request information from the autopilot, and expect the result to be returned in another message. At time of writing you can send the request (provided the message is handled by the AutoPilot in GUIDED mode) but there is no way to intercept the response in DroneKit-Python (`#169 <https://github.com/dronekit/dronekit-python/issues/169>`_).
 
 
 .. _guided_mode_copter_useful_conversion_functions:

@@ -14,7 +14,7 @@ then build and install your own fork of DroneKit, as discussed below.
 Fetch and build DroneKit source
 ===============================
 
-#. Fork the `dronekit-python <https://github.com/diydrones/dronekit-python>`_ project on Github.
+#. Fork the `dronekit-python <https://github.com/dronekit/dronekit-python>`_ project on Github.
 
 #. Open the *WinPython Command Prompt*. Run the following commands to clone and build DroneKit (in the directory of your choice):
   

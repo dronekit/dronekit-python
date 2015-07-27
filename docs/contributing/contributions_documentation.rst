@@ -11,7 +11,7 @@ the documentation system, how to build the documents locally, and how to submit 
 Documentation system overview
 =============================
 
-The documentation source files are `stored in Github <https://github.com/diydrones/dronekit-python/tree/master/docs>`_. 
+The documentation source files are `stored in Github <https://github.com/dronekit/dronekit-python/tree/master/docs>`_. 
 The content is written in plain-text files (file-extension :file:`.rst`) using 
 `reStructuredText <http://sphinx-doc.org/rest.html>`_ markup, and is compiled into HTML using the 
 `Sphinx Documentation Generator <http://sphinx-doc.org/index.html>`_. 
@@ -42,7 +42,7 @@ The instructions below explain how to get the documentation source, and build it
   * `Download and install VirtualBox <https://www.virtualbox.org/wiki/Downloads>`_.
   * `Download and install Vagrant for your platform <https://www.vagrantup.com/downloads.html>`_ (Windows, OS-X and Linux are supported).
   
-* `Fork the official dronekit-python repo <https://github.com/diydrones/dronekit-python#fork-destination-box>`_
+* `Fork the official dronekit-python repo <https://github.com/dronekit/dronekit-python#fork-destination-box>`_
 * Clone your fork of the Github repository anywhere on the host PC: ::
 
     git clone https://github.com/YOUR-REPOSITORY/dronekit-python.git

@@ -18,7 +18,7 @@ Latest release
 All releases
 ============
 
-For information about all past releases, please see `this link on Github <https://github.com/diydrones/dronekit-python/releases>`_.
+For information about all past releases, please see `this link on Github <https://github.com/dronekit/dronekit-python/releases>`_.
 
 Working with releases
 =======================
