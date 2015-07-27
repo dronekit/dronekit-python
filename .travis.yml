@@ -21,3 +21,10 @@ notifications:
   email: false
 matrix:
   fast_finish: true
+
+branches:
+  only:
+    - master
+    - patch
+    - major
+    - minor

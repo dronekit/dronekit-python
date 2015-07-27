@@ -45,3 +45,6 @@ test: 'off'
 branches:
   only:
     - master
+    - major
+    - minor
+    - patch
