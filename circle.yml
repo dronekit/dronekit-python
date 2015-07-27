@@ -14,7 +14,7 @@ dependencies:
     - python -m tests.sitl:
         environment: {}
   pre:
-    - pip2 install nose psutil mock:
+    - pip2 install nose psutil mock numpy:
         environment: {}
     - 'pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git':
         environment: {}
