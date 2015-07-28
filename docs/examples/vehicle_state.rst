@@ -77,6 +77,14 @@ On the *MAVProxy* console you should see (something like):
     timeout setting THR_MIN to 10.000000
     Read new value of param 'THR_MIN': 10.0
 
+    Set MAVLink callback handler (start receiving all MAVLink messages)
+    Wait 1s so mavrx_debug_handler has a chance to be called before it is removed
+    Raw MAVLink message:  RAW_IMU {time_usec : 894620000, xacc : -3, yacc : 10, zacc : -999, xgyro : 1, ygyro : 0, zgyro : 1, xmag : 153, ymag : 52, zmag : -364}
+    ...
+    Raw MAVLink message:  SCALED_PRESSURE {time_boot_ms : 895340, press_abs : 945.038024902, press_diff : 0.0, temperature : 2600}
+    Remove the MAVLink callback handler (stop getting messages)
+	
+	
     Overriding RC channels for roll and yaw
      Current overrides are: {'1': 900, '4': 1000}
      Channel default values: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}

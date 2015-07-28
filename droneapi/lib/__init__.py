@@ -678,7 +678,7 @@ class Vehicle(HasObservers):
         The :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
         Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
 
-        :param: message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>`.
+        :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>`.
             There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
         """
         pass
@@ -686,7 +686,9 @@ class Vehicle(HasObservers):
 
     def set_mavlink_callback(self, callback):
         """
-        Provides asynchronous notification when any MAVLink packet is received from this vehicle.
+        Provides asynchronous notification when any MAVLink packet is received by this vehicle.
+
+        Only a single callback can be set. :py:func:`unset_mavlink_callback <droneapi.lib.Vehicle.unset_mavlink_callback>` removes the callback.
 
         .. tip::
 
@@ -706,8 +708,27 @@ class Vehicle(HasObservers):
             # Set MAVLink callback handler (after getting Vehicle instance)
             vehicle.set_mavlink_callback(mavrx_debug_handler)
 
+        :param callback: The callback function to be invoked when a raw MAVLink message is received.
+		
         """
         self.mavrx_callback = callback
+
+    def unset_mavlink_callback(self):
+        """
+        Clears the asynchronous notification added by :py:func:`set_mavlink_callback <droneapi.lib.Vehicle.set_mavlink_callback>`.
+
+        The code snippet below shows how to set, then clear, a MAVLink callback function.
+
+        .. code:: python
+
+            # Set MAVLink callback handler (after getting Vehicle instance)
+            vehicle.set_mavlink_callback(mavrx_debug_handler)
+
+            # Remove the MAVLink callback handler. Callback will not be
+            # called after this point.
+            vehicle.unset_mavlink_callback()
+        """
+        self.mavrx_callback = None
 
     def flush(self):
         """
