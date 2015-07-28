@@ -277,14 +277,16 @@ MAVLink Message Observer
 ------------------------
 
 The :py:func:`Vehicle.set_mavlink_callback() <droneapi.lib.Vehicle.set_mavlink_callback>` method provides asynchronous 
-notification when any *MAVLink* packet is received from this vehicle.
+notification when any *MAVLink* packet is received by this vehicle. The notification can be stopped by 
+calling :py:func:`unset_mavlink_callback() <droneapi.lib.Vehicle.unset_mavlink_callback>` to remove the callback.
+
 
 .. tip::
 
     Use :ref:`attribute observers <vehicle_state_observe_attributes>` instead of this method where possible. 
 
 
-The code snippet below shows how to set a “demo” callback function as the callback handler:
+The code snippet below shows how to set and clear a "demo" callback function as the callback handler:
 
 .. code:: python
 
@@ -295,10 +297,12 @@ The code snippet below shows how to set a “demo” callback function as the ca
     # Set MAVLink callback handler (after getting Vehicle instance)                     
     vehicle.set_mavlink_callback(mavrx_debug_handler)
 
+    # Wait to allow the callback to be invoked before it is removed. 
+    time.sleep(1)
 
-.. warning:: 
-
-    At time of writing there is no way to `disable this callback <https://github.com/diydrones/dronekit-python/issues/115>`_.
+    # Remove the MAVLink callback handler. Callback will not be
+    # called after this point.
+    vehicle.unset_mavlink_callback()
 
 
 .. _vehicle_state_channel_override:
