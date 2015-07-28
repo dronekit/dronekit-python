@@ -66,7 +66,7 @@ time.sleep(2)
 vehicle.remove_attribute_observer('mode', mode_callback)	
 
 
-#  Get Vehicle Home location ((0 index in Vehicle.commands)
+# Get Vehicle Home location ((0 index in Vehicle.commands)
 print "\nGet home location" 
 cmds = vehicle.commands
 cmds.download()
@@ -74,12 +74,27 @@ cmds.wait_valid()
 print " Home WP: %s" % cmds[0]
 
 
-#  Get/Set Vehicle Parameters
+# Get/Set Vehicle Parameters
 print "\nRead vehicle param 'THR_MIN': %s" % vehicle.parameters['THR_MIN']
 print "Write vehicle param 'THR_MIN' : 10"
 vehicle.parameters['THR_MIN']=10
 vehicle.flush()
 print "Read new value of param 'THR_MIN': %s" % vehicle.parameters['THR_MIN']
+
+
+# Demo callback handler for raw MAVLink messages
+def mavrx_debug_handler(message):
+    print "Raw MAVLink message: ", message
+
+print "\nSet MAVLink callback handler (start receiving all MAVLink messages)"                 
+vehicle.set_mavlink_callback(mavrx_debug_handler)
+
+print "Wait 1s so mavrx_debug_handler has a chance to be called before it is removed"
+time.sleep(1)
+
+print "Remove the MAVLink callback handler (stop getting messages)"  
+vehicle.unset_mavlink_callback()
+	
 
 
 # Overriding an RC channel
