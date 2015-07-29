@@ -341,6 +341,11 @@ class APIThread(threading.Thread):
             self.module.mpstate.rx_blacklist.remove('STATUSTEXT')
         except:
             pass # Silently work with old mavproxies
+
+        # Remove all observers.
+        self.module.vehicle.remove_all_observers()
+        self.module.vehicle.unset_mavlink_callback()
+
         self.module.thread_remove(self)
 
     def __str__(self):
