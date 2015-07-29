@@ -119,7 +119,15 @@ class MPFakeState:
 
     def prepare(self):
         print('Await heartbeat.')
-        self.master.wait_heartbeat()
+        # TODO this should be more rigious. How to avoid
+        #   invalid MAVLink prefix '73'
+        #   invalid MAVLink prefix '13'
+        while True:
+            try:
+                self.master.wait_heartbeat()
+                break
+            except mavutil.mavlink.MAVError:
+                continue
         print('DONE')
         send_heartbeat(self.master)
         request_data_stream_send(self.master)
@@ -187,8 +195,60 @@ class MPFakeState:
         self.api = FakeAPI(self)
         return self.api
 
+import psutil
+def kill(proc_pid):
+    try:
+        process = psutil.Process(proc_pid)
+        for proc in process.children(recursive=True):
+            try:
+                proc.kill()
+            except psutil.NoSuchProcess:
+                pass
+        process.kill()
+    except psutil.NoSuchProcess:
+        pass
+
 def local_connect():
     import droneapi.module.api as api
     state = MPFakeState()
     # api.init(state)
     return state.prepare()
+
+import atexit
+bg = []
+def cleanup_processes():
+    for p in bg:
+        kill(p.pid)
+atexit.register(cleanup_processes)
+
+def sitl_connect():
+    import os
+    import sys
+    from subprocess import Popen, PIPE
+
+    sitl_args = ['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+
+    speedup = os.environ.get('TEST_SPEEDUP', '1')
+    rate = os.environ.get('TEST_RATE', '200')
+    sitl_args += ['--speedup', str(speedup), '-r', str(rate)]
+
+    # Change CPU core affinity.
+    # TODO change affinity on osx/linux
+    if sys.platform == 'win32':
+        # 0x14 = 0b1110 = all cores except cpu 1
+        sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
+    else:
+        sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE)
+    bg.append(sitl)
+
+    while sitl.poll() == None:
+        line = sitl.stdout.readline()
+        if 'Waiting for connection' in line:
+            break
+    if sitl.poll() != None and sitl.returncode != 0:
+        print('[runner] ...aborting with SITL error code ' + str(sitl.returncode))
+        sys.stdout.flush()
+        sys.stderr.flush()
+        sys.exit(sitl.returncode)
+
+    return local_connect()
