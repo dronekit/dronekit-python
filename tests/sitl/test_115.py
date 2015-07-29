@@ -1,11 +1,12 @@
+from droneapi import local_connect
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
 import time
 import sys
 import os
-from testlib import assert_equals
+from nose.tools import assert_equals
 
-def test_115(local_connect):
+def test_115():
     api = local_connect()
     v = api.get_vehicles()[0]
 

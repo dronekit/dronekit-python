@@ -4,7 +4,7 @@ from pymavlink import mavutil
 import time
 import sys
 import os
-from testlib import assert_equals
+from nose.tools import assert_equals
 
 def current_milli_time():
     return int(round(time.time() * 1000))
