@@ -395,6 +395,16 @@ class HasObservers(object):
                 except Exception as e:
                     print("Error calling observer: ", e)
 
+    def remove_all_observers(self):
+        """
+        Internal function. Do not use.
+
+        This method removes all attached observers.
+
+        .. INTERNAL NOTE: (For subclass use only)
+        """
+        self.__observers = {}
+
 class Vehicle(HasObservers):
     """
     The main vehicle API
