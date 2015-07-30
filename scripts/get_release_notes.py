@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This script gets the latest release notes from a specfied github repo, converts it from markdown to
 reStructured Text format, and writes it to a text file.
@@ -14,6 +16,7 @@ Github API doc for getting latest release: https://developer.github.com/v3/repos
 Where our release is: https://github.com/dronekit/dronekit-python/releases/tag/1.1.1
 """
 
+import os
 import requests  # for making API requests
 import re   # regular expressions to convert markup to reStructuredText
 from optparse import OptionParser   # for command line options
@@ -74,12 +77,13 @@ def convert_markup_to_rst(text):
     return text
 
 
+curpath = os.path.realpath(os.path.dirname(__file__))
 
 #parser options
 parser = OptionParser(version="%prog 0.0.1", usage="Usage: %prog [options] version")
 parser.add_option("-o", "--gitowner", dest="owner", default="diydrones", help="Owner of github repository")
-parser.add_option("-r", "--repo", dest="repo", default="dronekit-python",help="Repo name")
-parser.add_option("-f" , "--file", dest="file", default="./about/github_latest_release.txt",help="File path put output file")
+parser.add_option("-r", "--repo", dest="repo", default="dronekit-python", help="Repo name")
+parser.add_option("-f" , "--file", dest="file", default=os.path.join(curpath, "../docs/about/github_latest_release.txt"), help="File path put output file")
 
 (options, args) = parser.parse_args()
 
