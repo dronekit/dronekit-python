@@ -11,7 +11,7 @@ install:
   - '(a; sudo pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git );z'
 script:
   - (a; sudo python setup.py install );z
-  - (a; nosetests tests/web );z
+  - (a; [ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests tests/web );z
   - (a; nosetests tests/unit );z
   - (a; python -m tests.sitl );z
 git:
@@ -19,5 +19,13 @@ git:
 language: objective-c
 notifications:
   email: false
+  slack:
+    secure: IYgZ83X065I/LljGrPEACZms+KDwrojiQbboFHhvNxL2Zkc5jHqwBK6PD1BsJh2JVun9fCZ1v2R8KuDsf+Qz2dCximdOZcHI81L9JUOZYuSJ2TVlbKiC00WdXpcQ6g7pDTLm/mGBoPxC+MuC5l8zZdbpPBpEa0F/YCe/n7tbT+g=
 matrix:
   fast_finish: true
+branches:
+  only:
+    - master
+    - patch
+    - major
+    - minor
