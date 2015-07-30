@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd ..
 rm -r /tmp/autodocs
 set -e
 python ./setup.py build
