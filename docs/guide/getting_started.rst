@@ -179,39 +179,70 @@ Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* eve
 Running an app/example
 ======================
 
-*DroneKit* is implemented as a *MAVProxy* module. In order to run a *DroneKit* app you first need to :ref:`start MAVProxy <starting-mavproxy>`
-(connecting to the autopilot) and :ref:`load DroneKit <loading-dronekit>`.
-
-Once the *MAVProxy* console is running, you can start a script by entering: **api start full_path_and_filename_to_script**. If you started
-*MAVProxy* in the same directory as the script you can just specify its filename.
+This section shows how to run the :ref:`Vehicle State <example-vehicle-state>` example, 
+which reads and writes :ref:`vehicle state and parameter <vehicle-information>` information.
 
 .. warning:: 
 
     This example doesn't take off, but it does arm the motors. Don't run any example indoors on a real vehicle 
-    unless you have first removed its propellers. 
+    unless you have first removed its propellers.	
+	
+The steps are:
 
-For this example, download :download:`vehicle_state.py <../../examples/vehicle_state/vehicle_state.py>` (the 
-:ref:`example <example-vehicle-state>` just reads and writes some :ref:`vehicle state and parameters <vehicle-information>`).
-Start *MAVProxy*  in the same directory as **vehicle_state.py**.
+#. Get the DroneKit-Python example source code onto your local machine. The easiest way to do this 
+   is to clone the **dronekit-python** repository from Github. 
+   
+   On the command prompt enter:
 
-The output should look something like that shown below
+   .. code-block:: bash
 
-.. code-block:: bash
-   :emphasize-lines: 1
+       git clone http://github.com/dronekit/droneapi-python.git
 
-    MANUAL> api start vehicle_state.py
-    STABILIZE>
+#. Navigate to the **dronekit-python/examples/vehicle_state/** directory.
+#. Start MAVProxy :ref:`using the command for your connection <starting-mavproxy>`. 
+   Assuming you are connecting to a simulated vehicle:
 
-    Get all vehicle attribute values:
-     Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
-     Velocity: [0.06, -0.07, 0.0]
-     GPS: GPSInfo:fix=3,num_sat=10
-     groundspeed: 0.0
-     airspeed: 0.0
-     mount_status: [None, None, None]
-     Mode: STABILIZE
-     Armed: False
-    Set Vehicle.mode=GUIDED (currently: STABILIZE)
-     Waiting for mode change ...
-    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
-    ...
+   .. code-block:: bash
+
+       mavproxy.py --master=127.0.0.1:14550
+   
+   .. note::
+
+      You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
+      If not, manually load the library using:
+
+      .. code-block:: bash
+
+          module load droneapi.module.api
+	   
+#. Once the *MAVProxy* console is running, start the example by entering: 
+
+   .. code-block:: bash
+
+       api start vehicle_state.py
+
+
+   The output should look something like that shown below
+
+   .. code-block:: bash
+      :emphasize-lines: 1
+
+       MANUAL> api start vehicle_state.py
+       STABILIZE>
+
+       Get all vehicle attribute values:
+        Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
+        Velocity: [0.06, -0.07, 0.0]
+        GPS: GPSInfo:fix=3,num_sat=10
+        groundspeed: 0.0
+        airspeed: 0.0
+        mount_status: [None, None, None]
+        Mode: STABILIZE
+        Armed: False
+       Set Vehicle.mode=GUIDED (currently: STABILIZE)
+        Waiting for mode change ...
+       Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
+       ...
+
+
+For more information on running the examples (and other apps) see: :ref:`running_examples_top`.	
