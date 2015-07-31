@@ -44,8 +44,8 @@ build_script:
       if ($env:APPVEYOR_REPO_TAG -and ($env:APPVEYOR_REPO_TAG_NAME -match '^v\d+\.\d+\.\d+$')) {
         echo "Publishing installer."
         $setup = gi .\windows\Output\DroneKitsetup-*.exe
-        aws s3 cp $setup s3://dronekit-installers/windows/dronekit-windows-$env:APPVEYOR_REPO_TAG_NAME.exe --acl public-read
-        aws s3 cp $setup s3://dronekit-installers/windows/dronekit-windows-latest.exe --acl public-read
+        aws s3 cp $setup s3://dronekit-assets/installers/dronekit-windows-$env:APPVEYOR_REPO_TAG_NAME.exe --acl public-read
+        aws s3 cp $setup s3://dronekit-assets/installers/dronekit-windows-latest.exe --acl public-read
       } else {
         echo "Skipping publishing installer on non-tag."
       }
