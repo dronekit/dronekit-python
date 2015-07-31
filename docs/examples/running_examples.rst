@@ -14,7 +14,7 @@ provided in the documentation for each example):
 
        git clone http://github.com/dronekit/droneapi-python.git
 
-#. Navigate to the directory containing the example you want to run (for example **/dronekit-python/examples/vehicle_state/**).
+#. Navigate to the directory containing the example you want to run (for example **dronekit-python/examples/vehicle_state/**).
 #. Start MAVProxy :ref:`using the command for your connection <starting-mavproxy>`. 
    Assuming you are connecting to a simulated vehicle:
 

@@ -198,7 +198,7 @@ The steps are:
 
        git clone http://github.com/dronekit/droneapi-python.git
 
-#. Navigate to the **/dronekit-python/examples/vehicle_state/** directory.
+#. Navigate to the **dronekit-python/examples/vehicle_state/** directory.
 #. Start MAVProxy :ref:`using the command for your connection <starting-mavproxy>`. 
    Assuming you are connecting to a simulated vehicle:
 
