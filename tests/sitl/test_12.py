@@ -1,4 +1,5 @@
-from droneapi import local_connect, sitl_connect
+from droneapi import local_connect
+from dronekit.sitl import SITL
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
 import time
@@ -10,7 +11,11 @@ def current_milli_time():
     return int(round(time.time() * 1000))
 
 def test_timeout():
-    v = sitl_connect().get_vehicles()[0]
+    sitl = SITL('copter', '3.3-rc5')
+    sitl.launch(['-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353'])
+    sitl.block_until_ready()
+
+    v = local_connect().get_vehicles()[0]
 
     value = v.parameters['THR_MIN']
     assert_equals(type(value), float)
@@ -22,6 +27,8 @@ def test_timeout():
     newvalue = v.parameters['THR_MIN']
     assert_equals(type(newvalue), float)
     assert_equals(newvalue, value + 10)
+
+    sitl.stop()
 
     # TODO once this issue is fixed
     # assert end - start < 1000, 'time to set parameter was %s, over 1s' % (end - start,)
