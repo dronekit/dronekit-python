@@ -28,7 +28,8 @@ For information on how to set up a vehicle (real and simulated) see:
 Installing DroneKit
 ===================
 
-*DroneKit* can be installed on Linux, Windows and Mac OSX. 
+*DroneKit* can be installed on Linux, Windows and Mac OSX.
+
 
 .. _getting_started_installing_dronekit_linux:
 
@@ -82,35 +83,34 @@ Install DroneKit-Python and its remaining dependencies (including `MAVProxy <htt
     sudo pip install droneapi
 	
 
+.. _get_started_install_dk_windows:
 
 Installing DroneKit on Windows
 ------------------------------
 
-The easiest way to set up DroneKit-Python on Windows is to use the *WinPython* package, which already includes most of the needed dependencies.
-You will need remove *python-dateutil* as the installation comes bundled with a version that does not work with some *DroneKit* dependencies.
+The easiest way to set up DroneKit-Python on Windows is to use the Windows Installer. 
+This is applied over the top of the *MAVProxy* Windows installation and includes all needed 
+dependencies and the DroneKit-Python examples.
 
-The steps to install this package and our add-on modules are:
+.. tip::
 
-#. Download and run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ (**v2.7**) for your platform (win32 vs win64).
-   
-   * Run the installer as an administrator (**Right-click** on file, select **Run as Administrator**). 
-   * When prompted for the destination location, specify **C:\Program Files (x86)** 
-     (the default location is under the Downloads folder).
+    A new version of the Windows Installer is created with every patch revision.
+    Don't forget to update regularly for bug fixes and new features!
+ 
+To install DroneKit-Python using the installer:
 
-#. Register the python that came from *WinPython* as the preferred interpreter for your machine:
+#. Download and run the `latest MAVProxy installer <http://firmware.diydrones.com/Tools/MAVProxy/MAVProxySetup-latest.exe>`_
+   — accept all prompts.    
+#. Download and run the `latest DroneKit installer <https://s3.amazonaws.com/dronekit-installers/windows/dronekit-windows-latest.exe>`_
+   — accept all prompts (install in the same location as MAVProxy).
 
-   Open the folder where you installed WinPython, run *WinPython Control Panel* and choose **Advanced/Register Distribution**.
+The installer packages DroneKit-Python as an application, which is launched by double-clicking an icon 
+in the system GUI. After the *MAVProxy prompt* and *console* have started you can 
+:ref:`connect to the vehicle <starting-mavproxy_set_link_when_mavproxy_running>` (instead of setting the
+connection when starting *MAVProxy*). You will still need to :ref:`load DroneKit <loading-dronekit>` (not done by the installer 
+- see `#267 <https://github.com/dronekit/dronekit-python/issues/267>`_). The examples are copied to :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
 
-   .. image:: http://dev.ardupilot.com/wp-content/uploads/sites/6/2014/03/Screenshot-from-2014-09-03-083816.png
-
-#. Install DroneKit-Python and its remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_) from the public PyPi repository:
-
-   Open the *WinPython Command Prompt* and run the following two commands:
-
-   .. code:: bash
-
-	    pip uninstall python-dateutil
-	    pip install droneapi
+It is also possible to set up DroneKit-Python on the command line (see :ref:`dronekit_development_windows`).
 
 
 .. _starting-mavproxy:
@@ -118,7 +118,19 @@ The steps to install this package and our add-on modules are:
 Starting MAVProxy
 =================
 
-Launch *MAVProxy* with the correct options for talking to your vehicle (simulated or real):
+Before executing DroneKit scripts you must first start *MAVProxy* and connect to your autopilot (simulated or real). 
+The connection to the vehicle can be set up on the command line when starting *MAVProxy* or after MAVProxy is running.
+
+.. tip:: 
+
+    If you're using DroneKit-Python from the Windows installer there is no way to pass command line options to MAVProxy;
+    you will have to start MAVProxy by double-clicking its icon and then :ref:`connect to the target vehicle after MAVProxy 
+    has started <starting-mavproxy_set_link_when_mavproxy_running>`.
+
+Connecting at startup
+---------------------
+
+The table below shows the command lines used to start *MAVProxy* for the respective connection types:
 
 .. list-table:: MAVProxy connection options
    :widths: 10 10
@@ -136,9 +148,31 @@ Launch *MAVProxy* with the correct options for talking to your vehicle (simulate
      - ``mavproxy.py --master=/dev/cu.usbmodem1``	 
    * - Windows computer connected to the vehicle via USB
      - ``mavproxy.py --master=/dev/cu.usbmodem1``		 
-	    
 
 For other connection options see the `MAVProxy documentation <http://tridge.github.io/MAVProxy/>`_.
+	
+.. _starting-mavproxy_set_link_when_mavproxy_running:
+
+Connecting after startup
+------------------------
+
+To connect to the autopilot once *MAVProxy* has already started use ``link add <connection>`` in the *MAVProxy command prompt*, where ``<connection>``
+takes the same values as ``master`` in the table above. For example, to set up a connection to SITL running on the local computer at port 14550 do:
+
+.. code:: bash
+
+    link add 127.0.0.1:14550
+
+If you're connecting using a serial port you may need to first set up the baud rate first (the default is 57600). You can change the default baudrate used for 
+new connections as shown:
+
+.. code:: bash
+
+    set baudrate 57600    #Set the default baud rate for new connections (do before calling "link add")
+	
+See `Link Management <http://tridge.github.io/MAVProxy/link.html>`_ (MAVProxy documentation) for more information.
+
+
 
 
 .. _loading-dronekit:
@@ -189,37 +223,47 @@ which reads and writes :ref:`vehicle state and parameter <vehicle-information>` 
 	
 The steps are:
 
-#. Get the DroneKit-Python example source code onto your local machine. The easiest way to do this 
-   is to clone the **dronekit-python** repository from Github. 
-   
+#. Get the DroneKit-Python example source code onto your local machine. 
+
+   The easiest way to do this is to clone the **dronekit-python** repository from Github.   
    On the command prompt enter:
 
    .. code-block:: bash
 
        git clone http://github.com/dronekit/droneapi-python.git
 
-#. Navigate to the **dronekit-python/examples/vehicle_state/** directory.
-#. Start MAVProxy :ref:`using the command for your connection <starting-mavproxy>`. 
-   Assuming you are connecting to a simulated vehicle:
+   .. tip:: 
 
-   .. code-block:: bash
+       The :ref:`Windows Installation <get_started_install_dk_windows>` copies the example code here: 
+       :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
 
-       mavproxy.py --master=127.0.0.1:14550
+#. Start MAVProxy and :ref:`connect to the vehicle <starting-mavproxy>`. For example:
+
+   * To connect to a simulated vehicle when starting *MAVProxy* (from the command line):
+
+     .. code-block:: bash
+
+         mavproxy.py --master=127.0.0.1:14550
    
-   .. note::
+   * To connect to a simulated vehicle after starting *MAVProxy* (for example, on Windows):
 
-      You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
-      If not, manually load the library using:
+     .. code-block:: bash
 
-      .. code-block:: bash
+         link add 127.0.0.1:14550
 
-          module load droneapi.module.api
-	   
-#. Once the *MAVProxy* console is running, start the example by entering: 
+#. You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
+   If not, manually load the library using:
 
    .. code-block:: bash
 
-       api start vehicle_state.py
+       module load droneapi.module.api
+	   
+#. Once the *MAVProxy* console is running, start ``vehicle_state.py`` by entering ``api start`` followed by the 
+   full file path of the script. For example: 
+
+   .. code-block:: bash
+
+       api start "C:\Program Files (x86)\MAVProxy\examples\vehicle_state\vehicle_state.py"
 
 
    The output should look something like that shown below
@@ -227,7 +271,7 @@ The steps are:
    .. code-block:: bash
       :emphasize-lines: 1
 
-       MANUAL> api start vehicle_state.py
+       MANUAL> api start "C:\Program Files (x86)\MAVProxy\examples\vehicle_state\vehicle_state.py"
        STABILIZE>
 
        Get all vehicle attribute values:
@@ -245,4 +289,7 @@ The steps are:
        ...
 
 
-For more information on running the examples (and other apps) see: :ref:`running_examples_top`.	
+For more information on running the examples (and other apps) see :ref:`running_examples_top`.	
+
+
+
