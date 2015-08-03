@@ -14,22 +14,31 @@ provided in the documentation for each example):
 
        git clone http://github.com/dronekit/droneapi-python.git
 
-#. Navigate to the directory containing the example you want to run (for example **dronekit-python/examples/vehicle_state/**).
-#. Start MAVProxy :ref:`using the command for your connection <starting-mavproxy>`. 
-   Assuming you are connecting to a simulated vehicle:
+   .. tip:: 
+
+       The :ref:`Windows Installation <get_started_install_dk_windows>` copies the example code here: 
+       :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
+
+#. Start MAVProxy and :ref:`connect to the vehicle <starting-mavproxy>`. For example:
+
+   * To connect to a simulated vehicle when starting *MAVProxy* (from the command line):
+
+     .. code-block:: bash
+
+         mavproxy.py --master=127.0.0.1:14550
+   
+   * To connect to a simulated vehicle after starting MAVProxy (for example, on Windows):
+
+     .. code-block:: bash
+
+         link add 127.0.0.1:14550
+
+#. You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
+   If not, manually load the library using:
 
    .. code-block:: bash
 
-       mavproxy.py --master=127.0.0.1:14550
-   
-   .. note::
-
-      You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
-      If not, manually load the library using:
-
-      .. code-block:: bash
-
-          module load droneapi.module.api
+       module load droneapi.module.api
 	   
 #. Once the *MAVProxy* console is running, start the example by entering: 
 
@@ -37,10 +46,10 @@ provided in the documentation for each example):
 
        api start absolute_path_to_example/example_name.py
 	   
-   .. note::
+   .. tip::
 
-       If you started MAVProxy from the example directory as suggested, you can omit 
-       the full file path and just specify the example name:
+       If you start *MAVProxy* from the same directory as the target script you can omit 
+       the full file path:
 
        .. code-block:: bash
 
