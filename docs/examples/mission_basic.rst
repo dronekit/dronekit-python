@@ -132,16 +132,16 @@ We also show how to move to a specified command using
 .. code:: python
 
     while True:
-    nextcommand=vehicle.commands.next
-    if nextcommand > 1:
-        print 'Distance to waypoint (%s): %s' % (nextcommand, distance_to_current_waypoint())
-    if nextcommand==3: #Skip to next waypoint
-        print 'Skipping to Waypoint 4 when reach waypoint 3'
-        vehicle.commands.next=4
-    if nextcommand==5: #Skip to next waypoint
-        print "Exit 'standard' mission when start heading to final waypoint (5)"
-        break;
-    time.sleep(1)
+        nextwaypoint =vehicle.commands.next
+        if nextwaypoint  > 1:
+            print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
+        if nextwaypoint ==3: #Skip to next waypoint
+            print 'Skipping to Waypoint 4 when reach waypoint 3'
+            vehicle.commands.next=4
+        if nextwaypoint ==5: #Skip to next waypoint
+            print "Exit 'standard' mission when start heading to final waypoint (5)"
+            break;
+        time.sleep(1)
 
 When the vehicle starts the 5th command the loop breaks and the mode is set to RTL (return to launch).
 

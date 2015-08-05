@@ -19,7 +19,7 @@ def get_location_metres(original_location, dNorth, dEast):
     Returns a Location object containing the latitude/longitude `dNorth` and `dEast` metres from the 
     specified `original_location`. The returned Location has the same `alt and `is_relative` values 
     as `original_location`.
-	
+
     The function is useful when you want to move the vehicle around specifying locations relative to 
     the current vehicle position.
     The algorithm is relatively accurate over small distances (10m within 1km) except close to the poles.
@@ -36,41 +36,41 @@ def get_location_metres(original_location, dNorth, dEast):
     newlon = original_location.lon + (dLon * 180/math.pi)
     return Location(newlat, newlon,original_location.alt,original_location.is_relative)
 
-	
+
 def get_distance_metres(aLocation1, aLocation2):
     """
     Returns the ground distance in metres between two Location objects.
-	
+
     This method is an approximation, and will not be accurate over large distances and close to the 
     earth's poles. It comes from the ArduPilot test code: 
     https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
     """
-    dlat 		= aLocation2.lat - aLocation1.lat
-    dlong		= aLocation2.lon - aLocation1.lon
+    dlat = aLocation2.lat - aLocation1.lat
+    dlong = aLocation2.lon - aLocation1.lon
     return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
 
-	
+
 def distance_to_current_waypoint():
     """
     Gets distance in metres to the current waypoint. 
-	It returns None for the first waypoint (Home location).
+    It returns None for the first waypoint (Home location).
     """
-    nextcommand=vehicle.commands.next
-    if nextcommand==1:
+    nextwaypoint=vehicle.commands.next
+    if nextwaypoint ==1:
         return None
-    missionitem=vehicle.commands[nextcommand]
+    missionitem=vehicle.commands[nextwaypoint]
     lat=missionitem.x
     lon=missionitem.y
     alt=missionitem.z
     targetWaypointLocation=Location(lat,lon,alt,is_relative=True)
     distancetopoint = get_distance_metres(vehicle.location, targetWaypointLocation)
     return distancetopoint
-	
+
 
 def clear_mission():
     """
-	Clear the current mission.
+    Clear the current mission.
     """
     cmds = vehicle.commands
     vehicle.commands.clear()
@@ -86,7 +86,7 @@ def clear_mission():
 
 def download_mission():
     """
-	Download the current mission from the vehicle.
+    Download the current mission from the vehicle.
     """
     cmds = vehicle.commands
     cmds.download()
@@ -98,7 +98,7 @@ def adds_square_mission(aLocation, aSize):
     """
     Adds a takeoff command and four waypoint commands to the current mission. 
     The waypoints are positioned to form a square of side length 2*aSize around the specified location (aLocation).
-	
+
     The function assumes vehicle.commands matches the vehicle mission state 
     (you must have called download at least once in the session and after clearing the mission)
     """	
@@ -107,7 +107,7 @@ def adds_square_mission(aLocation, aSize):
     #Add MAV_CMD_NAV_TAKEOFF command. This is ignored if the vehicle is already in the air.
     cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10))
 
-	#Define the four MAV_CMD_NAV_WAYPOINT locations and add the commands
+    #Define the four MAV_CMD_NAV_WAYPOINT locations and add the commands
     point1 = get_location_metres(aLocation, aSize, -aSize)
     point2 = get_location_metres(aLocation, aSize, aSize)
     point3 = get_location_metres(aLocation, -aSize, aSize)
@@ -119,8 +119,8 @@ def adds_square_mission(aLocation, aSize):
 
     # Send commands to vehicle.
     vehicle.flush() 
-	
-	
+
+
 def arm_and_takeoff(aTargetAltitude):
     """
     Arms vehicle and fly to aTargetAltitude.
@@ -133,7 +133,7 @@ def arm_and_takeoff(aTargetAltitude):
     while vehicle.gps_0.fix_type < 2:
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
-		
+
     print "Arming motors"
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
@@ -180,13 +180,13 @@ vehicle.flush()
 #   distance to the next waypoint.
 
 while True:
-    nextcommand=vehicle.commands.next
-    if nextcommand > 1:
-        print 'Distance to waypoint (%s): %s' % (nextcommand, distance_to_current_waypoint())
-    if nextcommand==3: #Skip to next waypoint
+    nextwaypoint=vehicle.commands.next
+    if nextwaypoint > 1:
+        print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
+    if nextwaypoint==3: #Skip to next waypoint
         print 'Skipping to Waypoint 4 when reach waypoint 3'
         vehicle.commands.next=4
-    if nextcommand==5: #Skip to next waypoint
+    if nextwaypoint==5: #Skip to next waypoint
         print "Exit 'standard' mission when start heading to final waypoint (5)"
         break;
     time.sleep(1)

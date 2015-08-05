@@ -17,13 +17,13 @@ from pymavlink import mavutil
 api = local_connect()
 vehicle = api.get_vehicles()[0]
 
-		
+
 def readmission(aFileName):
     """
     Load a mission from a file into a list. The mission definition is in the Waypoint file
-	format (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
-	
-	This function is used by upload_mission().
+    format (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
+
+    This function is used by upload_mission().
     """
     print "Reading mission from file: %s\n" % aFileName
     cmds = vehicle.commands
@@ -51,8 +51,8 @@ def readmission(aFileName):
                 cmd = Command( 0, 0, 0, ln_frame, ln_command, ln_currentwp, ln_autocontinue, ln_param1, ln_param2, ln_param3, ln_param4, ln_param5, ln_param6, ln_param7)
                 missionlist.append(cmd)
     return missionlist
-				
-			
+
+
 def upload_mission(aFileName):
     """
     Upload a mission from a file. 
@@ -86,7 +86,7 @@ def download_mission():
     for cmd in cmds[1:]:  #skip first item as it is home waypoint.
         missionlist.append(cmd)
     return missionlist
-	
+
 def save_mission(aFileName):
     """
     Save a mission in the Waypoint file format (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).

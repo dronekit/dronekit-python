@@ -9,7 +9,7 @@ AUTO mode is used run pre-defined waypoint missions on Copter, Plane and Rover.
 DroneKit-Python provides basic methods to download and clear the current mission commands 
 from the vehicle, to add and upload new mission commands, to count the number of waypoints, 
 and to read and set the currently executed mission command. 
-Using these primitive methods you can create any other needed mission planning functionality.
+You can build upon these basic primitives to create high-level mission planning functionality.
 
 This section shows how to use the basic methods and provides a few useful helper functions.
 Most of the code can be observed running in :ref:`example_mission_basic` and :ref:`example_mission_import_export`.
@@ -18,9 +18,9 @@ Most of the code can be observed running in :ref:`example_mission_basic` and :re
 
     We recommend that you :ref:`use GUIDED mode <guided_mode_copter>` instead of AUTO mode where possible, because it offers finer 
     and more responsive control over movement, and can emulate most mission planning activities.
-	
-    AUTO mode can be helpful if a command you need is not supported in GUIDED mode on a particular vehicle.
-	
+
+    AUTO mode can be helpful if a command you need is not supported in GUIDED mode on a particular vehicle type.
+
 
 .. _auto_mode_supported_commands: 
 
@@ -32,8 +32,6 @@ The mission commands (e.g. ``MAV_CMD_NAV_TAKEOFF``, ``MAV_CMD_NAV_WAYPOINT`` ) s
 `Plane <http://plane.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#commands_supported_by_plane>`_, 
 `Rover <http://rover.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#commands_supported_by_rover>`_.
 
-.. tip:: If the autopilot receives a command that it cannot handle, then the command will be (silently) dropped.
-
 There are three types of commands:
 
 * *NAVigation commands* (``MAV_CMD_NAV_*``) are used to control vehicle movement, 
@@ -44,14 +42,19 @@ There are three types of commands:
   For example ``MAV_CMD_CONDITION_DISTANCE`` will prevent DO commands executing until the vehicle 
   reaches the specified distance from the waypoint.
 
-During a mission at most one *NAV* command and one *DO* or *CONDITION* command can be running **at one time**.
-*CONDITION* and *DO* commands are associated with the preceding *NAV* command: if the UAV reaches the waypoint before these 
+During a mission at most one *NAV* command and one *DO* or *CONDITION* command can be running **at the same time**.
+*CONDITION* and *DO* commands are associated with the last *NAV* command that was sent: if the UAV reaches the waypoint before these 
 commands are executed, the next *NAV* command is loaded and they will be skipped.
 
 The `MAVLink Mission Command Messages (MAV_CMD) <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd>`_ 
 wiki topic provides a more detailed overview of commands.
 
-.. todo:: Add how we can determine dynamically what commands are supported. Probably requires capability API which is not present yet.
+.. note:: 
+
+    * If the autopilot receives a command that it cannot handle, then the command will be (silently) dropped.
+    * You cannot yet determine dynamically what commands are supported. We hope to deliver this functionality in
+      the forthcoming `capability API <https://github.com/dronekit/dronekit-python/issues/250>`_.
+
 
 .. _auto_mode_download_mission: 
 
@@ -105,27 +108,27 @@ To clear a mission you call :py:func:`clear() <droneapi.lib.CommandSequence.clea
     # Clear Vehicle.commands and flush.
     cmds.clear()
     vehicle.flush()
-	
+
     # Reset the Vehicle.commands from the vehicle.
     cmds.download()
     cmds.wait_valid()
-	
+
 .. warning:: 
 
     You must re-download the mission from the vehicle after clearing (as shown above) or the first command you add 
     will be lost when you upload the new mission. 
-	
+
     This happens because :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` removes the :ref:`home location <vehicle_state_home_location>` 
     (see `#132 <https://github.com/dronekit/dronekit-python/issues/132>`_). Downloading adds it back again.
 
 If the current command completes before you add a new mission, then the vehicle mode will change to RTL (return to launch).
 
-	
+
 .. _auto_mode_adding_command: 
 
 Creating/adding mission commands
 ================================
-	
+
 After :ref:`downloading <auto_mode_download_mission>` or :ref:`clearing <auto_mode_clear_mission>` a mission new commands 
 can be added and uploaded to the vehicle. Commands are added to the mission using :py:func:`add() <droneapi.lib.CommandSequence.add>`
 and are sent to the vehicle (either individually or in batches) using :py:func:`flush() <droneapi.lib.Vehicle.flush>`.
@@ -142,7 +145,7 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
     # Connect to API provider and get vehicle
     api = local_connect()
     vehicle = api.get_vehicles()[0]
-	
+
     # Get the set of commands from the vehicle
     cmds = vehicle.commands
     cmds.download()
@@ -162,7 +165,7 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
 
 Modifying missions
 ==================
-	
+
 While you can :ref:`add new commands <auto_mode_adding_command>` after :ref:`downloading a mission <auto_mode_download_mission>` 
 it is not possible to directly modify and upload existing commands in ``Vehicle.commands`` (you can modify the commands but 
 changes do not propagate to the vehicle). 
@@ -179,25 +182,25 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
     cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
-	
+
     # Save the vehicle commands to a list
     missionlist=[]
     for cmd in cmds[1:]:  #skip first item as it is home waypoint.
         missionlist.append(cmd)
-		
+
     # Modify the mission as needed. For example, here we change the 
     # first waypoint into a MAV_CMD_NAV_TAKEOFF command. 
     missionlist[0].command=mavutil.mavlink.MAV_CMD_NAV_TAKEOFF
-	
+
     # Clear the current mission 
     cmds.clear()
     vehicle.flush()
     cmds.download()
     cmds.wait_valid()
-	
+
     #Write the modified mission and flush to the vehicle
     for cmd in missionlist:
-        cmds.add(cmd)	
+        cmds.add(cmd)
     vehicle.flush()
 
 
@@ -226,7 +229,7 @@ To start a mission change the mode to AUTO:
 
     If the vehicle is in the air, then changing the mode to AUTO is all that is required to start the 
     mission. 
-	
+
     **Copter 3.3 release and later:** If the vehicle is on the ground (only), you will additionally need to send the
     `MAV_CMD_MISSION_START <http://copter.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_mission_start>`_ 
     command.
@@ -247,7 +250,7 @@ to get the current command number. You can also change the current command by se
     print "Current Waypoint: %s" % vehicle.commands.next
 
 There is no need to ``flush()`` changes to ``next`` to the vehicle (and as with other attributes, if you fetch a value, it is updated
-from the vehicle).	
+from the vehicle).
 
 
 .. _auto_mode_handle_mission_end: 
@@ -255,7 +258,7 @@ from the vehicle).
 Handling the end of a mission
 ===============================
 
-At the end of the mission the vehicle will typically "loiter" (hover in place for Copter, 
+At the end of the mission the vehicle will enter LOITER mode (hover in place for Copter, 
 circle for Plane, stop for Rover). You can add new commands to the mission, but you will need to toggle from/back to
 AUTO mode to start it running again.
 
@@ -265,7 +268,7 @@ to perform some other operation) then you can either:
 * Add a dummy mission command and poll :py:func:`Vehicle.commands.next <droneapi.lib.CommandSequence.next>` for the 
   transition to the final command, or
 * Compare the current position to the position in the last command.
-	
+
 
 
 
@@ -289,7 +292,7 @@ clears the existing mission and uploads the new version.
 Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_command>`.
   
 .. code:: python
-		
+
     def upload_mission(aFileName):
         """
         Upload a mission from a file.
@@ -308,9 +311,9 @@ Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_c
     cmds.wait_valid()
     for command in missionlist:
         cmds.add(command)
-    vehicle.flush()	
+    vehicle.flush()
 
-	
+
 ``readmission()`` reads a mission from the specified file and returns a list of :py:class:`Command <droneapi.lib.Command>` objects. 
 
 Each line is split up. The first line is used to test whether the file has the correct (stated) format. 
@@ -323,8 +326,8 @@ The commands are added to a list which is returned by the function.
     def readmission(aFileName):
         """
         Load a mission from a file into a list.
-	
-    	This function is used by upload_mission().
+
+        This function is used by upload_mission().
         """
         print "Reading mission from file: %s\n" % aFileName
         cmds = vehicle.commands
@@ -381,7 +384,7 @@ It uses ``download_mission()`` (below) to get them mission, and then writes the 
 adds them to a list. Downloading mission is discussed :ref:`in the guide <auto_mode_download_mission>`.
 
 .. code:: python
-		
+
     def download_mission():
         """
         Downloads the current mission and returns it in a list.
@@ -394,7 +397,7 @@ adds them to a list. Downloading mission is discussed :ref:`in the guide <auto_m
         for cmd in cmds[1:]:  #skip first item as it is home waypoint.
             missionlist.append(cmd)
         return missionlist
-	
+
 
   
  
@@ -407,16 +410,16 @@ Get distance to waypoint
 ``distance_to_current_waypoint()`` returns the distance (in metres) to the next waypoint:
 
 .. code:: python
-		
+
     def distance_to_current_waypoint():
         """
         Gets distance in metres to the current waypoint. 
-    	It returns None for the first waypoint (Home location).
+        It returns None for the first waypoint (Home location).
         """
-        nextcommand=vehicle.commands.next
-        if nextcommand==1:
+        nextwaypoint=vehicle.commands.next
+        if nextwaypoint==1:
             return None
-        missionitem=vehicle.commands[nextcommand]
+        missionitem=vehicle.commands[nextwaypoint]
         lat=missionitem.x
         lon=missionitem.y
         alt=missionitem.z
@@ -435,8 +438,8 @@ The implementation ignores the first waypoint (which will be the "home location"
 
     This implementation is very basic. It assumes that the next command number is for a valid NAV command (it might not be)
     and that the lat/lon/alt values are non-zero. It is however a useful indicator for test code.
-	
-	
+
+
 
 .. _auto_mode_mission_useful_links: 
 
