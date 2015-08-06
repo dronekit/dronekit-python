@@ -113,19 +113,22 @@ def wrap_fd(pipeout):
         return (str(pipeout), None)
 
 def lets_run_a_test(name):
-    sitl_args = ['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    sitl_args = ['python', '-m', 'dronekit.sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
 
     speedup = os.environ.get('TEST_SPEEDUP', '1')
     rate = os.environ.get('TEST_RATE', '200')
     sitl_args += ['--speedup', str(speedup), '-r', str(rate)]
 
+    newenv = os.environ.copy()
+    newenv['PYTHONUNBUFFERED'] = '1'
+
     # Change CPU core affinity.
     # TODO change affinity on osx/linux
     if sys.platform == 'win32':
         # 0x14 = 0b1110 = all cores except cpu 1
-        sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
+        sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE, env=newenv)
     else:
-        sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE)
+        sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE, env=newenv)
     bg.append(sitl)
 
     while sitl.poll() == None:
@@ -137,9 +140,6 @@ def lets_run_a_test(name):
         sys.stdout.flush()
         sys.stderr.flush()
         sys.exit(sitl.returncode)
-
-    newenv = os.environ.copy()
-    newenv['PYTHONUNBUFFERED'] = '1'
 
     if sys.platform == 'win32':
         out_fd = 1
