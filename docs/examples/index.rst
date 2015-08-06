@@ -16,6 +16,8 @@ during missions and outside missions using custom commands.
    Vehicle State <vehicle_state>
    Simple Goto <simple_goto>
    Guided Movement and Commands <guided-set-speed-yaw-demo>
+   Basic Mission <mission_basic>
+   Mission Import/Export <mission_import_export>
    Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
