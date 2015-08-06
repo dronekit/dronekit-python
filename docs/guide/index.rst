@@ -14,4 +14,5 @@ The guide contains how-to documentation for using the DroneKit-Python API. These
     vehicle_state_and_parameters
     taking_off
     copter/guided_mode
+    Missions <auto_mode>
     debugging
