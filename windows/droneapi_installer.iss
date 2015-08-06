@@ -30,13 +30,14 @@ DisableDirPage=yes
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\droneapi\*"; DestDir: "{code:GetMAVProxyPath}\droneapi"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\droneapi\*"; DestDir: "{code:GetMAVProxyPath}\droneapi"; AfterInstall: InsertMAVSCRLoad; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\examples\*"; DestDir: "{code:GetMAVProxyPath}\examples"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "google\*"; DestDir: "{code:GetMAVProxyPath}\google"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 ; Check if MAVProxy is installed (if so, get the install path)
+
 [Code]
 function IsMAVProxyInstalled: boolean;
 begin
@@ -104,3 +105,55 @@ procedure InitializeWizard();
 begin
   MAVDir_CreatePage(wpLicense);
 end;
+
+procedure InsertMAVSCRLoad();
+var
+  MyFile : TStrings;
+  MyText : string;
+begin
+  MyFile := TStringList.Create;
+  try
+    MyFile.LoadFromFile(ExpandConstant('{localappdata}') + '\MAVProxy\mavinit.scr');
+    MyText := MyFile.Text;
+    if Pos('module load droneapi.module.api', MyText) < 1 then
+      SaveStringToFile(ExpandConstant('{localappdata}') + '\MAVProxy\mavinit.scr', #13#10 + 'module load droneapi.module.api', True);
+  finally
+      MyFile.Free;
+  end;
+end;
+
+function FileReplaceString(const FileName, SearchString, ReplaceString: string): boolean;
+var
+  MyFile : TStrings;
+  MyText : string;
+begin
+  MyFile := TStringList.Create;
+
+  try
+    result := true;
+
+    try
+      MyFile.LoadFromFile(FileName);
+      MyText := MyFile.Text;
+
+      if StringChangeEx(MyText, SearchString, ReplaceString, True) > 0 then //Only save if text has been changed.
+      begin;
+        MyFile.Text := MyText;
+        MyFile.SaveToFile(FileName);
+      end;
+    except
+      result := false;
+    end;
+  finally
+    MyFile.Free;
+  end;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usUninstall then
+  begin 
+    FileReplaceString(ExpandConstant('{localappdata}') + '\MAVProxy\mavinit.scr', 'module load droneapi.module.api', #0)
+  end;
+end;
+
