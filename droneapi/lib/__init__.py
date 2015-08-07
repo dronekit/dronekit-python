@@ -594,7 +594,7 @@ class Vehicle(HasObservers):
     """
 
     def __init__(self):
-        super(HasObservers,self).__init__()
+        super(Vehicle, self).__init__()
         self.mavrx_callback = None
 
     @property
