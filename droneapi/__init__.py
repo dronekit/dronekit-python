@@ -3,11 +3,13 @@ from pymavlink import mavutil
 
 # Clean impl of mp dependencies for droneapi
 
+# Cumulative list of packets we don't yet handle
+# TODO: clear this list and handle them!
 swallow = ['AHRS', 'AHRS2', 'ATTITUDE', 'EKF_STATUS_REPORT', 'GLOBAL_POSITION_INT',
            'GPS_RAW_INT', 'HWSTATUS', 'MEMINFO', 'MISSION_CURRENT', 'NAV_CONTROLLER_OUTPUT',
            'RAW_IMU', 'RC_CHANNELS_RAW', 'SCALED_IMU2', 'SCALED_PRESSURE', 'SENSOR_OFFSETS',
            'SERVO_OUTPUT_RAW', 'SIMSTATE', 'SYSTEM_TIME', 'SYS_STATUS', 'TERRAIN_REPORT',
-           'VFR_HUD', 'STATUSTEXT', 'LOCAL_POSITION_NED']
+           'TERRAIN_REQUEST', 'VFR_HUD', 'STATUSTEXT', 'LOCAL_POSITION_NED', 'COMMAND_ACK']
 
 import droneapi.module.api as api
 
@@ -15,6 +17,10 @@ class FakeAPI:
     def __init__(self, module):
         self.__vehicle = api.MPVehicle(module)
         self.exit = False
+
+    def advertise_mavlink_packet(self, pkt):
+        if self.__vehicle.mavrx_callback:
+            self.__vehicle.mavrx_callback(pkt)
 
     def get_vehicles(self, query=None):
         return [ self.__vehicle ]
@@ -51,6 +57,8 @@ class MPFakeState:
         out_queue = Queue()
         # self.mav_thread = mav_thread(master, self)
         # self.mav = master.mav
+
+        self.api = None
 
         # TODO get rid of "master" object as exposed,
         # keep it private, expose something smaller for droneapi
@@ -180,6 +188,9 @@ class MPFakeState:
                         else:
                             print(msg)
                             pass
+
+                    if self.api:
+                        self.api.advertise_mavlink_packet(msg)
 
         t = Thread(target=mavlink_thread)
         t.daemon = True
