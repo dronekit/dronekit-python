@@ -49,8 +49,8 @@ from Queue import Queue
 from threading import Thread
 
 class MPFakeState:
-    def __init__(self):
-        self.master = mavutil.mavlink_connection('tcp:127.0.0.1:5760')
+    def __init__(self, master):
+        self.master = master
         out_queue = Queue()
         # self.mav_thread = mav_thread(master, self)
         # self.mav = master.mav
@@ -313,7 +313,7 @@ def kill(proc_pid):
 
 def local_connect():
     import droneapi.module.api as api
-    state = MPFakeState()
+    state = MPFakeState(mavutil.mavlink_connection('tcp:127.0.0.1:5760'))
     # api.init(state)
     return state.prepare()
 
