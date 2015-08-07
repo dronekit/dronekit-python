@@ -9,7 +9,8 @@ swallow = ['AHRS', 'AHRS2', 'ATTITUDE', 'EKF_STATUS_REPORT', 'GLOBAL_POSITION_IN
            'GPS_RAW_INT', 'HWSTATUS', 'MEMINFO', 'MISSION_CURRENT', 'NAV_CONTROLLER_OUTPUT',
            'RAW_IMU', 'RC_CHANNELS_RAW', 'SCALED_IMU2', 'SCALED_PRESSURE', 'SENSOR_OFFSETS',
            'SERVO_OUTPUT_RAW', 'SIMSTATE', 'SYSTEM_TIME', 'SYS_STATUS', 'TERRAIN_REPORT',
-           'TERRAIN_REQUEST', 'VFR_HUD', 'STATUSTEXT', 'LOCAL_POSITION_NED', 'COMMAND_ACK']
+           'TERRAIN_REQUEST', 'STATUSTEXT', 'LOCAL_POSITION_NED', 'COMMAND_ACK',
+           'MISSION_ACK', 'VFR_HUD']
 
 import droneapi.module.api as api
 
@@ -17,10 +18,6 @@ class FakeAPI:
     def __init__(self, module):
         self.__vehicle = api.MPVehicle(module)
         self.exit = False
-
-    def advertise_mavlink_packet(self, pkt):
-        if self.__vehicle.mavrx_callback:
-            self.__vehicle.mavrx_callback(pkt)
 
     def get_vehicles(self, query=None):
         return [ self.__vehicle ]
@@ -68,27 +65,47 @@ class MPFakeState:
         self.command_map = {}
         self.completions = {}
 
-        self.lat = 0
-        self.lon = 0
-        self.alt = 0
-        self.pitch = 0
-        self.yaw = 0
-        self.roll = 0
-        self.vx = 0
-        self.vy = 0
-        self.vz = 0
-        self.eph = 0
-        self.epv = 0
-        self.fix_type = ''
-        self.satellites_visible = 0
-        self.groundspeed = 0
-        self.airspeed = 0
-        self.mount_pitch = 0
-        self.mount_yaw = 0
-        self.mount_roll = 0
-        self.voltage = 0
-        self.current = 0
-        self.level = 0
+        self.target_system = 0
+        self.target_component = 0
+
+        self.lat = None
+        self.lon = None
+        self.alt = None
+
+        self.vx = None
+        self.vy = None
+        self.vz = None
+
+        self.airspeed = None
+        self.groundspeed = None
+
+        self.pitch = None
+        self.yaw = None
+        self.roll = None
+        self.pitchspeed = None
+        self.yawspeed = None
+        self.rollspeed = None
+
+        self.mount_pitch = None
+        self.mount_yaw = None
+        self.mount_roll = None
+
+        self.voltage = None
+        self.current = None
+        self.level = None
+
+        self.rc_readback = {}
+
+        self.last_waypoint = 0
+
+        self.eph = None
+        self.epv = None
+        self.satellites_visible = None
+        self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
+
+        self.rngfnd_distance = None
+        self.rngfnd_voltage = None
+
         self.status = type('MPStatus',(object,),{
             'flightmode': 'AUTO',
             'armed': False,
@@ -125,8 +142,82 @@ class MPFakeState:
         print("Timeout setting parameter %s to %f" % (name, value))
         return False
 
+    def __on_change(self, *args):
+        for a in args:
+            for v in self.api.get_vehicles():
+                v.notify_observers(a)
+
+    def mavlink_packet(self, m):
+        typ = m.get_type()
+        if typ == 'GLOBAL_POSITION_INT':
+            (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
+            self.__on_change('location', 'velocity')
+        elif typ == 'GPS_RAW':
+            pass # better to just use global position int
+            # (self.lat, self.lon) = (m.lat, m.lon)
+            # self.__on_change('location')
+        elif typ == 'GPS_RAW_INT':
+            # (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            self.eph = m.eph
+            self.epv = m.epv
+            self.satellites_visible = m.satellites_visible
+            self.fix_type = m.fix_type
+            self.__on_change('gps_0')
+        elif typ == "VFR_HUD":
+            self.heading = m.heading
+            self.alt = m.alt
+            self.airspeed = m.airspeed
+            self.groundspeed = m.groundspeed
+            self.__on_change('location', 'airspeed', 'groundspeed')
+        elif typ == "ATTITUDE":
+            self.pitch = m.pitch
+            self.yaw = m.yaw
+            self.roll = m.roll
+            self.pitchspeed = m.pitchspeed
+            self.yawspeed = m.yawspeed
+            self.rollspeed = m.rollspeed
+            self.__on_change('attitude')
+        elif typ == "SYS_STATUS":
+            self.voltage = m.voltage_battery
+            self.current = m.current_battery
+            self.level = m.battery_remaining
+            self.__on_change('battery')
+        elif typ == "HEARTBEAT":
+            self.__on_change('mode', 'armed')
+        elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
+            self.last_waypoint = m.seq
+        elif typ == "RC_CHANNELS_RAW":
+            def set(chnum, v):
+                '''Private utility for handling rc channel messages'''
+                # use port to allow ch nums greater than 8
+                self.rc_readback[str(m.port * 8 + chnum)] = v
+
+            set(1, m.chan1_raw)
+            set(2, m.chan2_raw)
+            set(3, m.chan3_raw)
+            set(4, m.chan4_raw)
+            set(5, m.chan5_raw)
+            set(6, m.chan6_raw)
+            set(7, m.chan7_raw)
+            set(8, m.chan8_raw)
+        elif typ == "MOUNT_STATUS":
+            self.mount_pitch = m.pointing_a / 100
+            self.mount_roll = m.pointing_b / 100
+            self.mount_yaw = m.pointing_c / 100
+            self.__on_change('mount')
+        elif typ == "RANGEFINDER":
+            self.rngfnd_distance = m.distance
+            self.rngfnd_voltage = m.voltage
+            self.__on_change('rangefinder')
+
+        if self.api:
+            for v in self.api.get_vehicles():
+                if v.mavrx_callback:
+                    v.mavrx_callback(m)
+
     def prepare(self):
-        print('Await heartbeat.')
+        # print('Await heartbeat.')
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
         #   invalid MAVLink prefix '13'
@@ -136,7 +227,8 @@ class MPFakeState:
                 break
             except mavutil.mavlink.MAVError:
                 continue
-        print('DONE')
+        # print('DONE')
+        
         send_heartbeat(self.master)
         request_data_stream_send(self.master)
 
@@ -168,29 +260,29 @@ class MPFakeState:
                     if not msg:
                         break
 
-                    if msg.get_type() not in swallow:
-                        if msg.get_type() == 'PARAM_VALUE':
-                            if params.mav_param_count == -1:
-                                params.mav_param_count = msg.param_count
-                                params.mav_param_set = [None]*msg.param_count
-                            try:
-                                if msg.param_index < msg.param_count:
-                                    params.mav_param_set[msg.param_index] = msg
-                                self.mav_param[msg.param_id] = msg.param_value
-                            except:
-                                import traceback
-                                traceback.print_exc()
+                    if msg.get_type() == 'PARAM_VALUE':
+                        if params.mav_param_count == -1:
+                            params.mav_param_count = msg.param_count
+                            params.mav_param_set = [None]*msg.param_count
+                        try:
+                            if msg.param_index < msg.param_count:
+                                params.mav_param_set[msg.param_index] = msg
+                            self.mav_param[msg.param_id] = msg.param_value
+                        except:
+                            import traceback
+                            traceback.print_exc()
 
-                        elif msg.get_type() == 'HEARTBEAT':
-                            self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-                            self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
+                    elif msg.get_type() == 'HEARTBEAT':
+                        self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+                        self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
 
-                        else:
+                    else:
+                        if self.api:
+                            self.mavlink_packet(msg)
+
+                        # Print unexpected values we don't deal with yet.
+                        if msg.get_type() not in swallow:
                             print(msg)
-                            pass
-
-                    if self.api:
-                        self.api.advertise_mavlink_packet(msg)
 
         t = Thread(target=mavlink_thread)
         t.daemon = True
