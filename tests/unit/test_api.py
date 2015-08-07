@@ -1,10 +1,9 @@
 import mock
 from mock import MagicMock
 import droneapi
-from droneapi.module.api import APIModule
+from droneapi import FakeAPI
 from nose.tools import assert_equals
 
 def test_mode():
-    api = APIModule(MagicMock())
-    res = api.get_connection()
-    assert_equals(len(res.get_vehicles()), 1)
+    api = FakeAPI(MagicMock())
+    assert_equals(len(api.get_vehicles()), 1)
