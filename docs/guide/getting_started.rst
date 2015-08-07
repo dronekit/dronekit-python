@@ -90,7 +90,8 @@ Installing DroneKit on Windows
 
 The easiest way to set up DroneKit-Python on Windows is to use the Windows Installer. 
 This is applied over the top of the *MAVProxy* Windows installation and includes all needed 
-dependencies and the DroneKit-Python examples.
+dependencies and the DroneKit-Python examples. The latest version even 
+:ref:`sets up MAVProxy to load DroneKit <loading-dronekit>`. 
 
 .. tip::
 
@@ -107,8 +108,8 @@ To install DroneKit-Python using the installer:
 The installer packages DroneKit-Python as an application, which is launched by double-clicking an icon 
 in the system GUI. After the *MAVProxy prompt* and *console* have started you can 
 :ref:`connect to the vehicle <starting-mavproxy_set_link_when_mavproxy_running>` (instead of setting the
-connection when starting *MAVProxy*). You will still need to :ref:`load DroneKit <loading-dronekit>` (not done by the installer 
-- see `#267 <https://github.com/dronekit/dronekit-python/issues/267>`_). The examples are copied to :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
+connection when starting *MAVProxy*). 
+The examples are copied to :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
 
 It is also possible to set up DroneKit-Python on the command line (see :ref:`dronekit_development_windows`).
 
