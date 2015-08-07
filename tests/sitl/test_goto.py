@@ -93,5 +93,5 @@ def test_goto():
     time.sleep(3)
 
     # print "Returning to Launch"
-    vehicle.mode    = VehicleMode("RTL")
+    vehicle.mode = VehicleMode("RTL")
     vehicle.flush()
