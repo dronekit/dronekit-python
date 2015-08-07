@@ -36,7 +36,7 @@ install:
       while(!(Select-String -path 'setup-dronekit.log' -pattern 'Log closed' -quiet)){ Start-Sleep 1};
 
 build_script:
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;c:\\Program Files (x86)\\MAVProxy;%PATH% & python -m tests.sitl & endlocal"
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;c:\\Program Files (x86)\\MAVProxy;%PATH% & nosetests tests\\sitl & endlocal"
   - cmd: 'setlocal & python setup.py install & endlocal'
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\unit & endlocal"
