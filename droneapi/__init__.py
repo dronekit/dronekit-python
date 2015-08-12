@@ -6,11 +6,12 @@ from pymavlink import mavutil
 # Cumulative list of packets we don't yet handle
 # TODO: clear this list and handle them!
 swallow = ['AHRS', 'AHRS2', 'ATTITUDE', 'EKF_STATUS_REPORT', 'GLOBAL_POSITION_INT',
-           'GPS_RAW_INT', 'HWSTATUS', 'MEMINFO', 'MISSION_CURRENT', 'NAV_CONTROLLER_OUTPUT',
-           'RAW_IMU', 'RC_CHANNELS_RAW', 'SCALED_IMU2', 'SCALED_PRESSURE', 'SENSOR_OFFSETS',
-           'SERVO_OUTPUT_RAW', 'SIMSTATE', 'SYSTEM_TIME', 'SYS_STATUS', 'TERRAIN_REPORT',
-           'TERRAIN_REQUEST', 'STATUSTEXT', 'LOCAL_POSITION_NED', 'COMMAND_ACK',
-           'MISSION_ACK', 'VFR_HUD']
+           'GPS_RAW_INT', 'HWSTATUS', 'MEMINFO', 'MISSION_CURRENT',
+           'NAV_CONTROLLER_OUTPUT', 'RAW_IMU', 'RC_CHANNELS_RAW', 'SCALED_IMU2',
+           'SCALED_PRESSURE', 'SENSOR_OFFSETS', 'SERVO_OUTPUT_RAW', 'STATUSTEXT',
+           'SIMSTATE', 'SYSTEM_TIME', 'SYS_STATUS', 'TERRAIN_REPORT',
+           'TERRAIN_REQUEST', 'LOCAL_POSITION_NED', 'COMMAND_ACK',
+           'MISSION_ACK', 'VFR_HUD', 'HEARTBEAT', 'PARAM_VALUE']
 
 import droneapi.module.api as api
 
@@ -276,13 +277,12 @@ class MPFakeState:
                         self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
                         self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
 
-                    else:
-                        if self.api:
-                            self.mavlink_packet(msg)
+                    if self.api:
+                        self.mavlink_packet(msg)
 
-                        # Print unexpected values we don't deal with yet.
-                        if msg.get_type() not in swallow:
-                            print(msg)
+                    # Print unexpected values we don't deal with yet.
+                    if msg.get_type() not in swallow:
+                        print(msg)
 
         t = Thread(target=mavlink_thread)
         t.daemon = True

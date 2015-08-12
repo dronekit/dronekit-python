@@ -19,6 +19,14 @@ def test_goto(connpath):
     api = local_connect(connpath)
     vehicle = api.get_vehicles()[0]
 
+    # NOTE these are *very inappropriate settings*
+    # to make on a real vehicle. They are leveraged
+    # exclusively for simulation. Take heed!!!
+    vehicle.parameters['ARMING_CHECK'] = 0
+    vehicle.parameters['FS_THR_ENABLE'] = 0
+    vehicle.parameters['FS_GCS_ENABLE'] = 0
+    vehicle.parameters['EKF_CHECK_THRESH'] = 0
+
     def arm_and_takeoff(aTargetAltitude):
         """
         Arms vehicle and fly to aTargetAltitude.
