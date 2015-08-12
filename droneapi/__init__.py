@@ -1,5 +1,13 @@
 import time
 from pymavlink import mavutil
+import socket
+from Queue import Empty
+import platform
+
+if platform.system() == 'Windows':
+    from errno import WSAECONNRESET as ECONNABORTED
+else:
+    from errno import ECONNABORTED
 
 # Clean impl of mp dependencies for droneapi
 
@@ -249,14 +257,41 @@ class MPFakeState:
                     try:
                         msg = self.out_queue.get_nowait()
                         self.master.write(msg)
-                    except:
+                    except socket.error as error:
+                        if error.errno == ECONNABORTED:
+                            print('REESTABLISHING CONNECTION AFTER SEND TIMEOUT')
+                            try:
+                                self.master.close()
+                            except:
+                                pass
+                            self.master = mavutil.mavlink_connection(self.master.address)
+                            continue
+
+                        # If connection reset (closed), stop polling.
+                        return
+                    except Empty:
+                        break
+                    except Exception as e:
+                        print('MAV SEND ERROR:', e)
                         break
 
                 while True:
                     try:
                         msg = self.master.recv_msg()
+                    except socket.error as error:
+                        if error.errno == ECONNABORTED:
+                            print('REESTABLISHING CONNECTION AFTER RECV TIMEOUT')
+                            try:
+                                self.master.close()
+                            except:
+                                pass
+                            self.master = mavutil.mavlink_connection(self.master.address)
+                            continue
+
+                        # If connection reset (closed), stop polling.
+                        return
                     except Exception as e:
-                        print(e)
+                        print('MAV RECV ERROR:', e)
                         msg = None
                     if not msg:
                         break
