@@ -47,6 +47,9 @@ build_script:
         aws s3 cp $setup s3://dronekit-assets/installers/dronekit-windows-$env:APPVEYOR_REPO_TAG_NAME.exe --acl public-read
         aws s3 cp $setup s3://dronekit-assets/installers/dronekit-windows-latest.exe --acl public-read
       } else {
+        echo $env:APPVEYOR_REPO_TAG
+        echo $env:APPVEYOR_REPO_TAG_NAME
+        Write-Host ($env:APPVEYOR_REPO_TAG_NAME -match '^v\d+\.\d+\.\d+$')
         echo "Skipping publishing installer on non-tag."
       }
 
