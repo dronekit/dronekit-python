@@ -341,6 +341,11 @@ class APIThread(threading.Thread):
             self.module.mpstate.rx_blacklist.remove('STATUSTEXT')
         except:
             pass # Silently work with old mavproxies
+
+        # Remove all observers.
+        self.module.vehicle.remove_all_observers()
+        self.module.vehicle.unset_mavlink_callback()
+
         self.module.thread_remove(self)
 
     def __str__(self):
@@ -489,7 +494,7 @@ class APIModule(mp_module.MPModule):
             self.__on_change('rangefinder')
 
 
-        if (self.vehicle is not None) and hasattr(self.vehicle, 'mavrx_callback'):
+        if (self.vehicle is not None) and getattr(self.vehicle, 'mavrx_callback', None):
             self.vehicle.mavrx_callback(m)
 
         self.send_to_server(m)

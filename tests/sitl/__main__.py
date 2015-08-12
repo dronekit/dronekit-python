@@ -195,6 +195,7 @@ def lets_run_a_test(name):
         # NOTE these are *very inappropriate settings*
         # to make on a real vehicle. They are leveraged
         # exclusively for simulation. Take heed!!!
+        p.stdin.write('set moddebug 3\n')
         p.stdin.write('param set ARMING_CHECK 0\n')
         p.stdin.write('param set FS_THR_ENABLE 0\n')
         p.stdin.write('param set FS_GCS_ENABLE 0\n')
