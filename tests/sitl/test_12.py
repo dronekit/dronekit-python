@@ -11,8 +11,8 @@ def current_milli_time():
     return int(round(time.time() * 1000))
 
 @with_sitl
-def test_timeout():
-    v = local_connect().get_vehicles()[0]
+def test_timeout(connpath):
+    v = local_connect(connpath).get_vehicles()[0]
 
     value = v.parameters['THR_MIN']
     assert_equals(type(value), float)

@@ -13,5 +13,5 @@ def teardown_sitl():
 def with_sitl(fn):
     @with_setup(setup_sitl, teardown_sitl)
     def test(*args, **kargs):
-        return fn(*args, **kargs)
+        return fn('tcp:127.0.0.1:5760', *args, **kargs)
     return test

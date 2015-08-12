@@ -15,8 +15,8 @@ from pymavlink import mavutil
 from nose.tools import assert_equals
 
 @with_sitl
-def test_goto():
-    api = local_connect()
+def test_goto(connpath):
+    api = local_connect(connpath)
     vehicle = api.get_vehicles()[0]
 
     def arm_and_takeoff(aTargetAltitude):
