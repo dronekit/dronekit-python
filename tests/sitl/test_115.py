@@ -8,8 +8,8 @@ import os
 from nose.tools import assert_equals
 
 @with_sitl
-def test_115():
-    api = local_connect()
+def test_115(connpath):
+    api = local_connect(connpath)
     v = api.get_vehicles()[0]
 
     # Dummy callback
