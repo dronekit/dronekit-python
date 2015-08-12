@@ -1,12 +1,15 @@
+from droneapi import local_connect
 from droneapi.lib import VehicleMode
+from droneapi.tools import with_sitl
 from pymavlink import mavutil
 import time
 import sys
 import os
-from testlib import assert_equals
+from nose.tests import assert_equals
 
-def test_110(local_connect):
-    api = local_connect()
+@with_sitl
+def test_110(connpath):
+    api = local_connect(connpath)
     v = api.get_vehicles()[0]
     
     # Change the vehicle into STABILIZE mode
