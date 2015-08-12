@@ -8,7 +8,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
-from droneapi import local_connect
+from droneapi import connect
 from droneapi.lib import VehicleMode, Location
 from droneapi.tools import with_sitl
 from pymavlink import mavutil
@@ -16,7 +16,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_goto(connpath):
-    api = local_connect(connpath)
+    api = connect(connpath)
     vehicle = api.get_vehicles()[0]
 
     # NOTE these are *very inappropriate settings*

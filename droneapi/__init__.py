@@ -311,7 +311,7 @@ def kill(proc_pid):
     except psutil.NoSuchProcess:
         pass
 
-def local_connect(ip):
+def connect(ip):
     import droneapi.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip))
     # api.init(state)
