@@ -1,4 +1,4 @@
-from droneapi import local_connect
+from droneapi import connect
 from droneapi.lib import VehicleMode
 from droneapi.tools import with_sitl
 from pymavlink import mavutil
@@ -9,7 +9,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_110(connpath):
-    api = local_connect(connpath)
+    api = connect(connpath)
     v = api.get_vehicles()[0]
 
     # NOTE these are *very inappropriate settings*
