@@ -316,10 +316,3 @@ def connect(ip):
     state = MPFakeState(mavutil.mavlink_connection(ip))
     # api.init(state)
     return state.prepare()
-
-import atexit
-bg = []
-def cleanup_processes():
-    for p in bg:
-        kill(p.pid)
-atexit.register(cleanup_processes)
