@@ -1,13 +1,24 @@
+from droneapi import connect
 from droneapi.lib import VehicleMode
+from droneapi.tools import with_sitl
 from pymavlink import mavutil
 import time
 import sys
 import os
-from testlib import assert_equals
+from nose.tools import assert_equals
 
-def test_110(local_connect):
-    api = local_connect()
+@with_sitl
+def test_110(connpath):
+    api = connect(connpath)
     v = api.get_vehicles()[0]
+
+    # NOTE these are *very inappropriate settings*
+    # to make on a real vehicle. They are leveraged
+    # exclusively for simulation. Take heed!!!
+    v.parameters['ARMING_CHECK'] = 0
+    v.parameters['FS_THR_ENABLE'] = 0
+    v.parameters['FS_GCS_ENABLE'] = 0
+    v.parameters['EKF_CHECK_THRESH'] = 0
     
     # Change the vehicle into STABILIZE mode
     v.mode = VehicleMode("STABILIZE")

@@ -13,7 +13,7 @@ script:
   - (a; sudo python setup.py install );z
   - (a; [ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests tests/web );z
   - (a; nosetests tests/unit );z
-  - (a; python -m tests.sitl );z
+  - (a; nosetests tests/sitl );z
 git:
   depth: 10
 language: objective-c

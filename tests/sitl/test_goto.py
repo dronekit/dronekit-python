@@ -8,13 +8,24 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
+from droneapi import connect
 from droneapi.lib import VehicleMode, Location
+from droneapi.tools import with_sitl
 from pymavlink import mavutil
-from testlib import assert_equals
+from nose.tools import assert_equals
 
-def test_goto(local_connect):
-    api = local_connect()
+@with_sitl
+def test_goto(connpath):
+    api = connect(connpath)
     vehicle = api.get_vehicles()[0]
+
+    # NOTE these are *very inappropriate settings*
+    # to make on a real vehicle. They are leveraged
+    # exclusively for simulation. Take heed!!!
+    vehicle.parameters['ARMING_CHECK'] = 0
+    vehicle.parameters['FS_THR_ENABLE'] = 0
+    vehicle.parameters['FS_GCS_ENABLE'] = 0
+    vehicle.parameters['EKF_CHECK_THRESH'] = 0
 
     def arm_and_takeoff(aTargetAltitude):
         """
@@ -90,5 +101,5 @@ def test_goto(local_connect):
     time.sleep(3)
 
     # print "Returning to Launch"
-    vehicle.mode    = VehicleMode("RTL")
+    vehicle.mode = VehicleMode("RTL")
     vehicle.flush()

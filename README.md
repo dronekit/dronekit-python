@@ -6,7 +6,7 @@
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dronekit/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-This package contains the python language bindings for the drone API and the associated MAVProxy module.
+This package contains the python language bindings for the drone API.
 
 ## Users wanted!
 
