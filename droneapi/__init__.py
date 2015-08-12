@@ -323,35 +323,3 @@ def cleanup_processes():
     for p in bg:
         kill(p.pid)
 atexit.register(cleanup_processes)
-
-def sitl_connect():
-    import os
-    import sys
-    from subprocess import Popen, PIPE
-
-    sitl_args = ['dronekit-sitl', 'copter-3.3-rc5', '-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
-
-    speedup = os.environ.get('TEST_SPEEDUP', '1')
-    rate = os.environ.get('TEST_RATE', '200')
-    sitl_args += ['--speedup', str(speedup), '-r', str(rate)]
-
-    # Change CPU core affinity.
-    # TODO change affinity on osx/linux
-    if sys.platform == 'win32':
-        # 0x14 = 0b1110 = all cores except cpu 1
-        sitl = Popen(['start', '/affinity', '14', '/realtime', '/b', '/wait'] + sitl_args, shell=True, stdout=PIPE, stderr=PIPE)
-    else:
-        sitl = Popen(sitl_args, stdout=PIPE, stderr=PIPE)
-    bg.append(sitl)
-
-    while sitl.poll() == None:
-        line = sitl.stdout.readline()
-        if 'Waiting for connection' in line:
-            break
-    if sitl.poll() != None and sitl.returncode != 0:
-        print('[runner] ...aborting with SITL error code ' + str(sitl.returncode))
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sys.exit(sitl.returncode)
-
-    return local_connect()
