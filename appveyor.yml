@@ -41,6 +41,9 @@ build_script:
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\unit & endlocal"
   - ps: |
+      echo $env:APPVEYOR_REPO_TAG
+      echo $env:APPVEYOR_REPO_TAG_NAME
+      Write-Host ($env:APPVEYOR_REPO_TAG_NAME -match '^v\d+\.\d+\.\d+$')
       if ($env:APPVEYOR_REPO_TAG -and ($env:APPVEYOR_REPO_TAG_NAME -match '^v\d+\.\d+\.\d+$')) {
         echo "Publishing installer."
         $setup = gi .\windows\Output\DroneKitsetup-*.exe
