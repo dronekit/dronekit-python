@@ -1,12 +1,14 @@
-# DroneKit-python (formerly DroneAPI-python)
+# DroneKit Python
 
-[![Windows Build status](https://img.shields.io/appveyor/ci/3drobotics/dronekit-python.svg?label=windows)](https://ci.appveyor.com/project/3drobotics/dronekit-python/branch/master)
-[![OS X Build Status](https://img.shields.io/travis/dronekit/dronekit-python.svg?label=os%20x)](https://travis-ci.org/dronekit/dronekit-python)
-[![Linux Build Status](https://img.shields.io/circleci/project/dronekit/dronekit-python.svg?label=linux)](https://circleci.com/gh/dronekit/dronekit-python)
+[![Windows Build status](https://img.shields.io/appveyor/ci/3drobotics/dronekit-python/master.svg?label=windows)](https://ci.appveyor.com/project/3drobotics/dronekit-python/branch/master)
+[![OS X Build Status](https://img.shields.io/travis/dronekit/dronekit-python/master.svg?label=os%20x)](https://travis-ci.org/dronekit/dronekit-python)
+[![Linux Build Status](https://img.shields.io/circleci/project/dronekit/dronekit-python/master.svg?label=linux)](https://circleci.com/gh/dronekit/dronekit-python)
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dronekit/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-This package contains the python language bindings for the drone API and the associated MAVProxy module.
+*(Formerly DroneAPI-python.)*
+
+This package contains the python language implementation of DroneKit.
 
 ## Users wanted!
 
@@ -28,6 +30,6 @@ For documentation on how to use this API please see:
     * Advanced ['drone_delivery'](examples/drone_delivery/)
     * Advanced ['follow-me'](examples/follow_me/)
 
-[Stack Overflow](http://stackoverflow.com/questions/tagged/dronekit-python) is the best place to ask for *technical support* on how to use the API.
+The [DroneKit Forums](http://discuss.dronekit.io) is the best place to ask for technical support on how to use the library.
 
-Copyright 2014 3D Robotics, Inc. - Licensed under the Apache 2.0 License.
+Copyright 2015 3D Robotics, Inc. Licensed under the Apache 2.0 License.
