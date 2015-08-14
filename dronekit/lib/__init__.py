@@ -285,6 +285,12 @@ class VehicleMode(object):
     def __str__(self):
         return "VehicleMode:%s" % self.name
 
+    def __eq__(self, other):
+        return self.name == other
+
+    def __ne__(self, other):
+        return self.name != other
+
 class APIConnection(object):
     """
     An API provider.
@@ -524,7 +530,7 @@ class Vehicle(HasObservers):
 
     .. py:attribute:: rangefinder
 
-        :py:class:`Rangefinder` distance and voltage values. 
+        :py:class:`Rangefinder` distance and voltage values.
 
 
     .. py:attribute:: channel_override
@@ -750,7 +756,7 @@ class Vehicle(HasObservers):
             vehicle.set_mavlink_callback(mavrx_debug_handler)
 
         :param callback: The callback function to be invoked when a raw MAVLink message is received.
-		
+
         """
         self.mavrx_callback = callback
 
