@@ -247,6 +247,18 @@ class VehicleMode(object):
 
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
+        vehicle.flush()  # Flush to guarantee the write is complete
+
+    Mode comparisons must be performed against the ``Vehicle.mode.name`` member. The code below shows how
+    to test that the mode has actually changed:
+
+    .. code:: python
+
+        # Test that the mode has changed
+        while not vehicle.mode.name=='AUTO':
+            print "Waiting for mode change ..."
+            time.sleep(1)
+         
 
     For more information on getting/setting/observing the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
 
