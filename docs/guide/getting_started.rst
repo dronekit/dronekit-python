@@ -42,7 +42,7 @@ If you are using Ubuntu or Debian Linux you can get most of the *DroneKit* depen
 
     sudo apt-get install python-pip python-dev python-numpy python-opencv python-serial python-pyparsing python-wxgtk2.8
 
-	
+
 The remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_), are 
 installed when you get DroneKit-Python from the public PyPi repository:
 
@@ -50,7 +50,7 @@ installed when you get DroneKit-Python from the public PyPi repository:
 
     sudo pip install droneapi
 
-	
+
 
 .. tip:: 
 
@@ -68,7 +68,7 @@ If you're on Mac OSX, you can use `Homebrew <http://brew.sh/>`_ to install *WXMa
     brew tap homebrew/science
     brew install wxmac wxpython opencv
 
-	
+
 Uninstall *python-dateutil* (OSX and Windows come bundled with a version that is not supported for some dependencies):
 
 .. code:: bash
@@ -81,7 +81,7 @@ Install DroneKit-Python and its remaining dependencies (including `MAVProxy <htt
 
     sudo pip install numpy pyparsing
     sudo pip install droneapi
-	
+
 
 .. _get_started_install_dk_windows:
 
@@ -94,14 +94,15 @@ dependencies and the DroneKit-Python examples.
 
 .. tip::
 
-    A new version of the Windows Installer is created with every patch revision.
+    A new version of the Windows Installer is created with every patch revision (`get old versions
+    here <http://dronekit-assets.s3-website-us-east-1.amazonaws.com/installers/>`_).
     Don't forget to update regularly for bug fixes and new features!
  
 To install DroneKit-Python using the installer:
 
 #. Download and run the `latest MAVProxy installer <http://firmware.diydrones.com/Tools/MAVProxy/MAVProxySetup-latest.exe>`_
    — accept all prompts.    
-#. Download and run the `latest DroneKit installer <https://s3.amazonaws.com/dronekit-installers/windows/dronekit-windows-latest.exe>`_
+#. Download and run the `latest DroneKit installer <http://dronekit-assets.s3.amazonaws.com/installers/dronekit-windows-latest.exe>`_
    — accept all prompts (install in the same location as MAVProxy).
 
 The installer packages DroneKit-Python as an application, which is launched by double-clicking an icon 
@@ -150,7 +151,7 @@ The table below shows the command lines used to start *MAVProxy* for the respect
      - ``mavproxy.py --master=/dev/cu.usbmodem1``		 
 
 For other connection options see the `MAVProxy documentation <http://tridge.github.io/MAVProxy/>`_.
-	
+
 .. _starting-mavproxy_set_link_when_mavproxy_running:
 
 Connecting after startup
@@ -169,7 +170,7 @@ new connections as shown:
 .. code:: bash
 
     set baudrate 57600    #Set the default baud rate for new connections (do before calling "link add")
-	
+
 See `Link Management <http://tridge.github.io/MAVProxy/link.html>`_ (MAVProxy documentation) for more information.
 
 
@@ -195,16 +196,16 @@ Windows:
 .. code:: bash
 
     echo module load droneapi.module.api >> %HOMEPATH%\AppData\Local\MAVProxy\mavinit.scr
-	
-	
+
+
 Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* every time you need it:
 
 .. code-block:: bash
    :emphasize-lines: 1
 
-	MANUAL> module load droneapi.module.api
-	DroneAPI loaded
-	MANUAL>
+    MANUAL> module load droneapi.module.api
+    DroneAPI loaded
+    MANUAL>
 
 
 
@@ -219,8 +220,8 @@ which reads and writes :ref:`vehicle state and parameter <vehicle-information>` 
 .. warning:: 
 
     This example doesn't take off, but it does arm the motors. Don't run any example indoors on a real vehicle 
-    unless you have first removed its propellers.	
-	
+    unless you have first removed its propellers.
+
 The steps are:
 
 #. Get the DroneKit-Python example source code onto your local machine. 
@@ -257,7 +258,7 @@ The steps are:
    .. code-block:: bash
 
        module load droneapi.module.api
-	   
+
 #. Once the *MAVProxy* console is running, start ``vehicle_state.py`` by entering ``api start`` followed by the 
    full file path of the script. For example: 
 
@@ -290,6 +291,3 @@ The steps are:
 
 
 For more information on running the examples (and other apps) see :ref:`running_examples_top`.	
-
-
-
