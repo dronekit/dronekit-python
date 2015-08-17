@@ -141,18 +141,18 @@ The table below shows the command lines used to start *MAVProxy* for the respect
 
    * - Connection type
      - MAVProxy command
-   * - Linux computer connected to the vehicle via USB
+   * - Linux computer connected to vehicle via USB
      - ``mavproxy.py --master=/dev/ttyUSB0``
-   * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
+   * - Linux computer connected to vehicle via Serial port (RaspberryPi example)
      - ``mavproxy.py --master=/dev/ttyAMA0 --baudrate 57600``
    * - SITL connected to the vehicle via UDP
      - ``mavproxy.py --master=127.0.0.1:14550``
-   * - OSX computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/cu.usbmodem1``	 
-   * - Windows computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/cu.usbmodem1``		 
+   * - OSX computer connected to vehicle via USB
+     - ``mavproxy.py --master=/dev/cu.usbmodem1``
+   * - Windows computer connected to vehicle via USB on port "X"
+     - ``mavproxy.py --master="comX"``
 
-For other connection options see the `MAVProxy documentation <http://tridge.github.io/MAVProxy/>`_.
+For other connection options see the `MAVProxy documentation <http://dronecode.github.io/MAVProxy/>`_.
 
 .. _starting-mavproxy_set_link_when_mavproxy_running:
 
