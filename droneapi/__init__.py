@@ -333,19 +333,6 @@ class MPFakeState:
         self.api = FakeAPI(self)
         return self.api
 
-import psutil
-def kill(proc_pid):
-    try:
-        process = psutil.Process(proc_pid)
-        for proc in process.children(recursive=True):
-            try:
-                proc.kill()
-            except psutil.NoSuchProcess:
-                pass
-        process.kill()
-    except psutil.NoSuchProcess:
-        pass
-
 def connect(ip):
     import droneapi.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip))
