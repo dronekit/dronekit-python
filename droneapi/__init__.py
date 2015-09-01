@@ -327,4 +327,4 @@ def connect(ip):
     import droneapi.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip))
     # api.init(state)
-    return state.prepare()
+    return state.prepare().get_vehicles()[0]
