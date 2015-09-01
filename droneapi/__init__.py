@@ -11,16 +11,6 @@ else:
 
 # Clean impl of mp dependencies for droneapi
 
-# Cumulative list of packets we don't yet handle
-# TODO: clear this list and handle them!
-swallow = ['AHRS', 'AHRS2', 'ATTITUDE', 'EKF_STATUS_REPORT', 'GLOBAL_POSITION_INT',
-           'GPS_RAW_INT', 'HWSTATUS', 'MEMINFO', 'MISSION_CURRENT',
-           'NAV_CONTROLLER_OUTPUT', 'RAW_IMU', 'RC_CHANNELS_RAW', 'SCALED_IMU2',
-           'SCALED_PRESSURE', 'SENSOR_OFFSETS', 'SERVO_OUTPUT_RAW', 'STATUSTEXT',
-           'SIMSTATE', 'SYSTEM_TIME', 'SYS_STATUS', 'TERRAIN_REPORT',
-           'TERRAIN_REQUEST', 'LOCAL_POSITION_NED', 'COMMAND_ACK',
-           'MISSION_ACK', 'VFR_HUD', 'HEARTBEAT', 'PARAM_VALUE']
-
 import droneapi.module.api as api
 
 class FakeAPI:
@@ -230,16 +220,6 @@ class MPFakeState:
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
         #   invalid MAVLink prefix '13'
-        while True:
-            try:
-                self.master.wait_heartbeat()
-                break
-            except mavutil.mavlink.MAVError:
-                continue
-        # print('DONE')
-        
-        send_heartbeat(self.master)
-        request_data_stream_send(self.master)
 
         params = type('PState',(object,),{
             "mav_param_count": -1,
@@ -248,6 +228,7 @@ class MPFakeState:
         self.mav_param = {}
         self.pstate = params
         self.master.mav.param_request_list_send(self.master.target_system, self.master.target_component)
+        self.master.param_fetch_all()
 
         def mavlink_thread():
             while True:
@@ -291,13 +272,14 @@ class MPFakeState:
                         # If connection reset (closed), stop polling.
                         return
                     except Exception as e:
-                        print('MAV RECV ERROR:', e)
+                        # TODO debug these.
+                        # print('MAV RECV ERROR:', e)
                         msg = None
                     if not msg:
                         break
 
                     if msg.get_type() == 'PARAM_VALUE':
-                        if params.mav_param_count == -1:
+                        if params.mav_param_count != msg.param_count:
                             params.mav_param_count = msg.param_count
                             params.mav_param_set = [None]*msg.param_count
                         try:
@@ -315,17 +297,25 @@ class MPFakeState:
                     if self.api:
                         self.mavlink_packet(msg)
 
-                    # Print unexpected values we don't deal with yet.
-                    if msg.get_type() not in swallow:
-                        print(msg)
 
         t = Thread(target=mavlink_thread)
         t.daemon = True
         t.start()
 
+        send_heartbeat(self.master)
+        while True:
+            try:
+                self.master.wait_heartbeat()
+                break
+            except mavutil.mavlink.MAVError:
+                continue
+        print('Started.')
+        request_data_stream_send(self.master)
+
         while True:
             time.sleep(0.1)
-            if params.mav_param_count > 0 and None not in params.mav_param_set:
+            self.master.param_fetch_all() # It rate limits itself to every 2 seconds
+            if params.mav_param_count > 0 and params.mav_param_set[-1] != None:
                 print('Completed list of %s params' % (params.mav_param_count,))
                 print('Starting dronekit.')
                 break
