@@ -8,6 +8,7 @@ The guide contains how-to documentation for using the DroneKit-Python API. These
 .. toctree::
     :maxdepth: 1
 
+    migrating
     getting_started
     companion-computers
     Simulated Vehicle <sitl_setup>
