@@ -23,7 +23,7 @@ args = parser.parse_args()
 print 'Connecting to vehicle on: %s' % args.connect
 vehicle = connect(args.connect)
 
-# Wait for parameters to accumulate.
+# Wait for attribtues to accumulate.
 time.sleep(5)
 
 # Get all vehicle attributes (state)
