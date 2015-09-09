@@ -223,7 +223,8 @@ class MPFakeState:
 
         params = type('PState',(object,),{
             "mav_param_count": -1,
-            "mav_param_set": []
+            "mav_param_set": [],
+            "loaded": False,
         })()
         self.mav_param = {}
         self.pstate = params
@@ -232,7 +233,10 @@ class MPFakeState:
 
         def mavlink_thread():
             while True:
-                time.sleep(0.1)
+                send_heartbeat(self.master)
+                self.master.param_fetch_all() # It rate limits itself to every 2 seconds
+
+                time.sleep(0.05)
 
                 while True:
                     try:
@@ -283,6 +287,8 @@ class MPFakeState:
                             params.mav_param_count = msg.param_count
                             params.mav_param_set = [None]*msg.param_count
                         try:
+                            if len([x for x in params.mav_param_set[msg.param_index:] if x is not None]) > 0:
+                                params.loaded = True
                             if msg.param_index < msg.param_count:
                                 params.mav_param_set[msg.param_index] = msg
                             self.mav_param[msg.param_id] = msg.param_value
@@ -302,22 +308,17 @@ class MPFakeState:
         t.daemon = True
         t.start()
 
-        send_heartbeat(self.master)
         while True:
             try:
                 self.master.wait_heartbeat()
                 break
             except mavutil.mavlink.MAVError:
                 continue
-        print('Started.')
         request_data_stream_send(self.master)
 
         while True:
             time.sleep(0.1)
-            self.master.param_fetch_all() # It rate limits itself to every 2 seconds
-            if params.mav_param_count > 0 and params.mav_param_set[-1] != None:
-                print('Completed list of %s params' % (params.mav_param_count,))
-                print('Starting dronekit.')
+            if params.loaded:
                 break
 
         self.api = FakeAPI(self)
