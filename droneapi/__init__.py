@@ -234,8 +234,6 @@ class MPFakeState:
         def mavlink_thread():
             while True:
                 send_heartbeat(self.master)
-                self.master.param_fetch_all() # It rate limits itself to every 2 seconds
-
                 time.sleep(0.05)
 
                 while True:
@@ -318,6 +316,7 @@ class MPFakeState:
 
         while True:
             time.sleep(0.1)
+            self.master.param_fetch_all() # It rate limits itself to every 2 seconds
             if params.loaded:
                 break
 
