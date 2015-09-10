@@ -115,6 +115,16 @@ class MPFakeState:
         # Weird
         self.mpstate = self
         self.functions = self
+        self.mpstate.settings = self
+
+    def fix_targets(self, message):
+        pass
+        # """Set correct target IDs for our vehicle"""
+        # settings = self.mpstate.settings
+        # if hasattr(message, 'target_system'):
+        #     message.target_system = settings.target_system
+        # if hasattr(message, 'target_component'):
+        #     message.target_component = settings.target_component
 
     def module(self, which):
         # psyche
