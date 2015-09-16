@@ -89,9 +89,9 @@ class MPFakeState:
         self.mount_yaw = None
         self.mount_roll = None
 
-        self.voltage = None
-        self.current = None
-        self.level = None
+        self.voltage = -1
+        self.current = -1
+        self.level = -1
 
         self.rc_readback = {}
 
@@ -225,7 +225,7 @@ class MPFakeState:
                 if v.mavrx_callback:
                     v.mavrx_callback(m)
 
-    def prepare(self):
+    def prepare(self, await_params=False):
         # print('Await heartbeat.')
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
@@ -235,16 +235,40 @@ class MPFakeState:
             "mav_param_count": -1,
             "mav_param_set": [],
             "loaded": False,
+            "start": False,
         })()
         self.mav_param = {}
         self.pstate = params
-        self.master.mav.param_request_list_send(self.master.target_system, self.master.target_component)
-        self.master.param_fetch_all()
+        self.api = FakeAPI(self)
 
         def mavlink_thread():
+            # Record the time we received the last "new" param.
+            last_new_param = time.time()
+
+            start_duration = 0.2
+            repeat_duration = 1
+            duration = start_duration
+
             while True:
                 send_heartbeat(self.master)
                 time.sleep(0.05)
+
+                # Check the time duration for last "new" params exceeds watchdog.
+                if params.start:
+                    left = len([x for x in params.mav_param_set if x == None])
+                    if left == 0:
+                        params.loaded = True
+
+                    if not params.loaded and time.time() - last_new_param > duration:
+                        c = 0
+                        for i, v in enumerate(params.mav_param_set):
+                            if v == None:
+                                self.master.mav.param_request_read_send(self.master.target_system, self.master.target_component, "", i)
+                                c += 1
+                                if c > 50:
+                                    break
+                        duration = repeat_duration
+                        last_new_param = time.time()
 
                 while True:
                     try:
@@ -291,13 +315,22 @@ class MPFakeState:
                         break
 
                     if msg.get_type() == 'PARAM_VALUE':
+                        # If we discover a new param count, assume we
+                        # are receiving a new param set.
                         if params.mav_param_count != msg.param_count:
+                            params.loaded = False
+                            params.start = True
                             params.mav_param_count = msg.param_count
                             params.mav_param_set = [None]*msg.param_count
+
+                        # Attempt to set the params. We throw an error
+                        # if the index is out of range of the count or
+                        # we lack a param_id.
                         try:
-                            if len([x for x in params.mav_param_set[msg.param_index:] if x is not None]) > 0:
-                                params.loaded = True
-                            if msg.param_index < msg.param_count:
+                            if msg.param_index < msg.param_count and msg:
+                                if params.mav_param_set[msg.param_index] == None:
+                                    last_new_param = time.time()
+                                    duration = start_duration
                                 params.mav_param_set[msg.param_index] = msg
                             self.mav_param[msg.param_id] = msg.param_value
                         except:
@@ -316,25 +349,35 @@ class MPFakeState:
         t.daemon = True
         t.start()
 
+        # Wait for first heartbeat.
         while True:
             try:
                 self.master.wait_heartbeat()
                 break
             except mavutil.mavlink.MAVError:
                 continue
-        request_data_stream_send(self.master)
 
+        # Request a list of all parameters.
+        request_data_stream_send(self.master)
         while True:
+            # This fn actually rate limits itself to every 2s.
+            # Just retry with persistence to get our first param stream.
+            self.master.param_fetch_all()
             time.sleep(0.1)
-            self.master.param_fetch_all() # It rate limits itself to every 2 seconds
-            if params.loaded:
+            if params.mav_param_count > -1:
                 break
 
-        self.api = FakeAPI(self)
+        # We now should get parameters streaming in.
+        # We may not get the full set; we leave the logic to mavlink_thread
+        # to determine what params we yet need. Wait if await_params is True.
+        if await_params:
+            while not params.loaded:
+                time.sleep(0.1)
+
         return self.api
 
-def connect(ip):
+def connect(ip, await_params=False):
     import droneapi.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip))
     # api.init(state)
-    return state.prepare().get_vehicles()[0]
+    return state.prepare(await_params=await_params).get_vehicles()[0]
