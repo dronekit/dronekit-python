@@ -242,107 +242,112 @@ class MPFakeState:
         self.api = FakeAPI(self)
 
         def mavlink_thread():
-            # Record the time we received the last "new" param.
-            last_new_param = time.time()
+            # Huge try catch in case we see http://bugs.python.org/issue1856
+            try:
+                # Record the time we received the last "new" param.
+                last_new_param = time.time()
 
-            start_duration = 0.2
-            repeat_duration = 1
-            duration = start_duration
-
-            while True:
-                send_heartbeat(self.master)
-                time.sleep(0.05)
-
-                # Check the time duration for last "new" params exceeds watchdog.
-                if params.start:
-                    left = len([x for x in params.mav_param_set if x == None])
-                    if left == 0:
-                        params.loaded = True
-
-                    if not params.loaded and time.time() - last_new_param > duration:
-                        c = 0
-                        for i, v in enumerate(params.mav_param_set):
-                            if v == None:
-                                self.master.mav.param_request_read_send(self.master.target_system, self.master.target_component, "", i)
-                                c += 1
-                                if c > 50:
-                                    break
-                        duration = repeat_duration
-                        last_new_param = time.time()
+                start_duration = 0.2
+                repeat_duration = 1
+                duration = start_duration
 
                 while True:
-                    try:
-                        msg = self.out_queue.get_nowait()
-                        self.master.write(msg)
-                    except socket.error as error:
-                        if error.errno == ECONNABORTED:
-                            print('REESTABLISHING CONNECTION AFTER SEND TIMEOUT')
-                            try:
-                                self.master.close()
-                            except:
-                                pass
-                            self.master = mavutil.mavlink_connection(self.master.address)
-                            continue
+                    send_heartbeat(self.master)
+                    time.sleep(0.05)
 
-                        # If connection reset (closed), stop polling.
-                        return
-                    except Empty:
-                        break
-                    except Exception as e:
-                        print('MAV SEND ERROR:', e)
-                        break
+                    # Check the time duration for last "new" params exceeds watchdog.
+                    if params.start:
+                        if None not in params.mav_param_set:
+                            params.loaded = True
 
-                while True:
-                    try:
-                        msg = self.master.recv_msg()
-                    except socket.error as error:
-                        if error.errno == ECONNABORTED:
-                            print('REESTABLISHING CONNECTION AFTER RECV TIMEOUT')
-                            try:
-                                self.master.close()
-                            except:
-                                pass
-                            self.master = mavutil.mavlink_connection(self.master.address)
-                            continue
+                        if not params.loaded and time.time() - last_new_param > duration:
+                            c = 0
+                            for i, v in enumerate(params.mav_param_set):
+                                if v == None:
+                                    self.master.mav.param_request_read_send(self.master.target_system, self.master.target_component, "", i)
+                                    c += 1
+                                    if c > 50:
+                                        break
+                            duration = repeat_duration
+                            last_new_param = time.time()
 
-                        # If connection reset (closed), stop polling.
-                        return
-                    except Exception as e:
-                        # TODO debug these.
-                        # print('MAV RECV ERROR:', e)
-                        msg = None
-                    if not msg:
-                        break
-
-                    if msg.get_type() == 'PARAM_VALUE':
-                        # If we discover a new param count, assume we
-                        # are receiving a new param set.
-                        if params.mav_param_count != msg.param_count:
-                            params.loaded = False
-                            params.start = True
-                            params.mav_param_count = msg.param_count
-                            params.mav_param_set = [None]*msg.param_count
-
-                        # Attempt to set the params. We throw an error
-                        # if the index is out of range of the count or
-                        # we lack a param_id.
+                    while True:
                         try:
-                            if msg.param_index < msg.param_count and msg:
-                                if params.mav_param_set[msg.param_index] == None:
-                                    last_new_param = time.time()
-                                    duration = start_duration
-                                params.mav_param_set[msg.param_index] = msg
-                            self.mav_param[msg.param_id] = msg.param_value
-                        except:
-                            import traceback
-                            traceback.print_exc()
+                            msg = self.out_queue.get_nowait()
+                            self.master.write(msg)
+                        except socket.error as error:
+                            if error.errno == ECONNABORTED:
+                                print('REESTABLISHING CONNECTION AFTER SEND TIMEOUT')
+                                try:
+                                    self.master.close()
+                                except:
+                                    pass
+                                self.master = mavutil.mavlink_connection(self.master.address)
+                                continue
 
-                    elif msg.get_type() == 'HEARTBEAT':
-                        self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-                        self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
+                            # If connection reset (closed), stop polling.
+                            return
+                        except Empty:
+                            break
+                        except Exception as e:
+                            print('MAV SEND ERROR:', e)
+                            break
 
-                    if self.api:
-                        self.mavlink_packet(msg)
+                    while True:
+                        try:
+                            msg = self.master.recv_msg()
+                        except socket.error as error:
+                            if error.errno == ECONNABORTED:
+                                print('REESTABLISHING CONNECTION AFTER RECV TIMEOUT')
+                                try:
+                                    self.master.close()
+                                except:
+                                    pass
+                                self.master = mavutil.mavlink_connection(self.master.address)
+                                continue
+
+                            # If connection reset (closed), stop polling.
+                            return
+                        except Exception as e:
+                            # TODO debug these.
+                            # print('MAV RECV ERROR:', e)
+                            msg = None
+                        if not msg:
+                            break
+
+                        if msg.get_type() == 'PARAM_VALUE':
+                            # If we discover a new param count, assume we
+                            # are receiving a new param set.
+                            if params.mav_param_count != msg.param_count:
+                                params.loaded = False
+                                params.start = True
+                                params.mav_param_count = msg.param_count
+                                params.mav_param_set = [None]*msg.param_count
+
+                            # Attempt to set the params. We throw an error
+                            # if the index is out of range of the count or
+                            # we lack a param_id.
+                            try:
+                                if msg.param_index < msg.param_count and msg:
+                                    if params.mav_param_set[msg.param_index] == None:
+                                        last_new_param = time.time()
+                                        duration = start_duration
+                                    params.mav_param_set[msg.param_index] = msg
+                                self.mav_param[msg.param_id] = msg.param_value
+                            except:
+                                import traceback
+                                traceback.print_exc()
+
+                        elif msg.get_type() == 'HEARTBEAT':
+                            self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+                            self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
+
+                        if self.api:
+                            self.mavlink_packet(msg)
+
+            except:
+                # http://bugs.python.org/issue1856
+                return
 
 
         t = Thread(target=mavlink_thread)
