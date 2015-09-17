@@ -16,8 +16,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_goto(connpath):
-    api = connect(connpath)
-    vehicle = api.get_vehicles()[0]
+    vehicle = connect(connpath, await_params=True)
 
     # NOTE these are *very inappropriate settings*
     # to make on a real vehicle. They are leveraged
@@ -47,16 +46,16 @@ def test_goto(connpath):
         vehicle.flush()
 
         i = 60
-        while not api.exit and vehicle.mode.name != 'GUIDED' and i > 0:
+        while vehicle.mode.name != 'GUIDED' and i > 0:
             # print " Waiting for guided %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
 
-        vehicle.armed   = True
+        vehicle.armed = True
         vehicle.flush()
 
         i = 60
-        while not api.exit and not vehicle.armed and vehicle.mode.name == 'GUIDED' and i > 0:
+        while not vehicle.armed and vehicle.mode.name == 'GUIDED' and i > 0:
             # print " Waiting for arming %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
@@ -72,7 +71,7 @@ def test_goto(connpath):
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
         # Vehicle.commands.takeoff will execute immediately).
-        while not api.exit:
+        while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.
             if vehicle.location.alt >= aTargetAltitude * 0.95: 

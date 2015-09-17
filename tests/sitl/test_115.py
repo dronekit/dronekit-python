@@ -9,8 +9,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_115(connpath):
-    api = connect(connpath)
-    v = api.get_vehicles()[0]
+    v = connect(connpath, await_params=True)
 
     # Dummy callback
     def mavlink_callback(*args):
