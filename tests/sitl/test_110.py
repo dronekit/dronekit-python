@@ -9,8 +9,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_110(connpath):
-    api = connect(connpath)
-    v = api.get_vehicles()[0]
+    v = connect(connpath, await_params=True)
 
     # NOTE these are *very inappropriate settings*
     # to make on a real vehicle. They are leveraged

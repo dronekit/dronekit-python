@@ -12,7 +12,7 @@ def current_milli_time():
 
 @with_sitl
 def test_timeout(connpath):
-    v = connect(connpath).get_vehicles()[0]
+    v = connect(connpath, await_params=True)
 
     value = v.parameters['THR_MIN']
     assert_equals(type(value), float)
