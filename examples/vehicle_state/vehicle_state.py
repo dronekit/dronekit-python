@@ -107,7 +107,6 @@ print "Remove the MAVLink callback handler (stop getting messages)"
 vehicle.unset_mavlink_callback()
 
 
-
 # Overriding an RC channel
 # NOTE: CHANNEL OVERRIDES may be useful for simulating user input and when implementing certain types of joystick control. 
 #DO NOT use unless there is no other choice (there almost always is!)
