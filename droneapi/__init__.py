@@ -1,8 +1,12 @@
+from __future__ import print_function
 import time
-from pymavlink import mavutil
 import socket
-from Queue import Empty
+import sys
+import os
 import platform
+import re
+from pymavlink import mavutil
+from Queue import Empty
 
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
@@ -12,6 +16,9 @@ else:
 # Clean impl of mp dependencies for droneapi
 
 import droneapi.module.api as api
+
+def errprinter(*args):
+    print(*args, file=sys.stderr)
 
 class FakeAPI:
     def __init__(self, module):
@@ -33,8 +40,7 @@ class MavWriter():
         self.queue.put(pkt)
 
     def read(self):
-        print('WTF')
-        import os
+        errprinter('writer should not have had a read request')
         os._exit(43)
 
 def send_heartbeat(master):
@@ -48,7 +54,7 @@ from Queue import Queue
 from threading import Thread
 
 class MPFakeState:
-    def __init__(self, master):
+    def __init__(self, master, status_printer=None):
         self.master = master
         out_queue = Queue()
         # self.mav_thread = mav_thread(master, self)
@@ -117,6 +123,8 @@ class MPFakeState:
         self.functions = self
         self.mpstate.settings = self
 
+        self.status_printer = status_printer
+
     def fix_targets(self, message):
         pass
         # """Set correct target IDs for our vehicle"""
@@ -148,7 +156,7 @@ class MPFakeState:
                     return True
                 time.sleep(0.1)
         
-        print("Timeout setting parameter %s to %f" % (name, value))
+        errprinter("timeout setting parameter %s to %f" % (name, value))
         return False
 
     def __on_change(self, *args):
@@ -158,7 +166,9 @@ class MPFakeState:
 
     def mavlink_packet(self, m):
         typ = m.get_type()
-        if typ == 'GLOBAL_POSITION_INT':
+        if typ == 'STATUSTEXT':
+            print(re.sub(r'(^|\n)', '>>> \1', m.text.rstrip()))
+        elif typ == 'GLOBAL_POSITION_INT':
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self.__on_change('location', 'velocity')
@@ -226,7 +236,7 @@ class MPFakeState:
                     v.mavrx_callback(m)
 
     def prepare(self, await_params=False):
-        # print('Await heartbeat.')
+        # errprinter('Await heartbeat.')
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
         #   invalid MAVLink prefix '13'
@@ -240,6 +250,12 @@ class MPFakeState:
         self.mav_param = {}
         self.pstate = params
         self.api = FakeAPI(self)
+
+        import atexit
+        self.exiting = False
+        def onexit():
+            self.exiting = True
+        atexit.register(onexit)
 
         def mavlink_thread():
             # Huge try catch in case we see http://bugs.python.org/issue1856
@@ -277,7 +293,7 @@ class MPFakeState:
                             self.master.write(msg)
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                print('REESTABLISHING CONNECTION AFTER SEND TIMEOUT')
+                                errprinter('reestablishing connection after read timeout')
                                 try:
                                     self.master.close()
                                 except:
@@ -290,7 +306,7 @@ class MPFakeState:
                         except Empty:
                             break
                         except Exception as e:
-                            print('MAV SEND ERROR:', e)
+                            errprinter('mav send error:', e)
                             break
 
                     while True:
@@ -298,7 +314,7 @@ class MPFakeState:
                             msg = self.master.recv_msg()
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                print('REESTABLISHING CONNECTION AFTER RECV TIMEOUT')
+                                errprinter('reestablishing connection after send timeout')
                                 try:
                                     self.master.close()
                                 except:
@@ -310,7 +326,7 @@ class MPFakeState:
                             return
                         except Exception as e:
                             # TODO debug these.
-                            # print('MAV RECV ERROR:', e)
+                            # errprinter('mav recv error:', e)
                             msg = None
                         if not msg:
                             break
@@ -345,9 +361,12 @@ class MPFakeState:
                         if self.api:
                             self.mavlink_packet(msg)
 
-            except:
+            except Exception as e:
                 # http://bugs.python.org/issue1856
-                return
+                if self.exiting:
+                    pass
+                else:
+                    raise e
 
 
         t = Thread(target=mavlink_thread)
@@ -381,8 +400,9 @@ class MPFakeState:
 
         return self.api
 
-def connect(ip, await_params=False):
+def connect(ip, await_params=False, status_printer=errprinter):
     import droneapi.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip))
+    state.status_printer = status_printer
     # api.init(state)
     return state.prepare(await_params=await_params).get_vehicles()[0]

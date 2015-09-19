@@ -23,6 +23,8 @@ args = parser.parse_args()
 print 'Connecting to vehicle on: %s' % args.connect
 vehicle = connect(args.connect, await_params=True)
 
+vehicle.parameters['ARMING_CHECK'] = 0
+
 # Wait for attribtues to accumulate.
 time.sleep(5)
 
