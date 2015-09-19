@@ -257,18 +257,22 @@ class MPFakeState:
             self.exiting = True
         atexit.register(onexit)
 
+        heartbeat_started = False
+
         def mavlink_thread():
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
                 # Record the time we received the last "new" param.
                 last_new_param = time.time()
+                last_heartbeat_sent = 0
+                last_heartbeat_received = 0
 
                 start_duration = 0.2
                 repeat_duration = 1
                 duration = start_duration
 
                 while True:
-                    send_heartbeat(self.master)
+                    # Downtime                    
                     time.sleep(0.05)
 
                     # Check the time duration for last "new" params exceeds watchdog.
@@ -286,6 +290,17 @@ class MPFakeState:
                                         break
                             duration = repeat_duration
                             last_new_param = time.time()
+
+                    # Send 1 heartbeat per second
+                    if time.time() - last_heartbeat_sent < 1:
+                        send_heartbeat(self.master)
+                        last_heartbeat_sent = time.time()
+                    # Timeout after 5
+                    if heartbeat_started:
+                        if last_heartbeat_received == 0:
+                            last_heartbeat_received = time.time()
+                        elif time.time() - last_heartbeat_received > 5:
+                            raise Exception('Link timeout, no heartbeat in last 5 seconds')
 
                     while True:
                         try:
@@ -357,6 +372,7 @@ class MPFakeState:
                         elif msg.get_type() == 'HEARTBEAT':
                             self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
                             self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
+                            last_heartbeat_received = time.time()
 
                         if self.api:
                             self.mavlink_packet(msg)
@@ -380,6 +396,7 @@ class MPFakeState:
                 break
             except mavutil.mavlink.MAVError:
                 continue
+        heartbeat_started = True
 
         # Request a list of all parameters.
         request_data_stream_send(self.master)
