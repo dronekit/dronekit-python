@@ -92,18 +92,12 @@ The easiest way to set up DroneKit-Python on Windows is to use the Windows Insta
 This is applied over the top of the *MAVProxy* Windows installation and includes all needed 
 dependencies and the DroneKit-Python examples.
 
-.. tip::
+Download and run the **latest** installers for MAVProxy and DroneKit. Install in the same default location (accepting all prompts):
 
-    A new version of the Windows Installer is created with every patch revision (`get old versions
-    here <http://dronekit-assets.s3-website-us-east-1.amazonaws.com/installers/>`_).
-    Don't forget to update regularly for bug fixes and new features!
- 
-To install DroneKit-Python using the installer:
-
-#. Download and run the `latest MAVProxy installer <http://firmware.diydrones.com/Tools/MAVProxy/MAVProxySetup-latest.exe>`_
-   — accept all prompts.    
-#. Download and run the `latest DroneKit installer <http://dronekit-assets.s3.amazonaws.com/installers/dronekit-windows-latest.exe>`_
-   — accept all prompts (install in the same location as MAVProxy).
+#. `Latest MAVProxy installer <http://firmware.diydrones.com/Tools/MAVProxy/MAVProxySetup-latest.exe>`_ 
+   (`older versions <http://firmware.diydrones.com/Tools/MAVProxy/>`_)    
+#. `Latest DroneKit installer <http://dronekit-assets.s3.amazonaws.com/installers/dronekit-windows-latest.exe>`_ 
+   (`older versions <http://dronekit-assets.s3-website-us-east-1.amazonaws.com/installers/>`_)
 
 The installer packages DroneKit-Python as an application, which is launched by double-clicking an icon 
 in the system GUI. After the *MAVProxy prompt* and *console* have started you can 
@@ -111,7 +105,15 @@ in the system GUI. After the *MAVProxy prompt* and *console* have started you ca
 connection when starting *MAVProxy*). You will still need to :ref:`load DroneKit <loading-dronekit>` (not done by the installer 
 - see `#267 <https://github.com/dronekit/dronekit-python/issues/267>`_). The examples are copied to :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
 
-It is also possible to set up DroneKit-Python on the command line (see :ref:`dronekit_development_windows`).
+.. warning:: 
+
+    The Windows Installer version of *MAVProxy* does not have visibility of the user's default Python environment. Python modules can be added to the environment by copying them into the *MAVProxy* folder (**C:\\Program Files (x86)\\MAVProxy\\**).
+
+
+.. tip::
+
+    * New versions of the Windows Installers are created with every patch revision. Update regularly for bug fixes and new features!
+    * It is also possible to :ref:`set up DroneKit-Python on the command line <dronekit_development_windows>`.
 
 
 .. _starting-mavproxy:
@@ -139,18 +141,18 @@ The table below shows the command lines used to start *MAVProxy* for the respect
 
    * - Connection type
      - MAVProxy command
-   * - Linux computer connected to the vehicle via USB
+   * - Linux computer connected to vehicle via USB
      - ``mavproxy.py --master=/dev/ttyUSB0``
-   * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
+   * - Linux computer connected to vehicle via Serial port (RaspberryPi example)
      - ``mavproxy.py --master=/dev/ttyAMA0 --baudrate 57600``
    * - SITL connected to the vehicle via UDP
      - ``mavproxy.py --master=127.0.0.1:14550``
-   * - OSX computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/cu.usbmodem1``	 
-   * - Windows computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/cu.usbmodem1``		 
+   * - OSX computer connected to vehicle via USB
+     - ``mavproxy.py --master=/dev/cu.usbmodem1``
+   * - Windows computer connected to vehicle via USB on port "X"
+     - ``mavproxy.py --master="comX"``
 
-For other connection options see the `MAVProxy documentation <http://tridge.github.io/MAVProxy/>`_.
+For other connection options see the `MAVProxy documentation <http://dronecode.github.io/MAVProxy/>`_.
 
 .. _starting-mavproxy_set_link_when_mavproxy_running:
 
