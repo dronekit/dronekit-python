@@ -1,8 +1,14 @@
+import os
 from nose.tools import assert_equals, with_setup
 from dronekit.sitl import SITL
 
 sitl = SITL('copter', '3.3-rc5')
 sitl_args = ['-I0', '-S', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+
+if 'SITL_SPEEDUP' in os.environ:
+	sitl_args += ['--speedup', str(os.environ['SITL_SPEEDUP'])]
+if 'SITL_RATE' in os.environ:
+	sitl_args += ['-r', str(os.environ['SITL_RATE'])]
 
 def setup_sitl():
     sitl.launch(sitl_args, await_ready=True, restart=True)

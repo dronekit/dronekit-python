@@ -1,8 +1,7 @@
 machine:
   environment:
-    TEST_SPEEDUP: 10
-    TEST_RATE: 200
-    TEST_RETRY: 1
+    SITL_SPEEDUP: 10
+    SITL_RATE: 200
 dependencies:
   override:
     - python setup.py install:

@@ -1,9 +1,8 @@
 before_install: []
 env:
   global:
-    - TEST_SPEEDUP=10
-    - TEST_RATE=200
-    - TEST_RETRY=1
+    - SITL_SPEEDUP=10
+    - SITL_RATE=200
 install:
   - 'a() { set -e; }'
   - "z() { E=$?; test $E -eq 0 && return 0; printf \"\\n\\033[1;31mThe command failed with exit code $?.\\033[0m\"; set -e; return $E; }"

@@ -1,8 +1,7 @@
 environment:
   global:
-    TEST_SPEEDUP: 10
-    TEST_RATE: 200
-    TEST_RETRY: 4
+    SITL_SPEEDUP: 10
+    SITL_RATE: 200
 init: []
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"
