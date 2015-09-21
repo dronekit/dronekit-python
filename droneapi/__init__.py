@@ -300,7 +300,9 @@ class MPFakeState:
                         if last_heartbeat_received == 0:
                             last_heartbeat_received = time.time()
                         elif time.time() - last_heartbeat_received > 5:
-                            raise Exception('Link timeout, no heartbeat in last 5 seconds')
+                            # raise Exception('Link timeout, no heartbeat in last 5 seconds')
+                            errprinter('Link timeout, no heartbeat in last 5 seconds')
+                            last_heartbeat_received = time.time()
 
                     while True:
                         try:
