@@ -213,9 +213,9 @@ Some of the MAV_CMD commands that you might want to send include: :ref:`MAV_CMD_
 Setting the Yaw
 ----------------
 
-The vehicle "yaw" is the direction that the vehicle is facing in the horizontal plane. By default (after you set the mode or change the command used for controlling movement) the yaw of the vehicle will face the direction of travel. 
+The vehicle "yaw" is the direction that the vehicle is facing in the horizontal plane. On Copter this yaw need not be the direction of travel (though it is by default).
 
-In Copter the yaw need not match the direction of travel. You can set the yaw direction using the `MAV_CMD_CONDITION_YAW <http://copter.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_condition_yaw>`_ command, encoded in a ``COMMAND_LONG`` message as shown below.
+You can set the yaw direction using the `MAV_CMD_CONDITION_YAW <http://copter.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_condition_yaw>`_ command, encoded in a ``COMMAND_LONG`` message as shown below.
 
 .. code-block:: python
 
@@ -242,7 +242,10 @@ The command allows you to specify that whether the heading is an absolute angle 
 	
 .. note:: 
 
+    * The yaw will return to the default (facing direction of travel) after you set the mode or change the command used for controlling movement. 
     * `At time of writing <https://github.com/diydrones/ardupilot/issues/2427>`_ there is no *safe way* to return to the default yaw "face direction of travel" behaviour.
+    * After taking off, yaw commands are ignored until the first "movement" command has been received. If you need to  
+      If you need to yaw immediately following takeoff then send a command to "move" to your current position.
     * :ref:`guided_mode_copter_set_roi` may work to get yaw to track a particular point (depending on the gimbal setup).
 
 
