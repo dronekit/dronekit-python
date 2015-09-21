@@ -1,19 +1,30 @@
 """
-vehicle_state.py: Get and set vehicle state, parameter and channel-override information. 
+vehicle_state.py: 
 
-It also demonstrates how to observe vehicle attribute (state) changes. 
+Demonstrates how to get and set vehicle state, parameter and channel-override information, 
+and how to observe vehicle attribute (state) changes.
 
 Full documentation is provided at http://python.dronekit.io/examples/vehicle_state.html
 """
-
+from droneapi import connect
 from droneapi.lib import VehicleMode
 from pymavlink import mavutil
 import time
 
-# First get an instance of the API endpoint
-api = local_connect()
-# Get the connected vehicle (currently only one vehicle can be returned).
-vehicle = api.get_vehicles()[0]
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
+
+# Wait for attribtues to accumulate.
+time.sleep(5)
 
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
@@ -36,14 +47,14 @@ print " Armed: %s" % vehicle.armed    # settable
 print "Set Vehicle.mode=GUIDED (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("GUIDED")
 vehicle.flush()  # Flush to guarantee that previous writes to the vehicle have taken place
-while not vehicle.mode.name=='GUIDED' and not api.exit:  #Wait until mode has changed
+while not vehicle.mode.name=='GUIDED':  #Wait until mode has changed
     print " Waiting for mode change ..."
     time.sleep(1)
 
 print "Set Vehicle.armed=True (currently: %s)" % vehicle.armed 
 vehicle.armed = True
 vehicle.flush()
-while not vehicle.armed and not api.exit:
+while not vehicle.armed:
     print " Waiting for arming..."
     time.sleep(1)
 
@@ -94,7 +105,7 @@ time.sleep(1)
 
 print "Remove the MAVLink callback handler (stop getting messages)"  
 vehicle.unset_mavlink_callback()
-	
+
 
 
 # Overriding an RC channel

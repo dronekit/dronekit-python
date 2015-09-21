@@ -1,15 +1,18 @@
+from droneapi import connect
 from droneapi.lib import VehicleMode
+from droneapi.tools import with_sitl
 from pymavlink import mavutil
 import time
 import sys
 import os
-from testlib import assert_equals
+from nose.tools import assert_equals
 
 def current_milli_time():
     return int(round(time.time() * 1000))
 
-def test_timeout(local_connect):
-    v = local_connect().get_vehicles()[0]
+@with_sitl
+def test_timeout(connpath):
+    v = connect(connpath, await_params=True)
 
     value = v.parameters['THR_MIN']
     assert_equals(type(value), float)

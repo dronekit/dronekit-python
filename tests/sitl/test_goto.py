@@ -8,13 +8,23 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
+from droneapi import connect
 from droneapi.lib import VehicleMode, Location
+from droneapi.tools import with_sitl
 from pymavlink import mavutil
-from testlib import assert_equals
+from nose.tools import assert_equals
 
-def test_goto(local_connect):
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
+@with_sitl
+def test_goto(connpath):
+    vehicle = connect(connpath, await_params=True)
+
+    # NOTE these are *very inappropriate settings*
+    # to make on a real vehicle. They are leveraged
+    # exclusively for simulation. Take heed!!!
+    vehicle.parameters['ARMING_CHECK'] = 0
+    vehicle.parameters['FS_THR_ENABLE'] = 0
+    vehicle.parameters['FS_GCS_ENABLE'] = 0
+    vehicle.parameters['EKF_CHECK_THRESH'] = 0
 
     def arm_and_takeoff(aTargetAltitude):
         """
@@ -36,16 +46,16 @@ def test_goto(local_connect):
         vehicle.flush()
 
         i = 60
-        while not api.exit and vehicle.mode.name != 'GUIDED' and i > 0:
+        while vehicle.mode.name != 'GUIDED' and i > 0:
             # print " Waiting for guided %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
 
-        vehicle.armed   = True
+        vehicle.armed = True
         vehicle.flush()
 
         i = 60
-        while not api.exit and not vehicle.armed and vehicle.mode.name == 'GUIDED' and i > 0:
+        while not vehicle.armed and vehicle.mode.name == 'GUIDED' and i > 0:
             # print " Waiting for arming %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
@@ -61,7 +71,7 @@ def test_goto(local_connect):
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
         # Vehicle.commands.takeoff will execute immediately).
-        while not api.exit:
+        while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.
             if vehicle.location.alt >= aTargetAltitude * 0.95: 
@@ -90,5 +100,5 @@ def test_goto(local_connect):
     time.sleep(3)
 
     # print "Returning to Launch"
-    vehicle.mode    = VehicleMode("RTL")
+    vehicle.mode = VehicleMode("RTL")
     vehicle.flush()

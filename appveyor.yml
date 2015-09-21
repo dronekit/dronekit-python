@@ -1,8 +1,7 @@
 environment:
   global:
-    TEST_SPEEDUP: 10
-    TEST_RATE: 200
-    TEST_RETRY: 4
+    SITL_SPEEDUP: 10
+    SITL_RATE: 200
 init: []
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"
@@ -21,37 +20,11 @@ install:
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose numpy psutil mock & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git & endlocal"
 
-  - cmd: choco install innosetup
-  - cmd: cd windows & droneapiWinBuild.bat
-  - ps: |
-      Invoke-WebRequest "http://firmware.diydrones.com/Tools/MAVProxy/MAVProxySetup-latest.exe" -OutFile MAVProxySetup-latest.exe
-      .\MAVProxySetup-latest.exe /VERYSILENT /LOG=setup-mavproxy.log
-      while (!(Test-Path "setup-mavproxy.log")) { Start-Sleep 1 }
-      while(!(Select-String -path 'setup-mavproxy.log' -pattern 'Log closed' -quiet)){ Start-Sleep 1 };
-      rm ~\AppData\Local\MAVProxy\mavinit.scr
-  - ps: |
-      $setup = gi .\windows\Output\DroneKitsetup-*.exe
-      & $setup /VERYSILENT /LOG=setup-dronekit.log
-      while (!(Test-Path "setup-dronekit.log")) { Start-Sleep 1 }
-      while(!(Select-String -path 'setup-dronekit.log' -pattern 'Log closed' -quiet)){ Start-Sleep 1};
-
 build_script:
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;c:\\Program Files (x86)\\MAVProxy;%PATH% & python -m tests.sitl & endlocal"
   - cmd: 'setlocal & python setup.py install & endlocal'
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & SET PYTHONUNBUFFERED=1 & nosetests -s -v tests\\sitl & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\unit & endlocal"
-  - ps: |
-      echo $env:APPVEYOR_REPO_TAG
-      echo $env:APPVEYOR_REPO_TAG_NAME
-      Write-Host ($env:APPVEYOR_REPO_TAG_NAME -match '^v\d+\.\d+\.\d+$')
-      if ($env:APPVEYOR_REPO_TAG -and ($env:APPVEYOR_REPO_TAG_NAME -match '^v\d+\.\d+\.\d+$')) {
-        echo "Publishing installer."
-        $setup = gi .\windows\Output\DroneKitsetup-*.exe
-        aws s3 cp $setup s3://dronekit-assets/installers/dronekit-windows-$env:APPVEYOR_REPO_TAG_NAME.exe --acl public-read
-        aws s3 cp $setup s3://dronekit-assets/installers/dronekit-windows-latest.exe --acl public-read
-      } else {
-        echo "Skipping publishing installer on non-tag."
-      }
 
 clone_depth: 10
 test: 'off'
