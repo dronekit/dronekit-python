@@ -4,8 +4,11 @@
 Running the Examples
 ====================
 
-General instructions for running the example source code are given below (more explicit instructions may be 
-provided in the documentation for each example):  
+General instructions for running the `example source code <https://github.com/dronekit/dronekit-python/tree/master/examples>`_ are given below.
+
+.. tip::
+
+    More explicit instructions may be provided within the documentation for each example, and on the command line using the ``-h`` (help) parameter.
 
 #. Get the DroneKit-Python example source code onto your local machine. The easiest way to do this 
    is to clone the **dronekit-python** repository from Github. On the command prompt enter:
@@ -14,49 +17,30 @@ provided in the documentation for each example):
 
        git clone http://github.com/dronekit/dronekit-python.git
 
-   .. tip:: 
-
-       The :ref:`Windows Installation <get_started_install_dk_windows>` copies the example code here: 
-       :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
-
-#. Start MAVProxy and :ref:`connect to the vehicle <starting-mavproxy>`. For example:
-
-   * To connect to a simulated vehicle when starting *MAVProxy* (from the command line):
-
-     .. code-block:: bash
-
-         mavproxy.py --master=127.0.0.1:14550
    
-   * To connect to a simulated vehicle after starting MAVProxy (for example, on Windows):
-
-     .. code-block:: bash
-
-         link add 127.0.0.1:14550
-
-#. You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
-   If not, manually load the library using:
+   
+#. Navigate to the example you wish to run (or specify the full path in the next step). The examples are all stored in 
+   subdirectories of **dronekit-python\\examples\\**. 
+   
+   To run the :ref:`vehicle_state <example-vehicle-state>` example, you would navigate as shown:
 
    .. code-block:: bash
 
-       module load dronekit.module.api
-	   
-#. Once the *MAVProxy* console is running, start the example by entering: 
+       cd dronekit-python\examples\vehicle_state\
+
+
+#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
 
    .. code-block:: bash
 
-       api start absolute_path_to_example/example_name.py
-	   
-   .. tip::
+       python vehicle_state.py --connect 127.0.0.1:14550
 
-       If you start *MAVProxy* from the same directory as the target script you can omit 
-       the full file path:
-
-       .. code-block:: bash
-
-           api start example_name.py	   
-	   
+   .. note::
+   
+       The examples all use the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
+       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+          
 
 .. warning:: 
 
     Propellers should be removed before testing examples indoors (on real vehicles). 
-

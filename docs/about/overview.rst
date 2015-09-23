@@ -13,7 +13,7 @@ Open source community
 DroneKit-Python is an open source and community-driven project. 
 
 You can find all the source code on `Github here <https://github.com/dronekit/dronekit-python>`_ and check out our permissive :doc:`Apache v2 Licence <license>`. 
-If you want to join the community, then see our :doc:`contributing section <contributing>` for lots of ideas on how you can help.
+If you want to join the community, then see our :doc:`contributing section <../contributing/index>` for lots of ideas on how you can help.
 
 
 Compatibility

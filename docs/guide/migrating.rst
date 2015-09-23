@@ -52,20 +52,22 @@ You must specify the target vehicle address in your script (in DKPY 1.x this was
 
 The code fragment below shows how you import the :py:func:`connect() <dronekit.lib.connect>` method and use it to return a 
 connected :py:class:`Vehicle <dronekit.lib.Vehicle>` object. The address string passed to ``connect()`` takes the same 
-values as were passed to MAVProxy when setting up a connection in DKPY 1.x (in this case, a SITL instance running on the same computer). 
+values as were passed to *MAVProxy* when setting up a connection in DKPY 1.x (in this case, a SITL instance running on the same computer). 
 
 .. code:: python
 
     from dronekit import connect
 
-    # Connect to the Vehicle
-    vehicle = connect('127.0.0.1:14550')
-    
-    # Wait for attributes to accumulate.
-    time.sleep(5)
+    # Connect to the Vehicle (in this case a UDP endpoint)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
 
-The thread is normally suspended for a few seconds after connecting. This allows *MAVLink* messages to arrive from the connected vehicle 
-and populate the ``Vehicle`` attributes (before they are read). The vehicle can then be used in exactly the same way as in DKPY 1.x. 
+
+The ``await_params=True`` parameter ensures that ``connect()`` won't return until 
+:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` has been populated. 
+This also allows *MAVLink* messages to arrive from the connected vehicle 
+and populate other ``Vehicle`` attributes. 
+
+The vehicle can then be used in exactly the same way as in DKPY 1.x. 
 
 .. note::
 
@@ -116,7 +118,7 @@ use whatever method you like.
 .. note::
 
     In DKPY 1.x the script's ``sys.argv`` values were the values passed to MAVProxy when it was
-    started. To access arguments passed to the script from *MAVProxy you used the ``local_arguments`` array. 
+    started. To access arguments passed to the script from *MAVProxy* you used the ``local_arguments`` array. 
     For example if you started a script as shown below:
 
     .. code:: bash
