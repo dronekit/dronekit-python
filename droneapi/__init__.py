@@ -292,7 +292,7 @@ class MPFakeState:
                             last_new_param = time.time()
 
                     # Send 1 heartbeat per second
-                    if time.time() - last_heartbeat_sent < 1:
+                    if time.time() - last_heartbeat_sent > 1:
                         send_heartbeat(self.master)
                         last_heartbeat_sent = time.time()
                     # Timeout after 5
