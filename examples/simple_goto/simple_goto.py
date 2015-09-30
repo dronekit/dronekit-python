@@ -1,18 +1,30 @@
 """
 simple_goto.py: GUIDED mode "simple goto" example (Copter Only)
 
-The example demonstrates how to arm and takeoff in Copter and how to navigate to 
-points using Vehicle.commands.goto.
+Demonstrates how to arm and takeoff in Copter and how to navigate to points using Vehicle.commands.goto.
 
 Full documentation is provided at http://python.dronekit.io/examples/simple_goto.html
 """
 
 import time
+from dronekit import connect
 from dronekit.lib import VehicleMode, Location
 from pymavlink import mavutil
+import time
 
-api = local_connect()
-vehicle = api.get_vehicles()[0]
+
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
+
 
 def arm_and_takeoff(aTargetAltitude):
     """
@@ -34,7 +46,7 @@ def arm_and_takeoff(aTargetAltitude):
     vehicle.armed   = True
     vehicle.flush()
 
-    while not vehicle.armed and not api.exit:
+    while not vehicle.armed:
         print " Waiting for arming..."
         time.sleep(1)
 
@@ -44,7 +56,7 @@ def arm_and_takeoff(aTargetAltitude):
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
-    while not api.exit:
+    while True:
         print " Altitude: ", vehicle.location.alt
         if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
