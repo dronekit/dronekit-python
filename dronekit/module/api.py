@@ -60,8 +60,8 @@ class MPCommandSequence(CommandSequence):
     def wait_valid(self):
         '''Block the calling thread until waypoints have been downloaded'''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        while (self.__wp.wp_op is not None) and not self.__module.api.exit:
-            time.sleep(0.200)
+        while not self.__module.wp_loaded:
+            time.sleep(0.1)
 
     def takeoff(self, alt=None):
         if alt is not None:
@@ -138,7 +138,7 @@ class MPVehicle(Vehicle):
 
     def flush(self):
         if self.wpts_dirty:
-            self.__module.module('wp').send_all_waypoints()
+            self.__module.send_all_waypoints()
             self.wpts_dirty = False
 
     #

@@ -5,7 +5,7 @@ import sys
 import os
 import platform
 import re
-from pymavlink import mavutil
+from pymavlink import mavutil, mavwp
 from Queue import Empty
 
 from pkgutil import extend_path
@@ -127,6 +127,26 @@ class MPFakeState:
         self.mpstate.settings = self
 
         self.status_printer = status_printer
+
+        # waypoints
+        self.wploader = mavwp.MAVWPLoader()
+        self.wp_loaded = True
+
+    def fetch(self):
+        """
+        Fetch waypoints.
+        """
+        self.wp_loaded = False
+        print('FETCHING WAYPOINTs')
+        self.master.waypoint_request_list_send()
+
+    def send_all_waypoints(self):
+        """
+        Send waypoints to master.
+        """
+        self.master.waypoint_clear_all_send()
+        if self.wploader.count() > 0:
+            self.master.waypoint_count_send(self.wploader.count())
 
     def fix_targets(self, message):
         pass
@@ -278,6 +298,7 @@ class MPFakeState:
                     # Downtime                    
                     time.sleep(0.05)
 
+                    # Parameter watchdog.
                     # Check the time duration for last "new" params exceeds watchdog.
                     if params.start:
                         if None not in params.mav_param_set:
@@ -293,6 +314,8 @@ class MPFakeState:
                                         break
                             duration = repeat_duration
                             last_new_param = time.time()
+
+                    # TODO: Waypoint watching / re-requesting
 
                     # Send 1 heartbeat per second
                     if time.time() - last_heartbeat_sent > 1:
@@ -351,6 +374,7 @@ class MPFakeState:
                         if not msg:
                             break
 
+                        # Parmater: receive values
                         if msg.get_type() == 'PARAM_VALUE':
                             # If we discover a new param count, assume we
                             # are receiving a new param set.
@@ -374,7 +398,36 @@ class MPFakeState:
                                 import traceback
                                 traceback.print_exc()
 
-                        elif msg.get_type() == 'HEARTBEAT':
+                        # Waypoint receive
+                        if not self.wp_loaded:
+                            if msg.get_type() in ['WAYPOINT_COUNT','MISSION_COUNT']:
+                                self.wploader.clear()
+                                self.wploader.expected_count = msg.count
+                                self.master.waypoint_request_send(0)
+                            if msg.get_type() in ['WAYPOINT', 'MISSION_ITEM']:
+                                if msg.seq > self.wploader.count():
+                                    # Unexpected waypoint
+                                    pass
+                                elif msg.seq < self.wploader.count():
+                                    # Waypoint duplicate
+                                    pass
+                                else:
+                                    self.wploader.add(msg)
+
+                                    if msg.seq + 1 < self.wploader.expected_count:
+                                        self.master.waypoint_request_send(msg.seq + 1)
+                                    else:
+                                        self.wp_loaded = True
+                        if msg.get_type() in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
+                            self.last_waypoint = msg.seq
+
+                        # Waypoint send to master
+                        # TODO
+                        if msg.get_type() in ["WAYPOINT_REQUEST", "MISSION_REQUEST"]:
+                            pass
+
+                        # Heartbeat: armed + mode update
+                        if msg.get_type() == 'HEARTBEAT':
                             self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
                             self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
                             last_heartbeat_received = time.time()
