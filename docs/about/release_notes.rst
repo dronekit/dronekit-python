@@ -25,10 +25,10 @@ Working with releases
 
 The following PyPI commands are useful for working with different version of DroneKit Python: ::
 
-    pip install droneapi    # Install the latest version
-    pip install droneapi --upgrade    # Update to the latest version
-    pip show droneapi    # Find out what release you have installed
-    pip install droneapi=1.0.3    # Get a sepcific old release (in this case 1.0.3
+    pip install dronekit    # Install the latest version
+    pip install dronekit --upgrade    # Update to the latest version
+    pip show dronekit    # Find out what release you have installed
+    pip install dronekit=1.0.3    # Get a sepcific old release (in this case 1.0.3
 		
-See `Release History on the package ranking page <http://pypi-ranking.info/module/droneapi#release_history>`_  for a list of all releases available on PyPI.
+See `Release History on the package ranking page <http://pypi-ranking.info/module/dronekit#release_history>`_  for a list of all releases available on PyPI.
 

@@ -39,7 +39,7 @@ The steps to install this package and the most important add-on modules are:
    .. code:: bash
 
 	    pip uninstall python-dateutil
-	    pip install droneapi
+	    pip install dronekit
 
 The dependencies above are all that are required to build DroneKit-Python and the *MAVProxy command line* (i.e. the minimum needed for testing). 
 If you also want the *MAVProxy console* and map install:

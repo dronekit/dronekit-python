@@ -3,4 +3,4 @@ simplejson
 pid
 cherrypy
 jinja2
-droneapi
+dronekit

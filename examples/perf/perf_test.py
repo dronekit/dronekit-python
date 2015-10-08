@@ -5,7 +5,7 @@
 # * module load api
 # * api start small-demo.py
 #
-from droneapi.lib import VehicleMode
+from dronekit.lib import VehicleMode
 from pymavlink import mavutil
 import time
 from datetime import datetime

@@ -123,11 +123,11 @@ After taking off (in guided mode using the ``takeoff()`` function) the example s
 The progress of the mission is monitored in a loop. The convenience function 
 :ref:`distance_to_current_waypoint() <auto_mode_mission_distance_to_waypoint>` 
 gets the distance to the next waypoint and 
-:py:func:`Vehicle.commands.next <droneapi.lib.CommandSequence.next>` gets the value of
+:py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` gets the value of
 the next command.
 
 We also show how to move to a specified command using
-:py:func:`Vehicle.commands.next <droneapi.lib.CommandSequence.next>` (note how we skip the third command below):
+:py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` (note how we skip the third command below):
 
 .. code:: python
 

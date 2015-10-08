@@ -5,8 +5,8 @@ Example: Simple Go To (Copter)
 ==============================
 
 This example demonstrates how to arm and launch a Copter in GUIDED mode, travel to a number of waypoints, and then return 
-to the home location. It uses :py:func:`Vehicle.commands.takeoff() <droneapi.lib.CommandSequence.takeoff>`, 
-:py:func:`Vehicle.commands.goto() <droneapi.lib.CommandSequence.goto>` and :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>`.
+to the home location. It uses :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`, 
+:py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` and :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
 The locations used are centred around the home location when the :ref:`Simulated Vehicle <vagrant-sitl-from-full-image>` is booted; you can edit the latitude and longitude 
 to use more appropriate positions for your own vehicle. 
@@ -95,7 +95,7 @@ Takeoff
 -------
 
 To launch *Copter* you need to set the mode to ``GUIDED``, arm the vehicle, and then call 
-:py:func:`Vehicle.commands.takeoff() <droneapi.lib.CommandSequence.takeoff>`. The takeoff code in this example
+:py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`. The takeoff code in this example
 is explained in the guide topic :ref:`taking-off`.
 
 	
@@ -103,8 +103,8 @@ Flying to a point - Goto
 ------------------------
 
 The vehicle is already in ``GUIDED`` mode, so to send it to a certain point we just need to 
-call :py:func:`Vehicle.commands.goto() <droneapi.lib.CommandSequence.goto>` with the target location, 
-and then :py:func:`flush() <droneapi.lib.Vehicle.flush>` the command:
+call :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` with the target location, 
+and then :py:func:`flush() <dronekit.lib.Vehicle.flush>` the command:
 
 .. code-block:: python	
 

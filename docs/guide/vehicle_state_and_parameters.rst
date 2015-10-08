@@ -4,9 +4,9 @@
 Vehicle State and Settings
 ===========================
 
-The :py:class:`Vehicle <droneapi.lib.Vehicle>` class exposes *most* state information (position, speed, etc.) through python 
+The :py:class:`Vehicle <dronekit.lib.Vehicle>` class exposes *most* state information (position, speed, etc.) through python 
 :ref:`attributes <vehicle_state_attributes>`, while vehicle :ref:`parameters <vehicle_state_parameters>` (settings) 
-are accessed though named elements of :py:attr:`Vehicle.parameters <droneapi.lib.Vehicle.parameters>`. 
+are accessed though named elements of :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`. 
 
 This topic explains how to get, set and observe vehicle state and parameter information (including getting the 
 :ref:`Home location <vehicle_state_home_location>`). It also describes a few APIs that  
@@ -22,20 +22,20 @@ Attributes
 
 Vehicle state information is exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
 "standard" attributes: 
-:py:attr:`Vehicle.location <droneapi.lib.Vehicle.location>`, 
-:py:attr:`Vehicle.attitude <droneapi.lib.Vehicle.attitude>`,
-:py:attr:`Vehicle.velocity <droneapi.lib.Vehicle.velocity>`,
-:py:attr:`Vehicle.airspeed <droneapi.lib.Vehicle.airspeed>`,
-:py:attr:`Vehicle.groundspeed <droneapi.lib.Vehicle.groundspeed>`,
-:py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>`,
-:py:attr:`Vehicle.mount_status <droneapi.lib.Vehicle.mount_status>`,
-:py:attr:`Vehicle.battery <droneapi.lib.Vehicle.battery>`,
-:py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>`,
-:py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>`,
-:py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>`.
+:py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`, 
+:py:attr:`Vehicle.attitude <dronekit.lib.Vehicle.attitude>`,
+:py:attr:`Vehicle.velocity <dronekit.lib.Vehicle.velocity>`,
+:py:attr:`Vehicle.airspeed <dronekit.lib.Vehicle.airspeed>`,
+:py:attr:`Vehicle.groundspeed <dronekit.lib.Vehicle.groundspeed>`,
+:py:attr:`Vehicle.gps_0 <dronekit.lib.Vehicle.gps_0>`,
+:py:attr:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`,
+:py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
+:py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
+:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
+:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>` and :ref:`observed <vehicle_state_observe_attributes>`, 
-but only the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>` 
+but only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
 status can be :ref:`written <vehicle_state_set_attributes>`.
 
 
@@ -68,7 +68,7 @@ The code fragment below shows how to read and print all the attributes. The valu
 
 If an attribute cannot be retrieved then the returned object will contain
 ``None`` values for its members (for example, if there was no GPS lock then 
-:py:attr:`Vehicle.gps_0 <droneapi.lib.Vehicle.gps_0>` would return a :py:class:`GPSInfo <droneapi.lib.GPSInfo>` 
+:py:attr:`Vehicle.gps_0 <dronekit.lib.Vehicle.gps_0>` would return a :py:class:`GPSInfo <dronekit.lib.GPSInfo>` 
 with ``None`` values for ``eph``, ``satellites_visible`` etc.) 
 Attributes will also return  ``None`` if the associated hardware is not present on the connected device. 
 
@@ -89,10 +89,10 @@ Attributes will also return  ``None`` if the associated hardware is not present 
 Setting attributes
 ------------------
 
-Only the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <droneapi.lib.Vehicle.armed>` 
+Only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
 attributes can be written.
 
-The attributes are set by assigning a value. Calling :py:func:`Vehicle.flush() <droneapi.lib.Vehicle.flush>`
+The attributes are set by assigning a value. Calling :py:func:`Vehicle.flush() <dronekit.lib.Vehicle.flush>`
 then forces DroneKit to send outstanding messages.
 
 .. code:: python
@@ -132,11 +132,11 @@ Observing attribute changes
 You can observe any of the attributes and will receive notification every time a value is received from the connected vehicle.  
 This allows you to monitor changes to velocity and other vehicle state without the need for polling.
 
-Observers are added using :py:func:`Vehicle.add_attribute_observer() <droneapi.lib.Vehicle.add_attribute_observer>`, 
+Observers are added using :py:func:`Vehicle.add_attribute_observer() <dronekit.lib.Vehicle.add_attribute_observer>`, 
 specifying the name of the attribute to observe and a callback function. The same string is passed to the callback
-when it is notified. Observers are removed using :py:func:`remove_attribute_observer() <droneapi.lib.Vehicle.remove_attribute_observer>`.
+when it is notified. Observers are removed using :py:func:`remove_attribute_observer() <dronekit.lib.Vehicle.remove_attribute_observer>`.
 
-The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <droneapi.lib.Vehicle.location>` attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
+The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <dronekit.lib.Vehicle.location>` attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
 
 .. code:: python
      
@@ -156,7 +156,7 @@ The code snippet below shows how to add (and remove) a callback function to obse
 
 The callback is triggered `every time a message is received from the vehicle <https://github.com/dronekit/dronekit-python/issues/60>`_ 
 (whether or not the observed attribute changes). Callback code may therefore choose to cache the result and only report changes. 
-For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>` changes.
+For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
 
 .. code:: python
 
@@ -180,8 +180,8 @@ Parameters
 ==========
 
 Vehicle parameters provide the information used to configure the autopilot for the vehicle-specific hardware/capabilities. 
-These can be read and set using the :py:attr:`Vehicle.parameters <droneapi.lib.Vehicle.parameters>` 
-attribute (a :py:class:`Parameters <droneapi.lib.Parameters>` object).
+These can be read and set using the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` 
+attribute (a :py:class:`Parameters <dronekit.lib.Parameters>` object).
 
 .. tip:: 
 
@@ -227,7 +227,7 @@ Vehicle parameters are set as shown in the code fragment below, using the parame
 Observing parameter changes
 ---------------------------
 
-At time of writing :py:class:`Parameters <droneapi.lib.Parameters>` does `not support <https://github.com/dronekit/dronekit-python/issues/107>`_ observing parameter changes.
+At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not support <https://github.com/dronekit/dronekit-python/issues/107>`_ observing parameter changes.
 		
 .. todo:: 
 
@@ -247,7 +247,7 @@ as the target when the vehicle does a "return to launch". In Copter missions (an
 waypoints is set relative to this position.
 
 Unlike other vehicle state information, the home location is accessed as the 0 index value of 
-:py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>`:
+:py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`:
 
 .. code:: python
     
@@ -256,7 +256,7 @@ Unlike other vehicle state information, the home location is accessed as the 0 i
     cmds.wait_valid()
     print " Home WP: %s" % cmds[0]
 
-The returned value is a :py:class:`Command <droneapi.lib.Command>` object.
+The returned value is a :py:class:`Command <dronekit.lib.Command>` object.
 
 
 
@@ -276,9 +276,9 @@ If you have to use these methods please `provide feedback explaining why <https:
 MAVLink Message Observer
 ------------------------
 
-The :py:func:`Vehicle.set_mavlink_callback() <droneapi.lib.Vehicle.set_mavlink_callback>` method provides asynchronous 
+The :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` method provides asynchronous 
 notification when any *MAVLink* packet is received by this vehicle. The notification can be stopped by 
-calling :py:func:`unset_mavlink_callback() <droneapi.lib.Vehicle.unset_mavlink_callback>` to remove the callback.
+calling :py:func:`unset_mavlink_callback() <dronekit.lib.Vehicle.unset_mavlink_callback>` to remove the callback.
 
 
 .. tip::
@@ -317,7 +317,7 @@ Channel Overrides
 
     Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally set the desired position or direction/speed.
 
-The :py:attr:`channel_override <droneapi.lib.Vehicle.channel_override>` attribute takes a dictionary argument defining the RC *output* channels to be overridden (specified by channel number), and their new values.  Channels that are not specified in the dictionary are not overridden. All multi-channel updates are atomic. To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
+The :py:attr:`channel_override <dronekit.lib.Vehicle.channel_override>` attribute takes a dictionary argument defining the RC *output* channels to be overridden (specified by channel number), and their new values.  Channels that are not specified in the dictionary are not overridden. All multi-channel updates are atomic. To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
 
 The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters in 
 `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_, 

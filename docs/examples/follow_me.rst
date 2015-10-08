@@ -18,7 +18,7 @@ Before running this demo you'll need to make sure your computer has the gpsd ser
 
     apt-get install gpsd gpsd-clients
 
-You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running *droneapi-python/examples/run-fake-gps.sh*.
+You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running *dronekit-python/examples/run-fake-gps.sh*.
 
 Once your GPS is plugged in you can start follow-me by running the following command inside of MAVProxy:
 

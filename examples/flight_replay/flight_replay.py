@@ -12,7 +12,7 @@ missionid (a numeric mission number from a public droneshare flight):
 Full documentation is provided at http://python.dronekit.io/examples/flight_replay.html
 """
 
-from droneapi.lib import Command
+from dronekit.lib import Command
 from pymavlink import mavutil
 import json, urllib, math
 

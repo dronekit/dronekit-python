@@ -4,7 +4,7 @@ This example shows how to move/direct Copter and send commands in GUIDED mode us
 Example documentation: http://python.dronekit.io/examples/guided-set-speed-yaw-demo.html
 """
 
-from droneapi.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, Location
 from pymavlink import mavutil
 import time
 import math
@@ -328,9 +328,9 @@ def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
     """
     Moves the vehicle to a position dNorth metres North and dEast metres East of the current position.
 	
-    The method takes a function pointer argument with a single `droneapi.lib.Location` parameter for 
+    The method takes a function pointer argument with a single `dronekit.lib.Location` parameter for 
     the target position. This allows it to be called with different position-setting commands. 
-    By default it uses the standard method: droneapi.lib.Vehicle.commands.goto().
+    By default it uses the standard method: dronekit.lib.Vehicle.commands.goto().
 	
     The method reports the distance to target every two seconds.
     """

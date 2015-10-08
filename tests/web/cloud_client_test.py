@@ -1,6 +1,6 @@
 import os
 from nose.tools import assert_raises
-from droneapi.lib.CloudClient import *
+from dronekit.lib.CloudClient import *
 
 
 def setup_module():

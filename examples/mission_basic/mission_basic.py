@@ -6,7 +6,7 @@ Full documentation is provided at http://python.dronekit.io/examples/mission_bas
 
 import time
 import math
-from droneapi.lib import VehicleMode, Location, Command
+from dronekit.lib import VehicleMode, Location, Command
 from pymavlink import mavutil
 
 # Connect to API provider and get vehicle

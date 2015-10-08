@@ -61,12 +61,12 @@ wiki topic provides a more detailed overview of commands.
 Download current mission
 ========================
 
-The mission commands for a vehicle are accessed using the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` 
-attribute. The attribute is of type :py:class:`CommandSequence <droneapi.lib.CommandSequence>`, a class that provides ‘array style’ indexed access to the 
+The mission commands for a vehicle are accessed using the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` 
+attribute. The attribute is of type :py:class:`CommandSequence <dronekit.lib.CommandSequence>`, a class that provides ‘array style’ indexed access to the 
 waypoints which make up the mission.
 
-Waypoints are not downloaded from vehicle until :py:func:`download() <droneapi.lib.CommandSequence.download>` is called. The download is asynchronous; 
-use :py:func:`wait_valid() <droneapi.lib.CommandSequence.wait_valid>` to block your thread until the download is complete:
+Waypoints are not downloaded from vehicle until :py:func:`download() <dronekit.lib.CommandSequence.download>` is called. The download is asynchronous; 
+use :py:func:`wait_valid() <dronekit.lib.CommandSequence.wait_valid>` to block your thread until the download is complete:
 
 .. code:: python
 
@@ -95,8 +95,8 @@ use :py:func:`wait_valid() <droneapi.lib.CommandSequence.wait_valid>` to block y
 Clearing current mission
 ========================
 
-To clear a mission you call :py:func:`clear() <droneapi.lib.CommandSequence.clear>` and then 
-:py:func:`flush() <droneapi.lib.Vehicle.flush>` (to upload the changes to the vehicle):
+To clear a mission you call :py:func:`clear() <dronekit.lib.CommandSequence.clear>` and then 
+:py:func:`flush() <dronekit.lib.Vehicle.flush>` (to upload the changes to the vehicle):
 
 .. code:: python
 
@@ -118,7 +118,7 @@ To clear a mission you call :py:func:`clear() <droneapi.lib.CommandSequence.clea
     You must re-download the mission from the vehicle after clearing (as shown above) or the first command you add 
     will be lost when you upload the new mission. 
 
-    This happens because :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` removes the :ref:`home location <vehicle_state_home_location>` 
+    This happens because :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` removes the :ref:`home location <vehicle_state_home_location>` 
     (see `#132 <https://github.com/dronekit/dronekit-python/issues/132>`_). Downloading adds it back again.
 
 If the current command completes before you add a new mission, then the vehicle mode will change to RTL (return to launch).
@@ -130,16 +130,16 @@ Creating/adding mission commands
 ================================
 
 After :ref:`downloading <auto_mode_download_mission>` or :ref:`clearing <auto_mode_clear_mission>` a mission new commands 
-can be added and uploaded to the vehicle. Commands are added to the mission using :py:func:`add() <droneapi.lib.CommandSequence.add>`
-and are sent to the vehicle (either individually or in batches) using :py:func:`flush() <droneapi.lib.Vehicle.flush>`.
+can be added and uploaded to the vehicle. Commands are added to the mission using :py:func:`add() <dronekit.lib.CommandSequence.add>`
+and are sent to the vehicle (either individually or in batches) using :py:func:`flush() <dronekit.lib.Vehicle.flush>`.
 
-Each command is packaged in a :py:class:`Command <droneapi.lib.Command>` object (see that class for the order/meaning of the parameters). 
+Each command is packaged in a :py:class:`Command <dronekit.lib.Command>` object (see that class for the order/meaning of the parameters). 
 The supported commands for each vehicle are :ref:`linked above <auto_mode_supported_commands>`. 
 
 
 .. code:: python
 
-    from droneapi.lib import Command
+    from dronekit.lib import Command
     from pymavlink import mavutil
 
     # Connect to API provider and get vehicle
@@ -205,7 +205,7 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
 
 
 The changes are not guaranteed to be complete until 
-:py:func:`flush() <droneapi.lib.Vehicle.flush>` is called on the parent ``Vehicle`` object.
+:py:func:`flush() <dronekit.lib.Vehicle.flush>` is called on the parent ``Vehicle`` object.
 
 
 .. _auto_mode_monitoring_controlling: 
@@ -239,7 +239,7 @@ AUTO mode the mission will either restart at the beginning or resume at the curr
 `MIS_RESTART <http://copter.ardupilot.com/wiki/arducopter-parameters/#mission_restart_when_entering_auto_mode_mis_restart>`_ 
 parameter (available on all vehicle types).
 
-You can monitor the progress of the mission by polling the :py:func:`Vehicle.commands.next <droneapi.lib.CommandSequence.next>` attribute
+You can monitor the progress of the mission by polling the :py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` attribute
 to get the current command number. You can also change the current command by setting the attribute to the desired command number.
 
 .. code:: python
@@ -265,7 +265,7 @@ AUTO mode to start it running again.
 Currently there is no notification in DroneKit when a mission completes. If you need to detect mission end (in order
 to perform some other operation) then you can either:
 
-* Add a dummy mission command and poll :py:func:`Vehicle.commands.next <droneapi.lib.CommandSequence.next>` for the 
+* Add a dummy mission command and poll :py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` for the 
   transition to the final command, or
 * Compare the current position to the position in the last command.
 
@@ -314,10 +314,10 @@ Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_c
     vehicle.flush()
 
 
-``readmission()`` reads a mission from the specified file and returns a list of :py:class:`Command <droneapi.lib.Command>` objects. 
+``readmission()`` reads a mission from the specified file and returns a list of :py:class:`Command <dronekit.lib.Command>` objects. 
 
 Each line is split up. The first line is used to test whether the file has the correct (stated) format. 
-For subsequent lines the values are stored in a :py:class:`Command <droneapi.lib.Command>` object 
+For subsequent lines the values are stored in a :py:class:`Command <dronekit.lib.Command>` object 
 (the values are first cast to the correct ``float`` and ``int`` types for their associated parameters).
 The commands are added to a list which is returned by the function.
   
@@ -380,7 +380,7 @@ It uses ``download_mission()`` (below) to get them mission, and then writes the 
         with open(aFileName, 'w') as file_:
             file_.write(output)      
 
-``download_mission()`` downloads the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` from the vehicle and 
+``download_mission()`` downloads the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` from the vehicle and 
 adds them to a list. Downloading mission is discussed :ref:`in the guide <auto_mode_download_mission>`.
 
 .. code:: python
@@ -427,7 +427,7 @@ Get distance to waypoint
         distancetopoint = get_distance_metres(vehicle.location, targetWaypointLocation)
         return distancetopoint
 
-The function determines the current target waypoint number with :py:func:`Vehicle.commands.next <droneapi.lib.CommandSequence.next>`
+The function determines the current target waypoint number with :py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>`
 and uses it to index the commands to get the latitude, longitude and altitude of the target waypoint. The ``get_distance_metres()`` function
 (see :ref:`guided_mode_copter_useful_conversion_functions`) is then used to calculate and return the (horizontal) distance 
 from the current vehicle location.

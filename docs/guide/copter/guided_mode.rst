@@ -37,7 +37,7 @@ Position control
 
 Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
 
-The recommended method for position control is :py:func:`Vehicle.commands.goto() <droneapi.lib.CommandSequence.goto>`. This takes a :py:class:`Location <droneapi.lib.Location>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
+The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. This takes a :py:class:`Location <dronekit.lib.Location>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
 
 The method is used as shown below:
 
@@ -153,7 +153,7 @@ This section explains how to send MAVLink commands, what commands can be sent, a
 Sending messages/commands
 -------------------------
 
-MAVLink commands are sent by first using :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` to encode the message and then calling :py:func:`send_mavlink <droneapi.lib.Vehicle.send_mavlink>` and ``flush()`` to send them.
+MAVLink commands are sent by first using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` to encode the message and then calling :py:func:`send_mavlink <dronekit.lib.Vehicle.send_mavlink>` and ``flush()`` to send them.
 
 ``message_factory()`` uses a factory method for the encoding. The name of this method will always be the lower case version of the message/command name with ``_encode`` appended. For example, to encode a `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ message we call ``message_factory.set_position_target_local_ned_encode()`` with values for all the message fields as arguments:
 
@@ -202,7 +202,7 @@ Supported commands
 
 `Copter Commands in Guided Mode <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_ lists all the commands that *can* be sent to Copter in GUIDED mode (in fact most of the commands can be sent in any mode!)
 
-DroneKit-Python provides a friendly Python API that abstracts many of the commands. Where possible you should use the API rather than send messages directly. For example it is better to use :py:func:`Vehicle.commands.takeoff() <droneapi.lib.CommandSequence.takeoff>` than to explicitly send the ``MAV_CMD_NAV_TAKEOFF`` command.
+DroneKit-Python provides a friendly Python API that abstracts many of the commands. Where possible you should use the API rather than send messages directly. For example it is better to use :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>` than to explicitly send the ``MAV_CMD_NAV_TAKEOFF`` command.
 
 Some of the MAV_CMD commands that you might want to send include: :ref:`MAV_CMD_CONDITION_YAW <guided_mode_copter_set_yaw>`, :ref:`MAV_CMD_DO_CHANGE_SPEED <guided_mode_copter_set_speed>`, :ref:`MAV_CMD_DO_SET_HOME <guided_mode_copter_set_home>`, :ref:`MAV_CMD_DO_SET_ROI <guided_mode_copter_set_roi>`, ``MAV_CMD_DO_SET_SERVO``, ``MAV_CMD_DO_REPEAT_SERVO``, ``MAV_CMD_DO_SET_RELAY``, ``MAV_CMD_DO_REPEAT_RELAY``, ``MAV_CMD_DO_FENCE_ENABLE``, ``MAV_CMD_DO_PARACHUTE``, ``MAV_CMD_DO_GRIPPER``, ``MAV_CMD_MISSION_START``. These would be sent in a ``COMMAND_LONG`` message :ref:`as discussed above <guided_mode_how_to_send_commands_command_long>`.
 
@@ -287,7 +287,7 @@ The command is useful when setting the vehicle position directly. It is not need
 Setting the ROI
 ---------------
 
-Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command to point camera gimbal at a specified region of interest (:py:class:`Location <droneapi.lib.Location>`). The vehicle may also turn to face the ROI.	
+Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command to point camera gimbal at a specified region of interest (:py:class:`Location <dronekit.lib.Location>`). The vehicle may also turn to face the ROI.	
 	
 .. code-block:: python
 

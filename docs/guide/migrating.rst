@@ -22,9 +22,6 @@ DKPY 2.0 is installed from `pip` on all platforms - see :ref:`get-started` for m
     than on DK 1.x because MAVProxy is not a dependency.
 
 
-.. todo:: Confirm that the library is the same name - ie droneapi not dronekit. Link to "follow the installation steps"
-
-
 Launching scripts
 =================
 
@@ -53,13 +50,13 @@ Connecting to a vehicle
 
 You must specify the target vehicle address in your script (in DKPY 1.x this was done when you launched MAVProxy).
 
-The code fragment below shows how you import the :py:func:`connect() <droneapi.lib.connect>` method and use it to return a 
-connected :py:class:`Vehicle <droneapi.lib.Vehicle>` object. The address string passed to ``connect()`` takes the same 
+The code fragment below shows how you import the :py:func:`connect() <dronekit.lib.connect>` method and use it to return a 
+connected :py:class:`Vehicle <dronekit.lib.Vehicle>` object. The address string passed to ``connect()`` takes the same 
 values as were passed to MAVProxy when setting up a connection in DKPY 1.x (in this case, a SITL instance running on the same computer). 
 
 .. code:: python
 
-    from droneapi import connect
+    from dronekit import connect
 
     # Connect to the Vehicle
     vehicle = connect('127.0.0.1:14550')
