@@ -40,7 +40,7 @@ If you are using Ubuntu or Debian Linux you can get most of the *DroneKit* depen
 
 .. code:: bash
 
-    sudo apt-get install python-pip python-dev python-numpy python-opencv python-serial python-pyparsing python-wxgtk2.8
+    sudo apt-get install python-pip python-dev python-opencv python-serial python-pyparsing python-wxgtk2.8
 
 
 The remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_), are 
@@ -79,7 +79,7 @@ Install DroneKit-Python and its remaining dependencies (including `MAVProxy <htt
 
 .. code:: bash
 
-    sudo pip install numpy pyparsing
+    sudo pip install pyparsing
     sudo pip install dronekit
 
 

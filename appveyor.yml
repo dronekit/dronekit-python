@@ -16,8 +16,7 @@ install:
       wheel-dir = c:/Users/appveyor/.pip-wheelhouse
       '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
   - cmd: 'setlocal & python -m pip install pip wheel -U & endlocal'
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 wheel numpy & endlocal"
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose numpy psutil mock & endlocal"
+  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose psutil mock & endlocal"
   - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git & endlocal"
 
 build_script:
