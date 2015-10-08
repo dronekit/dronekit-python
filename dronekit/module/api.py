@@ -35,13 +35,9 @@ class MPParameters(Parameters):
     def wait_valid(self):
         '''Block the calling thread until parameters have been downloaded'''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        pstate = self.__param.pstate
+        pstate = self.__module.pstate
         while (pstate.mav_param_count == 0 or len(pstate.mav_param_set) != pstate.mav_param_count) and not self.__module.api.exit:
             time.sleep(0.200)
-
-    @property
-    def __param(self):
-        return self.__module.module('param')
 
 class MPCommandSequence(CommandSequence):
     """
@@ -54,7 +50,7 @@ class MPCommandSequence(CommandSequence):
     def download(self):
         '''Download all waypoints from the vehicle'''
         self.wait_valid()
-        self.__wp.fetch()
+        self.__module.fetch()
         # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_valid(self):
@@ -90,23 +86,19 @@ class MPCommandSequence(CommandSequence):
     def clear(self):
         '''Clears the command list'''
         self.wait_valid()
-        self.__wp.wploader.clear()
+        self.__module.wploader.clear()
         self.__module.vehicle.wpts_dirty = True
 
     def add(self, cmd):
         '''Add a new command at the end of the command list'''
         self.wait_valid()
         self.__module.fix_targets(cmd)
-        self.__wp.wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
         self.__module.vehicle.wpts_dirty = True
 
     @property
-    def __wp(self):
-        return self.__module.module('wp')
-
-    @property
     def count(self):
-        return self.__wp.wploader.count()
+        return self.__module.wploader.count()
 
     @property
     def next(self):
@@ -122,10 +114,10 @@ class MPCommandSequence(CommandSequence):
         self.__module.master.waypoint_set_current_send(index)
 
     def __getitem__(self, index):
-        return self.__wp.wploader.wp(index)
+        return self.__module.wploader.wp(index)
 
     def __setitem__(self, index, value):
-        self.__wp.wploader.set(value, index)
+        self.__module.wploader.set(value, index)
         self.__module.vehicle.wpts_dirty = True
 
 class MPVehicle(Vehicle):
@@ -235,10 +227,6 @@ class MPVehicle(Vehicle):
     @property
     def channel_readback(self):
         return self.__module.rc_readback
-
-    @property
-    def __rc(self):
-        return self.__module.module('rc')
 
     @property
     def commands(self):
