@@ -5,7 +5,7 @@
 # * module load api
 # * api start microgcs.py
 #
-from droneapi.lib import VehicleMode
+from dronekit.lib import VehicleMode
 from pymavlink import mavutil
 from Tkinter import *
 

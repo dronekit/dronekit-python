@@ -12,7 +12,7 @@ provided in the documentation for each example):
 
    .. code-block:: bash
 
-       git clone http://github.com/dronekit/droneapi-python.git
+       git clone http://github.com/dronekit/dronekit-python.git
 
    .. tip:: 
 
@@ -38,7 +38,7 @@ provided in the documentation for each example):
 
    .. code-block:: bash
 
-       module load droneapi.module.api
+       module load dronekit.module.api
 	   
 #. Once the *MAVProxy* console is running, start the example by entering: 
 

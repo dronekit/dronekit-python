@@ -5,7 +5,7 @@ import traceback
 import logging
 import math
 from pymavlink import mavutil
-from droneapi.lib import APIConnection, Vehicle, VehicleMode, Location, \
+from dronekit.lib import APIConnection, Vehicle, VehicleMode, Location, \
     Attitude, GPSInfo, Parameters, CommandSequence, APIException, Battery, \
     Rangefinder
 

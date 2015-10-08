@@ -40,7 +40,7 @@ If you are using Ubuntu or Debian Linux you can get most of the *DroneKit* depen
 
 .. code:: bash
 
-    sudo apt-get install python-pip python-dev python-numpy python-opencv python-serial python-pyparsing python-wxgtk2.8
+    sudo apt-get install python-pip python-dev python-opencv python-serial python-pyparsing python-wxgtk2.8
 
 
 The remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_), are 
@@ -48,7 +48,7 @@ installed when you get DroneKit-Python from the public PyPi repository:
 
 .. code:: bash
 
-    sudo pip install droneapi
+    sudo pip install dronekit
 
 
 
@@ -79,8 +79,8 @@ Install DroneKit-Python and its remaining dependencies (including `MAVProxy <htt
 
 .. code:: bash
 
-    sudo pip install numpy pyparsing
-    sudo pip install droneapi
+    sudo pip install pyparsing
+    sudo pip install dronekit
 
 
 .. _get_started_install_dk_windows:
@@ -189,13 +189,13 @@ Linux/MAC OSX:
 
 .. code:: bash
 
-    echo "module load droneapi.module.api" >> ~/.mavinit.scr
+    echo "module load dronekit.module.api" >> ~/.mavinit.scr
 
 Windows:
 
 .. code:: bash
 
-    echo module load droneapi.module.api >> %HOMEPATH%\AppData\Local\MAVProxy\mavinit.scr
+    echo module load dronekit.module.api >> %HOMEPATH%\AppData\Local\MAVProxy\mavinit.scr
 
 
 Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* every time you need it:
@@ -203,7 +203,7 @@ Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* eve
 .. code-block:: bash
    :emphasize-lines: 1
 
-    MANUAL> module load droneapi.module.api
+    MANUAL> module load dronekit.module.api
     DroneAPI loaded
     MANUAL>
 
@@ -231,7 +231,7 @@ The steps are:
 
    .. code-block:: bash
 
-       git clone http://github.com/dronekit/droneapi-python.git
+       git clone http://github.com/dronekit/dronekit-python.git
 
    .. tip:: 
 
@@ -257,7 +257,7 @@ The steps are:
 
    .. code-block:: bash
 
-       module load droneapi.module.api
+       module load dronekit.module.api
 
 #. Once the *MAVProxy* console is running, start ``vehicle_state.py`` by entering ``api start`` followed by the 
    full file path of the script. For example: 

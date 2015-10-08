@@ -8,7 +8,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
-from droneapi.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, Location
 from pymavlink import mavutil
 
 api = local_connect()

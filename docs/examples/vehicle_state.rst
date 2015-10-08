@@ -18,7 +18,7 @@ The vehicle and DroneKit should be set up as described in :ref:`get-started`.
 
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run. You can also `add a virtual rangefinder <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
-(otherwise the :py:attr:`Vehicle.rangefinder <droneapi.lib.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
+(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
 and voltage). 
 
 Once MAVProxy is running and the API is loaded, you can start the example by typing: ``api start vehicle_state.py``.

@@ -1,6 +1,6 @@
 .project
 .pydevproject
-droneapi.egg-info
+dronekit.egg-info
 dist
 build
 .vagrant

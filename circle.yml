@@ -2,23 +2,17 @@ machine:
   environment:
     SITL_SPEEDUP: 10
     SITL_RATE: 200
+
 dependencies:
   override:
-    - python setup.py install:
-        environment: {}
-    - nosetests tests/web:
-        environment: {}
-    - nosetests tests/unit:
-        environment: {}
-    - nosetests tests/sitl:
-        environment: {}
-  pre:
-    - pip2 install nose psutil mock:
-        environment: {}
-    - 'pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git':
-        environment: {}
+    - 'pip install . -UI'
+    - 'pip install -r requirements.txt -UI'
+
 test:
   override:
-    - 'true'
+    - 'nosetests tests/web'
+    - 'nosetests tests/unit'
+    - 'nosetests tests/sitl'
+
 general:
   build_dir: .

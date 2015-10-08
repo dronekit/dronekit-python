@@ -1,7 +1,7 @@
 import gps
 import socket
 import time
-from droneapi.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, Location
 
 def followme():
     """

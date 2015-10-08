@@ -8,14 +8,17 @@ import re
 from pymavlink import mavutil
 from Queue import Empty
 
+from pkgutil import extend_path
+__path__ = extend_path(__path__, __name__)
+
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
 else:
     from errno import ECONNABORTED
 
-# Clean impl of mp dependencies for droneapi
+# Clean impl of mp dependencies for dronekit
 
-import droneapi.module.api as api
+import dronekit.module.api as api
 
 def errprinter(*args):
     print(*args, file=sys.stderr)
@@ -63,7 +66,7 @@ class MPFakeState:
         self.api = None
 
         # TODO get rid of "master" object as exposed,
-        # keep it private, expose something smaller for droneapi
+        # keep it private, expose something smaller for dronekit
         self.out_queue = out_queue
         self.master.mav = mavutil.mavlink.MAVLink(MavWriter(self.out_queue), srcSystem=self.master.source_system, use_native=False)
 
@@ -420,7 +423,7 @@ class MPFakeState:
         return self.api
 
 def connect(ip, await_params=False, status_printer=errprinter):
-    import droneapi.module.api as api
+    import dronekit.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip))
     state.status_printer = status_printer
     # api.init(state)

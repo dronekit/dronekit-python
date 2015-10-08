@@ -1,6 +1,6 @@
-from droneapi import connect
-from droneapi.lib import VehicleMode
-from droneapi.tools import with_sitl
+from dronekit import connect
+from dronekit.lib import VehicleMode
+from dronekit.tools import with_sitl
 from pymavlink import mavutil
 import time
 import sys

@@ -1,4 +1,4 @@
-from droneapi import local_connect
+from dronekit import local_connect
 
 def demo(local_connect):
     # This example shows how to use DroneKit-Python to get and set vehicle state, parameter and channel-override information. 
@@ -9,7 +9,7 @@ def demo(local_connect):
     # * module load api
     # * api start vehicle-state.py
     #
-    from droneapi.lib import VehicleMode
+    from dronekit.lib import VehicleMode
     from pymavlink import mavutil
     import time
 

@@ -5,7 +5,7 @@ Taking Off
 ==========
 
 This article explains how to get your *Copter* to take off. At high level, the steps are: set the mode to ``GUIDED``, 
-arm the vehicle, and then call :py:func:`Vehicle.commands.takeoff() <droneapi.lib.CommandSequence.takeoff>`.  
+arm the vehicle, and then call :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`.  
 
 .. todo:: 
 
@@ -85,9 +85,9 @@ vehicle has booted and has a GPS lock:
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
 
-Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then call :py:func:`flush() <droneapi.lib.Vehicle.flush>`
+Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then call :py:func:`flush() <dronekit.lib.Vehicle.flush>`
 to guarantee that the commands have been sent, and then wait until arming is confirmed before sending the 
-:py:func:`takeoff <droneapi.lib.CommandSequence.takeoff>` command.
+:py:func:`takeoff <dronekit.lib.CommandSequence.takeoff>` command.
 
 .. code-block:: python
 	

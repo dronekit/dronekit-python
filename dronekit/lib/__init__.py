@@ -3,7 +3,7 @@
 """
 This is the API Reference for the DroneKit-Python API.
 
-The main API is the :py:class:`Vehicle <droneapi.lib.Vehicle>` class.
+The main API is the :py:class:`Vehicle <dronekit.lib.Vehicle>` class.
 The code snippet below shows how to obtain an instance of the (first) connected vehicle:
 
 .. code:: python
@@ -13,19 +13,19 @@ The code snippet below shows how to obtain an instance of the (first) connected 
     # Get the first connected vehicle from the APIConnection
     vehicle = api.get_vehicles()[0]
 
-:py:class:`Vehicle <droneapi.lib.Vehicle>` provides access to vehicle *state* through python attributes
-(e.g. :py:attr:`Vehicle.location <droneapi.lib.Vehicle.location>`)
-and to settings/parameters though the :py:attr:`Vehicle.parameters <droneapi.lib.Vehicle.parameters>` attribute.
+:py:class:`Vehicle <dronekit.lib.Vehicle>` provides access to vehicle *state* through python attributes
+(e.g. :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`)
+and to settings/parameters though the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` attribute.
 Asynchronous notification on vehicle attribute changes is available by registering observers.
 
-:py:class:`Vehicle <droneapi.lib.Vehicle>` provides two main ways to control vehicle movement and other operations:
+:py:class:`Vehicle <dronekit.lib.Vehicle>` provides two main ways to control vehicle movement and other operations:
 
-* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` attribute
-  (see :py:class:`CommandSequence <droneapi.lib.CommandSequence>` for more information).
+* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute
+  (see :py:class:`CommandSequence <dronekit.lib.CommandSequence>` for more information).
 * Direct control of movement outside of missions is also supported. To set a target position you can use
-  :py:func:`CommandSequence.goto <droneapi.lib.CommandSequence.goto>`.
+  :py:func:`CommandSequence.goto <dronekit.lib.CommandSequence.goto>`.
   Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
-  (:py:func:`Vehicle.send_mavlink <droneapi.lib.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <droneapi.lib.Vehicle.message_factory>`).
+  (:py:func:`Vehicle.send_mavlink <dronekit.lib.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <dronekit.lib.Vehicle.message_factory>`).
 
 A number of other useful classes and methods are listed below.
 
@@ -226,7 +226,7 @@ class VehicleMode(object):
     `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_). If an unsupported mode is set the script
     will raise a ``KeyError`` exception.
 
-    The :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` attribute can be queried for the current mode. The code snippet
+    The :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` attribute can be queried for the current mode. The code snippet
     below shows how to read (print) and observe changes to the mode:
 
     .. code:: python
@@ -248,7 +248,7 @@ class VehicleMode(object):
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
 
-    For more information on getting/setting/observing the :py:attr:`Vehicle.mode <droneapi.lib.Vehicle.mode>` (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
+    For more information on getting/setting/observing the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
 
     .. py:attribute:: name
 
@@ -567,7 +567,7 @@ class Vehicle(HasObservers):
     .. py:attribute:: channel_readback
 
         This read-only attribute returns a dictionary containing the *original* vehicle RC channel values (ignoring any overrides set using
-        :py:attr:`channel_override <droneapi.lib.Vehicle.channel_override>`). Dictionary entries have the format ``channelName -> value``.
+        :py:attr:`channel_override <dronekit.lib.Vehicle.channel_override>`). Dictionary entries have the format ``channelName -> value``.
 
         For example, the returned dictionary might look like this:
 
@@ -604,7 +604,7 @@ class Vehicle(HasObservers):
         Gets the editable waypoints for this vehicle (the current "mission").
 
         This can be used to get, create, and modify a mission. It can also be used for direct control of vehicle position
-        (outside missions) using the :py:func:`goto <droneapi.lib.CommandSequence.goto>` method.
+        (outside missions) using the :py:func:`goto <dronekit.lib.CommandSequence.goto>` method.
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
@@ -613,7 +613,7 @@ class Vehicle(HasObservers):
     @property
     def parameters(self):
         """
-        The (editable) parameters for this vehicle (:py:class:`Parameters <droneapi.lib.Parameters>`).
+        The (editable) parameters for this vehicle (:py:class:`Parameters <dronekit.lib.Parameters>`).
         """
         return self._parameters
 
@@ -650,7 +650,7 @@ class Vehicle(HasObservers):
     def message_factory(self):
         """
         Returns an object that can be used to create 'raw' MAVLink messages that are appropriate for this vehicle.
-        The message can then be sent using :py:func:`send_mavlink(message) <droneapi.lib.Vehicle.send_mavlink>`.
+        The message can then be sent using :py:func:`send_mavlink(message) <dronekit.lib.Vehicle.send_mavlink>`.
 
         These message types are defined in the central MAVLink github repository.  For example, a Pixhawk understands
         the following messages (from `pixhawk.xml <https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml>`_):
@@ -686,10 +686,10 @@ class Vehicle(HasObservers):
         The function can send arbitrary messages/commands to a vehicle at any time and in any vehicle mode. It is particularly useful for
         controlling vehicles outside of missions (for example, in GUIDED mode).
 
-        The :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
+        The :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
         Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
 
-        :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <droneapi.lib.Vehicle.message_factory>`.
+        :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>`.
             There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
         """
         pass
@@ -699,7 +699,7 @@ class Vehicle(HasObservers):
         """
         Provides asynchronous notification when any MAVLink packet is received by this vehicle.
 
-        Only a single callback can be set. :py:func:`unset_mavlink_callback <droneapi.lib.Vehicle.unset_mavlink_callback>` removes the callback.
+        Only a single callback can be set. :py:func:`unset_mavlink_callback <dronekit.lib.Vehicle.unset_mavlink_callback>` removes the callback.
 
         .. tip::
 
@@ -726,7 +726,7 @@ class Vehicle(HasObservers):
 
     def unset_mavlink_callback(self):
         """
-        Clears the asynchronous notification added by :py:func:`set_mavlink_callback <droneapi.lib.Vehicle.set_mavlink_callback>`.
+        Clears the asynchronous notification added by :py:func:`set_mavlink_callback <dronekit.lib.Vehicle.set_mavlink_callback>`.
 
         The code snippet below shows how to set, then clear, a MAVLink callback function.
 
@@ -865,7 +865,7 @@ class CommandSequence(object):
 
     Operations include 'array style' indexed access to the various contained waypoints.
 
-    The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <droneapi.lib.Vehicle.commands>` attribute.
+    The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute.
     Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous;
     use :py:func:`wait_valid()` to block your thread until the download is complete.
 

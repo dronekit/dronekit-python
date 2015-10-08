@@ -73,9 +73,9 @@ etc. For example the console output below shows the **w** command being used to 
     AUTO>
    (Pdb) w
     c:\users\hamis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\threading.py(783)__bootstrap()
-    cAUTO> :\users\hamis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\site-packages\droneapi\module\api.py(321)run()
+    cAUTO> :\users\hamis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\site-packages\dronekit\module\api.py(321)run()
     -> self.fn()amis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\threading.py(810)__bootstrap_inner()
-    c:\users\hamis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\site-packages\droneapi\module\api.py(592)<lambda>()
+    c:\users\hamis_000\downloads\winpython-64bit-2.7.6.4\python-2.7.6.amd64\lib\site-packages\dronekit\module\api.py(592)<lambda>()
     -> APIThread(self, lambda: execfile(args[1], g), args[1])
 	
 The available `debugger commands are listed here <https://docs.python.org/2/library/pdb.html#debugger-commands>`_. For more information 

@@ -1,21 +1,19 @@
 from setuptools import setup, Extension
 import platform
 
-version = '1.5.0'
+version = '2.0.0b2'
 
-ext_modules = []
-
-setup (name = 'droneapi',
+setup (name = 'dronekit',
        zip_safe=True,
        version = version,
        description = 'Python language bindings for the DroneApi',
-       long_description = '''Python language bindings for the DroneApi''',
-       url = 'https://github.com/diydrones/droneapi-python',
+       long_description = 'Python language bindings for the DroneApi',
+       url = 'https://github.com/dronekit/dronekit-python',
        author = '3D Robotics',
-       install_requires = [ 'pymavlink >= 1.1.50',
+       install_requires = ['pymavlink >= 1.1.62',
                             'protobuf >= 2.5.0',
                             'requests == 2.5.1' ],
-       author_email = 'kevinh@geeksville.com',
+       author_email = 'tim@3drobotics.com, kevinh@geeksville.com',
        classifiers=['Development Status :: 4 - Beta',
                     'Environment :: Console',
                     'Intended Audience :: Science/Research',
@@ -25,6 +23,5 @@ setup (name = 'droneapi',
                     'Topic :: Scientific/Engineering'
                     ],
        license='apache',
-       packages = ['droneapi', 'droneapi.module', 'droneapi.lib' ],
-       # doesn't work: package_data={'droneapi': ['examples/*']},
-       ext_modules = ext_modules)
+       packages = ['dronekit', 'dronekit.module', 'dronekit.lib' ],
+       ext_modules = [])

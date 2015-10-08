@@ -2,8 +2,8 @@ import os, os.path
 import simplejson
 
 from pymavlink import mavutil
-import droneapi.lib
-from droneapi.lib import VehicleMode, Location
+import dronekit.lib
+from dronekit.lib import VehicleMode, Location
 
 import cherrypy
 from cherrypy.process import wspbus, plugins

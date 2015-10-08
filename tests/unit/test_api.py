@@ -1,7 +1,7 @@
 import mock
 from mock import MagicMock
-import droneapi
-from droneapi import FakeAPI
+import dronekit
+from dronekit import FakeAPI
 from nose.tools import assert_equals
 
 def test_mode():

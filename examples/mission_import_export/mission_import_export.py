@@ -10,7 +10,7 @@ Documentation is provided at http://python.dronekit.io/examples/mission_import_e
 
 import time
 import math
-from droneapi.lib import Command
+from dronekit.lib import Command
 from pymavlink import mavutil
 
 # Connect to API provider and get vehicle

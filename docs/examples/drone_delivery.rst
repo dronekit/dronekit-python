@@ -52,7 +52,7 @@ Looking at the code
 Using attribute observers
 -------------------------
 
-All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/diydrones/droneapi-python/blob/master/examples/drone_delivery/drone_delivery.py>`_ calls:
+All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/dronekit/dronekit-python/blob/master/examples/drone_delivery/drone_delivery.py>`_ calls:
 
 :: 
 

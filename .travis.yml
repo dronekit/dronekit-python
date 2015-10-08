@@ -1,27 +1,33 @@
-before_install: []
 env:
   global:
     - SITL_SPEEDUP=10
     - SITL_RATE=200
+
+python:
+  - "2.7"
+
 install:
-  - 'a() { set -e; }'
-  - "z() { E=$?; test $E -eq 0 && return 0; printf \"\\n\\033[1;31mThe command failed with exit code $?.\\033[0m\"; set -e; return $E; }"
-  - (a; sudo pip2 install nose psutil mock );z
-  - '(a; sudo pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git );z'
+  - 'sudo pip install . -UI'
+  - 'sudo pip install -r requirements.txt -UI'
+
 script:
-  - (a; sudo python setup.py install );z
-  - (a; [ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests tests/web );z
-  - (a; nosetests tests/unit );z
-  - (a; nosetests tests/sitl );z
+  - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests tests/web'
+  - 'nosetests tests/unit'
+  - 'nosetests tests/sitl'
+
 git:
   depth: 10
+
 language: objective-c
+
 notifications:
   email: false
   slack:
     secure: IYgZ83X065I/LljGrPEACZms+KDwrojiQbboFHhvNxL2Zkc5jHqwBK6PD1BsJh2JVun9fCZ1v2R8KuDsf+Qz2dCximdOZcHI81L9JUOZYuSJ2TVlbKiC00WdXpcQ6g7pDTLm/mGBoPxC+MuC5l8zZdbpPBpEa0F/YCe/n7tbT+g=
+
 matrix:
   fast_finish: true
+
 branches:
   only:
     - master
