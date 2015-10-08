@@ -2,9 +2,10 @@ environment:
   global:
     SITL_SPEEDUP: 10
     SITL_RATE: 200
-init: []
+
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"
+
 install:
   - ps: |
       New-Item -ItemType Directory -Force -Path c:\Users\appveyor\pip\
@@ -15,15 +16,18 @@ install:
       [wheel]
       wheel-dir = c:/Users/appveyor/.pip-wheelhouse
       '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
-  - cmd: 'setlocal & python -m pip install pip wheel -U & endlocal'
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install nose psutil mock & endlocal"
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & pip2 install git+https://github.com/3drobotics/dronekit-sitl-runner.git & endlocal"
+  
+  - cmd: 'SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH%'
+  - cmd: 'SET PYTHONUNBUFFERED=1'
+
+  - cmd: 'python -m pip install pip wheel -U'
+  - cmd: 'pip install . -UI'
+  - cmd: 'pip install -r requirements.txt -UI'
 
 build_script:
-  - cmd: 'setlocal & python setup.py install & endlocal'
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & SET PYTHONUNBUFFERED=1 & nosetests -s -v tests\\sitl & endlocal"
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\web & endlocal"
-  - cmd: "setlocal & SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH% & nosetests tests\\unit & endlocal"
+  - cmd: 'nosetests tests\\web'
+  - cmd: 'nosetests -s -v tests\\sitl'
+  - cmd: 'nosetests tests\\unit'
 
 clone_depth: 10
 test: 'off'

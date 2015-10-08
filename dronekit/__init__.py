@@ -8,6 +8,9 @@ import re
 from pymavlink import mavutil
 from Queue import Empty
 
+from pkgutil import extend_path
+__path__ = extend_path(__path__, __name__)
+
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
 else:
