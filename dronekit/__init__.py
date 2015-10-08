@@ -137,7 +137,6 @@ class MPFakeState:
         Fetch waypoints.
         """
         self.wp_loaded = False
-        print('FETCHING WAYPOINTs')
         self.master.waypoint_request_list_send()
 
     def send_all_waypoints(self):
