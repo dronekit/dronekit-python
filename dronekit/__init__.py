@@ -448,7 +448,7 @@ class MPFakeState:
                 if self.exiting:
                     pass
                 else:
-                    raise e
+                    raise
 
 
         t = Thread(target=mavlink_thread)
