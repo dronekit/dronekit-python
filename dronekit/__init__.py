@@ -7,6 +7,7 @@ import platform
 import re
 from pymavlink import mavutil, mavwp
 from Queue import Empty
+from pymavlink.dialects.v10 import ardupilotmega
 
 from pkgutil import extend_path
 __path__ = extend_path(__path__, __name__)
@@ -110,6 +111,7 @@ class MPFakeState:
         self.epv = None
         self.satellites_visible = None
         self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
+        self.ekf_ok = False
 
         self.rngfnd_distance = None
         self.rngfnd_voltage = None
@@ -251,6 +253,13 @@ class MPFakeState:
             self.rngfnd_distance = m.distance
             self.rngfnd_voltage = m.voltage
             self.__on_change('rangefinder')
+        elif typ == "EKF_STATUS_REPORT":
+            # use same check that ArduCopter::system.pde::position_ok() is using
+            if self.vehicle.armed:
+                self.ekf_ok = ((m.flags&ardupilotmega.EKF_POS_HORIZ_ABS) > 0) and (m.flags&ardupilotmega.EKF_CONST_POS_MODE == 0)
+            else:
+                self.ekf_ok = ((m.flags&ardupilotmega.EKF_POS_HORIZ_ABS) > 0) or ((m.flags&ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0)
+            self.__on_change('ekf_ok')
 
         if self.api:
             for v in self.api.get_vehicles():
