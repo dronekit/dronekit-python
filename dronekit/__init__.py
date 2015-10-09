@@ -255,7 +255,7 @@ class MPFakeState:
             self.__on_change('rangefinder')
         elif typ == "EKF_STATUS_REPORT":
             # use same check that ArduCopter::system.pde::position_ok() is using
-            if self.vehicle.armed:
+            if self.status.armed:
                 self.ekf_ok = ((m.flags&ardupilotmega.EKF_POS_HORIZ_ABS) > 0) and (m.flags&ardupilotmega.EKF_CONST_POS_MODE == 0)
             else:
                 self.ekf_ok = ((m.flags&ardupilotmega.EKF_POS_HORIZ_ABS) > 0) or ((m.flags&ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0)
