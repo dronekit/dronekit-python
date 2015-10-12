@@ -52,8 +52,8 @@ and Linux (though we recommend the native installations linked above).
 #. Install SSH (Windows only - SSH is present by default on Linux/Mac OSX)
 
    * Download and install `Git for Windows <https://git-scm.com/download/win>`_ (or another client that comes with SSH).
-     After installing you can locate the file using the command ``C:\where ssh`` (normally it is installed to **C:\Program Files (x86)\Git\bin\ssh.exe**
-   * Add the ssh.exe location to the *Path* (**System Properties | Advanced tab | Environment Variables | Path**)
+     After installing you can locate the file using the command ``where ssh`` (normally it is installed to **C:\\Program Files (x86)\\Git\\bin\\ssh.exe**
+   * Add the **ssh.exe** location to the *Path* (**System Properties | Advanced tab | Environment Variables | Path**)
 
 #. Create a new directory where you will run *Vagrant*, and open a command prompt/terminal in it: 
 
@@ -88,7 +88,7 @@ and Linux (though we recommend the native installations linked above).
 
 .. _disable-arming-checks:
 
-#. Load a default set of parameters and disable the arming check:
+7. Load a default set of parameters and disable the arming check:
 
    .. code:: bash
        
@@ -101,6 +101,42 @@ and Linux (though we recommend the native installations linked above).
        vehicle more forgiving, which allows the examples to arm and run. 
 	   
        You should never disable the arming check in a script or on a real vehicle.
+
+ 
+Restarting
+----------
+
+When you've finished using the simulation you can suspend the virtual machine with the command
+``vagrant suspend`` and later restart it using ``vagrant resume``. Alternatively you can power-down 
+the machine using the `halt <http://docs.vagrantup.com/v2/cli/halt.html>`_ command 
+and later restart it using ``vagrant up``:
+
+.. code-block:: bash
+
+    vagrant halt
+    vagrant up
+
+
+
+
+Troubleshooting
+---------------
+
+In most cases problems can be fixed by halting and restarting vagrant:
+
+.. code-block:: bash
+
+    vagrant halt
+    vagrant up
+
+If this does not work then the "nuclear option" is to destroy and restart the environment:
+
+.. code-block:: bash
+
+    vagrant destroy
+    vagrant up
+
+
 
 
 .. _viewing_uav_on_map:
