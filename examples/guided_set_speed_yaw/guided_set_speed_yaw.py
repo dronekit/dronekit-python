@@ -1,16 +1,29 @@
 """
+guided_set_speed_yaw.py: (Copter Only)
+
 This example shows how to move/direct Copter and send commands in GUIDED mode using DroneKit Python.
 
 Example documentation: http://python.dronekit.io/examples/guided-set-speed-yaw-demo.html
 """
 
+from dronekit import connect
 from dronekit.lib import VehicleMode, Location
 from pymavlink import mavutil
 import time
 import math
 
-api             = local_connect()
-vehicle         = api.get_vehicles()[0]
+
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
 
 
 def arm_and_takeoff(aTargetAltitude):
@@ -32,7 +45,7 @@ def arm_and_takeoff(aTargetAltitude):
     vehicle.armed   = True
     vehicle.flush()
 
-    while not vehicle.armed and not api.exit:
+    while not vehicle.armed:
         print " Waiting for arming..."
         time.sleep(1)
 
@@ -42,7 +55,7 @@ def arm_and_takeoff(aTargetAltitude):
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
-    while not api.exit:
+    while True:
         print " Altitude: ", vehicle.location.alt
         if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
@@ -341,7 +354,7 @@ def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
     vehicle.flush()
 
 	
-    while not api.exit and vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
+    while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
         remainingDistance=get_distance_metres(vehicle.location, targetLocation)
         print "Distance to target: ", remainingDistance
         if remainingDistance<=targetDistance*0.01: #Just below target, in case of undershoot.
@@ -460,7 +473,7 @@ print("Position South 0 East 200")
 goto(0, 260, goto_position_target_global_int)
 
 print("Set speed to 10m/s (max).")
-set_speed(10, goto_position_target_global_int)
+set_speed(10)
 
 print("Position North 100 West 130")
 goto(100, -130, goto_position_target_global_int)

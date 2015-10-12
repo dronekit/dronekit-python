@@ -74,7 +74,7 @@ Attributes will also return  ``None`` if the associated hardware is not present 
 
 .. tip::
 
-    If you're using a :ref:`simulated vehicle <sitle_setup>` you can add support for optional hardware including
+    If you're using a :ref:`simulated vehicle <sitl_setup>` you can add support for optional hardware including
     `rangefinders <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
     and `optical flow sensors <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_optical_flow_sensor>`_.
 

@@ -9,9 +9,8 @@ on the vehicle and communicate with the autopilot via a serial port. However, du
 prototype apps on a standard Mac, Windows, or Linux computer using a *simulated* autopilot. 
 
 
-This topic explains how to set up and run DroneKit-Python (within MAVProxy) on the different host operating systems
-and then run a basic DroneKit app. 
-
+This topic explains how to set up and run DroneKit-Python on the different host operating systems
+and then create and run a basic DroneKit app. 
 
 
 
@@ -21,7 +20,7 @@ Setting up the vehicle/autopilot
 For information on how to set up a vehicle (real and simulated) see:
 
 * :ref:`supported-companion-computers` for links to tested hardware/software configurations for a number of onboard Linux computers. 
-* :ref:`sitle_setup` for links explaining how to set up a simulated vehicle for Copter, Plane, or Rover.
+* :ref:`sitl_setup` for links explaining how to set up a simulated vehicle for Copter, Plane, or Rover.
 
 
 
@@ -40,11 +39,10 @@ If you are using Ubuntu or Debian Linux you can get most of the *DroneKit* depen
 
 .. code:: bash
 
-    sudo apt-get install python-pip python-dev python-opencv python-serial python-pyparsing python-wxgtk2.8
+    sudo apt-get install python-pip python-dev
 
 
-The remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_), are 
-installed when you get DroneKit-Python from the public PyPi repository:
+The remaining dependencies are installed when you get DroneKit-Python from the public PyPi repository:
 
 .. code:: bash
 
@@ -61,26 +59,12 @@ installed when you get DroneKit-Python from the public PyPi repository:
 Installing DroneKit on Mac OSX
 ------------------------------
 
-If you're on Mac OSX, you can use `Homebrew <http://brew.sh/>`_ to install *WXMac*.
+Install DroneKit-Python and its dependencies from the public PyPi repository:
 
 .. code:: bash
 
-    brew tap homebrew/science
-    brew install wxmac wxpython opencv
-
-
-Uninstall *python-dateutil* (OSX and Windows come bundled with a version that is not supported for some dependencies):
-
-.. code:: bash
-
-    sudo pip uninstall python-dateutil
-
-Install DroneKit-Python and its remaining dependencies (including `MAVProxy <http://tridge.github.io/MAVProxy/>`_) from the public PyPi repository:
-
-.. code:: bash
-
-    sudo pip install pyparsing
     sudo pip install dronekit
+    
 
 
 .. _get_started_install_dk_windows:
@@ -88,124 +72,95 @@ Install DroneKit-Python and its remaining dependencies (including `MAVProxy <htt
 Installing DroneKit on Windows
 ------------------------------
 
-The easiest way to set up DroneKit-Python on Windows is to use the Windows Installer. 
-This is applied over the top of the *MAVProxy* Windows installation and includes all needed 
-dependencies and the DroneKit-Python examples.
-
-.. tip::
-
-    A new version of the Windows Installer is created with every patch revision (`get old versions
-    here <http://dronekit-assets.s3-website-us-east-1.amazonaws.com/installers/>`_).
-    Don't forget to update regularly for bug fixes and new features!
- 
-To install DroneKit-Python using the installer:
-
-#. Download and run the `latest MAVProxy installer <http://firmware.diydrones.com/Tools/MAVProxy/MAVProxySetup-latest.exe>`_
-   — accept all prompts.    
-#. Download and run the `latest DroneKit installer <http://dronekit-assets.s3.amazonaws.com/installers/dronekit-windows-latest.exe>`_
-   — accept all prompts (install in the same location as MAVProxy).
-
-The installer packages DroneKit-Python as an application, which is launched by double-clicking an icon 
-in the system GUI. After the *MAVProxy prompt* and *console* have started you can 
-:ref:`connect to the vehicle <starting-mavproxy_set_link_when_mavproxy_running>` (instead of setting the
-connection when starting *MAVProxy*). You will still need to :ref:`load DroneKit <loading-dronekit>` (not done by the installer 
-- see `#267 <https://github.com/dronekit/dronekit-python/issues/267>`_). The examples are copied to :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
-
-It is also possible to set up DroneKit-Python on the command line (see :ref:`dronekit_development_windows`).
+Set up a command line DroneKit-Python installation using *WinPython* (this Python distribution already includes most of the needed dependencies).
 
 
-.. _starting-mavproxy:
+#. Download and run the correct `WinPython installer <http://sourceforge.net/projects/winpython/files/WinPython_2.7/2.7.6.4/>`_ (**v2.7**) for your platform (win32 vs win64).
+   
+   * Run the installer as an administrator (**Right-click** on file, select **Run as Administrator**). 
+   * When prompted for the destination location, specify **C:\\Program Files (x86)** 
+     (the default location is under the **Downloads** folder).
 
-Starting MAVProxy
-=================
+#. Register the Python that came from *WinPython* as the preferred interpreter for your machine:
 
-Before executing DroneKit scripts you must first start *MAVProxy* and connect to your autopilot (simulated or real). 
-The connection to the vehicle can be set up on the command line when starting *MAVProxy* or after MAVProxy is running.
+   Open the folder where you installed WinPython, run *WinPython Control Panel* and choose **Advanced/Register Distribution**.
 
-.. tip:: 
+   .. image:: http://dev.ardupilot.com/wp-content/uploads/sites/6/2014/03/Screenshot-from-2014-09-03-083816.png
 
-    If you're using DroneKit-Python from the Windows installer there is no way to pass command line options to MAVProxy;
-    you will have to start MAVProxy by double-clicking its icon and then :ref:`connect to the target vehicle after MAVProxy 
-    has started <starting-mavproxy_set_link_when_mavproxy_running>`.
+#. Install DroneKit-Python and its remaining dependencies from the public PyPi repository:
 
-Connecting at startup
----------------------
+   Open the *WinPython Command Prompt* and run the following command:
 
-The table below shows the command lines used to start *MAVProxy* for the respective connection types:
+   .. code:: bash
 
-.. list-table:: MAVProxy connection options
+        pip install dronekit
+
+        
+        
+.. _get_started_connect_string:
+
+.. _get_started_connecting:
+
+Connecting to a Vehicle
+=======================
+
+The connection to the vehicle is set up within the DroneKit script. Scripts import and call the :py:func:`connect()` method. 
+After connecting this returns a :py:class:`Vehicle <dronekit.lib.Vehicle>` object from which you can get/set parameters 
+and attributes, and control vehicle movement.
+
+.. code:: python
+
+    from dronekit import connect
+    
+    # Connect to UDP endpoint.
+    vehicle = connect('127.0.0.1:14550', await_params=True)
+    
+.. note:: 
+
+    Calling ``connect()`` with ``await_params=True`` (as shown above) ensures that the method will not return until 
+    :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` is fully populated with values from the vehicle. 
+    Vehicle *attributes* are populated in parallel but are not guaranteed to have values when ``connect()`` completes 
+    (an attribute will have value ``None`` if a corresponding MAVLink message has not been received - for example, 
+    if the attribute is not supported by the vehicle).
+
+The example above connects to the udp address ``127.0.0.1:14550``. The table below shows addresses to use some of 
+the more common connection types:
+
+
+
+.. list-table:: Connection string options
    :widths: 10 10
    :header-rows: 1
 
    * - Connection type
-     - MAVProxy command
+     - Connection string
    * - Linux computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/ttyUSB0``
+     - ``/dev/ttyUSB0``
    * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
-     - ``mavproxy.py --master=/dev/ttyAMA0 --baudrate 57600``
+     - ``/dev/ttyAMA0 --baudrate 57600``
    * - SITL connected to the vehicle via UDP
-     - ``mavproxy.py --master=127.0.0.1:14550``
+     - ``127.0.0.1:14550``
    * - OSX computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/cu.usbmodem1``	 
+     - ``dev/cu.usbmodem1``
    * - Windows computer connected to the vehicle via USB
-     - ``mavproxy.py --master=/dev/cu.usbmodem1``		 
+     - ``/dev/cu.usbmodem1``
 
-For other connection options see the `MAVProxy documentation <http://tridge.github.io/MAVProxy/>`_.
+.. tip::
 
-.. _starting-mavproxy_set_link_when_mavproxy_running:
+    The strings above are the same as you would use if connecting with MAVProxy. For other options see the 
+    `MAVProxy documentation <http://dronecode.github.io/MAVProxy/html/getting_started/starting.html#master>`_.
 
-Connecting after startup
-------------------------
-
-To connect to the autopilot once *MAVProxy* has already started use ``link add <connection>`` in the *MAVProxy command prompt*, where ``<connection>``
-takes the same values as ``master`` in the table above. For example, to set up a connection to SITL running on the local computer at port 14550 do:
-
-.. code:: bash
-
-    link add 127.0.0.1:14550
-
-If you're connecting using a serial port you may need to first set up the baud rate first (the default is 57600). You can change the default baudrate used for 
-new connections as shown:
-
-.. code:: bash
-
-    set baudrate 57600    #Set the default baud rate for new connections (do before calling "link add")
-
-See `Link Management <http://tridge.github.io/MAVProxy/link.html>`_ (MAVProxy documentation) for more information.
-
-
-
-
-.. _loading-dronekit:
-
-Loading DroneKit
-================
-
-*DroneKit* is implemented as a *MAVProxy* module (MAVProxy is installed automatically with DroneKit). 
-The best way to load the *DroneKit* module into *MAVProxy* is to 
-`add it to the startup script <http://tridge.github.io/MAVProxy/mavinit.html>`_ (**mavinit.scr**).
-
-Linux/MAC OSX:
-
-.. code:: bash
-
-    echo "module load dronekit.module.api" >> ~/.mavinit.scr
-
-Windows:
-
-.. code:: bash
-
-    echo module load dronekit.module.api >> %HOMEPATH%\AppData\Local\MAVProxy\mavinit.scr
-
-
-Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* every time you need it:
+    
+You can start this simple script in the same way you would start any other standalone Python script. 
 
 .. code-block:: bash
-   :emphasize-lines: 1
 
-    MANUAL> module load dronekit.module.api
-    DroneAPI loaded
-    MANUAL>
+    python your_dronekit_script.py
+
+
+
+.. todo:: Connect method here needs to link to the function, but it isn't exported yet. Fix that once the API tidied.
+
 
 
 
@@ -214,80 +169,7 @@ Alternatively you can choose to manually (re)load *DroneKit* into *MAVProxy* eve
 Running an app/example
 ======================
 
-This section shows how to run the :ref:`Vehicle State <example-vehicle-state>` example, 
-which reads and writes :ref:`vehicle state and parameter <vehicle-information>` information.
+This SDK has :ref:`numerous examples <example-toc>`. We recommend you start with :ref:`example-vehicle-state`, 
+which reads and writes :ref:`vehicle state and parameter <vehicle-information>` information. 
 
-.. warning:: 
-
-    This example doesn't take off, but it does arm the motors. Don't run any example indoors on a real vehicle 
-    unless you have first removed its propellers.
-
-The steps are:
-
-#. Get the DroneKit-Python example source code onto your local machine. 
-
-   The easiest way to do this is to clone the **dronekit-python** repository from Github.   
-   On the command prompt enter:
-
-   .. code-block:: bash
-
-       git clone http://github.com/dronekit/dronekit-python.git
-
-   .. tip:: 
-
-       The :ref:`Windows Installation <get_started_install_dk_windows>` copies the example code here: 
-       :file:`C:\\Program Files (x86)\\MAVProxy\\examples\\`.
-
-#. Start MAVProxy and :ref:`connect to the vehicle <starting-mavproxy>`. For example:
-
-   * To connect to a simulated vehicle when starting *MAVProxy* (from the command line):
-
-     .. code-block:: bash
-
-         mavproxy.py --master=127.0.0.1:14550
-   
-   * To connect to a simulated vehicle after starting *MAVProxy* (for example, on Windows):
-
-     .. code-block:: bash
-
-         link add 127.0.0.1:14550
-
-#. You should already have set up *MAVProxy* to :ref:`load DroneKit automatically <loading-dronekit>`. 
-   If not, manually load the library using:
-
-   .. code-block:: bash
-
-       module load dronekit.module.api
-
-#. Once the *MAVProxy* console is running, start ``vehicle_state.py`` by entering ``api start`` followed by the 
-   full file path of the script. For example: 
-
-   .. code-block:: bash
-
-       api start "C:\Program Files (x86)\MAVProxy\examples\vehicle_state\vehicle_state.py"
-
-
-   The output should look something like that shown below
-
-   .. code-block:: bash
-      :emphasize-lines: 1
-
-       MANUAL> api start "C:\Program Files (x86)\MAVProxy\examples\vehicle_state\vehicle_state.py"
-       STABILIZE>
-
-       Get all vehicle attribute values:
-        Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
-        Velocity: [0.06, -0.07, 0.0]
-        GPS: GPSInfo:fix=3,num_sat=10
-        groundspeed: 0.0
-        airspeed: 0.0
-        mount_status: [None, None, None]
-        Mode: STABILIZE
-        Armed: False
-       Set Vehicle.mode=GUIDED (currently: STABILIZE)
-        Waiting for mode change ...
-       Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
-       ...
-
-
-For more information on running the examples (and other apps) see :ref:`running_examples_top`.	
+For general information on running the examples (and other apps) see :ref:`running_examples_top`.

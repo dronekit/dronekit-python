@@ -1,4 +1,4 @@
-.. _sitle_setup:
+.. _sitl_setup:
 
 =====================================
 Setting up a Simulated Vehicle (SITL)
