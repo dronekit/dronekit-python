@@ -9,9 +9,6 @@ from pymavlink import mavutil, mavwp
 from Queue import Empty
 from pymavlink.dialects.v10 import ardupilotmega
 
-from pkgutil import extend_path
-__path__ = extend_path(__path__, __name__)
-
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
 else:
@@ -489,3 +486,9 @@ def connect(ip, await_params=False, status_printer=errprinter):
     state.status_printer = status_printer
     # api.init(state)
     return state.prepare(await_params=await_params).get_vehicles()[0]
+
+# import dronekit.sitl
+try:
+    import dronekit_sitl as sitl
+except:
+    pass
