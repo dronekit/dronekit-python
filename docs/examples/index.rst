@@ -18,6 +18,7 @@ during missions and outside missions using custom commands.
    Guided Movement and Commands <guided-set-speed-yaw-demo>
    Basic Mission <mission_basic>
    Mission Import/Export <mission_import_export>
+   Create Attribute in App <create_attribute>
    Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
