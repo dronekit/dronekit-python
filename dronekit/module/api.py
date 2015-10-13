@@ -281,7 +281,7 @@ class MPVehicle(Vehicle):
 
     def on_message(self, name, fn):
         def handler(state, name, m):
-            return fn(elf, name, m)
+            return fn(self, name, m)
         return self.__module.on_message(name, handler)
 
 class MPAPIConnection(APIConnection):

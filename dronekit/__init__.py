@@ -345,6 +345,8 @@ class MPFakeState:
         # Call message listeners.
         for fn in self.message_listeners.get(typ, []):
             fn(self, typ, m)
+        for fn in self.message_listeners.get('*', []):
+            fn(self, typ, m)
 
         if self.api:
             for v in self.api.get_vehicles():
@@ -570,7 +572,7 @@ class MPFakeState:
 
 def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle):
     import dronekit.module.api as api
-    state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=Vehicle)
+    state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=vehicle_class)
     state.status_printer = status_printer
     # api.init(state)
     return state.prepare(await_params=await_params).get_vehicles()[0]
