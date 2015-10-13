@@ -17,3 +17,4 @@ The guide contains how-to documentation for using the DroneKit-Python API. These
     copter/guided_mode
     Missions <auto_mode>
     debugging
+    mavlink_messages
