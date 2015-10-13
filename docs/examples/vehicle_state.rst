@@ -4,7 +4,7 @@
 Example: Vehicle State
 ======================
 
-This example shows how to get/set vehicle attribute, parameter and channel-override information, 
+This example shows how to get/set vehicle attribute and parameter information, 
 how to observe vehicle attribute changes, and how to get the home position.
 
 The guide topic :ref:`vehicle-information` provides a more detailed explanation of how the API
@@ -14,23 +14,38 @@ should be used.
 Running the example
 ===================
 
-The vehicle and DroneKit should be set up as described in :ref:`get-started`.
+The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
+and DroneKit have been set up as described in :ref:`get-started`).
 
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
-that the example can run. You can also `add a virtual rangefinder <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
+that the example can run. You can also 
+`add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
 (otherwise the :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
 and voltage). 
 
-Once MAVProxy is running and the API is loaded, you can start the example by typing: ``api start vehicle_state.py``.
+In summary, after cloning the repository:
 
-.. note:: 
+#. Navigate to the example folder as shown:
 
-    The command above assumes you started the *MAVProxy* prompt in a directory containing the example script. If not, 
-    you will have to specify the full path to the script (something like):
-    ``api start /home/user/git/dronekit-python/examples/vehicle_state/vehicle_state.py``.
+   .. code-block:: bash
+
+       cd dronekit-python\examples\vehicle_state\
 
 
-On the *MAVProxy* console you should see (something like):
+#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+
+   .. code-block:: bash
+
+       python vehicle_state.py --connect 127.0.0.1:14550
+
+   .. note::
+   
+       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
+       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+          
+
+
+On the command prompt you should see (something like):
 
 .. code:: bash
 
@@ -83,12 +98,6 @@ On the *MAVProxy* console you should see (something like):
     ...
     Raw MAVLink message:  SCALED_PRESSURE {time_boot_ms : 895340, press_abs : 945.038024902, press_diff : 0.0, temperature : 2600}
     Remove the MAVLink callback handler (stop getting messages)
-	
-	
-    Overriding RC channels for roll and yaw
-     Current overrides are: {'1': 900, '4': 1000}
-     Channel default values: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
-     Cancelling override
 
     Reset vehicle attributes/parameters and exit
     Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
@@ -133,7 +142,7 @@ Source code
 ===========
 
 The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
-	
+
 .. literalinclude:: ../../examples/vehicle_state/vehicle_state.py
    :language: python
-	
+

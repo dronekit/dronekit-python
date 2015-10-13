@@ -79,13 +79,13 @@ Attributes will also return  ``None`` if the associated hardware is not present 
     and `optical flow sensors <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_optical_flow_sensor>`_.
 
 
-	
+
 .. todo:: we need to be able to verify mount_status works/setup.
 
 
 
 .. _vehicle_state_set_attributes:
-	
+
 Setting attributes
 ------------------
 
@@ -106,7 +106,7 @@ then forces DroneKit to send outstanding messages.
 
     After ``flush()`` returns the message is guaranteed to have been sent to the autopilot, but it is **not guaranteed to succeed**. 
     For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks.
-	
+
     While the autopilot does send information about the success (or failure) of the request, this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
 
 
@@ -161,20 +161,20 @@ For example, the following code can be used in the callback to only print output
 .. code:: python
 
     last_rangefinder_distance=0
-	
+
     def rangefinder_callback(rangefinder):
         global last_rangefinder_distance
         if last_rangefinder_distance == round(vehicle.rangefinder.distance, 1):
             return
         last_rangefinder_distance = round(vehicle.rangefinder.distance, 1)
         print " Rangefinder (metres): %s" % last_rangefinder_distance
-	
+
 
     vehicle.add_attribute_observer('rangefinder', rangefinder_callback)	
 
 
 
-.. _vehicle_state_parameters:	
+.. _vehicle_state_parameters:
 
 Parameters
 ==========
@@ -209,7 +209,7 @@ throttle at which the motors will keep spinning.
 
     
 
-	
+
 Setting parameters
 ------------------
 
@@ -228,7 +228,7 @@ Observing parameter changes
 ---------------------------
 
 At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not support <https://github.com/dronekit/dronekit-python/issues/107>`_ observing parameter changes.
-		
+
 .. todo:: 
 
     Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
@@ -305,52 +305,7 @@ The code snippet below shows how to set and clear a "demo" callback function as 
     vehicle.unset_mavlink_callback()
 
 
-.. _vehicle_state_channel_override:
 
-Channel Overrides
------------------
-
-.. warning::
-
-    Channel Overrides may be useful for simulating user input and when implementing certain types of joystick control. 
-    They should not be used for direct control of the vehicle unless there is no other choice!
-
-    Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally set the desired position or direction/speed.
-
-The :py:attr:`channel_override <dronekit.lib.Vehicle.channel_override>` attribute takes a dictionary argument defining the RC *output* channels to be overridden (specified by channel number), and their new values.  Channels that are not specified in the dictionary are not overridden. All multi-channel updates are atomic. To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
-
-The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters in 
-`Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_, 
-`Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/#rcmap__parameters>`_ , 
-`Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/#rcmap__parameters>`_).
-	
-The remaining channel values are configurable, and their purpose can be determined using the 
-`RCn_FUNCTION parameters <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/>`_. 
-In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the channel can be 
-`mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be 
-controlled by normal autopilot code).
-
-An example of setting and clearing overrides is given below:
-
-.. code:: python
-    
-    # Override the channel for roll and yaw
-    vehicle.channel_override = { "1" : 900, "4" : 1000 }
-    vehicle.flush()
-	
-    #print current override values
-    print "Current overrides are:", vehicle.channel_override
-
-    # Print channel values (values if overrides removed)
-    print "Channel default values:", vehicle.channel_readback  
-    
-    # Cancel override by setting channels to 0
-    vehicle.channel_override = { "1" : 0, "4" : 0 }
-    vehicle.flush()	
-
-
-
-	
 .. _api-information-known-issues:
 
 Known issues
