@@ -19,12 +19,15 @@ else:
 
 import dronekit.module.api as api
 
+# Public exports
+Vehicle = api.MPVehicle
+
 def errprinter(*args):
     print(*args, file=sys.stderr)
 
 class FakeAPI:
     def __init__(self, module):
-        self.__vehicle = api.MPVehicle(module)
+        self.__vehicle = module.vehicle_class(module)
         self.exit = False
 
     def get_vehicles(self, query=None):
@@ -56,7 +59,9 @@ from Queue import Queue
 from threading import Thread
 
 class MPFakeState:
-    def __init__(self, master):
+    def __init__(self, master, vehicle_class=Vehicle):
+        self.vehicle_class = vehicle_class
+
         self.master = master
         out_queue = Queue()
         # self.mav_thread = mav_thread(master, self)
@@ -124,7 +129,7 @@ class MPFakeState:
         def listener(self, name, m):
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
-            self._MPFakeState__on_change('location', 'velocity')
+            self._notify_attribute_listeners('location', 'velocity')
 
         @message_default('GPS_RAW')
         def listener(self, name, m):
@@ -145,7 +150,7 @@ class MPFakeState:
             self.epv = m.epv
             self.satellites_visible = m.satellites_visible
             self.fix_type = m.fix_type
-            self._MPFakeState__on_change('gps_0')
+            self._notify_attribute_listeners('gps_0')
 
         self.heading = None
         # self.alt = None
@@ -158,7 +163,7 @@ class MPFakeState:
             self.alt = m.alt
             self.airspeed = m.airspeed
             self.groundspeed = m.groundspeed
-            self._MPFakeState__on_change('location', 'airspeed', 'groundspeed')
+            self._notify_attribute_listeners('location', 'airspeed', 'groundspeed')
 
         self.pitch = None
         self.yaw = None
@@ -175,7 +180,7 @@ class MPFakeState:
             self.pitchspeed = m.pitchspeed
             self.yawspeed = m.yawspeed
             self.rollspeed = m.rollspeed
-            self._MPFakeState__on_change('attitude')
+            self._notify_attribute_listeners('attitude')
 
         self.voltage = -1
         self.current = -1
@@ -186,11 +191,11 @@ class MPFakeState:
             self.voltage = m.voltage_battery
             self.current = m.current_battery
             self.level = m.battery_remaining
-            self._MPFakeState__on_change('battery')
+            self._notify_attribute_listeners('battery')
 
         @message_default('HEARTBEAT')
         def listener(self, name, m):
-            self._MPFakeState__on_change('mode', 'armed')
+            self._notify_attribute_listeners('mode', 'armed')
 
         self.last_waypoint = 0
 
@@ -225,7 +230,7 @@ class MPFakeState:
             self.mount_pitch = m.pointing_a / 100
             self.mount_roll = m.pointing_b / 100
             self.mount_yaw = m.pointing_c / 100
-            self._MPFakeState__on_change('mount')
+            self._notify_attribute_listeners('mount')
 
         self.rngfnd_distance = None
         self.rngfnd_voltage = None
@@ -234,7 +239,7 @@ class MPFakeState:
         def listener(self, name, m):
             self.rngfnd_distance = m.distance
             self.rngfnd_voltage = m.voltage
-            self._MPFakeState__on_change('rangefinder')
+            self._notify_attribute_listeners('rangefinder')
 
         self.ekf_ok = False
 
@@ -255,7 +260,7 @@ class MPFakeState:
             else:
                 self.ekf_ok = status_poshorizabs or status_predposhorizabs
 
-            self._MPFakeState__on_change('ekf_ok')
+            self._notify_attribute_listeners('ekf_ok')
 
     def fetch(self):
         """
@@ -310,6 +315,9 @@ class MPFakeState:
         for a in args:
             for v in self.api.get_vehicles():
                 v.notify_observers(a)
+
+    def _notify_attribute_listeners(self, *args):
+        return self.__on_change(*args)
 
     def on_message(self, name, fn):
         """
@@ -560,9 +568,9 @@ class MPFakeState:
 
         return self.api
 
-def connect(ip, await_params=False, status_printer=errprinter):
+def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle):
     import dronekit.module.api as api
-    state = MPFakeState(mavutil.mavlink_connection(ip))
+    state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=Vehicle)
     state.status_printer = status_printer
     # api.init(state)
     return state.prepare(await_params=await_params).get_vehicles()[0]

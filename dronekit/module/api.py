@@ -279,6 +279,10 @@ class MPVehicle(Vehicle):
             time.sleep(pollinterval)
         raise APIException("Vehicle did not complete initialization")
 
+    def on_message(self, name, fn):
+        def handler(state, name, m):
+            return fn(elf, name, m)
+        return self.__module.on_message(name, handler)
 
 class MPAPIConnection(APIConnection):
     """
