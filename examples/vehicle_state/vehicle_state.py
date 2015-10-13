@@ -103,23 +103,6 @@ time.sleep(1)
 print "Remove the MAVLink callback handler (stop getting messages)"  
 vehicle.unset_mavlink_callback()
 
-
-
-# Overriding an RC channel
-# NOTE: CHANNEL OVERRIDES may be useful for simulating user input and when implementing certain types of joystick control. 
-#DO NOT use unless there is no other choice (there almost always is!)
-print "\nOverriding RC channels for roll and yaw"
-vehicle.channel_override = { "1" : 900, "4" : 1000 }
-vehicle.flush()
-print " Current overrides are:", vehicle.channel_override
-print " Channel default values:", vehicle.channel_readback  # All channel values before override
-
-# Cancel override by setting channels to 0
-print " Cancelling override"
-vehicle.channel_override = { "1" : 0, "4" : 0 }
-vehicle.flush()
-
-
 ## Reset variables to sensible values.
 print "\nReset vehicle attributes/parameters and exit"
 vehicle.mode = VehicleMode("STABILIZE")
