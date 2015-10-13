@@ -212,6 +212,10 @@ class MPVehicle(Vehicle):
         return [ self.__module.mount_pitch, self.__module.mount_yaw, self.__module.mount_roll ]
 
     @property
+    def ekf_ok(self):
+        return self.__module.ekf_ok
+
+    @property
     def channel_override(self):
         overrides = self.__rc.override
         # Only return entries that have a non zero override

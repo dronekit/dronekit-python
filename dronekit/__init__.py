@@ -7,9 +7,7 @@ import platform
 import re
 from pymavlink import mavutil, mavwp
 from Queue import Empty
-
-from pkgutil import extend_path
-__path__ = extend_path(__path__, __name__)
+from pymavlink.dialects.v10 import ardupilotmega
 
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
@@ -110,6 +108,7 @@ class MPFakeState:
         self.epv = None
         self.satellites_visible = None
         self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
+        self.ekf_ok = False
 
         self.rngfnd_distance = None
         self.rngfnd_voltage = None
@@ -251,6 +250,23 @@ class MPFakeState:
             self.rngfnd_distance = m.distance
             self.rngfnd_voltage = m.voltage
             self.__on_change('rangefinder')
+        elif typ == "EKF_STATUS_REPORT":
+            # legacy check for dronekit-python for solo
+            # use same check that ArduCopter::system.pde::position_ok() is using
+
+            # boolean: EKF's horizontal position (absolute) estimate is good
+            status_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
+            # boolean: EKF is in constant position mode and does not know it's absolute or relative position
+            status_constposmode = m.flags & ardupilotmega.EKF_CONST_POS_MODE > 0
+            # boolean: EKF's predicted horizontal position (absolute) estimate is good
+            status_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+
+            if self.status.armed:
+                self.ekf_ok = status_poshorizabs and not status_constposmode
+            else:
+                self.ekf_ok = status_poshorizabs or status_predposhorizabs
+
+            self.__on_change('ekf_ok')
 
         if self.api:
             for v in self.api.get_vehicles():
@@ -439,7 +455,7 @@ class MPFakeState:
                 if self.exiting:
                     pass
                 else:
-                    raise e
+                    raise
 
 
         t = Thread(target=mavlink_thread)

@@ -1,6 +1,6 @@
 import os
 from nose.tools import assert_equals, with_setup
-from dronekit.sitl import SITL
+from dronekit_sitl import SITL
 
 sitl = SITL('copter', '3.3-rc5')
 sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
