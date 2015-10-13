@@ -251,11 +251,21 @@ class MPFakeState:
             self.rngfnd_voltage = m.voltage
             self.__on_change('rangefinder')
         elif typ == "EKF_STATUS_REPORT":
+            # legacy check for dronekit-python for solo
             # use same check that ArduCopter::system.pde::position_ok() is using
+
+            # boolean: EKF's horizontal position (absolute) estimate is good
+            status_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
+            # boolean: EKF is in constant position mode and does not know it's absolute or relative position
+            status_constposmode = m.flags & ardupilotmega.EKF_CONST_POS_MODE > 0
+            # boolean: EKF's predicted horizontal position (absolute) estimate is good
+            status_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+
             if self.status.armed:
-                self.ekf_ok = ((m.flags&ardupilotmega.EKF_POS_HORIZ_ABS) > 0) and (m.flags&ardupilotmega.EKF_CONST_POS_MODE == 0)
+                self.ekf_ok = status_poshorizabs and not status_constposmode
             else:
-                self.ekf_ok = ((m.flags&ardupilotmega.EKF_POS_HORIZ_ABS) > 0) or ((m.flags&ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0)
+                self.ekf_ok = status_poshorizabs or status_predposhorizabs
+
             self.__on_change('ekf_ok')
 
         if self.api:
