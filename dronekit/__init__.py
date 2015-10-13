@@ -496,9 +496,3 @@ def connect(ip, await_params=False, status_printer=errprinter):
     state.status_printer = status_printer
     # api.init(state)
     return state.prepare(await_params=await_params).get_vehicles()[0]
-
-# import dronekit.sitl
-try:
-    import dronekit_sitl as sitl
-except:
-    pass
