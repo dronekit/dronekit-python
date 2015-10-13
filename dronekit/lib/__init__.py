@@ -117,9 +117,9 @@ class Attitude(object):
     def __str__(self):
         return "Attitude:pitch=%s,yaw=%s,roll=%s" % (self.pitch, self.yaw, self.roll)
 
-class Location(object):
+class LocationGlobal(object):
     """
-    A location object.
+    A global location object.
 
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
     The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
@@ -144,7 +144,25 @@ class Location(object):
         self.is_relative = is_relative
 
     def __str__(self):
-        return "Location:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
+        return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
+
+class LocationLocal(object):
+    """
+    A local location object.
+    
+    The north, east and down are relative to the EKF origin.  This is most likely the location where the vehicle was turned on.  
+    
+    :param north: Position north of the EKF origin in meters.
+    :param east: Position east of the EKF origin in meters.
+    :param down: Position down from the EKF origin in meters. (i.e. negative altitude in meters)
+    """
+    def __init__(self, north, east, down):
+        self.north = north
+        self.east = east
+        self.down = down
+        
+    def __str__(self):
+        return "LocationLocal:north=%s,east=%s,down=%s" % (self.north, self.east, self.down)
 
 class GPSInfo(object):
     """
@@ -427,9 +445,14 @@ class Vehicle(HasObservers):
 
     **Standard attributes & types:**
 
-    .. py:attribute:: location
+    .. py:attribute:: location_global
 
-        Current :py:class:`Location`.
+        Current :py:class:`LocationGlobal`.
+
+
+    .. py:attribute::local_local
+
+        Current :py:class:`LocationLocal`.
 
 
     .. py:attribute:: attitude

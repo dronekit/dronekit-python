@@ -121,6 +121,7 @@ class MPFakeState:
         self.lat = None
         self.lon = None
         self.alt = None
+
         self.vx = None
         self.vy = None
         self.vz = None
@@ -130,6 +131,17 @@ class MPFakeState:
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self._notify_attribute_listeners('location', 'velocity')
+
+        self.north = None
+        self.east = None
+        self.down = None
+
+        @message_default('LOCAL_POSITION_NED')
+        def listener(self, name, m):
+            self.north = m.x
+            self.east = m.y
+            self.down = m.z
+            self._MPFakeState__on_change('local_position')
 
         @message_default('GPS_RAW')
         def listener(self, name, m):
