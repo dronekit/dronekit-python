@@ -25,7 +25,8 @@ vehicle = connect(args.connect, await_params=True)
 
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
-print " Location: %s" % vehicle.location
+print " Global Location: %s" % v.location_global
+print " Local Location: %s" % v.location_local
 print " Attitude: %s" % vehicle.attitude
 print " Velocity: %s" % vehicle.velocity
 print " GPS: %s" % vehicle.gps_0

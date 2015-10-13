@@ -78,6 +78,10 @@ class MPFakeState:
         self.lon = None
         self.alt = None
 
+        self.north = None
+        self.east = None
+        self.down = None
+
         self.vx = None
         self.vy = None
         self.vz = None
@@ -193,6 +197,11 @@ class MPFakeState:
             (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self.__on_change('location', 'velocity')
+        elif typ == 'LOCAL_POSITION_NED':
+            self.north = m.x
+            self.east = m.y
+            self.down = m.z
+            self.__on_change('local_position')
         elif typ == 'GPS_RAW':
             pass # better to just use global position int
             # (self.lat, self.lon) = (m.lat, m.lon)
