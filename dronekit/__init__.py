@@ -56,7 +56,7 @@ from Queue import Queue
 from threading import Thread
 
 class MPFakeState:
-    def __init__(self, master, status_printer=None):
+    def __init__(self, master):
         self.master = master
         out_queue = Queue()
         # self.mav_thread = mav_thread(master, self)
@@ -106,11 +106,12 @@ class MPFakeState:
                     self.on_message(name, fn)
             return decorator
 
-        self.status_printer = status_printer
+        self.status_printer = None
 
         @message_default('STATUSTEXT')
         def listener(self, name, m):
-            self.status_printer(re.sub(r'(^|\n)', '>>> \1', m.text.rstrip()))
+            if self.status_printer:
+                self.status_printer(re.sub(r'(^|\n)', '>>> \1', m.text.rstrip()))
 
         self.lat = None
         self.lon = None
