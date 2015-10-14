@@ -32,6 +32,11 @@ class MPParameters(Parameters):
         self.wait_valid()
         self.__module.mpstate.functions.param_set(name, value)
 
+    def set(self, name, value, retries=3, await_valid=False):
+        if await_valid:
+            self.wait_valid()
+        return self.__module.mpstate.param_set(name, value, retries=retries)
+
     def wait_valid(self):
         '''Block the calling thread until parameters have been downloaded'''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
@@ -127,6 +132,9 @@ class MPVehicle(Vehicle):
         self._parameters = MPParameters(module)
         self._waypoints = None
         self.wpts_dirty = False
+
+    def close(self):
+        return self.__module.close()
 
     def flush(self):
         if self.wpts_dirty:

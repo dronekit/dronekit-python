@@ -302,16 +302,20 @@ class MPFakeState:
         name = name.upper()
         value = float(value)
         success = False
-        while retries > 0:
-            retries -= 1
+        remaining = retries
+        while True:
             self.master.param_set_send(name.upper(), value)
             tstart = time.time()
+            if remaining == 0:
+                break
+            remaining -= 1
             while time.time() - tstart < 1:
-                if self.mav_param[name] == value:
+                if name in self.mav_param and self.mav_param[name] == value:
                     return True
                 time.sleep(0.1)
         
-        errprinter("timeout setting parameter %s to %f" % (name, value))
+        if retries > 0:
+            errprinter("timeout setting parameter %s to %f" % (name, value))
         return False
 
     def __on_change(self, *args):
@@ -544,6 +548,7 @@ class MPFakeState:
         t = Thread(target=mavlink_thread)
         t.daemon = True
         t.start()
+        self.mavlink_thread = t
 
         # Wait for first heartbeat.
         while True:
@@ -572,6 +577,13 @@ class MPFakeState:
                 time.sleep(0.1)
 
         return self.api
+
+    def close(self):
+        # TODO this can block forever if parameters continue to be added
+        self.exiting = True
+        while not self.out_queue.empty():
+            time.sleep(0.1)
+        self.master.close()
 
 def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle):
     import dronekit.module.api as api
