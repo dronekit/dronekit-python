@@ -193,8 +193,11 @@ class MPFakeState:
             self.level = m.battery_remaining
             self._notify_attribute_listeners('battery')
 
+        self.system_status = None
+
         @message_default('HEARTBEAT')
         def listener(self, name, m):
+            self.system_status = m.system_status
             self._notify_attribute_listeners('mode', 'armed')
 
         self.last_waypoint = 0
