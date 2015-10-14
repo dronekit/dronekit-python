@@ -25,5 +25,6 @@ def test_timeout(connpath):
     assert_equals(type(newvalue), float)
     assert_equals(newvalue, value + 10)
 
-    # TODO once this issue is fixed
-    # assert end - start < 1000, 'time to set parameter was %s, over 1s' % (end - start,)
+    # Checks that time to set parameter was <1s
+    # see https://github.com/dronekit/dronekit-python/issues/12
+    assert end - start < 1000, 'time to set parameter was %s, over 1s' % (end - start,)
