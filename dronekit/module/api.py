@@ -200,6 +200,10 @@ class MPVehicle(Vehicle):
             self.__master.arducopter_disarm()
 
     @property
+    def system_status(self):
+        return self.__module.system_status
+
+    @property
     def groundspeed(self):
         return self.__module.groundspeed
 
