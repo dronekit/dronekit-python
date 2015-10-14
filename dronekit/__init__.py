@@ -548,6 +548,7 @@ class MPFakeState:
         t = Thread(target=mavlink_thread)
         t.daemon = True
         t.start()
+        self.mavlink_thread = t
 
         # Wait for first heartbeat.
         while True:
@@ -576,6 +577,13 @@ class MPFakeState:
                 time.sleep(0.1)
 
         return self.api
+
+    def close(self):
+        # TODO this can block forever if parameters continue to be added
+        self.exiting = True
+        while not self.out_queue.empty():
+            time.sleep(0.1)
+        self.master.close()
 
 def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle):
     import dronekit.module.api as api

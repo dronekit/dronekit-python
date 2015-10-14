@@ -133,6 +133,9 @@ class MPVehicle(Vehicle):
         self._waypoints = None
         self.wpts_dirty = False
 
+    def close(self):
+        return self.__module.close()
+
     def flush(self):
         if self.wpts_dirty:
             self.__module.send_all_waypoints()
