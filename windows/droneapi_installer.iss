@@ -32,7 +32,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 Source: "..\dronekit\*"; DestDir: "{code:GetMAVProxyPath}\dronekit"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\examples\*"; DestDir: "{code:GetMAVProxyPath}\examples"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "google\*"; DestDir: "{code:GetMAVProxyPath}\google"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
