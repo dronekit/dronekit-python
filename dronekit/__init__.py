@@ -8,6 +8,7 @@ import re
 from pymavlink import mavutil, mavwp
 from Queue import Empty
 from pymavlink.dialects.v10 import ardupilotmega
+import types
 
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
@@ -18,12 +19,15 @@ else:
 
 import dronekit.module.api as api
 
+# Public exports
+Vehicle = api.MPVehicle
+
 def errprinter(*args):
     print(*args, file=sys.stderr)
 
 class FakeAPI:
     def __init__(self, module):
-        self.__vehicle = api.MPVehicle(module)
+        self.__vehicle = module.vehicle_class(module)
         self.exit = False
 
     def get_vehicles(self, query=None):
@@ -55,7 +59,9 @@ from Queue import Queue
 from threading import Thread
 
 class MPFakeState:
-    def __init__(self, master, status_printer=None):
+    def __init__(self, master, vehicle_class=Vehicle):
+        self.vehicle_class = vehicle_class
+
         self.master = master
         out_queue = Queue()
         # self.mav_thread = mav_thread(master, self)
@@ -74,45 +80,6 @@ class MPFakeState:
         self.target_system = 0
         self.target_component = 0
 
-        self.lat = None
-        self.lon = None
-        self.alt = None
-
-        self.vx = None
-        self.vy = None
-        self.vz = None
-
-        self.airspeed = None
-        self.groundspeed = None
-
-        self.pitch = None
-        self.yaw = None
-        self.roll = None
-        self.pitchspeed = None
-        self.yawspeed = None
-        self.rollspeed = None
-
-        self.mount_pitch = None
-        self.mount_yaw = None
-        self.mount_roll = None
-
-        self.voltage = -1
-        self.current = -1
-        self.level = -1
-
-        self.rc_readback = {}
-
-        self.last_waypoint = 0
-
-        self.eph = None
-        self.epv = None
-        self.satellites_visible = None
-        self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
-        self.ekf_ok = False
-
-        self.rngfnd_distance = None
-        self.rngfnd_voltage = None
-
         self.status = type('MPStatus',(object,),{
             'flightmode': 'AUTO',
             'armed': False,
@@ -125,11 +92,175 @@ class MPFakeState:
         self.functions = self
         self.mpstate.settings = self
 
-        self.status_printer = status_printer
-
         # waypoints
         self.wploader = mavwp.MAVWPLoader()
         self.wp_loaded = True
+
+        # Attaches message listeners.
+        self.message_listeners = dict()
+
+        def message_default(name):
+            """
+            Decorator for default message handlers.
+            """
+            def decorator(fn):
+                if isinstance(name, list):
+                    for n in name:
+                        self.on_message(n, fn)
+                else:
+                    self.on_message(name, fn)
+            return decorator
+
+        self.status_printer = None
+
+        @message_default('STATUSTEXT')
+        def listener(self, name, m):
+            if self.status_printer:
+                self.status_printer(re.sub(r'(^|\n)', '>>> \1', m.text.rstrip()))
+
+        self.lat = None
+        self.lon = None
+        self.alt = None
+        self.vx = None
+        self.vy = None
+        self.vz = None
+        
+        @message_default('GLOBAL_POSITION_INT')
+        def listener(self, name, m):
+            (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
+            self._notify_attribute_listeners('location', 'velocity')
+
+        @message_default('GPS_RAW')
+        def listener(self, name, m):
+            # (self.lat, self.lon) = (m.lat, m.lon)
+            # self.__on_change('location')
+            # better to just use global position int
+            pass 
+
+        self.eph = None
+        self.epv = None
+        self.satellites_visible = None
+        self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
+        
+        @message_default('GPS_RAW_INT')
+        def listener(self, name, m):
+            # (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            self.eph = m.eph
+            self.epv = m.epv
+            self.satellites_visible = m.satellites_visible
+            self.fix_type = m.fix_type
+            self._notify_attribute_listeners('gps_0')
+
+        self.heading = None
+        # self.alt = None
+        self.airspeed = None
+        self.groundspeed = None
+        
+        @message_default('VFR_HUD')
+        def listener(self, name, m):
+            self.heading = m.heading
+            self.alt = m.alt
+            self.airspeed = m.airspeed
+            self.groundspeed = m.groundspeed
+            self._notify_attribute_listeners('location', 'airspeed', 'groundspeed')
+
+        self.pitch = None
+        self.yaw = None
+        self.roll = None
+        self.pitchspeed = None
+        self.yawspeed = None
+        self.rollspeed = None
+        
+        @message_default('ATTITUDE')
+        def listener(self, name, m):
+            self.pitch = m.pitch
+            self.yaw = m.yaw
+            self.roll = m.roll
+            self.pitchspeed = m.pitchspeed
+            self.yawspeed = m.yawspeed
+            self.rollspeed = m.rollspeed
+            self._notify_attribute_listeners('attitude')
+
+        self.voltage = -1
+        self.current = -1
+        self.level = -1
+        
+        @message_default('SYS_STATUS')
+        def listener(self, name, m):
+            self.voltage = m.voltage_battery
+            self.current = m.current_battery
+            self.level = m.battery_remaining
+            self._notify_attribute_listeners('battery')
+
+        @message_default('HEARTBEAT')
+        def listener(self, name, m):
+            self._notify_attribute_listeners('mode', 'armed')
+
+        self.last_waypoint = 0
+
+        @message_default(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
+        def listener(self, name, m):
+            self.last_waypoint = m.seq
+
+        self.rc_readback = {}
+
+        @message_default('RC_CHANNELS_RAW')
+        def listener(self, name, m):
+            def set(chnum, v):
+                '''Private utility for handling rc channel messages'''
+                # use port to allow ch nums greater than 8
+                self.rc_readback[str(m.port * 8 + chnum)] = v
+
+            set(1, m.chan1_raw)
+            set(2, m.chan2_raw)
+            set(3, m.chan3_raw)
+            set(4, m.chan4_raw)
+            set(5, m.chan5_raw)
+            set(6, m.chan6_raw)
+            set(7, m.chan7_raw)
+            set(8, m.chan8_raw)
+
+        self.mount_pitch = None
+        self.mount_yaw = None
+        self.mount_roll = None
+
+        @message_default('MOUNT_STATUS')
+        def listener(self, name, m):
+            self.mount_pitch = m.pointing_a / 100
+            self.mount_roll = m.pointing_b / 100
+            self.mount_yaw = m.pointing_c / 100
+            self._notify_attribute_listeners('mount')
+
+        self.rngfnd_distance = None
+        self.rngfnd_voltage = None
+
+        @message_default('RANGEFINDER')
+        def listener(self, name, m):
+            self.rngfnd_distance = m.distance
+            self.rngfnd_voltage = m.voltage
+            self._notify_attribute_listeners('rangefinder')
+
+        self.ekf_ok = False
+
+        @message_default('EKF_STATUS_REPORT')
+        def listener(self, name, m):
+            # legacy check for dronekit-python for solo
+            # use same check that ArduCopter::system.pde::position_ok() is using
+
+            # boolean: EKF's horizontal position (absolute) estimate is good
+            status_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
+            # boolean: EKF is in constant position mode and does not know it's absolute or relative position
+            status_constposmode = m.flags & ardupilotmega.EKF_CONST_POS_MODE > 0
+            # boolean: EKF's predicted horizontal position (absolute) estimate is good
+            status_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+
+            if self.status.armed:
+                self.ekf_ok = status_poshorizabs and not status_constposmode
+            else:
+                self.ekf_ok = status_poshorizabs or status_predposhorizabs
+
+            self._notify_attribute_listeners('ekf_ok')
 
     def fetch(self):
         """
@@ -185,88 +316,37 @@ class MPFakeState:
             for v in self.api.get_vehicles():
                 v.notify_observers(a)
 
+    def _notify_attribute_listeners(self, *args):
+        return self.__on_change(*args)
+
+    def on_message(self, name, fn):
+        """
+        Adds a message listener.
+        """
+        name = str(name)
+        if name not in self.message_listeners:
+            self.message_listeners[name] = []
+        if fn not in self.message_listeners[name]:
+            self.message_listeners[name].append(fn)
+
+    def remove_message_listener(self, name, fn):
+        """
+        Removes a message listener.
+        """
+        name = str(name)
+        if name in self.message_listeners:
+            self.message_listeners[name].remove(fn)
+            if len(self.message_listeners[name]) == 0:
+                del self.message_listeners[name]
+
     def mavlink_packet(self, m):
         typ = m.get_type()
-        if typ == 'STATUSTEXT':
-            print(re.sub(r'(^|\n)', '>>> \1', m.text.rstrip()))
-        elif typ == 'GLOBAL_POSITION_INT':
-            (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
-            self.__on_change('location', 'velocity')
-        elif typ == 'GPS_RAW':
-            pass # better to just use global position int
-            # (self.lat, self.lon) = (m.lat, m.lon)
-            # self.__on_change('location')
-        elif typ == 'GPS_RAW_INT':
-            # (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self.eph = m.eph
-            self.epv = m.epv
-            self.satellites_visible = m.satellites_visible
-            self.fix_type = m.fix_type
-            self.__on_change('gps_0')
-        elif typ == "VFR_HUD":
-            self.heading = m.heading
-            self.alt = m.alt
-            self.airspeed = m.airspeed
-            self.groundspeed = m.groundspeed
-            self.__on_change('location', 'airspeed', 'groundspeed')
-        elif typ == "ATTITUDE":
-            self.pitch = m.pitch
-            self.yaw = m.yaw
-            self.roll = m.roll
-            self.pitchspeed = m.pitchspeed
-            self.yawspeed = m.yawspeed
-            self.rollspeed = m.rollspeed
-            self.__on_change('attitude')
-        elif typ == "SYS_STATUS":
-            self.voltage = m.voltage_battery
-            self.current = m.current_battery
-            self.level = m.battery_remaining
-            self.__on_change('battery')
-        elif typ == "HEARTBEAT":
-            self.__on_change('mode', 'armed')
-        elif typ in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
-            self.last_waypoint = m.seq
-        elif typ == "RC_CHANNELS_RAW":
-            def set(chnum, v):
-                '''Private utility for handling rc channel messages'''
-                # use port to allow ch nums greater than 8
-                self.rc_readback[str(m.port * 8 + chnum)] = v
 
-            set(1, m.chan1_raw)
-            set(2, m.chan2_raw)
-            set(3, m.chan3_raw)
-            set(4, m.chan4_raw)
-            set(5, m.chan5_raw)
-            set(6, m.chan6_raw)
-            set(7, m.chan7_raw)
-            set(8, m.chan8_raw)
-        elif typ == "MOUNT_STATUS":
-            self.mount_pitch = m.pointing_a / 100
-            self.mount_roll = m.pointing_b / 100
-            self.mount_yaw = m.pointing_c / 100
-            self.__on_change('mount')
-        elif typ == "RANGEFINDER":
-            self.rngfnd_distance = m.distance
-            self.rngfnd_voltage = m.voltage
-            self.__on_change('rangefinder')
-        elif typ == "EKF_STATUS_REPORT":
-            # legacy check for dronekit-python for solo
-            # use same check that ArduCopter::system.pde::position_ok() is using
-
-            # boolean: EKF's horizontal position (absolute) estimate is good
-            status_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
-            # boolean: EKF is in constant position mode and does not know it's absolute or relative position
-            status_constposmode = m.flags & ardupilotmega.EKF_CONST_POS_MODE > 0
-            # boolean: EKF's predicted horizontal position (absolute) estimate is good
-            status_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
-
-            if self.status.armed:
-                self.ekf_ok = status_poshorizabs and not status_constposmode
-            else:
-                self.ekf_ok = status_poshorizabs or status_predposhorizabs
-
-            self.__on_change('ekf_ok')
+        # Call message listeners.
+        for fn in self.message_listeners.get(typ, []):
+            fn(self, typ, m)
+        for fn in self.message_listeners.get('*', []):
+            fn(self, typ, m)
 
         if self.api:
             for v in self.api.get_vehicles():
@@ -490,9 +570,9 @@ class MPFakeState:
 
         return self.api
 
-def connect(ip, await_params=False, status_printer=errprinter):
+def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle):
     import dronekit.module.api as api
-    state = MPFakeState(mavutil.mavlink_connection(ip))
+    state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=vehicle_class)
     state.status_printer = status_printer
     # api.init(state)
     return state.prepare(await_params=await_params).get_vehicles()[0]
