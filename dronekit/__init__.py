@@ -302,16 +302,20 @@ class MPFakeState:
         name = name.upper()
         value = float(value)
         success = False
-        while retries > 0:
-            retries -= 1
+        remaining = retries
+        while True:
             self.master.param_set_send(name.upper(), value)
             tstart = time.time()
+            if remaining == 0:
+                break
+            remaining -= 1
             while time.time() - tstart < 1:
-                if self.mav_param[name] == value:
+                if name in self.mav_param and self.mav_param[name] == value:
                     return True
                 time.sleep(0.1)
         
-        errprinter("timeout setting parameter %s to %f" % (name, value))
+        if retries > 0:
+            errprinter("timeout setting parameter %s to %f" % (name, value))
         return False
 
     def __on_change(self, *args):
