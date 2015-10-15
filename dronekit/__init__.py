@@ -586,7 +586,7 @@ class MPFakeState:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=None):
+def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4):
     import dronekit.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=vehicle_class)
     state.status_printer = status_printer
