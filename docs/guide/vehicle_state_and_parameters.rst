@@ -9,8 +9,7 @@ The :py:class:`Vehicle <dronekit.lib.Vehicle>` class exposes *most* state inform
 are accessed though named elements of :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`. 
 
 This topic explains how to get, set and observe vehicle state and parameter information (including getting the 
-:ref:`Home location <vehicle_state_home_location>`). It also describes a few APIs that  
-:ref:`should be used with caution <vehicle_state_disrecommended>`.
+:ref:`Home location <vehicle_state_home_location>`).
 
 .. tip:: You can test most of the code in this topic by running the :ref:`Vehicle State <example-vehicle-state>` example.
 
@@ -136,7 +135,8 @@ Observers are added using :py:func:`Vehicle.add_attribute_observer() <dronekit.l
 specifying the name of the attribute to observe and a callback function. The same string is passed to the callback
 when it is notified. Observers are removed using :py:func:`remove_attribute_observer() <dronekit.lib.Vehicle.remove_attribute_observer>`.
 
-The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <dronekit.lib.Vehicle.location>` attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
+The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <dronekit.lib.Vehicle.location>` 
+attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
 
 .. code:: python
      
@@ -145,17 +145,17 @@ The code snippet below shows how to add (and remove) a callback function to obse
         print " CALLBACK: Location changed to: ", vehicle.location
 
     # Add a callback. The first parameter the name of the observed attribute (a string).
-    vehicle.add_attribute_observer('location', location_callback)	
+    vehicle.add_attribute_observer('location', location_callback)
 
     # Wait 2s so callback can be notified before the observer is removed
     time.sleep(2)
 
     # Remove observer - specifying the attribute and previously registered callback function
-    vehicle.remove_attribute_observer('location', location_callback)	
+    vehicle.remove_attribute_observer('location', location_callback)
 
 
-The callback is triggered `every time a message is received from the vehicle <https://github.com/dronekit/dronekit-python/issues/60>`_ 
-(whether or not the observed attribute changes). Callback code may therefore choose to cache the result and only report changes. 
+The callback is triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
+Callback code may therefore choose to cache the result and only report changes. 
 For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
 
 .. code:: python
@@ -170,7 +170,7 @@ For example, the following code can be used in the callback to only print output
         print " Rangefinder (metres): %s" % last_rangefinder_distance
 
 
-    vehicle.add_attribute_observer('rangefinder', rangefinder_callback)	
+    vehicle.add_attribute_observer('rangefinder', rangefinder_callback)
 
 
 
@@ -260,52 +260,6 @@ The returned value is a :py:class:`Command <dronekit.lib.Command>` object.
 
 
 
-.. _vehicle_state_disrecommended:
-
-Discommended APIs
-=================
-
-This section describes methods that we recommend you do not use! In general they are provided to handle the (hopefully rare)
-cases where the "proper" API is missing some needed functionality.
-
-If you have to use these methods please `provide feedback explaining why <https://github.com/dronekit/dronekit-python/issues>`_.
-
-
-.. _vehicle_state_set_mavlink_callback:
-
-MAVLink Message Observer
-------------------------
-
-The :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` method provides asynchronous 
-notification when any *MAVLink* packet is received by this vehicle. The notification can be stopped by 
-calling :py:func:`unset_mavlink_callback() <dronekit.lib.Vehicle.unset_mavlink_callback>` to remove the callback.
-
-
-.. tip::
-
-    Use :ref:`attribute observers <vehicle_state_observe_attributes>` instead of this method where possible. 
-
-
-The code snippet below shows how to set and clear a "demo" callback function as the callback handler:
-
-.. code:: python
-
-    # Demo callback handler for raw MAVLink messages
-    def mavrx_debug_handler(message):
-        print "Received", message
-
-    # Set MAVLink callback handler (after getting Vehicle instance)                     
-    vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-    # Wait to allow the callback to be invoked before it is removed. 
-    time.sleep(1)
-
-    # Remove the MAVLink callback handler. Callback will not be
-    # called after this point.
-    vehicle.unset_mavlink_callback()
-
-
-
 .. _api-information-known-issues:
 
 Known issues
@@ -313,11 +267,9 @@ Known issues
 
 Below are a number of bugs and known issues related to vehicle state and settings:
 
-* `#12 Timeout error when setting a parameter <https://github.com/dronekit/dronekit-python/issues/12>`_
 * `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/dronekit/dronekit-python/issues/60>`_
 * `#107 Add implementation for observer methods in Parameter class <https://github.com/dronekit/dronekit-python/issues/107>`_ 
 * `#114 DroneKit has no method for detecting command failure <https://github.com/dronekit/dronekit-python/issues/114>`_
-* `#115 No way to disable the callback set_mavlink_callback <https://github.com/dronekit/dronekit-python/issues/115>`_
 
 
 Other API issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 

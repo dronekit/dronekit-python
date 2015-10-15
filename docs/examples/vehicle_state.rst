@@ -49,63 +49,56 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    MAV> api start vehicle_state.py
-    STABILIZE>
+    \dronekit-python\examples\vehicle_state>vehicle_state.py
+
+    Connecting to vehicle on: 127.0.0.1:14550
+    >>> ☺APM:Copter V3.3-rc1 (d66eec53)
+    >>> ☺Frame: QUAD
+
+    Accumulating vehicle attribute messages (2s)
 
     Get all vehicle attribute values:
-     Location:  Attitude: Attitude:pitch=-0.00405988190323,yaw=-0.0973932668567,roll=-0.00393210304901
-     Velocity: [0.06, -0.07, 0.0]
+     Location: Location:lat=-35.3632601,lon=149.1652279,alt=-0.00999999977648,is_relative=False
+     Attitude: Attitude:pitch=0.00486609805375,yaw=0.489637970924,roll=0.00645932834595
+     Velocity: [-0.12, 0.06, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery voltage: 12590, current: 0, level: 99
-     Rangefinder: Rangefinder: distance=0.189999997616, voltage=0.0190000012517
-     Rangefinder distance: 0.189999997616
-     Rangefinder voltage: 0.0190000012517
+     Battery: Battery:voltage=0.0,current=None,level=None
+     Rangefinder: Rangefinder: distance=None, voltage=None
+     Rangefinder distance: None
+     Rangefinder voltage: None
      Mode: STABILIZE
      Armed: False
+
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
-    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
-    GUIDED> Mode GUIDED
+
     Set Vehicle.armed=True (currently: False)
      Waiting for arming...
-    APM: ARMING MOTORS
-    APM: Initialising APM...
-    Got MAVLink msg: COMMAND_ACK {command : 400, result : 0}
-    ARMED
+    >>> ☺ARMING MOTORS
+    >>> ☺Initialising APM...
+     Waiting for arming...
 
     Add mode attribute observer for Vehicle.mode
      Set mode=STABILIZE (currently: GUIDED)
      Wait 2s so callback invoked before observer removed
-    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
-    STABILIZE> Mode STABILIZE
+     CALLBACK: Mode changed to:  STABILIZE
      CALLBACK: Mode changed to:  STABILIZE
 
     Get home location
-    Requesting 0 waypoints t=Fri May 15 11:35:58 2015 now=Fri May 15 11:35:58 2015
-     Home WP: MISSION_ITEM {target_system : 255, target_component : 0, seq : 0, frame : 0, command : 16, current : 0, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x : -35.3632621765, y : 149.165237427, z : 583.729980469}
+     Home WP: MISSION_ITEM {target_system : 255, target_component : 0, seq : 0, frame : 0, command : 16, current : 0, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x : -35.3632583618, y : 149.165222168, z : 583.729980469}
 
     Read vehicle param 'THR_MIN': 130.0
     Write vehicle param 'THR_MIN' : 10
-    timeout setting THR_MIN to 10.000000
     Read new value of param 'THR_MIN': 10.0
 
-    Set MAVLink callback handler (start receiving all MAVLink messages)
-    Wait 1s so mavrx_debug_handler has a chance to be called before it is removed
-    Raw MAVLink message:  RAW_IMU {time_usec : 894620000, xacc : -3, yacc : 10, zacc : -999, xgyro : 1, ygyro : 0, zgyro : 1, xmag : 153, ymag : 52, zmag : -364}
-    ...
-    Raw MAVLink message:  SCALED_PRESSURE {time_boot_ms : 895340, press_abs : 945.038024902, press_diff : 0.0, temperature : 2600}
-    Remove the MAVLink callback handler (stop getting messages)
-
     Reset vehicle attributes/parameters and exit
-    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
-    APM: DISARMING MOTORS
-    Got MAVLink msg: COMMAND_ACK {command : 400, result : 0}
-    DISARMED
-    timeout setting THR_MIN to 130.000000
-    APIThread-0 exiting...
+    >>> ☺DISARMING MOTORS
+
+    Close vehicle object
+
 
 
 

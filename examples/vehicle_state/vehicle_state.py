@@ -1,7 +1,7 @@
 """
 vehicle_state.py: 
 
-Demonstrates how to get and set vehicle state, parameter and channel-override information, 
+Demonstrates how to get and set vehicle state and parameter information, 
 and how to observe vehicle attribute (state) changes.
 
 Full documentation is provided at http://python.dronekit.io/examples/vehicle_state.html
@@ -20,8 +20,11 @@ args = parser.parse_args()
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % args.connect
+print "\nConnecting to vehicle on: %s" % args.connect
 vehicle = connect(args.connect, await_params=True)
+
+print "\nAccumulating vehicle attribute messages (2s)"
+time.sleep(2)
 
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
@@ -42,14 +45,14 @@ print " Armed: %s" % vehicle.armed    # settable
 
 
 # Set vehicle mode and armed attributes (the only settable attributes)
-print "Set Vehicle.mode=GUIDED (currently: %s)" % vehicle.mode.name 
+print "\nSet Vehicle.mode=GUIDED (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("GUIDED")
 vehicle.flush()  # Flush to guarantee that previous writes to the vehicle have taken place
 while not vehicle.mode.name=='GUIDED':  #Wait until mode has changed
     print " Waiting for mode change ..."
     time.sleep(1)
 
-print "Set Vehicle.armed=True (currently: %s)" % vehicle.armed 
+print "\nSet Vehicle.armed=True (currently: %s)" % vehicle.armed 
 vehicle.armed = True
 vehicle.flush()
 while not vehicle.armed:
@@ -91,22 +94,14 @@ vehicle.flush()
 print "Read new value of param 'THR_MIN': %s" % vehicle.parameters['THR_MIN']
 
 
-# Demo callback handler for raw MAVLink messages
-def mavrx_debug_handler(message):
-    print "Raw MAVLink message: ", message
-
-print "\nSet MAVLink callback handler (start receiving all MAVLink messages)"                 
-vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-print "Wait 1s so mavrx_debug_handler has a chance to be called before it is removed"
-time.sleep(1)
-
-print "Remove the MAVLink callback handler (stop getting messages)"  
-vehicle.unset_mavlink_callback()
-
 ## Reset variables to sensible values.
 print "\nReset vehicle attributes/parameters and exit"
 vehicle.mode = VehicleMode("STABILIZE")
 vehicle.armed = False
 vehicle.parameters['THR_MIN']=130
 vehicle.flush()
+
+
+#Close vehicle object before exiting script
+print "\nClose vehicle object"
+vehicle.close()
