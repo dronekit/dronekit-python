@@ -142,6 +142,10 @@ class LocationGlobal(object):
         self.lon = lon
         self.alt = alt
         self.is_relative = is_relative
+        
+        # This is for backward compatibility.
+        self.local_frame = None
+        self.global_fame = None
 
     def __str__(self):
         return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
@@ -445,12 +449,12 @@ class Vehicle(HasObservers):
 
     **Standard attributes & types:**
 
-    .. py:attribute:: location_global
+    .. py:attribute:: location.global_frame
 
         Current :py:class:`LocationGlobal`.
 
 
-    .. py:attribute::local_local
+    .. py:attribute:: location.local_frame
 
         Current :py:class:`LocationLocal`.
 

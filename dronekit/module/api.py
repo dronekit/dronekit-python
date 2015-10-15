@@ -173,12 +173,12 @@ class MPVehicle(Vehicle):
         self.__master.set_mode(self.__mode_mapping[v.name])
 
     @property
-    def location_global(self):
-        return LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
-        
-    @property
-    def location_local(self):
-        return LocationLocal(self.__module.north, self.__module.east, self.__module.down)
+    def location(self):
+        # For backward compatibility, this is (itself) a LocationLocal object.
+        ret = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        ret.local_frame = LocationLocal(self.__module.north, self.__module.east, self.__module.down)
+        ret.global_frame = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        return ret
 
     @property
     def battery(self):

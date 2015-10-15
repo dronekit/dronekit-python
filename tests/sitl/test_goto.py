@@ -74,7 +74,7 @@ def test_goto(connpath):
         while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.
-            if vehicle.location_global.alt >= aTargetAltitude * 0.95: 
+            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95: 
                 # print "Reached target altitude"
                 break
 

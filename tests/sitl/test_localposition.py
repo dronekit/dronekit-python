@@ -25,6 +25,6 @@ def test_timeout(connpath):
     time.sleep(1)
     
     #north, east, and down are initialized to None.  Any other value suggests that a LOCAL_POSITION_NED was received and parsed.
-    assert_not_equals(v.location_local.north, None)
-    assert_not_equals(v.location_local.east, None)
-    assert_not_equals(v.location_local.down, None)
+    assert_not_equals(v.location.local_frame.north, None)
+    assert_not_equals(v.location.local_frame.east, None)
+    assert_not_equals(v.location.local_frame.down, None)

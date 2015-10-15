@@ -20,8 +20,8 @@ def demo(local_connect):
 
     # Get all vehicle attributes (state)
     print "\nGet all vehicle attribute values:"
-    print " Global Location: %s" % v.location_global
-    print " Local Location: %s" % v.location_local
+    print " Global Location: %s" % v.location.global_frame
+    print " Local Location: %s" % v.location.local_frame
     print " Attitude: %s" % v.attitude
     print " Velocity: %s" % v.velocity
     print " GPS: %s" % v.gps_0
