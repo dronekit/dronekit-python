@@ -360,7 +360,7 @@ class MPFakeState:
                 if v.mavrx_callback:
                     v.mavrx_callback(m)
 
-    def prepare(self, await_params=False):
+    def prepare(self, await_params=False, rate=None):
         # errprinter('Await heartbeat.')
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
@@ -560,7 +560,8 @@ class MPFakeState:
         heartbeat_started = True
 
         # Request a list of all parameters.
-        request_data_stream_send(self.master)
+        if rate != None:
+            request_data_stream_send(self.master, rate=rate)
         while True:
             # This fn actually rate limits itself to every 2s.
             # Just retry with persistence to get our first param stream.
@@ -585,9 +586,9 @@ class MPFakeState:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle):
+def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4):
     import dronekit.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=vehicle_class)
     state.status_printer = status_printer
     # api.init(state)
-    return state.prepare(await_params=await_params).get_vehicles()[0]
+    return state.prepare(await_params=await_params, rate=rate).get_vehicles()[0]
