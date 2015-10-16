@@ -22,8 +22,8 @@ Additional information is provided in the guide topic :ref:`mavlink_messages`.
 Running the example
 ===================
 
-The vehicle and DroneKit should be set up as described in :ref:`get-started`. It can be run as described in
-:doc:`running_examples`. 
+The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
+and DroneKit have been set up as described in :ref:`get-started`).
 
 In summary, after cloning the repository:
 
@@ -118,20 +118,18 @@ representation for printing the object.
             """
             return "RAW_IMU: time_boot_us={},xacc={},yacc={},zacc={},xgyro={},ygyro={},zgyro={},xmag={},ymag={},zmag={}".format(self.time_boot_us, self.xacc,     self.yacc,self.zacc,self.xgyro,self.ygyro,self.zgyro,self.xmag,self.ymag,self.zmag)
 
-The script should then create an instance of the class and add it as an attribute to the vehicle object retrieved from the local connection.
+The script should then create an instance of the class and add it as an attribute to the vehicle object retrieved from the connection.
 All values in the new attribute should be set to ``None`` so that it is obvious to users when no messages have been received. 
 
 .. code:: python
 
-    # Get an instance of the API endpoint
-    api = local_connect()
-    # Get the connected vehicle (currently only one vehicle can be returned).
-    vehicle = api.get_vehicles()[0]
+    # Connect to the Vehicle passed in as args.connect
+    vehicle = connect(args.connect, await_params=True)
 
     #Create an Vehicle.raw_imu object and set all values to None.
     vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
     
-We can set a callback to intercept MAVLink messages using :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` 
+We set a callback to intercept all MAVLink messages using :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` 
 as shown below. 
 
 .. code:: python
@@ -189,11 +187,8 @@ You can query the attribute to get any of the values, and even add an observer a
 
 .. note::
 
-    It is not possible to reliably use this approach to create independent modules because:
-
-    * Only one MAVLink callback can be set at a time in the running program (``set_mavlink_callback()``) 
-    * There is no reliable way to import modules without adding them properly to the Python environment.
-
+    It is not possible to reliably use this approach to create independent modules because only one 
+    MAVLink callback can be set at a time in the running program (``set_mavlink_callback()``) 
 
 
 Known issues
