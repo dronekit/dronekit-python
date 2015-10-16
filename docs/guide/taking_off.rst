@@ -4,8 +4,9 @@
 Taking Off
 ==========
 
-This article explains how to get your *Copter* to take off. At high level, the steps are: set the mode to ``GUIDED``, 
-arm the vehicle, and then call :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`.  
+This article explains how to get your *Copter* to take off. At high level, the steps are: check that the vehicle
+is able to arm (can pass pre-arm checks), set the mode to ``GUIDED``, arm the vehicle, 
+and then call :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`.  
 
 .. todo:: 
 
@@ -23,8 +24,8 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
 
 .. code-block:: python
 
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
+    # Connect to the Vehicle (in this case a simulator running the same computer)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
 
     def arm_and_takeoff(aTargetAltitude):
         """
@@ -39,14 +40,14 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         while vehicle.gps_0.fix_type < 2:
             print "Waiting for GPS...:", vehicle.gps_0.fix_type
             time.sleep(1)
-		
+
         print "Arming motors"
         # Copter should arm in GUIDED mode
         vehicle.mode    = VehicleMode("GUIDED")
         vehicle.armed   = True
         vehicle.flush()
 
-        while not vehicle.armed and not api.exit:
+        while not vehicle.armed:
             print " Waiting for arming..."
             time.sleep(1)
 
@@ -56,15 +57,15 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
 
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
         #  after Vehicle.commands.takeoff will execute immediately).
-        while not api.exit:
+        while True:
             print " Altitude: ", vehicle.location.alt
             if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
                 print "Reached target altitude"
                 break;
             time.sleep(1)
 
-    arm_and_takeoff(3)
-	
+    arm_and_takeoff(20)
+
 
 The function first performs some pre-arm checks.
 
@@ -90,14 +91,14 @@ to guarantee that the commands have been sent, and then wait until arming is con
 :py:func:`takeoff <dronekit.lib.CommandSequence.takeoff>` command.
 
 .. code-block:: python
-	
+
     print "Arming motors"
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
     vehicle.flush()
 
-    while not vehicle.armed and not api.exit:
+    while not vehicle.armed:
         print " Waiting for arming..."
         time.sleep(1)
 
@@ -111,15 +112,15 @@ horizontally before it reaches a safe height. In addition, there is no message s
 to inform the client code that the target altitude has been reached.
 
 To address these issues, the function waits until the vehicle reaches a specified height before returning. If you're not
-so concerned about reaching a particular height, a simpler implementation might just "wait" for a few seconds.
-	
-.. code-block:: python	
+concerned about reaching a particular height, a simpler implementation might just "wait" for a few seconds.
 
-    while not api.exit:
-        print " Altitude: ", vehicle.location.alt
-        if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
-            print "Reached target altitude"
-            break;
-        time.sleep(1)
+.. code-block:: python
+
+        while True:
+            print " Altitude: ", vehicle.location.alt
+            if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+                print "Reached target altitude"
+                break;
+            time.sleep(1)
 
 When the function returns the app can continue in ``GUIDED`` mode or switch to ``AUTO`` mode to start a mission.
