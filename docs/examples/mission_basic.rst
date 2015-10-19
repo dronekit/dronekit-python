@@ -16,27 +16,49 @@ should be used.
 Running the example
 ===================
 
-The vehicle and DroneKit should be set up as described in :ref:`get-started`.
+The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
+and DroneKit have been set up as described in :ref:`get-started`).
 
-If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
-that the example can run. 
+If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
+that the example can run.
 
-Once MAVProxy is running and the API is loaded, you can start the example by typing: ``api start mission_basic.py``.
+In summary, after cloning the repository:
 
-.. note:: 
+#. Navigate to the example folder as shown:
 
-    The command above assumes you started the *MAVProxy* prompt in a directory containing the example script. If not, 
-    you will have to specify the full path to the script (something like):
-    ``api start /home/user/git/dronekit-python/examples/mission_basic/mission_basic.py``.
+   .. code-block:: bash
+
+       cd dronekit-python\examples\mission_basic\
 
 
-On the *MAVProxy* console you should see (something like):
+#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+
+   .. code-block:: bash
+
+       python mission_basic.py --connect 127.0.0.1:14550
+
+   .. note::
+   
+       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
+       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+
+       
+.. tip::
+
+    It is more interesting to watch the example above on a map than the console. The topic :ref:`viewing_uav_on_map` 
+    explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
+
+On the command prompt you should see (something like):
+
 
 .. code:: bash
 
-    MAV> api start mission_basic.py
-    STABILIZE> Clear the current mission
-           Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
+    \dronekit-python\examples\mission_basic>mission_basic.py
+    Connecting to vehicle on: 127.0.0.1:14550
+    >>> ☺APM:Copter V3.4-dev (e0810c2e)
+    >>> ☺Frame: QUAD
+    Clear the current mission
+
     Requesting 0 waypoints t=Wed Jul 29 21:27:58 2015 now=Wed Jul 29 21:27:58 2015
     Create a new mission
     Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
@@ -151,8 +173,18 @@ When the vehicle starts the 5th command the loop breaks and the mode is set to R
 Known issues
 ============
 
-This example works around the :ref:`known issues in the API <auto_mode_mission_known_issues>`. 
-Provided that the vehicle is connected and able to arm, it should run through to completion.
+This example fails in DroneKit 2.0.0b6 (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_).
+
+
+.. todo:: 
+
+    This is blocked by https://github.com/dronekit/dronekit-python/issues/355 (vehicle.commands.clear not working).
+    The code output in "running the example needs to be updated once this runs cleanly.
+    The above text for the error needs to be replaced with original text 
+       > "This example works around the :ref:`known issues in the API <auto_mode_mission_known_issues>`. 
+       > Provided that the vehicle is connected and able to arm, it should run through to completion."
+    Need to check all that clearing is still strictly necessary in DKPY2 which handles race conditions more gracefully.
+    Add image of waypoints /flight for top of page.
 
 
 
@@ -162,7 +194,7 @@ Source code
 ===========
 
 The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/mission_basic/mission_basic.py>`_):
-	
+
 .. literalinclude:: ../../examples/mission_basic/mission_basic.py
    :language: python
-	
+

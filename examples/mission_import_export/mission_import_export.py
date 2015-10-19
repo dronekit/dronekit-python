@@ -8,14 +8,25 @@ into a list, and can be modified before saving and/or uploading.
 Documentation is provided at http://python.dronekit.io/examples/mission_import_export.html
 """
 
+
+from dronekit import connect
 import time
 import math
 from dronekit.lib import Command
 from pymavlink import mavutil
 
-# Connect to API provider and get vehicle
-api = local_connect()
-vehicle = api.get_vehicles()[0]
+
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
 
 
 def readmission(aFileName):
@@ -46,8 +57,8 @@ def readmission(aFileName):
                 ln_param4=float(linearray[7])
                 ln_param5=float(linearray[8])
                 ln_param6=float(linearray[9])
-                ln_param7=float(linearray[10])	
-                ln_autocontinue=int(linearray[11].strip())		
+                ln_param7=float(linearray[10])
+                ln_autocontinue=int(linearray[11].strip())
                 cmd = Command( 0, 0, 0, ln_frame, ln_command, ln_currentwp, ln_autocontinue, ln_param1, ln_param2, ln_param3, ln_param4, ln_param5, ln_param6, ln_param7)
                 missionlist.append(cmd)
     return missionlist
@@ -71,7 +82,7 @@ def upload_mission(aFileName):
     cmds.wait_valid()
     for command in missionlist:
         cmds.add(command)
-    vehicle.flush()	
+    vehicle.flush()
 
 
 def download_mission():
@@ -103,7 +114,7 @@ def save_mission(aFileName):
 import_mission_filename = 'mpmission.txt'
 export_mission_filename = 'exportedmission.txt'
 
-print "\nUpload mission from a file: %s" % import_mission_filename		
+print "\nUpload mission from a file: %s" % import_mission_filename
 upload_mission(import_mission_filename)
 
 time.sleep(1)
@@ -111,3 +122,6 @@ time.sleep(1)
 print "\nSave mission from Vehicle to file: %s" % export_mission_filename
 save_mission(export_mission_filename)
 
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
