@@ -4,39 +4,155 @@
 Example: Follow Me
 ==================
 
-This is a significantly more complex example – showing closed-loop control of the vehicle. It will use a USB GPS attached to your laptop to have the vehicle follow you as you walk around a field.
+The *Follow Me* example moves a vehicle to track your position, using location information from a USB GPS attached to your (Linux) laptop.
 
-Run this example with caution - be ready to exit follow-me mode by switching the flight mode switch on your RC radio.
+The source code is a good *starting point* for your own applications. It can be extended to use other 
+python language features and libraries (OpenCV, classes, lots of packages etc...)
 
-In practice, you don't really want to use this follow-me implementation, rather you can use this example as a starting point to build your own custom application.
 
-Before running this demo you'll need to make sure your computer has the gpsd service installed.
+.. note:: This example can only run on a Linux computer, because it depends on the Linux-only *gpsd* service. 
+ 
+.. warning:: Run this example with caution - be ready to exit follow-me mode by switching the flight mode switch on your RC radio.
 
-*Ubuntu install*
+
+Running the example
+===================
+
+DroneKit (for Linux) and the vehicle should be set up as described in :ref:`get-started`.
+
+Once you've done that:
+
+#. Install the *gpsd* service (as shown for Ubuntu Linux below):
+
+   .. code-block:: bash
+
+       sudo apt-get install gpsd gpsd-clients
+
+   You can then plug in a USB GPS and run the "xgps" client to confirm that it is working.
+   
+   .. note::
+   
+       If you do not have a USB GPS you can use simulated data by running *dronekit-python/examples/follow_me/run-fake-gps.sh* 
+       (in a separate terminal from where you're running DroneKit-Python). This approach simulates a single location, and so 
+       is really only useful for verifying that the script is working correctly.
+   
+
+#. Get the DroneKit-Python example source code onto your local machine. The easiest way to do this 
+   is to clone the **dronekit-python** repository from Github. On the command prompt enter:
+
+   .. code-block:: bash
+
+       git clone http://github.com/dronekit/dronekit-python.git
+
+#. Navigate to the example folder as shown:
+
+   .. code-block:: bash
+
+       cd dronekit-python\examples\follow_me\
+
+
+#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+
+   .. code-block:: bash
+
+       python follow_me.py --connect 127.0.0.1:14550
+       
+
+   .. note::
+   
+       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
+       The command above is used to connect to :ref:`SITL <sitl_setup>` running on the local Linux machine via UDP port 14550.
+
+
+On the terminal you should see (something like):
+
 
 .. code-block:: bash
 
-    apt-get install gpsd gpsd-clients
+    dronekit-python/examples/follow_me$ python follow_me.py --connect 127.0.0.1:14550
+    
+    Connecting to vehicle on: 127.0.0.1:14550
+    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> Frame: QUAD
+    Link timeout, no heartbeat in last 5 seconds
+    Basic pre-arm checks
+    Waiting for GPS...: None
+    ...
+    Waiting for GPS...: None
+    Taking off!
+     Altitude:  0.019999999553
+     ...
+     Altitude:  4.76000022888
+    Reached target altitude
+    Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
+    ...
+    Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
+    Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
+    User has changed flight modes - aborting follow-me
+    Close vehicle object
+    Completed
 
-You can then plug in a USB GPS and run the "xgps" client to confirm that it is working. If you do not have a USB GPS you can use simulated data by running *dronekit-python/examples/run-fake-gps.sh*.
+ 
+To stop follow-me you can change the vehicle mode (on a real flight you can just change the mode switch on your RC transmitter). 
 
-Once your GPS is plugged in you can start follow-me by running the following command inside of MAVProxy:
+.. note:: 
 
-.. code-block:: bash
+    The terminal output above was created using simulated GPS data 
+    (which is why the same target location is returned every time). It was exited by changing
+    the mode from GUIDED to STABILIZE using MAVProxy.
+    
 
-	RTL> api start follow_me.py
-	RTL> Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
-	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-	GUIDED> Mode GUIDED
-	Going to: Location:lat=50.616468333,lon=7.131903333,alt=30,is_relative=True
-	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-	...
+    
+How does it work?
+=================
 
-These debugging messages will appear every two seconds - when a new target position is sent to the vehicle, to stop follow-me either change the vehicle mode switch on your RC transmitter or type "api stop".
+Most of the example should be fairly familiar as it uses the same code as other examples for connecting to the vehicle, 
+:ref:`taking off <taking-off>`, and closing the vehicle object. 
 
-The source code for this example is a good starting point for your own application, from here you can use all python language features and libraries (OpenCV, classes, lots of packages etc...)
+The example-specific code is shown below.  All this does is attempt to get a gps socket and read the location in a two second loop. If it is successful it 
+reports the value and uses :py:func:`Vehicle.commands.goto <dronekit.lib.CommandSequence.goto>` to move to the new position. The loop exits when 
+the mode is changed. 
 
-Next, take a look at the full :ref:`api_reference` for more information.
+.. code-block:: python
+
+    import gps
+    import socket
+    
+    ...
+
+    try:
+        # Use the python gps package to access the laptop GPS
+        gpsd = gps.gps(mode=gps.WATCH_ENABLE)
+
+        #Arm and take of to altitude of 5 meters
+        arm_and_takeoff(5)
+
+        while True:
+        
+            if vehicle.mode.name != "GUIDED":
+                print "User has changed flight modes - aborting follow-me"
+                break    
+                
+            # Read the GPS state from the laptop
+            gpsd.next()
+
+            # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
+            if (gpsd.valid & gps.LATLON_SET) != 0:
+                altitude = 30  # in meters
+                dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
+                print "Going to: %s" % dest
+
+                # A better implementation would only send new waypoints if the position had changed significantly
+                vehicle.commands.goto(dest)
+                vehicle.flush()
+
+                # Send a new target every two seconds
+                # For a complete implementation of follow me you'd want adjust this delay
+                time.sleep(2)
+                
+    except socket.error:
+        print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
+
 
 
 Source code
