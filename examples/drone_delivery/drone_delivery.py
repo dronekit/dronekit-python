@@ -1,13 +1,36 @@
+"""
+drone_delivery.py: 
+
+A CherryPy based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude.
+
+Full documentation is provided at http://python.dronekit.io/examples/drone_delivery.html
+"""
 import os, os.path
 import simplejson
 
 from pymavlink import mavutil
 import dronekit.lib
+from dronekit import connect
 from dronekit.lib import VehicleMode, Location
 
 import cherrypy
 from cherrypy.process import wspbus, plugins
 from jinja2 import Environment, FileSystemLoader
+
+
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+
+local_path=os.path.dirname(os.path.abspath(__file__))
+print "local path: %s" % local_path
+
+
 
 cherrypy_conf = {
     '/': {
@@ -22,10 +45,12 @@ cherrypy_conf = {
 
 class Drone(object):
     def __init__(self, home_coords, server_enabled=True):
-        self.api = local_connect()
+        # Connect to the Vehicle
+        print 'Connecting to vehicle on: %s' % args.connect
+        self.vehicle = connect(args.connect, await_params=True)
+        print "connected ..."
         self.gps_lock = False
         self.altitude = 30.0
-        self.vehicle = self.api.get_vehicles()[0]
         self.commands = self.vehicle.commands
         self.current_coords = []
         self.home_coords = home_coords
@@ -45,11 +70,8 @@ class Drone(object):
         self.commands.takeoff(30.0)
         self.vehicle.flush()
 
-    def arm(self, toggle=True):
-        if toggle:
-            self._log("Arming")
-        else:
-            self._log("Disarming")
+    def arm(self):
+        self._log("Arming")
         self.vehicle.armed = True
         self.vehicle.flush()
 
@@ -195,3 +217,8 @@ class DroneDelivery(object):
 
 Drone([32.5738, -117.0068])
 cherrypy.engine.block()
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
+print("Completed")
