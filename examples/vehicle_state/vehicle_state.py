@@ -109,3 +109,9 @@ vehicle.mode = VehicleMode("STABILIZE")
 vehicle.armed = False
 vehicle.parameters['THR_MIN']=130
 vehicle.flush()
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
+
+print("Completed")
