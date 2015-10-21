@@ -20,7 +20,7 @@ import time
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser = argparse.ArgumentParser(description='Example showing how to set and clear vehicle channel-override information. Connects to SITL on local PC by default.')
 parser.add_argument('--connect', default='127.0.0.1:14550',
                    help="vehicle connection target. Default '127.0.0.1:14550'")
 args = parser.parse_args()
@@ -46,3 +46,9 @@ vehicle.flush()
 
 # Short wait before exiting
 time.sleep(5)
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
+
+print("Completed")
