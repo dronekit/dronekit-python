@@ -7,6 +7,14 @@ Example: Mission Import/Export
 This example shows how to import and export files in the 
 `Waypoint file format <http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format>`_.
 
+.. warning:: 
+
+    At time of writing this example fails with an exception in DKYP2: `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_.
+
+.. todo:: 
+
+    Check if `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ is fixed and re-review example. 
+
 The commands are first imported from a file into a list and then uploaded to the vehicle.
 Then the current mission is downloaded from the vehicle and put into a list, and finally 
 saved into (another file).
@@ -42,10 +50,11 @@ In summary, after cloning the repository:
 
        python mission_import_export.py --connect 127.0.0.1:14550
 
+  
    .. note::
    
-       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
-       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+       The command parameter above is the default, and may be omitted. This
+       connects to SITL on udp port 127.0.0.1:14550.
 
        
 

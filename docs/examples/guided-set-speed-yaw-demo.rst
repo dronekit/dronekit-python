@@ -50,8 +50,8 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
-       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+       The command parameter above is the default, and may be omitted. This
+       connects to SITL on udp port 127.0.0.1:14550.
 
        
 .. tip::
@@ -252,10 +252,10 @@ which is used to directly specify the speed components of the vehicle. The funct
             0, # lat_int - X Position in WGS84 frame in 1e7 * meters
             0, # lon_int - Y Position in WGS84 frame in 1e7 * meters
             0, # alt - Altitude in meters in AMSL altitude(not WGS84 if absolute or relative)
-		       # altitude above terrain if GLOBAL_TERRAIN_ALT_INT
+            # altitude above terrain if GLOBAL_TERRAIN_ALT_INT
             velocity_x, # X velocity in NED frame in m/s
-		    velocity_y, # Y velocity in NED frame in m/s
-		    velocity_z, # Z velocity in NED frame in m/s
+            velocity_y, # Y velocity in NED frame in m/s
+            velocity_z, # Z velocity in NED frame in m/s
             0, 0, 0, # afx, afy, afz acceleration (not supported yet, ignored in GCS_Mavlink)
             0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
         # send command to vehicle
@@ -263,7 +263,7 @@ which is used to directly specify the speed components of the vehicle. The funct
         vehicle.flush()
 
 
-		
+
 .. _example_guided_mode_goto_position_target_global_int:
 
 goto_position_target_global_int()
@@ -271,13 +271,13 @@ goto_position_target_global_int()
 
 The function ``goto_position_target_global_int()`` generates a `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ MAVLink message 
 which is used to directly specify the target location of the vehicle. When used with ``MAV_FRAME_GLOBAL_RELATIVE_ALT_INT`` as shown below, this method is effectively the same as  :ref:`Vehicle.commands.goto <guided_mode_copter_position_control>`.
-		
+
 .. code-block:: python
 
     def goto_position_target_global_int(aLocation):
         """
         Send SET_POSITION_TARGET_GLOBAL_INT command to request the vehicle fly to a specified location.
-	    """
+        """
         msg = vehicle.message_factory.set_position_target_global_int_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
@@ -287,8 +287,8 @@ which is used to directly specify the target location of the vehicle. When used 
             aLocation.lon*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
             aLocation.alt, # alt - Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT
             0, # X velocity in NED frame in m/s
-	    	0, # Y velocity in NED frame in m/s
-	    	0, # Z velocity in NED frame in m/s
+            0, # Y velocity in NED frame in m/s
+            0, # Z velocity in NED frame in m/s
             0, 0, 0, # afx, afy, afz acceleration (not supported yet, ignored in GCS_Mavlink)
             0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
         # send command to vehicle
@@ -317,13 +317,13 @@ which is used to directly specify the target location in the North, East, Down f
     The `documentation <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ lists a number of possible frames of reference. At time of writing experimentation indicates that the actual frame use is always relative to the home location (not the vehicle, as indicated by MAV_FRAME_BODY_NED).
 
 
-.. code-block:: python	
+.. code-block:: python
 
     def goto_position_target_local_ned(north, east, down):
-        """	
+        """
         Send SET_POSITION_TARGET_LOCAL_NED command to request the vehicle fly to a specified 
         location in the North, East, Down frame.
-    	"""
+           """
         msg = vehicle.message_factory.set_position_target_local_ned_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
@@ -336,7 +336,7 @@ which is used to directly specify the target location in the North, East, Down f
         # send command to vehicle
         vehicle.send_mavlink(msg)
         vehicle.flush()
-		
+
 At time of writing, acceleration and yaw bits are ignored.		
 
 

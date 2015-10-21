@@ -12,13 +12,21 @@ command.
 The guide topic :ref:`auto_mode_vehicle_control` provides more detailed explanation of how the API
 should be used.
 
+.. warning:: 
+
+    At time of writing this example fails with an exception in DKYP2: `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_.
+
+.. todo:: 
+
+    Check if `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ is fixed and re-review example.
+
 
 Running the example
 ===================
 
 The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
 and DroneKit have been set up as described in :ref:`get-started`).
-
+    
 If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run.
 
@@ -39,8 +47,8 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
-       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+       The command parameter above is the default, and may be omitted. This
+       connects to SITL on udp port 127.0.0.1:14550.
 
        
 .. tip::
@@ -48,8 +56,8 @@ In summary, after cloning the repository:
     It is more interesting to watch the example above on a map than the console. The topic :ref:`viewing_uav_on_map` 
     explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
 
-On the command prompt you should see (something like):
 
+On the command prompt you should see (something like):
 
 .. code:: bash
 
