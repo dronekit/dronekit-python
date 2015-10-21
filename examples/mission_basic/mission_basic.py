@@ -13,7 +13,7 @@ from pymavlink import mavutil
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
+parser = argparse.ArgumentParser(description='Example which runs basic mission operations. Connects to SITL on local PC by default.')
 parser.add_argument('--connect', default='127.0.0.1:14550',
                    help="vehicle connection target. Default '127.0.0.1:14550'")
 args = parser.parse_args()
