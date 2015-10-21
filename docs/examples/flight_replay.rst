@@ -2,57 +2,95 @@
 Example: Flight Replay
 =========================
 
-This is an interesting demo that uses our web API to query raw flight data from a particular flight.
+This example requests a past flight from Droneshare, and then "replays" the mission 
+by sending waypoints to a vehicle. For safety reasons, the vehicle is replayed at a height of 30 meters.
+
+.. warning:: 
+
+    At time of writing this example fails with an exception in DKYP2: `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_.
+
+.. todo:: Check if `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ is fixed and re-review example. 
+
+You can specify which mission to replay using a parameter when starting the script (for example, to replay your own local flights).
+By default the code gets (and replays) the public `Droneshare mission with ID 101 <http://www.droneshare.com/mission/101>`_. 
+
+.. figure:: flight_replay_example.png
+
+    Droneshare Mission #101
 
 
-Starting the demo
-=================
 
-In this case, we pick some public flight from `Droneshare <http://www.droneshare.com/>`_:
+Running the example
+===================
 
-.. image:: flight_replay_example.png
+The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
+and DroneKit have been set up as described in :ref:`get-started`). 
 
-You'll notice that the mission number for this flight is 101.
+If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
+that the example can run.
 
-Now we'll launch **flight_replay.py** (/examples/flight_replay/flight_replay.py) and ask it to try and 'replay' mission 101.  It will ask the web server for representative points from the flight, parse the JSON response and use that data to generate 100 waypoints we would like our vehicle to hit.  For safety rather than using the altitude from the original flight we instead ask our vehicle to fly at a height of 30 meters.
+In summary, after cloning the repository:
 
-One possible use of some variant of this tool to replay your old flights at your regular test field.
+#. Navigate to the example folder as shown:
 
-::
+   .. code-block:: bash
 
-	STABILIZE> api start flight_replay.py 101
-	STABILIZE> JSON downloaded...
-	Genrating 95 waypoints from replay...
-	APIThread-1 exiting...
-	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-	Sent waypoint 0 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 0, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : 45.7379052, y : 126.6273574, z : 30.0}
-	Sent waypoint 1 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 1, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : 45.7378905, y : 126.6273609, z : 30.0}
-	Sent waypoint 2 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 2, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0,
-	...
-	Sent waypoint 92 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 92, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : 45.737971, y : 126.6274908, z : 30.0}
-	Sent waypoint 93 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 93, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : 45.738018, y : 126.6275664, z : 30.0}
-	Sent waypoint 94 : MISSION_ITEM {target_system : 1, target_component : 1, seq : 94, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : 45.7380429, y : 126.6275067, z : 30.0}
-	Sent all 95 waypoints
-	Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-	APM: flight plan received
+       cd dronekit-python\examples\flight_replay\
+
+
+#. Start the example, passing the :ref:`connection string <get_started_connect_string>` 
+   you wish to use in the ``--connect`` parameter and specifying the mission to replay.
+
+   .. code-block:: bash
+
+       python flight_replay.py --connect 127.0.0.1:14550 --mission_id 101
+
+   .. note::
+   
+       The command parameters above are the defaults, and may be omitted. These
+       connect to SITL on udp port 127.0.0.1:14550 and replay the mission with id 101.
+
+       
+.. tip::
+
+    It is more interesting to watch the example above on a map than the console. The topic :ref:`viewing_uav_on_map` 
+    explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
+
+On the command prompt you should see (something like):
+
+.. code-block:: bash
+
+
+    \dronekit-python\examples\flight_replay>flight_replay.py
+    Connecting to vehicle on: 127.0.0.1:14550
+    >>> ☺APM:Copter V3.4-dev (e0810c2e)
+    >>> ☺Frame: QUAD
+    JSON downloaded...
+    Generating 95 waypoints from replay...
+    ...
 
 
 How it works
 ============
+
+The example requests the web server for representative points from the flight, parses the JSON response 
+and uses that data to generate 100 waypoints. These are then sent to the vehicle.  
+
+
 
 Getting the points
 ------------------
 
 The following simple function asks for the droneshare flight data:
 
-::
+.. code:: python
 
-	def download_messages(mission_id, max_freq = 1.0):
-	    """Download a public mission from droneshare (as JSON)"""
-	    f = urllib.urlopen("%s/api/v1/mission/%s/messages.json?max_freq=%s&api_key=%s" % (api_server, mission_id, max_freq, api_key))
-	    j = json.load(f, object_hook=_decode_dict)
-	    f.close()
-	    return j
+    def download_messages(mission_id, max_freq = 1.0):
+        """Download a public mission from droneshare (as JSON)"""
+        f = urllib.urlopen("%s/api/v1/mission/%s/messages.json?max_freq=%s&api_key=%s" % (api_server, mission_id, max_freq, api_key))
+        j = json.load(f, object_hook=_decode_dict)
+        f.close()
+        return j
 
 Some comments:
 
@@ -61,11 +99,14 @@ Some comments:
 
 
 Setting the new waypoints
-=========================
+-------------------------
 
-We generate up to 100 waypoints for the vehicle with the following code:
+If necessary, the example then reduces the number of messages retrieved into a set that can fit on the vehicle (in this case 100 waypoints).
 
-::
+The following code shows how the vehicle writes the received messages as commands (this part of the code is very similar to that
+shown in :ref:`example_mission_basic`):
+
+.. code:: python
 
     print "Generating %s waypoints from replay..." % len(messages)
     cmds = v.commands
@@ -89,8 +130,18 @@ We generate up to 100 waypoints for the vehicle with the following code:
     v.flush()
 
 
-Next we'll work with existing Linux services (gpsd) to add a new drone based feature called :ref:`Follow Me <example_follow_me>`.
+Known issues
+============
 
+At time of writing this example fails with an exception. See `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ for more information.
+
+.. todo:: 
+
+    When example is fixed replace above text with 
+    "This example works around the :ref:`known issues in the API <api-information-known-issues>`. 
+    Provided that the vehicle is connected and able to arm, it should run through to completion."
+
+  
 
 Source code
 ===========
@@ -100,4 +151,3 @@ The full source code at documentation build-time is listed below (`current versi
 
 .. literalinclude:: ../../examples/flight_replay/flight_replay.py
    :language: python
-	
