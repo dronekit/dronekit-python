@@ -85,11 +85,12 @@ The vehicle can then be used in exactly the same way as in DKPY 1.x.
 .. todo:: Above link to the connect method in API ref - make sure connect() is documented.
 
 
-Exit status checks
-------------------
+Connection status checks
+------------------------
 
-Remove code that checks the ``api.exit`` status (note that the ``api.exit`` call below is commented out). DroneKit no 
-longer runs in *MAVProxy* so scripts don't need to monitor and act on external thread shutdown commands.
+DroneKit no longer runs in *MAVProxy* so scripts don't need to monitor and act on external thread shutdown commands.
+
+Remove code that checks the ``api.exit`` status (note that the ``api.exit`` call below is commented out). 
 
 .. code:: python
 
@@ -105,7 +106,18 @@ longer runs in *MAVProxy* so scripts don't need to monitor and act on external t
 .. todo:: Find out how to check the connection status is still valid. That would go in separate section.
 
 
-        
+Script completion checks
+------------------------
+
+Examples that might possibly have outstanding messages should call :py:func:`Vehicle.close() <dronekit.lib.Vehicle.close>` 
+before exiting to ensure that all messages have flushed before the script completes:
+
+.. code:: python
+
+    #About to exit script
+    vehicle.close()
+
+    
 Command line arguments
 ----------------------
 
@@ -133,5 +145,19 @@ use whatever method you like.
 
         
 .. todo:: This addition closes https://github.com/dronekit/dronekit-python/issues/13
+
+
+Current script directory
+------------------------
+
+DroneKit-Python v1.x passed a global property ``load_path`` to any executed file containing the 
+directory in which the script was running. This is no longer needed in version 2 and has been removed.
+
+Instead, use normal Python methods for getting file system information:
+
+.. code:: python
+
+    import os.path
+    full_directory_path_of_current_script = os.path.dirname(os.path.abspath(__file__))
 
 
