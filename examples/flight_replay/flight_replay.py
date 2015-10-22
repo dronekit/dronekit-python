@@ -1,28 +1,35 @@
 """
 flight_replay.py: 
 
-An example of talking to Droneshare to receive a past flight, and then 'replaying' 
-that flight by sending waypoints to a vehicle.
-
-Start this example as shown below, specifying the 
-missionid (a numeric mission number from a public droneshare flight):
-
-    api start flight_replay.py <missionid>
+This example requests a past flight from Droneshare, and then 'replays' 
+the flight by sending waypoints to a vehicle.
 
 Full documentation is provided at http://python.dronekit.io/examples/flight_replay.html
 """
 
+from dronekit import connect
 from dronekit.lib import Command
 from pymavlink import mavutil
 import json, urllib, math
 
-api_server = "https://api.3drobotics.com"
-api_key = "a8948c11.9e44351f6c0aa7e3e2ff6d00b14a71c5"
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Get a flight from droneshare and send as waypoints to a vehicle. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+parser.add_argument('--mission_id', default='101',
+                   help="DroneShare Mission ID to replay. Default is '101'")                   
+parser.add_argument('--api_server', default='https://api.3drobotics.com',
+                   help="API Server. Default is Droneshare API (https://api.3drobotics.com)")
+parser.add_argument('--api_key', default='89b511b1.d884d1cb57306e63925fcc07d032f2af',
+                   help="API Server Key (default should be fine!)")
+args = parser.parse_args()
 
-# First get an instance of the API endpoint
-api = local_connect()
-# Get our vehicle - when running with MAVProxy it only knows about one vehicle (for now)
-v = api.get_vehicles()[0]
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
+
 
 
 def _decode_list(data):
@@ -55,7 +62,8 @@ def _decode_dict(data):
 
 def download_messages(mission_id, max_freq = 1.0):
     """Download a public mission from droneshare (as JSON)"""
-    f = urllib.urlopen("%s/api/v1/mission/%s/messages.json?max_freq=%s&api_key=%s" % (api_server, mission_id, max_freq, api_key))
+    message_url="%s/api/v1/mission/%s/messages.json?max_freq=%s&api_key=%s" % (args.api_server, mission_id, max_freq, args.api_key)
+    f = urllib.urlopen(message_url)
     j = json.load(f, object_hook=_decode_dict)
     f.close()
     return j
@@ -63,7 +71,11 @@ def download_messages(mission_id, max_freq = 1.0):
 def replay_mission(payload):
     """Given mission JSON, set a series of wpts approximating the previous flight"""
     # Pull out just the global position msgs
-    messages = payload['messages']
+    try:
+        messages = payload['messages']
+    except:
+        print "Exception: payload from site is: %s" % payload
+        sys.exit()
     messages = filter(lambda obj: obj['typ'] == 'MAVLINK_MSG_ID_GLOBAL_POSITION_INT', messages)
     messages = map(lambda obj: obj['fld'], messages)
 
@@ -76,9 +88,9 @@ def replay_mission(payload):
         messages = shorter
 
     print "Generating %s waypoints from replay..." % len(messages)
-    cmds = v.commands
+    cmds = vehicle.commands
     cmds.clear()
-    v.flush()
+    vehicle.flush()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
@@ -94,17 +106,20 @@ def replay_mission(payload):
                        0, 0, 0, 0, 0, 0,
                        lat, lon, altitude)
         cmds.add(cmd)
-    v.flush()
+    vehicle.flush()
 
-if len(local_arguments) != 1:
-    print 'Error: usage "api start flight_replay.py <missionid>"'
-else:
-    # Now download the vehicle waypoints
-    cmds = v.commands
-    cmds.wait_valid()
 
-    mission_id = int(local_arguments[0])
-    max_freq = 0.1
-    json = download_messages(mission_id, max_freq)
-    print "JSON downloaded..."
-    replay_mission(json)
+# Now download the vehicle waypoints
+cmds = vehicle.commands
+cmds.wait_valid()
+mission_id = int(args.mission_id)
+max_freq = 0.1
+json = download_messages(mission_id, max_freq)
+print "JSON downloaded..."
+replay_mission(json)
+
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
+print("Completed...")
