@@ -150,6 +150,9 @@ class LocationGlobal(object):
     def __str__(self):
         return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
 
+# Back-compatibility for earlier clients.
+Location = LocationGlobal
+
 class LocationLocal(object):
     """
     A local location object.
