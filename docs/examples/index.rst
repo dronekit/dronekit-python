@@ -22,6 +22,8 @@ during missions and outside missions using custom commands.
    Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
+   Channel Overrides <channel_overrides>
+   
 
 
 

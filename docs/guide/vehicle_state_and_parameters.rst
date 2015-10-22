@@ -9,8 +9,7 @@ The :py:class:`Vehicle <dronekit.lib.Vehicle>` class exposes *most* state inform
 are accessed though named elements of :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`. 
 
 This topic explains how to get, set and observe vehicle state and parameter information (including getting the 
-:ref:`Home location <vehicle_state_home_location>`). It also describes a few APIs that  
-:ref:`should be used with caution <vehicle_state_disrecommended>`.
+:ref:`Home location <vehicle_state_home_location>`).
 
 .. tip:: You can test most of the code in this topic by running the :ref:`Vehicle State <example-vehicle-state>` example.
 
@@ -79,13 +78,13 @@ Attributes will also return  ``None`` if the associated hardware is not present 
     and `optical flow sensors <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_optical_flow_sensor>`_.
 
 
-	
+
 .. todo:: we need to be able to verify mount_status works/setup.
 
 
 
 .. _vehicle_state_set_attributes:
-	
+
 Setting attributes
 ------------------
 
@@ -106,7 +105,7 @@ then forces DroneKit to send outstanding messages.
 
     After ``flush()`` returns the message is guaranteed to have been sent to the autopilot, but it is **not guaranteed to succeed**. 
     For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks.
-	
+
     While the autopilot does send information about the success (or failure) of the request, this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
 
 
@@ -136,7 +135,8 @@ Observers are added using :py:func:`Vehicle.add_attribute_observer() <dronekit.l
 specifying the name of the attribute to observe and a callback function. The same string is passed to the callback
 when it is notified. Observers are removed using :py:func:`remove_attribute_observer() <dronekit.lib.Vehicle.remove_attribute_observer>`.
 
-The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <dronekit.lib.Vehicle.location>` attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
+The code snippet below shows how to add (and remove) a callback function to observe :py:attr:`location <dronekit.lib.Vehicle.location>` 
+attribute changes. The two second ``sleep()`` is required because otherwise the observer might be removed before the the callback is first run.
 
 .. code:: python
      
@@ -145,36 +145,36 @@ The code snippet below shows how to add (and remove) a callback function to obse
         print " CALLBACK: Location changed to: ", vehicle.location
 
     # Add a callback. The first parameter the name of the observed attribute (a string).
-    vehicle.add_attribute_observer('location', location_callback)	
+    vehicle.add_attribute_observer('location', location_callback)
 
     # Wait 2s so callback can be notified before the observer is removed
     time.sleep(2)
 
     # Remove observer - specifying the attribute and previously registered callback function
-    vehicle.remove_attribute_observer('location', location_callback)	
+    vehicle.remove_attribute_observer('location', location_callback)
 
 
-The callback is triggered `every time a message is received from the vehicle <https://github.com/dronekit/dronekit-python/issues/60>`_ 
-(whether or not the observed attribute changes). Callback code may therefore choose to cache the result and only report changes. 
+The callback is triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
+Callback code may therefore choose to cache the result and only report changes. 
 For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
 
 .. code:: python
 
     last_rangefinder_distance=0
-	
+
     def rangefinder_callback(rangefinder):
         global last_rangefinder_distance
         if last_rangefinder_distance == round(vehicle.rangefinder.distance, 1):
             return
         last_rangefinder_distance = round(vehicle.rangefinder.distance, 1)
         print " Rangefinder (metres): %s" % last_rangefinder_distance
-	
-
-    vehicle.add_attribute_observer('rangefinder', rangefinder_callback)	
 
 
+    vehicle.add_attribute_observer('rangefinder', rangefinder_callback)
 
-.. _vehicle_state_parameters:	
+
+
+.. _vehicle_state_parameters:
 
 Parameters
 ==========
@@ -209,7 +209,7 @@ throttle at which the motors will keep spinning.
 
     
 
-	
+
 Setting parameters
 ------------------
 
@@ -228,7 +228,7 @@ Observing parameter changes
 ---------------------------
 
 At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not support <https://github.com/dronekit/dronekit-python/issues/107>`_ observing parameter changes.
-		
+
 .. todo:: 
 
     Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
@@ -260,97 +260,6 @@ The returned value is a :py:class:`Command <dronekit.lib.Command>` object.
 
 
 
-.. _vehicle_state_disrecommended:
-
-Discommended APIs
-=================
-
-This section describes methods that we recommend you do not use! In general they are provided to handle the (hopefully rare)
-cases where the "proper" API is missing some needed functionality.
-
-If you have to use these methods please `provide feedback explaining why <https://github.com/dronekit/dronekit-python/issues>`_.
-
-
-.. _vehicle_state_set_mavlink_callback:
-
-MAVLink Message Observer
-------------------------
-
-The :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` method provides asynchronous 
-notification when any *MAVLink* packet is received by this vehicle. The notification can be stopped by 
-calling :py:func:`unset_mavlink_callback() <dronekit.lib.Vehicle.unset_mavlink_callback>` to remove the callback.
-
-
-.. tip::
-
-    Use :ref:`attribute observers <vehicle_state_observe_attributes>` instead of this method where possible. 
-
-
-The code snippet below shows how to set and clear a "demo" callback function as the callback handler:
-
-.. code:: python
-
-    # Demo callback handler for raw MAVLink messages
-    def mavrx_debug_handler(message):
-        print "Received", message
-
-    # Set MAVLink callback handler (after getting Vehicle instance)                     
-    vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-    # Wait to allow the callback to be invoked before it is removed. 
-    time.sleep(1)
-
-    # Remove the MAVLink callback handler. Callback will not be
-    # called after this point.
-    vehicle.unset_mavlink_callback()
-
-
-.. _vehicle_state_channel_override:
-
-Channel Overrides
------------------
-
-.. warning::
-
-    Channel Overrides may be useful for simulating user input and when implementing certain types of joystick control. 
-    They should not be used for direct control of the vehicle unless there is no other choice!
-
-    Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally set the desired position or direction/speed.
-
-The :py:attr:`channel_override <dronekit.lib.Vehicle.channel_override>` attribute takes a dictionary argument defining the RC *output* channels to be overridden (specified by channel number), and their new values.  Channels that are not specified in the dictionary are not overridden. All multi-channel updates are atomic. To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
-
-The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters in 
-`Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_, 
-`Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/#rcmap__parameters>`_ , 
-`Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/#rcmap__parameters>`_).
-	
-The remaining channel values are configurable, and their purpose can be determined using the 
-`RCn_FUNCTION parameters <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/>`_. 
-In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the channel can be 
-`mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be 
-controlled by normal autopilot code).
-
-An example of setting and clearing overrides is given below:
-
-.. code:: python
-    
-    # Override the channel for roll and yaw
-    vehicle.channel_override = { "1" : 900, "4" : 1000 }
-    vehicle.flush()
-	
-    #print current override values
-    print "Current overrides are:", vehicle.channel_override
-
-    # Print channel values (values if overrides removed)
-    print "Channel default values:", vehicle.channel_readback  
-    
-    # Cancel override by setting channels to 0
-    vehicle.channel_override = { "1" : 0, "4" : 0 }
-    vehicle.flush()	
-
-
-
-	
 .. _api-information-known-issues:
 
 Known issues
@@ -358,11 +267,9 @@ Known issues
 
 Below are a number of bugs and known issues related to vehicle state and settings:
 
-* `#12 Timeout error when setting a parameter <https://github.com/dronekit/dronekit-python/issues/12>`_
 * `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/dronekit/dronekit-python/issues/60>`_
 * `#107 Add implementation for observer methods in Parameter class <https://github.com/dronekit/dronekit-python/issues/107>`_ 
 * `#114 DroneKit has no method for detecting command failure <https://github.com/dronekit/dronekit-python/issues/114>`_
-* `#115 No way to disable the callback set_mavlink_callback <https://github.com/dronekit/dronekit-python/issues/115>`_
 
 
 Other API issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 
