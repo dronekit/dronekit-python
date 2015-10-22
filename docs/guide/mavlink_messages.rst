@@ -7,7 +7,7 @@ MAVLink Messages
 Some useful MAVLink messages sent by the autopilot are not (yet) directly available to DroneKit-Python scripts
 through the :ref:`observable attributes <vehicle_state_observe_attributes>` in :py:class:`Vehicle <dronekit.lib.Vehicle>`.
 
-This topic shows how you can intercept MAVLink messages using 
+This topic shows how you can intercept all MAVLink messages using 
 :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>`.
 
 .. tip::
@@ -19,8 +19,8 @@ This topic shows how you can intercept MAVLink messages using
 
 .. _mavlink_messages_set_mavlink_callback:
 
-Creating the message observer
-=============================
+Creating a message observer
+===========================
 
 The :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` method provides asynchronous 
 notification when any *MAVLink* packet is received from the connected vehicle.

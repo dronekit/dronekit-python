@@ -124,3 +124,8 @@ time.sleep(5)
 #The observer can be unset using ``vehicle.unset_mavlink_callback()`` OR 
 # ``vehicle.set_mavlink_callback(None)``. 
 #It is automatically removed when the thread exits.
+
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()

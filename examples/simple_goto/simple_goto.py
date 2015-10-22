@@ -39,7 +39,7 @@ def arm_and_takeoff(aTargetAltitude):
     while vehicle.gps_0.fix_type < 2:
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
-		
+
     print "Arming motors"
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
@@ -60,7 +60,7 @@ def arm_and_takeoff(aTargetAltitude):
         print " Altitude: ", vehicle.location.alt
         if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
-            break;
+            break
         time.sleep(1)
 
 arm_and_takeoff(20)
@@ -80,8 +80,12 @@ vehicle.commands.goto(point2)
 vehicle.flush()
 
 # sleep so we can see the change in map
-time.sleep(20)
+time.sleep(30)
 
 print "Returning to Launch"
 vehicle.mode    = VehicleMode("RTL")
 vehicle.flush()
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()

@@ -70,9 +70,8 @@ use :py:func:`wait_valid() <dronekit.lib.CommandSequence.wait_valid>` to block y
 
 .. code:: python
 
-    # Connect to API provider and get vehicle
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
+    # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
 
     # Download the vehicle waypoints (commands). Wait until download is complete.
     cmds = vehicle.commands
@@ -100,9 +99,10 @@ To clear a mission you call :py:func:`clear() <dronekit.lib.CommandSequence.clea
 
 .. code:: python
 
-    # Connect to API provider and get vehicle
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
+    # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
+    
+    # Get commands from Vehicle object.
     cmds = vehicle.commands
 
     # Clear Vehicle.commands and flush.
@@ -139,12 +139,8 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
 
 .. code:: python
 
-    from dronekit.lib import Command
-    from pymavlink import mavutil
-
-    # Connect to API provider and get vehicle
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
+    # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
 
     # Get the set of commands from the vehicle
     cmds = vehicle.commands
@@ -157,7 +153,6 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
     cmds.add(cmd1)
     cmds.add(cmd2)
     vehicle.flush() # Send commands
-
 
 
 
@@ -175,10 +170,10 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
 
 .. code:: python
 
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
-
-    # Download the current vehicle commands
+    # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
+    
+    # Get the set of commands from the vehicle
     cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
@@ -217,9 +212,8 @@ To start a mission change the mode to AUTO:
 
 .. code:: python
 
-    # Get an instance of the API endpoint and a vehicle
-    api = local_connect()
-    vehicle = api.get_vehicles()[0]
+    # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
 
     # Set the vehicle into auto mode
     vehicle.mode = VehicleMode("AUTO")
@@ -306,12 +300,12 @@ Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_c
         cmds.clear()
         vehicle.flush()
         print 'ClearCount: %s' % cmds.count
-    #add new mission
-    cmds.download()
-    cmds.wait_valid()
-    for command in missionlist:
-        cmds.add(command)
-    vehicle.flush()
+        #add new mission
+        cmds.download()
+        cmds.wait_valid()
+        for command in missionlist:
+            cmds.add(command)
+        vehicle.flush()
 
 
 ``readmission()`` reads a mission from the specified file and returns a list of :py:class:`Command <dronekit.lib.Command>` objects. 
@@ -367,7 +361,7 @@ Save a mission to a file
 It uses ``download_mission()`` (below) to get them mission, and then writes the list line-by-line to the file.
   
 .. code:: python
-		
+
     def save_mission(aFileName):
         """
         Save a mission in the Waypoint file format (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).

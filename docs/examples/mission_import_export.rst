@@ -7,6 +7,14 @@ Example: Mission Import/Export
 This example shows how to import and export files in the 
 `Waypoint file format <http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format>`_.
 
+.. warning:: 
+
+    At time of writing this example fails with an exception in DKYP2: `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_.
+
+.. todo:: 
+
+    Check if `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ is fixed and re-review example. 
+
 The commands are first imported from a file into a list and then uploaded to the vehicle.
 Then the current mission is downloaded from the vehicle and put into a list, and finally 
 saved into (another file).
@@ -21,23 +29,45 @@ missions and AUTO mode.
 Running the example
 ===================
 
-The vehicle and DroneKit should be set up as described in :ref:`get-started`.
+The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
+and DroneKit have been set up as described in :ref:`get-started`).
 
-Once MAVProxy is running and the API is loaded, you can start the example by typing: ``api start mission_import_export.py``.
+If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
+that the example can run.
 
-.. note:: 
+In summary, after cloning the repository:
 
-    The command above assumes you started the *MAVProxy* prompt in a directory containing the example script. If not, 
-    you will have to specify the absolute path to the script. For example:
-    ``api start /home/user/git/dronekit-python/examples/mission_import_export/mission_import_export.py``.
+#. Navigate to the example folder as shown:
+
+   .. code-block:: bash
+
+       cd dronekit-python/examples/mission_import_export/
 
 
-On the *MAVProxy* console you should see (something like):
+#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+
+   .. code-block:: bash
+
+       python mission_import_export.py --connect 127.0.0.1:14550
+
+  
+   .. note::
+   
+       The command parameter above is the default, and may be omitted. This
+       connects to SITL on udp port 127.0.0.1:14550.
+
+       
+
+On the command prompt you should see (something like):
+
 
 .. code:: bash
 
-    STABILIZE> api start mission_import_export.py
-    STABILIZE>
+    Connecting to vehicle on: 127.0.0.1:14550
+    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> Frame: QUAD
+    Link timeout, no heartbeat in last 5 seconds
+
     Upload mission from a file: mpmission.txt
     Reading mission from file: mpmission.txt
 
@@ -95,14 +125,26 @@ More information about the functions can be found in the guide at
 Known issues
 ============
 
-This example works around known issues in the API:
-
+* This example fails in DroneKit 2.0.0b6 and earlier 
+  (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_ to see if it has been fixed).
 * A ``time.sleep(1)`` has been placed between uploading the mission to the vehicle (from the file) and downloading the mission. 
   This is to avoid the race condition where the mission being downloaded has not yet successfully uploaded to the vehicle. 
   This race condition (probably) shouldn't exist because the mission is flushed to the Vehicle - 
   see `Race condition when updating and fetching commands <https://github.com/dronekit/dronekit-python/issues/227>`_
 
 
+ 
+.. todo:: 
+
+    This is blocked by https://github.com/dronekit/dronekit-python/issues/355 (vehicle.commands.clear not working).
+    The code output in "running the example"" needs to be updated once this runs cleanly.
+    The above text for the error needs to be replaced with original text 
+       > "This example works around known issues in the API:."
+    Need to check all that clearing is still strictly necessary in DKPY2 which handles race conditions more gracefully.
+
+
+  
+  
 
 .. _example_mission_import_export_source_code:
   
@@ -110,7 +152,7 @@ Source code
 ===========
 
 The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/mission_import_export/mission_import_export.py>`_):
-	
+
 .. literalinclude:: ../../examples/mission_import_export/mission_import_export.py
    :language: python
-	
+

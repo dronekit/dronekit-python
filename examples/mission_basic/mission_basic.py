@@ -4,14 +4,24 @@ mission_basic.py: Example demonstrating basic mission operations including creat
 Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
 """
 
+from dronekit import connect
 import time
 import math
 from dronekit.lib import VehicleMode, Location, Command
 from pymavlink import mavutil
 
-# Connect to API provider and get vehicle
-api = local_connect()
-vehicle = api.get_vehicles()[0]
+
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Example which runs basic mission operations. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
 
 
 def get_location_metres(original_location, dNorth, dEast):
@@ -130,6 +140,9 @@ def arm_and_takeoff(aTargetAltitude):
     if vehicle.mode.name == "INITIALISING":
         print "Waiting for vehicle to initialise"
         time.sleep(1)
+    else:
+        print "MODE: %s" % vehicle.mode.name
+        
     while vehicle.gps_0.fix_type < 2:
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
@@ -140,7 +153,7 @@ def arm_and_takeoff(aTargetAltitude):
     vehicle.armed   = True
     vehicle.flush()
 
-    while not vehicle.armed and not api.exit:
+    while not vehicle.armed:
         print " Waiting for arming..."
         time.sleep(1)
 
@@ -150,12 +163,13 @@ def arm_and_takeoff(aTargetAltitude):
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
-    while not api.exit:
+    while True:
         print " Altitude: ", vehicle.location.alt
         if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
             break;
         time.sleep(1)
+
 
 
 print 'Clear the current mission'
@@ -194,5 +208,9 @@ while True:
 print 'Return to launch'
 vehicle.mode = VehicleMode("RTL")
 vehicle.flush()  # Flush to ensure changes are sent to autopilot
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
 
 
