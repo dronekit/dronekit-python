@@ -1,30 +1,30 @@
 from dronekit import connect
 from dronekit.tools import with_sitl
+from dronekit.lib import VehicleMode, LocationGlobal
 import time
 from nose.tools import assert_not_equals
 
 @with_sitl
 def test_timeout(connpath):
-    v = connect(connpath, await_params=True)
+    vehicle = connect(connpath, await_params=True)
 
-    # print "Basic pre-arm checks"
-    # Don't let the user try to fly autopilot is booting
-    if v.mode.name == "INITIALISING":
-        # print "Waiting for vehicle to initialise"
-        time.sleep(1)
-    while v.gps_0.fix_type < 2:
-        # print "Waiting for GPS...:", vehicle.gps_0.fix_type
-        time.sleep(1)
+    # NOTE these are *very inappropriate settings*
+    # to make on a real vehicle. They are leveraged
+    # exclusively for simulation. Take heed!!!
+    vehicle.parameters['ARMING_CHECK'] = 0
 
-    v.armed = True
-    v.flush()
+    # ARM
+    vehicle.armed = True
+    i = 60
+    while not vehicle.armed and i > 0:
+        time.sleep(1)
+        i = i - 1
+
+    # Await attributes
+    time.sleep(3)
     
-    while not v.armed:
-        time.sleep(1)
-
-    time.sleep(1)
-    
-    #north, east, and down are initialized to None.  Any other value suggests that a LOCAL_POSITION_NED was received and parsed.
-    assert_not_equals(v.location.local_frame.north, None)
-    assert_not_equals(v.location.local_frame.east, None)
-    assert_not_equals(v.location.local_frame.down, None)
+    # .north, .east, and .down are initialized to None.
+    # Any other value suggests that a LOCAL_POSITION_NED was received and parsed.
+    assert_not_equals(vehicle.location.local_frame.north, None)
+    assert_not_equals(vehicle.location.local_frame.east, None)
+    assert_not_equals(vehicle.location.local_frame.down, None)

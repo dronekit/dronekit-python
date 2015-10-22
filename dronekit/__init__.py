@@ -588,6 +588,10 @@ class MPFakeState:
             while not params.loaded:
                 time.sleep(0.1)
 
+            # Await GPS lock
+            while self.fix_type == None or self.fix_type < 2:
+                time.sleep(0.1)
+
         return self.api
 
     def close(self):
