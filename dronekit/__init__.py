@@ -116,7 +116,7 @@ class MPFakeState:
         @message_default('STATUSTEXT')
         def listener(self, name, m):
             if self.status_printer:
-                self.status_printer(re.sub(r'(^|\n)', '>>> \1', m.text.rstrip()))
+                self.status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
 
         self.lat = None
         self.lon = None
