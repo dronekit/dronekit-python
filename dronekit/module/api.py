@@ -5,9 +5,9 @@ import traceback
 import logging
 import math
 from pymavlink import mavutil
-from dronekit.lib import APIConnection, Vehicle, VehicleMode, Location, \
-    Attitude, GPSInfo, Parameters, CommandSequence, APIException, Battery, \
-    Rangefinder
+from dronekit.lib import APIConnection, Vehicle, VehicleMode, LocationLocal, \
+    LocationGlobal, Attitude, GPSInfo, Parameters, CommandSequence, \
+    APIException, Battery, Rangefinder
 
 # Enable logging here (until this code can be moved into mavproxy)
 logging.basicConfig(level=logging.DEBUG)
@@ -174,7 +174,11 @@ class MPVehicle(Vehicle):
 
     @property
     def location(self):
-        return Location(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        # For backward compatibility, this is (itself) a LocationLocal object.
+        ret = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        ret.local_frame = LocationLocal(self.__module.north, self.__module.east, self.__module.down)
+        ret.global_frame = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        return ret
 
     @property
     def battery(self):

@@ -9,7 +9,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 
 import time
 from dronekit import connect
-from dronekit.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, LocationGlobal
 from dronekit.tools import with_sitl
 from pymavlink import mavutil
 from nose.tools import assert_equals
@@ -74,7 +74,7 @@ def test_goto(connpath):
         while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.
-            if vehicle.location.alt >= aTargetAltitude * 0.95: 
+            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95: 
                 # print "Reached target altitude"
                 break
 
@@ -84,7 +84,7 @@ def test_goto(connpath):
     arm_and_takeoff(10)
 
     # print "Going to first point..."
-    point1 = Location(-35.361354, 149.165218, 20, is_relative=True)
+    point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
     vehicle.commands.goto(point1)
     vehicle.flush()
 
@@ -92,7 +92,7 @@ def test_goto(connpath):
     time.sleep(3)
 
     # print "Going to second point..."
-    point2 = Location(-35.363244, 149.168801, 20, is_relative=True)
+    point2 = LocationGlobal(-35.363244, 149.168801, 20, is_relative=True)
     vehicle.commands.goto(point2)
     vehicle.flush()
 

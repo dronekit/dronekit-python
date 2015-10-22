@@ -131,6 +131,17 @@ class MPFakeState:
             (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self._notify_attribute_listeners('location', 'velocity')
 
+        self.north = None
+        self.east = None
+        self.down = None
+
+        @message_default('LOCAL_POSITION_NED')
+        def listener(self, name, m):
+            self.north = m.x
+            self.east = m.y
+            self.down = m.z
+            self._notify_attribute_listeners('local_position')
+
         @message_default('GPS_RAW')
         def listener(self, name, m):
             # (self.lat, self.lon) = (m.lat, m.lon)
@@ -575,6 +586,10 @@ class MPFakeState:
         # to determine what params we yet need. Wait if await_params is True.
         if await_params:
             while not params.loaded:
+                time.sleep(0.1)
+
+            # Await GPS lock
+            while self.fix_type == None or self.fix_type < 2:
                 time.sleep(0.1)
 
         return self.api
