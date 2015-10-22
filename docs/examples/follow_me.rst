@@ -48,7 +48,7 @@ Once you've done that:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\follow_me\
+       cd dronekit-python/examples/follow_me/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
@@ -68,8 +68,6 @@ On the terminal you should see (something like):
 
 
 .. code-block:: bash
-
-    dronekit-python/examples/follow_me$ python follow_me.py --connect 127.0.0.1:14550
     
     Connecting to vehicle on: 127.0.0.1:14550
     >>> APM:Copter V3.4-dev (e0810c2e)
