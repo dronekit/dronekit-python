@@ -589,7 +589,7 @@ class MPFakeState:
                 time.sleep(0.1)
 
             # Await GPS lock
-            while self.fix_type == None or self.fix_type < 2:
+            while self.fix_type == None:
                 time.sleep(0.1)
 
         return self.api
