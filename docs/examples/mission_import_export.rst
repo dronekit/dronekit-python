@@ -41,7 +41,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\mission_import_export\
+       cd dronekit-python/examples/mission_import_export/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
@@ -63,11 +63,9 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    \dronekit-python\examples\mission_import_export>mission_import_export.py
-  
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> ☺APM:Copter V3.4-dev (e0810c2e)
-    >>> ☺Frame: QUAD
+    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> Frame: QUAD
     Link timeout, no heartbeat in last 5 seconds
 
     Upload mission from a file: mpmission.txt
@@ -127,9 +125,8 @@ More information about the functions can be found in the guide at
 Known issues
 ============
 
-
-
-* This example fails in DroneKit 2.0.0b6 (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_).
+* This example fails in DroneKit 2.0.0b6 and earlier 
+  (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_ to see if it has been fixed).
 * A ``time.sleep(1)`` has been placed between uploading the mission to the vehicle (from the file) and downloading the mission. 
   This is to avoid the race condition where the mission being downloaded has not yet successfully uploaded to the vehicle. 
   This race condition (probably) shouldn't exist because the mission is flushed to the Vehicle - 

@@ -61,7 +61,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
             print " Altitude: ", vehicle.location.alt
             if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
                 print "Reached target altitude"
-                break;
+                break
             time.sleep(1)
 
     arm_and_takeoff(20)
@@ -120,7 +120,7 @@ concerned about reaching a particular height, a simpler implementation might jus
             print " Altitude: ", vehicle.location.alt
             if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
                 print "Reached target altitude"
-                break;
+                break
             time.sleep(1)
 
 When the function returns the app can continue in ``GUIDED`` mode or switch to ``AUTO`` mode to start a mission.

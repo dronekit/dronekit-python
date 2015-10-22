@@ -42,7 +42,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\simple_goto\
+       cd dronekit-python/examples/simple_goto/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
@@ -66,18 +66,17 @@ On the command prompt you should see (something like):
 
 .. code-block:: bash
 
-    \dronekit-python\examples\simple_goto>simple_goto.py
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> ☺APM:Copter V3.4-dev (e0810c2e)
-    >>> ☺Frame: QUAD
+    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> Frame: QUAD
     Basic pre-arm checks
     Waiting for GPS...: None
     ...
     Waiting for GPS...: None
     Arming motors
      Waiting for arming...
-    >>> ☺ARMING MOTORS
-    >>> ☺Initialising APM...
+    >>> ARMING MOTORS
+    >>> Initialising APM...
     Taking off!
      Altitude:  0.0
      Altitude:  0.00999999977648

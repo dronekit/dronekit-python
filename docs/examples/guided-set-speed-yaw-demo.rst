@@ -39,7 +39,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\guided_set_speed_yaw\
+       cd dronekit-python/examples/guided_set_speed_yaw/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
@@ -64,7 +64,6 @@ On the command prompt you should see (something like):
 
 .. code-block:: bash
 
-    \dronekit-python\examples\guided_set_speed_yaw>guided_set_speed_yaw.py
     Basic pre-arm checks
     Arming motors
      Waiting for arming...

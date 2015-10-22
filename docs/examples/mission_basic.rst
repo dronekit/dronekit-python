@@ -36,7 +36,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\mission_basic\
+       cd dronekit-python/examples/mission_basic/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
@@ -61,10 +61,9 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    \dronekit-python\examples\mission_basic>mission_basic.py
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> ☺APM:Copter V3.4-dev (e0810c2e)
-    >>> ☺Frame: QUAD
+    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> Frame: QUAD
     Clear the current mission
 
     Requesting 0 waypoints t=Wed Jul 29 21:27:58 2015 now=Wed Jul 29 21:27:58 2015
@@ -181,7 +180,7 @@ When the vehicle starts the 5th command the loop breaks and the mode is set to R
 Known issues
 ============
 
-This example fails in DroneKit 2.0.0b6 (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_).
+This example fails in DroneKit 2.0.0b6 and earlier releases (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_ to see if it has been fixed in the current release).
 
 
 .. todo:: 

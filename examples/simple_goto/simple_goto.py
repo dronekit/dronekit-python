@@ -60,7 +60,7 @@ def arm_and_takeoff(aTargetAltitude):
         print " Altitude: ", vehicle.location.alt
         if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
-            break;
+            break
         time.sleep(1)
 
 arm_and_takeoff(20)
