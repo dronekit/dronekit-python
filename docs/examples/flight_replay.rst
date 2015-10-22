@@ -35,7 +35,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\flight_replay\
+       cd dronekit-python/examples/flight_replay/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` 
@@ -63,8 +63,8 @@ On the command prompt you should see (something like):
 
     \dronekit-python\examples\flight_replay>flight_replay.py
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> ☺APM:Copter V3.4-dev (e0810c2e)
-    >>> ☺Frame: QUAD
+    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> Frame: QUAD
     JSON downloaded...
     Generating 95 waypoints from replay...
     ...

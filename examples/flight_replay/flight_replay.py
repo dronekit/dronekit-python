@@ -75,7 +75,7 @@ def replay_mission(payload):
         messages = payload['messages']
     except:
         print "Exception: payload from site is: %s" % payload
-        exit()
+        sys.exit()
     messages = filter(lambda obj: obj['typ'] == 'MAVLINK_MSG_ID_GLOBAL_POSITION_INT', messages)
     messages = map(lambda obj: obj['fld'], messages)
 
@@ -122,4 +122,4 @@ replay_mission(json)
 #Close vehicle object before exiting script
 print "Close vehicle object"
 vehicle.close()
-print("Completed")
+print("Completed...")
