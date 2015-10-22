@@ -124,7 +124,7 @@ the mode is changed.
         # Use the python gps package to access the laptop GPS
         gpsd = gps.gps(mode=gps.WATCH_ENABLE)
 
-        #Arm and take of to altitude of 5 meters
+        #Arm and take off to an altitude of 5 meters
         arm_and_takeoff(5)
 
         while True:
@@ -152,6 +152,7 @@ the mode is changed.
                 
     except socket.error:
         print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
+        sys.exit(1)
 
 
 
