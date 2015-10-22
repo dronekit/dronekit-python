@@ -23,8 +23,14 @@ args = parser.parse_args()
 print "\nConnecting to vehicle on: %s" % args.connect
 vehicle = connect(args.connect, await_params=True)
 
-print "\nAccumulating vehicle attribute messages (2s)"
-time.sleep(2)
+if vehicle.mode.name == "INITIALISING":
+    print "Waiting for vehicle to initialise"
+    time.sleep(1)
+
+print "\nAccumulating vehicle attribute messages"
+while vehicle.attitude.pitch==None:  #Attitude is fairly quick to propagate
+    print " ..."    
+    time.sleep(1)
 
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
@@ -52,6 +58,13 @@ while not vehicle.mode.name=='GUIDED':  #Wait until mode has changed
     print " Waiting for mode change ..."
     time.sleep(1)
 
+
+# Check we have a good gps fix (required to arm)
+while vehicle.gps_0.fix_type < 2:
+    print "Waiting for GPS fix=3 (needed to arm):", vehicle.gps_0.fix_type
+    time.sleep(1)
+    
+    
 print "\nSet Vehicle.armed=True (currently: %s)" % vehicle.armed 
 vehicle.armed = True
 vehicle.flush()
@@ -105,3 +118,5 @@ vehicle.flush()
 #Close vehicle object before exiting script
 print "\nClose vehicle object"
 vehicle.close()
+
+print("Completed")

@@ -32,7 +32,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\channel_overrides\
+       cd dronekit-python/examples/channel_overrides/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:

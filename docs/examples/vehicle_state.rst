@@ -29,7 +29,7 @@ In summary, after cloning the repository:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\vehicle_state\
+       cd dronekit-python/examples/vehicle_state/
 
 
 #. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
@@ -49,11 +49,9 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    \dronekit-python\examples\vehicle_state>vehicle_state.py
-
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> ☺APM:Copter V3.3-rc1 (d66eec53)
-    >>> ☺Frame: QUAD
+    >>> APM:Copter V3.3-rc1 (d66eec53)
+    >>> Frame: QUAD
 
     Accumulating vehicle attribute messages (2s)
 
