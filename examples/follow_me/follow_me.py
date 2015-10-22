@@ -1,65 +1,109 @@
+"""
+followme - Tracks GPS position of your computer (Linux only).
+
+This example uses the python gps package to read positions from a GPS attached to your 
+laptop and sends a new vehicle.commands.goto command every two seconds to move the
+vehicle to the current point.
+
+When you want to stop follow-me, either change vehicle modes or type Ctrl+C to exit the script.
+
+Example documentation: http://python.dronekit.io/examples/follow_me.html
+"""
+
+from dronekit import connect
 import gps
 import socket
 import time
 from dronekit.lib import VehicleMode, Location
 
-def followme():
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Tracks GPS position of your computer (Linux only). Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
+
+
+
+def arm_and_takeoff(aTargetAltitude):
     """
-    followme - A DroneAPI example
-
-    This is a somewhat more 'meaty' example on how to use the DroneAPI.  It uses the
-    python gps package to read positions from the GPS attached to your laptop an
-    every two seconds it sends a new goto command to the vehicle.
-
-    To use this example:
-    * Run mavproxy.py with the correct options to connect to your vehicle
-    * module load api
-    * api start <path-to-follow_me.py>
-
-    When you want to stop follow-me, either change vehicle modes from your RC
-    transmitter or type "api stop".
+    Arm vehicle and fly to aTargetAltitude.
     """
-    try:
-        # First get an instance of the API endpoint (the connect via web case will be similar)
-        api = local_connect()
+    print "Basic pre-arm checks"
+    # Don't let the user try to fly while autopilot is booting
+    if vehicle.mode.name == "INITIALISING":
+        print "Waiting for vehicle to initialise"
+        time.sleep(1)
+    while vehicle.gps_0.fix_type < 2:
+        print "Waiting for GPS...:", vehicle.gps_0.fix_type
+        time.sleep(1)
 
-        # Now get our vehicle (we assume the user is trying to control the first vehicle attached to the GCS)
-        v = api.get_vehicles()[0]
+    print "Arming motors"
+    # Copter should arm in GUIDED mode
+    vehicle.mode    = VehicleMode("GUIDED")
+    vehicle.armed   = True
+    vehicle.flush()
 
-        # Don't let the user try to fly while the board is still booting
-        if v.mode.name == "INITIALISING":
-            print "Vehicle still booting, try again later"
-            return
+    while not vehicle.armed:
+        print " Waiting for arming..."
+        time.sleep(1)
 
-        cmds = v.commands
-        is_guided = False  # Have we sent at least one destination point?
+    print "Taking off!"
+    vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+    vehicle.flush()
 
-        # Use the python gps package to access the laptop GPS
-        gpsd = gps.gps(mode=gps.WATCH_ENABLE)
+    # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
+    #  after Vehicle.commands.takeoff will execute immediately).
+    while True:
+        print " Altitude: ", vehicle.location.alt
+        if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+            print "Reached target altitude"
+            break;
+        time.sleep(1)
 
-        while not api.exit:
-            # This is necessary to read the GPS state from the laptop
-            gpsd.next()
 
-            if is_guided and v.mode.name != "GUIDED":
-                print "User has changed flight modes - aborting follow-me"
-                break
 
-            # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
-            if (gpsd.valid & gps.LATLON_SET) != 0:
-                altitude = 30  # in meters
-                dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
-                print "Going to: %s" % dest
+try:
+    # Use the python gps package to access the laptop GPS
+    gpsd = gps.gps(mode=gps.WATCH_ENABLE)
 
-                # A better implementation would only send new waypoints if the position had changed significantly
-                cmds.goto(dest)
-                is_guided = True
-                v.flush()
+    #Arm and take off to altitude of 5 meters
+    arm_and_takeoff(5)
 
-                # Send a new target every two seconds
-                # For a complete implementation of follow me you'd want adjust this delay
-                time.sleep(2)
-    except socket.error:
-        print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
+    while True:
+    
+        if vehicle.mode.name != "GUIDED":
+            print "User has changed flight modes - aborting follow-me"
+            break    
+            
+        # Read the GPS state from the laptop
+        gpsd.next()
 
-followme()
+        # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
+        if (gpsd.valid & gps.LATLON_SET) != 0:
+            altitude = 30  # in meters
+            dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
+            print "Going to: %s" % dest
+
+            # A better implementation would only send new waypoints if the position had changed significantly
+            vehicle.commands.goto(dest)
+            vehicle.flush()
+
+            # Send a new target every two seconds
+            # For a complete implementation of follow me you'd want adjust this delay
+            time.sleep(2)
+            
+except socket.error:
+    print "Error: gpsd service does not seem to be running, plug in USB GPS or run run-fake-gps.sh"
+    sys.exit(1)
+
+#Close vehicle object before exiting script
+print "Close vehicle object"
+vehicle.close()
+
+print("Completed")
