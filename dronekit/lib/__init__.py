@@ -4,34 +4,55 @@
 This is the API Reference for the DroneKit-Python API.
 
 The main API is the :py:class:`Vehicle <dronekit.lib.Vehicle>` class.
-The code snippet below shows how to obtain an instance of the (first) connected vehicle:
+The code snippet below shows how to use :py:func:`connect` to obtain an instance a connected vehicle:
 
 .. code:: python
 
-    # Get a local APIConnection to the autopilot (from companion computer or GCS).
-    api_connection = local_connect()
-    # Get the first connected vehicle from the APIConnection
-    vehicle = api.get_vehicles()[0]
+    from dronekit import connect
+    
+    # Connect to the Vehicle using "connection string" (in this case an address on network)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
+
 
 :py:class:`Vehicle <dronekit.lib.Vehicle>` provides access to vehicle *state* through python attributes
-(e.g. :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`)
+(e.g. :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`)
 and to settings/parameters though the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` attribute.
 Asynchronous notification on vehicle attribute changes is available by registering observers.
 
 :py:class:`Vehicle <dronekit.lib.Vehicle>` provides two main ways to control vehicle movement and other operations:
 
-* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute
-  (see :py:class:`CommandSequence <dronekit.lib.CommandSequence>` for more information).
 * Direct control of movement outside of missions is also supported. To set a target position you can use
   :py:func:`CommandSequence.goto <dronekit.lib.CommandSequence.goto>`.
   Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
   (:py:func:`Vehicle.send_mavlink <dronekit.lib.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <dronekit.lib.Vehicle.message_factory>`).
-
+* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute
+  (see :py:class:`CommandSequence <dronekit.lib.CommandSequence>` for more information).
+  
 A number of other useful classes and methods are listed below.
 
 ----
 
 .. todo:: Update this when have confirmed how to register for parameter notifications.
+
+
+
+.. py:function:: connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4)
+
+    Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
+    Connection string parameters for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
+
+    :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
+    :param Bool await_params: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
+    :param status_printer: NA    
+    :param Vehicle vehicle_class: NA     
+    :param int rate: NA
+    
+    :returns: A connected :py:class:`Vehicle` object.
+
+----
+    
+    .. todo:: Confirm what status_printer, vehicle_class and rate "mean". Can we hide in API. Can we get method defined in this file.
+    
 """
 
 import threading
@@ -265,10 +286,6 @@ class VehicleMode(object):
     The code snippet below shows how to change the vehicle mode to AUTO:
 
     .. code:: python
-
-        # Get an instance of the API endpoint and a vehicle
-        api = local_connect()
-        vehicle = api.get_vehicles()[0]
 
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
@@ -908,9 +925,8 @@ class CommandSequence(object):
     .. code-block:: python
         :emphasize-lines: 5-10
 
-        # Connect to API provider and get vehicle
-        api = local_connect()
-        vehicle = api.get_vehicles()[0]
+        #Connect to a vehicle object (for example, on com14)
+        vehicle = connect('com14', await_params=True)
 
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = vehicle.commands
