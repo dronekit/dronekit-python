@@ -120,11 +120,11 @@ Flying to a point - Goto
 ------------------------
 
 The vehicle is already in ``GUIDED`` mode, so to send it to a certain point we just need to 
-call :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` with the target location:
+call :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` with the target ``LocationGlobal``:
 
 .. code-block:: python
 
-    point1 = Location(-35.361354, 149.165218, 20, is_relative=True)
+    point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
     vehicle.commands.goto(point1)
 
     # sleep so we can see the change in map

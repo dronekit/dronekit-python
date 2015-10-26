@@ -37,7 +37,7 @@ Position control
 
 Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
 
-The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. This takes a :py:class:`Location <dronekit.lib.Location>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
+The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. This takes a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
 
 The method is used as shown below:
 
@@ -46,8 +46,8 @@ The method is used as shown below:
     # Set mode to guided - this is optional as the goto method will change the mode if needed.
     vehicle.mode = VehicleMode("GUIDED")
 
-    # Set the target location
-    a_location = Location(-34.364114, 149.166022, 30, is_relative=True)
+    # Set the target location in global frame
+    a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
     vehicle.commands.goto(a_location)
 
 
@@ -282,8 +282,8 @@ The command is useful when setting the vehicle position directly. It is not need
 Setting the ROI
 ---------------
 
-Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command to point camera gimbal at a specified region of interest (:py:class:`Location <dronekit.lib.Location>`). The vehicle may also turn to face the ROI.	
-	
+Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command to point camera gimbal at a specified region of interest (:py:class:`LocationGlobal <dronekit.lib.LocationGlobal>`). The vehicle may also turn to face the ROI.
+
 .. code-block:: python
 
     def set_roi(location):
@@ -336,8 +336,8 @@ The *home location* is updated immediately in ArduPilot, but the change may not 
 
 .. code-block:: python
 
-    # Set new Home location to current location 
-    set_home(vehicle.location)
+    # Set new Home location to current LocationGlobal
+    set_home(vehicle.location.global_frame)
     # Reloads the home location in GCSs
     cmds = vehicle.commands
     cmds.download()
@@ -370,8 +370,8 @@ to the Earth's poles.
 
     def get_location_metres(original_location, dNorth, dEast):
         """
-        Returns a Location object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-        specified `original_location`. The returned Location has the same `alt and `is_relative` values 
+        Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
+        specified `original_location`. The returned LocationGlobal has the same `alt and `is_relative` values 
         as `original_location`.
 
         The function is useful when you want to move the vehicle around specifying locations relative to 
@@ -390,34 +390,34 @@ to the Earth's poles.
         #New position in decimal degrees
         newlat = original_location.lat + (dLat * 180/math.pi)
         newlon = original_location.lon + (dLon * 180/math.pi)
-        return Location(newlat, newlon,original_location.alt,original_location.is_relative)
+        return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
 
 
 .. code-block:: python
 
     def get_distance_metres(aLocation1, aLocation2):
         """
-        Returns the ground distance in metres between two Location objects.
-	
+        Returns the ground distance in metres between two LocationGlobal objects.
+
         This method is an approximation, and will not be accurate over large distances and close to the 
         earth's poles. It comes from the ArduPilot test code: 
         https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
         """
-        dlat 		= aLocation2.lat - aLocation1.lat
-        dlong		= aLocation2.lon - aLocation1.lon
+        dlat = aLocation2.lat - aLocation1.lat
+        dlong = aLocation2.lon - aLocation1.lon
         return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
-		
+
 .. code-block:: python
 
     def get_bearing(aLocation1, aLocation2):
         """
-        Returns the bearing between the two Location objects passed as parameters.
-	
+        Returns the bearing between the two LocationGlobal objects passed as parameters.
+
         This method is an approximation, and may not be accurate over large distances and close to the 
         earth's poles. It comes from the ArduPilot test code: 
         https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
-        """	
+        """
         off_x = aLocation2.lon - aLocation1.lon
         off_y = aLocation2.lat - aLocation1.lat
         bearing = 90.00 + math.atan2(-off_y, off_x) * 57.2957795

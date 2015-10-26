@@ -14,7 +14,8 @@ from dronekit import connect
 import gps
 import socket
 import time
-from dronekit.lib import VehicleMode, Location
+import sys
+from dronekit.lib import VehicleMode, LocationGlobal
 
 #Set up option parsing to get connection string
 import argparse  
@@ -58,8 +59,8 @@ def arm_and_takeoff(aTargetAltitude):
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
     while True:
-        print " Altitude: ", vehicle.location.alt
-        if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+        print " Altitude: ", vehicle.location.global_frame.alt
+        if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
             break;
         time.sleep(1)
@@ -85,7 +86,7 @@ try:
         # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
         if (gpsd.valid & gps.LATLON_SET) != 0:
             altitude = 30  # in meters
-            dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
+            dest = LocationGlobal(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
             print "Going to: %s" % dest
 
             # A better implementation would only send new waypoints if the position had changed significantly

@@ -114,7 +114,7 @@ All attributes in DroneKit can have observers - this is the primary mechanism yo
     ...
 
     def location_callback(self, location):
-        location = self.vehicle.location
+        location = self.vehicle.location.global_frame
 
         if location.alt is not None:
             self.altitude = location.alt

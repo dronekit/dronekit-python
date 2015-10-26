@@ -7,15 +7,15 @@ Example: Vehicle State
 This example shows how to get/set vehicle attribute and parameter information, 
 how to observe vehicle attribute changes, and how to get the home position.
 
-The guide topic :ref:`vehicle-information` provides a more detailed explanation of how the API
-should be used.
+The guide topic :ref:`vehicle-information` provides a more detailed explanation 
+of how the API should be used.
 
 
 Running the example
 ===================
 
-The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
-and DroneKit have been set up as described in :ref:`get-started`).
+The example can be run as described in :doc:`running_examples` (which in turn assumes that 
+the vehicle and DroneKit have been set up as described in :ref:`get-started`).
 
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run. You can also 
@@ -56,7 +56,8 @@ On the command prompt you should see (something like):
     Accumulating vehicle attribute messages (2s)
 
     Get all vehicle attribute values:
-     Location: Location:lat=-35.3632601,lon=149.1652279,alt=-0.00999999977648,is_relative=False
+     Global Location: LocationGlobal:lat=-35.363261,lon=149.1652299,alt=0.0,is_relative=False
+     Local Location: LocationLocal:north=None,east=None,down=None
      Attitude: Attitude:pitch=0.00486609805375,yaw=0.489637970924,roll=0.00645932834595
      Velocity: [-0.12, 0.06, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
@@ -117,10 +118,8 @@ Known issues
 This example works around the :ref:`known issues in the API <api-information-known-issues>`. 
 Provided that the vehicle is connected and able to arm, it should run through to completion.
 
-Two cases where you may observe issues are:
+You may observe these issues:
 
-* You will see an error ``Timeout setting THR_MIN to 10.000000``. This can be ignored because the value is actually set. 
-  See `#12 Timeout error when setting a parameter <https://github.com/dronekit/dronekit-python/issues/12>`_ for information. 
 * When the observer sets the mode callback, it waits two seconds after changing the mode before removing the observer
   (to ensure that the callback function is run before the observer is removed). In this time you may see the callback being 
   called twice even though the mode is only changed once. 

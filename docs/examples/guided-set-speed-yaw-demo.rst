@@ -201,13 +201,13 @@ This takes a function argument of either :ref:`Vehicle.commands.goto() <guided_m
 .. code-block:: python
 
     def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
-        currentLocation=vehicle.location
+        currentLocation=vehicle.location.global_frame
         targetLocation=get_location_metres(currentLocation, dNorth, dEast)
         targetDistance=get_distance_metres(currentLocation, targetLocation)
         gotoFunction(targetLocation)
 
         while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
-            remainingDistance=get_distance_metres(vehicle.location, targetLocation)
+            remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
             print "Distance to target: ", remainingDistance
             if remainingDistance<=targetDistance*0.01: #Just below target, in case of undershoot.
                 print "Reached target"
@@ -245,7 +245,7 @@ which is used to directly specify the speed components of the vehicle. The funct
         msg = vehicle.message_factory.set_position_target_global_int_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
-            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame		
+            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame
             0b0000111111000111, # type_mask (only speeds enabled)
             0, # lat_int - X Position in WGS84 frame in 1e7 * meters
             0, # lon_int - Y Position in WGS84 frame in 1e7 * meters
@@ -278,7 +278,7 @@ which is used to directly specify the target location of the vehicle. When used 
         msg = vehicle.message_factory.set_position_target_global_int_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
-            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame		
+            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame
             0b0000111111111000, # type_mask (only speeds enabled)
             aLocation.lat*1e7, # lat_int - X Position in WGS84 frame in 1e7 * meters
             aLocation.lon*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters

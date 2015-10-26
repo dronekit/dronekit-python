@@ -50,7 +50,8 @@ The code fragment below shows how to read and print all the attributes. The valu
 .. code:: python
     
     # vehicle is an instance of the Vehicle class
-    print "Location: %s" % vehicle.location
+    print "Global Location: %s" % vehicle.location.global_frame
+    print "Local Location: %s" % vehicle.location.local_frame    #NED
     print "Attitude: %s" % vehicle.attitude
     print "Velocity: %s" % vehicle.velocity
     print "GPS: %s" % vehicle.gps_0
@@ -140,8 +141,9 @@ attribute changes. The two second ``sleep()`` is required because otherwise the 
      
     # Callback function. The parameter is the name of the observed attribute (a string)
     def location_callback(attribute):
-        print " CALLBACK: Location changed to: ", vehicle.location
-
+        print " CALLBACK: Global Location changed to: ", vehicle.location.global_frame
+        print " CALLBACK: Location changed to: ", vehicle.location.local_frame
+        
     # Add a callback. The first parameter the name of the observed attribute (a string).
     vehicle.add_attribute_observer('location', location_callback)
 
@@ -154,7 +156,8 @@ attribute changes. The two second ``sleep()`` is required because otherwise the 
 
 The callback is triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
 Callback code may therefore choose to cache the result and only report changes. 
-For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
+For example, the following code can be used in the callback to only print output when the value of 
+:py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
 
 .. code:: python
 

@@ -145,11 +145,11 @@ class LocationGlobal(object):
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
     The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
 
-    For example, a location object might be defined as:
+    For example, a global location object might be defined as:
 
     .. code:: python
 
-       Location(-34.364114, 149.166022, 30, is_relative=True)
+       LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
 
     .. todo:: FIXME: Location class - possibly add a vector3 representation.
 
@@ -372,19 +372,22 @@ class HasObservers(object):
         """
         Add an attribute observer.
 
-        The observer is called with the ``attr_name`` argument. This can be used to access
-        the vehicle parameter, as shown below:
+        The observer callback function is called with the ``attr_name`` argument. 
+        This can be used to infer the related attribute if the same callback is used 
+        for watching several attributes.
+        
+        The example below shows how to get callbacks for location changes:
 
         .. code:: python
 
+            #Callback to print the location in global and local frames
+            def location_callback(location):
+                print "Location (Global): ", vehicle.location.global_frame
+                print "Location (Local): ", vehicle.location.local_frame
+
             #Add observer for the vehicle's current location
             vehicle.add_attribute_observer('location', location_callback)
-
-            #Callback to print the location
-            def location_callback(location):
-                print "Location: ", vehicle.location
-
-
+            
         .. note::
             Attribute changes will only be published for changes due to some other entity.
             They will not be published for changes made by the local API client
@@ -393,7 +396,7 @@ class HasObservers(object):
         :param attr_name: The attribute to watch.
         :param observer: The callback to invoke when a change in the attribute is detected.
 
-        .. todo:: Check that the defect for endless repetition after thread closes is fixed: https://github.com/dronekit/dronekit-python/issues/74
+
         """
         l = self.__observers.get(attr_name)
         if l is None:
@@ -406,11 +409,11 @@ class HasObservers(object):
         """
         Remove an observer.
 
-        For example, the following line would remove a previously added vehicle 'location' observer called location_callback:
+        For example, the following line would remove a previously added vehicle 'global_frame' observer called location_callback:
 
         .. code:: python
 
-            vehicle.remove_attribute_observer('location', location_callback)
+            vehicle.remove_attribute_observer('global_frame', location_callback)
 
 
         :param attr_name: The attribute name that is to have an observer removed.
@@ -990,18 +993,20 @@ class CommandSequence(object):
 
     def goto(self, location):
         '''
-        Go to a specified location (changing :py:class:`VehicleMode` to ``GUIDED`` if necessary).
+        Go to a specified global location (:py:class:`LocationGlobal`).
+
+        The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
 
         .. code:: python
 
             # Set mode to guided - this is optional as the goto method will change the mode if needed.
             vehicle.mode = VehicleMode("GUIDED")
 
-            # Set the location to head towards
-            a_location = Location(-34.364114, 149.166022, 30, is_relative=True)
+            # Set the LocationGlobal to head towards
+            a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
             vehicle.commands.goto(a_location)
 
-        :param Location location: The target location.
+        :param LocationGlobal location: The target location.
         '''
         pass
 

@@ -11,7 +11,7 @@ import simplejson
 from pymavlink import mavutil
 import dronekit.lib
 from dronekit import connect
-from dronekit.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, LocationGlobal
 
 import cherrypy
 from cherrypy.process import wspbus, plugins
@@ -114,7 +114,7 @@ class Drone(object):
         return [self.current_location.lat, self.current_location.lon]
 
     def location_callback(self, location):
-        location = self.vehicle.location
+        location = self.vehicle.location.global_frame
 
         if location.alt is not None:
             self.altitude = location.alt

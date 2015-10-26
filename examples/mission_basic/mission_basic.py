@@ -7,7 +7,7 @@ Full documentation is provided at http://python.dronekit.io/examples/mission_bas
 from dronekit import connect
 import time
 import math
-from dronekit.lib import VehicleMode, Location, Command
+from dronekit.lib import VehicleMode, LocationGlobal, Command
 from pymavlink import mavutil
 
 
@@ -26,7 +26,7 @@ vehicle = connect(args.connect, await_params=True)
 
 def get_location_metres(original_location, dNorth, dEast):
     """
-    Returns a Location object containing the latitude/longitude `dNorth` and `dEast` metres from the 
+    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
     specified `original_location`. The returned Location has the same `alt and `is_relative` values 
     as `original_location`.
 
@@ -44,12 +44,12 @@ def get_location_metres(original_location, dNorth, dEast):
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
-    return Location(newlat, newlon,original_location.alt,original_location.is_relative)
+    return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
 
 
 def get_distance_metres(aLocation1, aLocation2):
     """
-    Returns the ground distance in metres between two Location objects.
+    Returns the ground distance in metres between two LocationGlobal objects.
 
     This method is an approximation, and will not be accurate over large distances and close to the 
     earth's poles. It comes from the ArduPilot test code: 
@@ -73,8 +73,8 @@ def distance_to_current_waypoint():
     lat=missionitem.x
     lon=missionitem.y
     alt=missionitem.z
-    targetWaypointLocation=Location(lat,lon,alt,is_relative=True)
-    distancetopoint = get_distance_metres(vehicle.location, targetWaypointLocation)
+    targetWaypointLocation=LocationGlobal(lat,lon,alt,is_relative=True)
+    distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
     return distancetopoint
 
 
@@ -107,7 +107,7 @@ def download_mission():
 def adds_square_mission(aLocation, aSize):
     """
     Adds a takeoff command and four waypoint commands to the current mission. 
-    The waypoints are positioned to form a square of side length 2*aSize around the specified location (aLocation).
+    The waypoints are positioned to form a square of side length 2*aSize around the specified LocationGlobal (aLocation).
 
     The function assumes vehicle.commands matches the vehicle mission state 
     (you must have called download at least once in the session and after clearing the mission)
@@ -162,8 +162,8 @@ def arm_and_takeoff(aTargetAltitude):
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
     while True:
-        print " Altitude: ", vehicle.location.alt
-        if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+        print " Altitude: ", vehicle.location.global_frame.alt
+        if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
             print "Reached target altitude"
             break;
         time.sleep(1)
@@ -174,7 +174,7 @@ print 'Clear the current mission'
 clear_mission()
 
 print 'Create a new mission'
-adds_square_mission(vehicle.location,50)
+adds_square_mission(vehicle.location.global_frame,50)
 time.sleep(2)  # This is here so that mission being sent is displayed on console
 
 

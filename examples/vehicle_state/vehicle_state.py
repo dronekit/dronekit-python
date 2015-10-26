@@ -34,8 +34,8 @@ while vehicle.attitude.pitch==None:  #Attitude is fairly quick to propagate
 
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
-print " Global Location: %s" % v.location.global_frame
-print " Local Location: %s" % v.location.local_frame
+print " Global Location: %s" % vehicle.location.global_frame
+print " Local Location: %s" % vehicle.location.local_frame
 print " Attitude: %s" % vehicle.attitude
 print " Velocity: %s" % vehicle.velocity
 print " GPS: %s" % vehicle.gps_0
@@ -85,7 +85,7 @@ print " Wait 2s so callback invoked before observer removed"
 time.sleep(2)
 
 # Remove observer - specifying the attribute and previously registered callback function
-vehicle.remove_attribute_observer('mode', mode_callback)	
+vehicle.remove_attribute_observer('mode', mode_callback)
 
 
 # Get Vehicle Home location ((0 index in Vehicle.commands)

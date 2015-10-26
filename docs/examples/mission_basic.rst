@@ -137,7 +137,7 @@ The :ref:`source code <example_mission_basic_source_code>` is relatively self-do
 operations are explained in the guide topic :ref:`auto_mode_vehicle_control` .
 
 In overview, the example first calls ``clear_mission()`` to clear the current mission and then creates and 
-uploads a new mission using ``adds_square_mission(vehicle.location,50)``. This function defines a mission with a takeoff 
+uploads a new mission using ``adds_square_mission(vehicle.location.global_frame,50)``. This function defines a mission with a takeoff 
 command and four waypoints arranged in a square around the central position.
 
 After taking off (in guided mode using the ``takeoff()`` function) the example starts the mission by setting the mode to AUTO:
