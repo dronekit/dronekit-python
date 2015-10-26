@@ -142,7 +142,6 @@ the mode is changed.
 
                 # A better implementation would only send new waypoints if the position had changed significantly
                 vehicle.commands.goto(dest)
-                vehicle.flush()
 
                 # Send a new target every two seconds
                 # For a complete implementation of follow me you'd want adjust this delay

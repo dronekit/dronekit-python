@@ -33,7 +33,6 @@ def test_115(connpath):
 
     # Disarm. A callback of None should not throw errors
     v.armed = False
-    v.flush()
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
 
@@ -42,6 +41,5 @@ def test_115(connpath):
 
     # Re-arm should not throw errors.
     v.armed = True
-    v.flush()
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)

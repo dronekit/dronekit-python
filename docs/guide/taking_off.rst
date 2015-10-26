@@ -45,15 +45,12 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         # Copter should arm in GUIDED mode
         vehicle.mode    = VehicleMode("GUIDED")
         vehicle.armed   = True
-        vehicle.flush()
 
         while not vehicle.armed:
             print " Waiting for arming..."
             time.sleep(1)
 
         print "Taking off!"
-        vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-        vehicle.flush()
 
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
         #  after Vehicle.commands.takeoff will execute immediately).
@@ -86,9 +83,8 @@ vehicle has booted and has a GPS lock:
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
 
-Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then call :py:func:`flush() <dronekit.lib.Vehicle.flush>`
-to guarantee that the commands have been sent, and then wait until arming is confirmed before sending the 
-:py:func:`takeoff <dronekit.lib.CommandSequence.takeoff>` command.
+Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then wait until arming is confirmed 
+before sending the :py:func:`takeoff <dronekit.lib.CommandSequence.takeoff>` command.
 
 .. code-block:: python
 
@@ -96,7 +92,6 @@ to guarantee that the commands have been sent, and then wait until arming is con
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
-    vehicle.flush()
 
     while not vehicle.armed:
         print " Waiting for arming..."
@@ -104,7 +99,6 @@ to guarantee that the commands have been sent, and then wait until arming is con
 
     print "Taking off!"
     vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-    vehicle.flush()
 
 The ``takeoff`` command is asynchronous and can be interrupted if another command arrives before it reaches 
 the target altitude. This could have potentially serious consequences if the vehicle is commanded to move 

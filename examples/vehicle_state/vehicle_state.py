@@ -53,7 +53,6 @@ print " Armed: %s" % vehicle.armed    # settable
 # Set vehicle mode and armed attributes (the only settable attributes)
 print "\nSet Vehicle.mode=GUIDED (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("GUIDED")
-vehicle.flush()  # Flush to guarantee that previous writes to the vehicle have taken place
 while not vehicle.mode.name=='GUIDED':  #Wait until mode has changed
     print " Waiting for mode change ..."
     time.sleep(1)
@@ -67,7 +66,6 @@ while vehicle.gps_0.fix_type < 2:
     
 print "\nSet Vehicle.armed=True (currently: %s)" % vehicle.armed 
 vehicle.armed = True
-vehicle.flush()
 while not vehicle.armed:
     print " Waiting for arming..."
     time.sleep(1)
@@ -82,7 +80,6 @@ vehicle.add_attribute_observer('mode', mode_callback)
 
 print " Set mode=STABILIZE (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("STABILIZE")
-vehicle.flush()
 
 print " Wait 2s so callback invoked before observer removed"
 time.sleep(2)
@@ -103,7 +100,6 @@ print " Home WP: %s" % cmds[0]
 print "\nRead vehicle param 'THR_MIN': %s" % vehicle.parameters['THR_MIN']
 print "Write vehicle param 'THR_MIN' : 10"
 vehicle.parameters['THR_MIN']=10
-vehicle.flush()
 print "Read new value of param 'THR_MIN': %s" % vehicle.parameters['THR_MIN']
 
 
@@ -112,7 +108,6 @@ print "\nReset vehicle attributes/parameters and exit"
 vehicle.mode = VehicleMode("STABILIZE")
 vehicle.armed = False
 vehicle.parameters['THR_MIN']=130
-vehicle.flush()
 
 
 #Close vehicle object before exiting script

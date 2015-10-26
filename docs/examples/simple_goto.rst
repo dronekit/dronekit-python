@@ -120,14 +120,12 @@ Flying to a point - Goto
 ------------------------
 
 The vehicle is already in ``GUIDED`` mode, so to send it to a certain point we just need to 
-call :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` with the target location, 
-and then :py:func:`flush() <dronekit.lib.Vehicle.flush>` the command:
+call :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` with the target location:
 
 .. code-block:: python
 
     point1 = Location(-35.361354, 149.165218, 20, is_relative=True)
     vehicle.commands.goto(point1)
-    vehicle.flush()
 
     # sleep so we can see the change in map
     time.sleep(30)
@@ -148,7 +146,6 @@ To return to the home position and land, we set the mode to ``RTL``:
 .. code-block:: python
 
     vehicle.mode    = VehicleMode("RTL")
-    vehicle.flush()
 
 
 Source code

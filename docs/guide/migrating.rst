@@ -114,7 +114,7 @@ before exiting to ensure that all messages have flushed before the script comple
 
 .. code:: python
 
-    #About to exit script
+    # About to exit script
     vehicle.close()
 
     

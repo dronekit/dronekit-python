@@ -91,22 +91,21 @@ Setting attributes
 Only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
 attributes can be written.
 
-The attributes are set by assigning a value. Calling :py:func:`Vehicle.flush() <dronekit.lib.Vehicle.flush>`
-then forces DroneKit to send outstanding messages.
+The attributes are set by assigning a value:
 
 .. code:: python
 
     #disarm the vehicle
     vehicle.armed = False
-    vehicle.flush()  # Flush to ensure changes are sent to autopilot
 
 
 .. warning::
 
-    After ``flush()`` returns the message is guaranteed to have been sent to the autopilot, but it is **not guaranteed to succeed**. 
+    Changing a value is **not guaranteed to succeed**. 
     For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks.
 
-    While the autopilot does send information about the success (or failure) of the request, this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
+    While the autopilot does send information about the success (or failure) of the request, 
+    this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
 
 
 Code should not assume that an attempt to set an attribute will succeed. The example code snippet below polls the attribute values
@@ -116,7 +115,6 @@ to confirm they have changed before proceeding.
     
     vehicle.mode = VehicleMode("GUIDED")
     vehicle.armed = True
-    vehicle.flush()  # Flush to ensure changes are sent to autopilot
     while not vehicle.mode.name=='GUIDED' and not vehicle.armed and not api.exit:
         print " Getting ready to take off ..."
         time.sleep(1)
@@ -213,15 +211,12 @@ throttle at which the motors will keep spinning.
 Setting parameters
 ------------------
 
-Vehicle parameters are set as shown in the code fragment below, using the parameter name as a "key". As with attributes, the values are not guaranteed to have been sent to the vehicle until after 
-:py:func:`flush() <Vehicle.flush>` returns.
+Vehicle parameters are set as shown in the code fragment below, using the parameter name as a "key":
 
 .. code:: python
 
     # Change the parameter value (Copter, Rover)
     vehicle.parameters['THR_MIN']=100
-    vehicle.flush()
-
 
 
 Observing parameter changes

@@ -565,11 +565,9 @@ class Vehicle(HasObservers):
 
             # Override channels 1 and 4 (only).
             vehicle.channel_override = { "1" : 900, "4" : 1000 }
-            vehicle.flush()
 
             # Cancel override on channel 1 and 4 by sending 0
             vehicle.channel_override = { "1" : 0, "4" : 0 }
-            vehicle.flush()
 
 
         .. versionchanged:: 1.0
@@ -779,10 +777,9 @@ class Vehicle(HasObservers):
 
     def flush(self):
         """
-        It is important to understand that setting attributes/changing vehicle state may occur over a slow link.
+        Call ``flush()`` after :py:func:`adding <CommandSequence.add>` or :py:func:`clearing <CommandSequence.clear>` mission commands.
 
-        It is **not** guaranteed that the effects of previous commands will be visible from reading vehicle attributes unless
-        ``flush()`` is called first.  After the return from flush any writes are guaranteed to have completed (or thrown an
+        After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
         """
         pass
@@ -816,9 +813,11 @@ class Mission(object):
     """
     Access to historical missions.
 
-    .. warning:: This function is a *placeholder*. It has no implementation in DroneKit-Python release 1.
+    .. warning:: 
+    
+        This function is a *placeholder*. It has no implementation in DroneKit-Python release 1.
 
-	    Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
+        Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
 
     .. todo:: FIXME: Mission class needs to be updated when it is implemented (after DroneKit Python release 1).
     """
@@ -831,7 +830,6 @@ class Parameters(HasObservers):
     `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
 
     Attribute names are generated automatically based on parameter names.  The example below shows how to get and set the value of a parameter.
-    Note that 'set' operations are not guaranteed to be complete until :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
 
     .. code:: python
 
@@ -840,7 +838,7 @@ class Parameters(HasObservers):
 
         # Change the parameter value to something different.
         vehicle.parameters['THR_MIN']=100
-        vehicle.flush()
+
 
     .. note::
 
@@ -983,10 +981,9 @@ class CommandSequence(object):
             # Set mode to guided - this is optional as the goto method will change the mode if needed.
             vehicle.mode = VehicleMode("GUIDED")
 
-            # Set the location to goto() and flush()
+            # Set the location to head towards
             a_location = Location(-34.364114, 149.166022, 30, is_relative=True)
             vehicle.commands.goto(a_location)
-            vehicle.flush()
 
         :param Location location: The target location.
         '''
@@ -1008,6 +1005,8 @@ class CommandSequence(object):
     def add(self, cmd):
         '''
         Add a new command (waypoint) at the end of the command list.
+        
+        .. note:: Commands are sent to the vehicle only after you call :py:func:`Vehicle.flush`.
 
         :param Command cmd: The command to be added.
         '''

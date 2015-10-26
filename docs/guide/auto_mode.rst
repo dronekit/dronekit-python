@@ -217,7 +217,6 @@ To start a mission change the mode to AUTO:
 
     # Set the vehicle into auto mode
     vehicle.mode = VehicleMode("AUTO")
-    vehicle.flush()
 
 .. note:: 
 

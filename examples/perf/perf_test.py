@@ -1,10 +1,7 @@
 #
 # This is a small example of the python drone API
-# Usage:
-# * mavproxy.py
-# * module load api
-# * api start small-demo.py
 #
+from dronekit import connect
 from dronekit.lib import VehicleMode
 from pymavlink import mavutil
 import time
@@ -103,7 +100,19 @@ Turn on hw flow control (and use --rtscts on mavproxy)
 mavproxy.py --master=/dev/ttyMFD1,115200 --cmd="api start perf_test.py"
 """
 
-global v
+#Set up option parsing to get connection string
+import argparse  
+parser = argparse.ArgumentParser(description='Example that demonstrates mission import/export from a file. Connects to SITL on local PC by default.')
+parser.add_argument('--connect', default='127.0.0.1:14550',
+                   help="vehicle connection target. Default '127.0.0.1:14550'")
+args = parser.parse_args()
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % args.connect
+vehicle = connect(args.connect, await_params=True)
+
+#global vehicle
 
 
 def scatterplot(x,y):
@@ -168,7 +177,7 @@ def send_testpackets():
         #print "send ROI cmds"
 
         # create the SET_POSITION_TARGET_GLOBAL_INT command
-        msg = v.message_factory.set_position_target_global_int_encode(
+        msg = vehicle.message_factory.set_position_target_global_int_encode(
                                                                                  0,       # time_boot_ms (not used)
                                                                                  1, 1,    # target system, target component
                                                                                  mavutil.mavlink.MAV_FRAME_GLOBAL, # frame
@@ -179,10 +188,10 @@ def send_testpackets():
                                                                                  0, 0)    # yaw, yaw_rate (not used)
 
         # send command to vehicle
-        v.send_mavlink(msg)
+        vehicle.send_mavlink(msg)
 
         # set ROI
-        msg = v.message_factory.command_long_encode(
+        msg = vehicle.message_factory.command_long_encode(
                                                         1, 1,    # target system, target component
                                                         #mavutil.mavlink.MAV_CMD_DO_SET_RELAY, #command
                                                         mavutil.mavlink.MAV_CMD_DO_SET_ROI, #command
@@ -193,67 +202,37 @@ def send_testpackets():
                                                         0
                                                         )
 
-        v.send_mavlink(msg)
+        vehicle.send_mavlink(msg)
 
-        # Always call flush to guarantee that previous writes to the vehicle have taken place
-        v.flush()
 
-# First get an instance of the API endpoint
-api = local_connect()
-# get our vehicle - when running with mavproxy it only knows about one vehicle (for now)
-v = api.get_vehicles()[0]
 # Print out some interesting stats about the vehicle
-print "Mode: %s" % v.mode
-print "Location: %s" % v.location
-print "Attitude: %s" % v.attitude
-print "Velocity: %s" % v.velocity
-print "GPS: %s" % v.gps_0
-print "Armed: %s" % v.armed
-print "groundspeed: %s" % v.groundspeed
-print "airspeed: %s" % v.airspeed
+print "Mode: %s" % vehicle.mode
+print "Location: %s" % vehicle.location
+print "Attitude: %s" % vehicle.attitude
+print "Velocity: %s" % vehicle.velocity
+print "GPS: %s" % vehicle.gps_0
+print "Armed: %s" % vehicle.armed
+print "groundspeed: %s" % vehicle.groundspeed
+print "airspeed: %s" % vehicle.airspeed
 
 import time
 time.sleep(30)
 
 # Use of the following method is not recommended (it is better to add observer callbacks to attributes) but if you need it
 # it is available...
-v.set_mavlink_callback(mavrx_debug_handler)
+vehicle.set_mavlink_callback(mavrx_debug_handler)
 
 # You can read and write parameters
-#print "Param: %s" % v.parameters['THR_MAX']
+#print "Param: %s" % vehicle.parameters['THR_MAX']
 
 # Now download the vehicle waypoints
-cmds = v.commands
+cmds = vehicle.commands
 cmds.download()
 cmds.wait_valid()
 print "Home WP: %s" % cmds[0]
 print "Current dest: %s" % cmds.next
 
-# Test custom commands
-# Note: For mavlink messages that include a target_system & target_component, those values
-# can just be filled with zero.  The API will take care of using the correct values
-# For instance, from the xml for command_long:
-#                Send a command with up to seven parameters to the MAV
-#
-#                target_system             : System which should execute the command (uint8_t)
-#                target_component          : Component which should execute the command, 0 for all components (uint8_t)
-#                command                   : Command ID, as defined by MAV_CMD enum. (uint16_t)
-#                confirmation              : 0: First transmission of this command. 1-255: Confirmation transmissions (e.g. for kill command) (uint8_t)
-#                param1                    : Parameter 1, as defined by MAV_CMD enum. (float)
-#                param2                    : Parameter 2, as defined by MAV_CMD enum. (float)
-#                param3                    : Parameter 3, as defined by MAV_CMD enum. (float)
-#                param4                    : Parameter 4, as defined by MAV_CMD enum. (float)
-#                param5                    : Parameter 5, as defined by MAV_CMD enum. (float)
-#                param6                    : Parameter 6, as defined by MAV_CMD enum. (float)
-#                param7                    : Parameter 7, as defined by MAV_CMD enum. (float)
-#msg = v.message_factory.command_long_encode(0, 0,
-#                                  mavutil.mavlink.MAV_CMD_CONDITION_YAW, 0,
-#                                  0, 0, 0, 0, 1, 0, 0)
-#print "Created msg: %s" % msg
-#v.send_mavlink(msg)
 
 print "Disarming..."
-v.armed = False
-v.flush()
+vehicle.armed = False
 
-# send_testpackets()

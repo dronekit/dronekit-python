@@ -33,7 +33,6 @@ vehicle = connect(args.connect, await_params=True)
 #Override channels
 print "\nOverriding RC channels for roll and yaw"
 vehicle.channel_override = { "1" : 900, "4" : 1000 }
-vehicle.flush()
 print " Current overrides are:", vehicle.channel_override
 
 # Get all original channel values (before override)
@@ -42,7 +41,6 @@ print " Channel default values:", vehicle.channel_readback
 # Cancel override by setting channels to 0
 print " Cancelling override"
 vehicle.channel_override = { "1" : 0, "4" : 0 }
-vehicle.flush()
 
 # Short wait before exiting
 time.sleep(5)

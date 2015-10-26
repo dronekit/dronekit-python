@@ -43,7 +43,6 @@ def arm_and_takeoff(aTargetAltitude):
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
-    vehicle.flush()
 
     while not vehicle.armed:
         print " Waiting for arming..."
@@ -51,7 +50,6 @@ def arm_and_takeoff(aTargetAltitude):
 
     print "Taking off!"
     vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-    vehicle.flush()
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
@@ -112,7 +110,6 @@ def condition_yaw(heading, relative=False):
         0, 0, 0)    # param 5 ~ 7 not used
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 def set_roi(location):
@@ -135,7 +132,6 @@ def set_roi(location):
         )
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 def set_speed(speed):
@@ -163,7 +159,6 @@ def set_speed(speed):
 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 def set_home(aLocation, aCurrent=1):
@@ -188,7 +183,6 @@ def set_home(aLocation, aCurrent=1):
         )
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -300,7 +294,6 @@ def goto_position_target_global_int(aLocation):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -334,7 +327,6 @@ def goto_position_target_local_ned(north, east, down):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -352,7 +344,6 @@ def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
     targetDistance=get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
-    vehicle.flush()
 
 
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
@@ -395,7 +386,6 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -425,7 +415,6 @@ def send_global_velocity(velocity_x, velocity_y, velocity_z):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -642,7 +631,6 @@ The example is completing. LAND at current location.
 
 print("Setting LAND mode...")
 vehicle.mode = VehicleMode("LAND")
-vehicle.flush()
 
 
 #Close vehicle object before exiting script

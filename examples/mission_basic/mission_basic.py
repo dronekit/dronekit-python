@@ -151,7 +151,6 @@ def arm_and_takeoff(aTargetAltitude):
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
-    vehicle.flush()
 
     while not vehicle.armed:
         print " Waiting for arming..."
@@ -159,7 +158,6 @@ def arm_and_takeoff(aTargetAltitude):
 
     print "Taking off!"
     vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-    vehicle.flush()
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
@@ -186,7 +184,7 @@ arm_and_takeoff(10)
 print "Starting mission"
 # Set mode to AUTO to start mission
 vehicle.mode = VehicleMode("AUTO")
-vehicle.flush()
+
 
 # Monitor mission. 
 # Demonstrates getting and setting the command number 
@@ -207,7 +205,7 @@ while True:
 
 print 'Return to launch'
 vehicle.mode = VehicleMode("RTL")
-vehicle.flush()  # Flush to ensure changes are sent to autopilot
+
 
 #Close vehicle object before exiting script
 print "Close vehicle object"

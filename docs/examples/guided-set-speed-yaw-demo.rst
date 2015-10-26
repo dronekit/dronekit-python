@@ -205,7 +205,6 @@ This takes a function argument of either :ref:`Vehicle.commands.goto() <guided_m
         targetLocation=get_location_metres(currentLocation, dNorth, dEast)
         targetDistance=get_distance_metres(currentLocation, targetLocation)
         gotoFunction(targetLocation)
-        vehicle.flush()
 
         while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
             remainingDistance=get_distance_metres(vehicle.location, targetLocation)
@@ -259,7 +258,6 @@ which is used to directly specify the speed components of the vehicle. The funct
             0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
 
 
 
@@ -292,7 +290,6 @@ which is used to directly specify the target location of the vehicle. When used 
             0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
 
 In the example code this function is called from the :ref:`goto() <example_guided_mode_goto_convenience>` convenience function.	
 
@@ -334,7 +331,7 @@ which is used to directly specify the target location in the North, East, Down f
             0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
+
 
 At time of writing, acceleration and yaw bits are ignored.		
 

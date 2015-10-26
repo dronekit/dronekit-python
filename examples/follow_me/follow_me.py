@@ -47,7 +47,6 @@ def arm_and_takeoff(aTargetAltitude):
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
-    vehicle.flush()
 
     while not vehicle.armed:
         print " Waiting for arming..."
@@ -55,7 +54,6 @@ def arm_and_takeoff(aTargetAltitude):
 
     print "Taking off!"
     vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-    vehicle.flush()
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
@@ -92,7 +90,6 @@ try:
 
             # A better implementation would only send new waypoints if the position had changed significantly
             vehicle.commands.goto(dest)
-            vehicle.flush()
 
             # Send a new target every two seconds
             # For a complete implementation of follow me you'd want adjust this delay
