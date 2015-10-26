@@ -139,7 +139,9 @@ Known issues
     This is blocked by https://github.com/dronekit/dronekit-python/issues/355 (vehicle.commands.clear not working).
     The code output in "running the example"" needs to be updated once this runs cleanly.
     The above text for the error needs to be replaced with original text 
-       > "This example works around known issues in the API:."
+    
+    > "This example works around known issues in the API:."
+    
     Need to check all that clearing is still strictly necessary in DKPY2 which handles race conditions more gracefully.
 
 
