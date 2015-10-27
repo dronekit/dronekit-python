@@ -14,36 +14,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
-class MPParameters(Parameters):
-    """
-    See Parameters baseclass for documentation.
-
-    FIXME - properly publish change notification
-    """
-
-    def __init__(self, module):
-        self.__module = module
-
-    def __getitem__(self, name):
-        self.wait_valid()
-        return self.__module.mav_param[name]
-
-    def __setitem__(self, name, value):
-        self.wait_valid()
-        self.__module.param_set(name, value)
-
-    def set(self, name, value, retries=3, await_valid=False):
-        if await_valid:
-            self.wait_valid()
-        return self.__module.param_set(name, value, retries=retries)
-
-    def wait_valid(self):
-        '''Block the calling thread until parameters have been downloaded'''
-        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        pstate = self.__module.pstate
-        while (pstate.mav_param_count == 0 or len(pstate.mav_param_set) != pstate.mav_param_count) and not self.__module.api.exit:
-            time.sleep(0.200)
-
 class MPCommandSequence(CommandSequence):
     """
     See CommandSequence baseclass for documentation.
@@ -129,7 +99,7 @@ class MPVehicle(Vehicle):
     def __init__(self, module):
         super(MPVehicle, self).__init__()
         self.__module = module
-        self._parameters = MPParameters(module)
+        self._parameters = Parameters(module)
         self._waypoints = None
         self.wpts_dirty = False
 
