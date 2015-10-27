@@ -14,87 +14,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
-class MPCommandSequence(CommandSequence):
-    """
-    See CommandSequence baseclass for documentation.
-    """
-
-    def __init__(self, module):
-        self.__module = module
-
-    def download(self):
-        '''Download all waypoints from the vehicle'''
-        self.wait_valid()
-        self.__module.fetch()
-        # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
-
-    def wait_valid(self):
-        '''Block the calling thread until waypoints have been downloaded'''
-        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        while not self.__module.wp_loaded:
-            time.sleep(0.1)
-
-    def takeoff(self, alt=None):
-        if alt is not None:
-            altitude = float(alt)
-            if math.isnan(alt) or math.isinf(alt):
-                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
-            self.__module.master.mav.command_long_send(self.__module.target_system,
-                                                    self.__module.target_component,
-                                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-                                                    0, 0, 0, 0, 0, 0, 0,
-                                                    altitude)
-
-    def goto(self, l):
-        if l.is_relative:
-            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-        else:
-            frame = mavutil.mavlink.MAV_FRAME_GLOBAL
-        self.__module.master.mav.mission_item_send(self.__module.target_system,
-                                               self.__module.target_component,
-                                               0,
-                                               frame,
-                                               mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                                               2, 0, 0, 0, 0, 0,
-                                               l.lat, l.lon, l.alt)
-
-    def clear(self):
-        '''Clears the command list'''
-        self.wait_valid()
-        self.__module.wploader.clear()
-        self.__module.vehicle.wpts_dirty = True
-
-    def add(self, cmd):
-        '''Add a new command at the end of the command list'''
-        self.wait_valid()
-        self.__module.fix_targets(cmd)
-        self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
-        self.__module.vehicle.wpts_dirty = True
-
-    @property
-    def count(self):
-        return self.__module.wploader.count()
-
-    @property
-    def next(self):
-        """
-        Currently active waypoint number
-
-        (implementation provided by subclass)
-        """
-        return self.__module.last_waypoint
-
-    @next.setter
-    def next(self, index):
-        self.__module.master.waypoint_set_current_send(index)
-
-    def __getitem__(self, index):
-        return self.__module.wploader.wp(index)
-
-    def __setitem__(self, index, value):
-        self.__module.wploader.set(value, index)
-        self.__module.vehicle.wpts_dirty = True
-
 class MPVehicle(Vehicle):
     def __init__(self, module):
         super(MPVehicle, self).__init__()
@@ -224,7 +143,7 @@ class MPVehicle(Vehicle):
         The (editable) waypoints for this vehicle.
         """
         if(self._waypoints is None):  # We create the wpts lazily (because this will start a fetch)
-            self._waypoints = MPCommandSequence(self.__module)
+            self._waypoints = CommandSequence(self.__module)
         return self._waypoints
 
     def send_mavlink(self, message):

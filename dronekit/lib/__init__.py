@@ -737,6 +737,29 @@ class Parameters(HasObservers):
         https://github.com/dronekit/dronekit-python/issues/107
     """
 
+    def __init__(self, module):
+        self.__module = module
+
+    def __getitem__(self, name):
+        self.wait_valid()
+        return self.__module.mav_param[name]
+
+    def __setitem__(self, name, value):
+        self.wait_valid()
+        self.__module.param_set(name, value)
+
+    def set(self, name, value, retries=3, await_valid=False):
+        if await_valid:
+            self.wait_valid()
+        return self.__module.param_set(name, value, retries=retries)
+
+    def wait_valid(self):
+        '''Block the calling thread until parameters have been downloaded'''
+        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
+        pstate = self.__module.pstate
+        while (pstate.mav_param_count == 0 or len(pstate.mav_param_set) != pstate.mav_param_count) and not self.__module.api.exit:
+            time.sleep(0.200)
+
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
     A waypoint object.
@@ -840,13 +863,18 @@ class CommandSequence(object):
         .. todo:: This is a hack. The actual function should be defined here. See https://github.com/dronekit/dronekit-python/issues/64
     """
 
+    def __init__(self, module):
+        self.__module = module
+
     def download(self):
         '''
         Download all waypoints from the vehicle.
 
         The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
         '''
-        pass
+        self.wait_valid()
+        self.__module.fetch()
+        # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_valid(self):
         '''
@@ -854,10 +882,22 @@ class CommandSequence(object):
 
         This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
         '''
-        pass
+        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
+        while not self.__module.wp_loaded:
+            time.sleep(0.1)
 
+    def takeoff(self, alt=None):
+        if alt is not None:
+            altitude = float(alt)
+            if math.isnan(alt) or math.isinf(alt):
+                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
+            self.__module.master.mav.command_long_send(self.__module.target_system,
+                                                    self.__module.target_component,
+                                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                                                    0, 0, 0, 0, 0, 0, 0,
+                                                    altitude)
 
-    def goto(self, location):
+    def goto(self, l):
         '''
         Go to a specified global location (:py:class:`LocationGlobal`).
 
@@ -874,7 +914,17 @@ class CommandSequence(object):
 
         :param LocationGlobal location: The target location.
         '''
-        pass
+        if l.is_relative:
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+        else:
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+        self.__module.master.mav.mission_item_send(self.__module.target_system,
+                                               self.__module.target_component,
+                                               0,
+                                               frame,
+                                               mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                                               2, 0, 0, 0, 0, 0,
+                                               l.lat, l.lon, l.alt)
 
     def clear(self):
         '''
@@ -887,7 +937,9 @@ class CommandSequence(object):
 
         .. todo:: The above note should be removed when https://github.com/dronekit/dronekit-python/issues/132 fixed
         '''
-        pass
+        self.wait_valid()
+        self.__module.wploader.clear()
+        self.__module.vehicle.wpts_dirty = True
 
     def add(self, cmd):
         '''
@@ -897,7 +949,10 @@ class CommandSequence(object):
 
         :param Command cmd: The command to be added.
         '''
-        pass
+        self.wait_valid()
+        self.__module.fix_targets(cmd)
+        self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.vehicle.wpts_dirty = True
 
     @property
     def count(self):
@@ -906,22 +961,25 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return 0
+        return self.__module.wploader.count()
 
     @property
     def next(self):
         """
         Get the currently active waypoint number.
-
-        .. INTERNAL NOTE: (implementation provided by subclass)
         """
-        return None
+        return self.__module.last_waypoint
 
     @next.setter
-    def next(self, value):
+    def next(self, index):
         """
         Set a new ``next`` waypoint for the vehicle.
-
-        .. INTERNAL NOTE: (implementation provided by subclass)
         """
-        pass
+        self.__module.master.waypoint_set_current_send(index)
+
+    def __getitem__(self, index):
+        return self.__module.wploader.wp(index)
+
+    def __setitem__(self, index, value):
+        self.__module.wploader.set(value, index)
+        self.__module.vehicle.wpts_dirty = True
