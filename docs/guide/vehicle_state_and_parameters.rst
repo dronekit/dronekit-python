@@ -50,7 +50,8 @@ The code fragment below shows how to read and print all the attributes. The valu
 .. code:: python
     
     # vehicle is an instance of the Vehicle class
-    print "Location: %s" % vehicle.location
+    print "Global Location: %s" % vehicle.location.global_frame
+    print "Local Location: %s" % vehicle.location.local_frame    #NED
     print "Attitude: %s" % vehicle.attitude
     print "Velocity: %s" % vehicle.velocity
     print "GPS: %s" % vehicle.gps_0
@@ -91,22 +92,21 @@ Setting attributes
 Only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
 attributes can be written.
 
-The attributes are set by assigning a value. Calling :py:func:`Vehicle.flush() <dronekit.lib.Vehicle.flush>`
-then forces DroneKit to send outstanding messages.
+The attributes are set by assigning a value:
 
 .. code:: python
 
     #disarm the vehicle
     vehicle.armed = False
-    vehicle.flush()  # Flush to ensure changes are sent to autopilot
 
 
 .. warning::
 
-    After ``flush()`` returns the message is guaranteed to have been sent to the autopilot, but it is **not guaranteed to succeed**. 
+    Changing a value is **not guaranteed to succeed**. 
     For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks.
 
-    While the autopilot does send information about the success (or failure) of the request, this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
+    While the autopilot does send information about the success (or failure) of the request, 
+    this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
 
 
 Code should not assume that an attempt to set an attribute will succeed. The example code snippet below polls the attribute values
@@ -116,7 +116,6 @@ to confirm they have changed before proceeding.
     
     vehicle.mode = VehicleMode("GUIDED")
     vehicle.armed = True
-    vehicle.flush()  # Flush to ensure changes are sent to autopilot
     while not vehicle.mode.name=='GUIDED' and not vehicle.armed and not api.exit:
         print " Getting ready to take off ..."
         time.sleep(1)
@@ -142,8 +141,9 @@ attribute changes. The two second ``sleep()`` is required because otherwise the 
      
     # Callback function. The parameter is the name of the observed attribute (a string)
     def location_callback(attribute):
-        print " CALLBACK: Location changed to: ", vehicle.location
-
+        print " CALLBACK: Global Location changed to: ", vehicle.location.global_frame
+        print " CALLBACK: Location changed to: ", vehicle.location.local_frame
+        
     # Add a callback. The first parameter the name of the observed attribute (a string).
     vehicle.add_attribute_observer('location', location_callback)
 
@@ -156,7 +156,8 @@ attribute changes. The two second ``sleep()`` is required because otherwise the 
 
 The callback is triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
 Callback code may therefore choose to cache the result and only report changes. 
-For example, the following code can be used in the callback to only print output when the value of :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
+For example, the following code can be used in the callback to only print output when the value of 
+:py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
 
 .. code:: python
 
@@ -213,15 +214,12 @@ throttle at which the motors will keep spinning.
 Setting parameters
 ------------------
 
-Vehicle parameters are set as shown in the code fragment below, using the parameter name as a "key". As with attributes, the values are not guaranteed to have been sent to the vehicle until after 
-:py:func:`flush() <Vehicle.flush>` returns.
+Vehicle parameters are set as shown in the code fragment below, using the parameter name as a "key":
 
 .. code:: python
 
     # Change the parameter value (Copter, Rover)
     vehicle.parameters['THR_MIN']=100
-    vehicle.flush()
-
 
 
 Observing parameter changes

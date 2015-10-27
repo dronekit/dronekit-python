@@ -109,9 +109,9 @@ shown in :ref:`example_mission_basic`):
 .. code:: python
 
     print "Generating %s waypoints from replay..." % len(messages)
-    cmds = v.commands
+    cmds = vehicle.commands
     cmds.clear()
-    v.flush()
+    vehicle.flush()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
@@ -127,7 +127,7 @@ shown in :ref:`example_mission_basic`):
                        0, 0, 0, 0, 0, 0,
                        lat, lon, altitude)
         cmds.add(cmd)
-    v.flush()
+    vehicle.flush()
 
 
 Known issues

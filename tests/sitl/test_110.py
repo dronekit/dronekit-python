@@ -40,7 +40,6 @@ def test_110(connpath):
 
     # Disarm and see update.
     v.armed = False
-    v.flush()
     # Wait for ACK.
     time.sleep(3)
 
@@ -58,7 +57,6 @@ def test_110(connpath):
 
     # Re-arm and see update.
     v.armed = True
-    v.flush()
     # Wait for ack
     time.sleep(3)
 

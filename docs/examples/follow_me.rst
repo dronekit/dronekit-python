@@ -137,12 +137,11 @@ the mode is changed.
             # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
             if (gpsd.valid & gps.LATLON_SET) != 0:
                 altitude = 30  # in meters
-                dest = Location(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
+                dest = LocationGlobal(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
                 print "Going to: %s" % dest
 
                 # A better implementation would only send new waypoints if the position had changed significantly
                 vehicle.commands.goto(dest)
-                vehicle.flush()
 
                 # Send a new target every two seconds
                 # For a complete implementation of follow me you'd want adjust this delay

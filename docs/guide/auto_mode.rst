@@ -217,7 +217,6 @@ To start a mission change the mode to AUTO:
 
     # Set the vehicle into auto mode
     vehicle.mode = VehicleMode("AUTO")
-    vehicle.flush()
 
 .. note:: 
 
@@ -344,8 +343,8 @@ The commands are added to a list which is returned by the function.
                     ln_param4=float(linearray[7])
                     ln_param5=float(linearray[8])
                     ln_param6=float(linearray[9])
-                    ln_param7=float(linearray[10])	
-                    ln_autocontinue=int(linearray[11].strip())		
+                    ln_param7=float(linearray[10])
+                    ln_autocontinue=int(linearray[11].strip())
                     cmd = Command( 0, 0, 0, ln_frame, ln_command, ln_currentwp, ln_autocontinue, ln_param1, ln_param2, ln_param3, ln_param4, ln_param5, ln_param6, ln_param7)
                     missionlist.append(cmd)
         return missionlist
@@ -417,8 +416,8 @@ Get distance to waypoint
         lat=missionitem.x
         lon=missionitem.y
         alt=missionitem.z
-        targetWaypointLocation=Location(lat,lon,alt,is_relative=True)
-        distancetopoint = get_distance_metres(vehicle.location, targetWaypointLocation)
+        targetWaypointLocation=LocationGlobal(lat,lon,alt,is_relative=True)
+        distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
         return distancetopoint
 
 The function determines the current target waypoint number with :py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>`

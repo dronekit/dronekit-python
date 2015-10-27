@@ -4,34 +4,55 @@
 This is the API Reference for the DroneKit-Python API.
 
 The main API is the :py:class:`Vehicle <dronekit.lib.Vehicle>` class.
-The code snippet below shows how to obtain an instance of the (first) connected vehicle:
+The code snippet below shows how to use :py:func:`connect` to obtain an instance a connected vehicle:
 
 .. code:: python
 
-    # Get a local APIConnection to the autopilot (from companion computer or GCS).
-    api_connection = local_connect()
-    # Get the first connected vehicle from the APIConnection
-    vehicle = api.get_vehicles()[0]
+    from dronekit import connect
+    
+    # Connect to the Vehicle using "connection string" (in this case an address on network)
+    vehicle = connect('127.0.0.1:14550', await_params=True)
+
 
 :py:class:`Vehicle <dronekit.lib.Vehicle>` provides access to vehicle *state* through python attributes
-(e.g. :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`)
+(e.g. :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`)
 and to settings/parameters though the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` attribute.
 Asynchronous notification on vehicle attribute changes is available by registering observers.
 
 :py:class:`Vehicle <dronekit.lib.Vehicle>` provides two main ways to control vehicle movement and other operations:
 
-* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute
-  (see :py:class:`CommandSequence <dronekit.lib.CommandSequence>` for more information).
 * Direct control of movement outside of missions is also supported. To set a target position you can use
   :py:func:`CommandSequence.goto <dronekit.lib.CommandSequence.goto>`.
   Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
   (:py:func:`Vehicle.send_mavlink <dronekit.lib.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <dronekit.lib.Vehicle.message_factory>`).
-
+* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute
+  (see :py:class:`CommandSequence <dronekit.lib.CommandSequence>` for more information).
+  
 A number of other useful classes and methods are listed below.
 
 ----
 
 .. todo:: Update this when have confirmed how to register for parameter notifications.
+
+
+
+.. py:function:: connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4)
+
+    Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
+    Connection string parameters for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
+
+    :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
+    :param Bool await_params: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
+    :param status_printer: NA    
+    :param Vehicle vehicle_class: NA     
+    :param int rate: NA
+    
+    :returns: A connected :py:class:`Vehicle` object.
+
+----
+    
+    .. todo:: Confirm what status_printer, vehicle_class and rate "mean". Can we hide in API. Can we get method defined in this file.
+    
 """
 
 import threading
@@ -124,11 +145,11 @@ class LocationGlobal(object):
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
     The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
 
-    For example, a location object might be defined as:
+    For example, a global location object might be defined as:
 
     .. code:: python
 
-       Location(-34.364114, 149.166022, 30, is_relative=True)
+       LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
 
     .. todo:: FIXME: Location class - possibly add a vector3 representation.
 
@@ -266,10 +287,6 @@ class VehicleMode(object):
 
     .. code:: python
 
-        # Get an instance of the API endpoint and a vehicle
-        api = local_connect()
-        vehicle = api.get_vehicles()[0]
-
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
 
@@ -355,19 +372,22 @@ class HasObservers(object):
         """
         Add an attribute observer.
 
-        The observer is called with the ``attr_name`` argument. This can be used to access
-        the vehicle parameter, as shown below:
+        The observer callback function is called with the ``attr_name`` argument. 
+        This can be used to infer the related attribute if the same callback is used 
+        for watching several attributes.
+        
+        The example below shows how to get callbacks for location changes:
 
         .. code:: python
 
+            #Callback to print the location in global and local frames
+            def location_callback(location):
+                print "Location (Global): ", vehicle.location.global_frame
+                print "Location (Local): ", vehicle.location.local_frame
+
             #Add observer for the vehicle's current location
             vehicle.add_attribute_observer('location', location_callback)
-
-            #Callback to print the location
-            def location_callback(location):
-                print "Location: ", vehicle.location
-
-
+            
         .. note::
             Attribute changes will only be published for changes due to some other entity.
             They will not be published for changes made by the local API client
@@ -376,7 +396,7 @@ class HasObservers(object):
         :param attr_name: The attribute to watch.
         :param observer: The callback to invoke when a change in the attribute is detected.
 
-        .. todo:: Check that the defect for endless repetition after thread closes is fixed: https://github.com/dronekit/dronekit-python/issues/74
+
         """
         l = self.__observers.get(attr_name)
         if l is None:
@@ -389,11 +409,11 @@ class HasObservers(object):
         """
         Remove an observer.
 
-        For example, the following line would remove a previously added vehicle 'location' observer called location_callback:
+        For example, the following line would remove a previously added vehicle 'global_frame' observer called location_callback:
 
         .. code:: python
 
-            vehicle.remove_attribute_observer('location', location_callback)
+            vehicle.remove_attribute_observer('global_frame', location_callback)
 
 
         :param attr_name: The attribute name that is to have an observer removed.
@@ -565,11 +585,9 @@ class Vehicle(HasObservers):
 
             # Override channels 1 and 4 (only).
             vehicle.channel_override = { "1" : 900, "4" : 1000 }
-            vehicle.flush()
 
             # Cancel override on channel 1 and 4 by sending 0
             vehicle.channel_override = { "1" : 0, "4" : 0 }
-            vehicle.flush()
 
 
         .. versionchanged:: 1.0
@@ -779,10 +797,9 @@ class Vehicle(HasObservers):
 
     def flush(self):
         """
-        It is important to understand that setting attributes/changing vehicle state may occur over a slow link.
+        Call ``flush()`` after :py:func:`adding <CommandSequence.add>` or :py:func:`clearing <CommandSequence.clear>` mission commands.
 
-        It is **not** guaranteed that the effects of previous commands will be visible from reading vehicle attributes unless
-        ``flush()`` is called first.  After the return from flush any writes are guaranteed to have completed (or thrown an
+        After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
         """
         pass
@@ -816,9 +833,11 @@ class Mission(object):
     """
     Access to historical missions.
 
-    .. warning:: This function is a *placeholder*. It has no implementation in DroneKit-Python release 1.
+    .. warning:: 
+    
+        This function is a *placeholder*. It has no implementation in DroneKit-Python release 1.
 
-	    Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
+        Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
 
     .. todo:: FIXME: Mission class needs to be updated when it is implemented (after DroneKit Python release 1).
     """
@@ -831,7 +850,6 @@ class Parameters(HasObservers):
     `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
 
     Attribute names are generated automatically based on parameter names.  The example below shows how to get and set the value of a parameter.
-    Note that 'set' operations are not guaranteed to be complete until :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
 
     .. code:: python
 
@@ -840,7 +858,7 @@ class Parameters(HasObservers):
 
         # Change the parameter value to something different.
         vehicle.parameters['THR_MIN']=100
-        vehicle.flush()
+
 
     .. note::
 
@@ -910,9 +928,8 @@ class CommandSequence(object):
     .. code-block:: python
         :emphasize-lines: 5-10
 
-        # Connect to API provider and get vehicle
-        api = local_connect()
-        vehicle = api.get_vehicles()[0]
+        #Connect to a vehicle object (for example, on com14)
+        vehicle = connect('com14', await_params=True)
 
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = vehicle.commands
@@ -976,19 +993,20 @@ class CommandSequence(object):
 
     def goto(self, location):
         '''
-        Go to a specified location (changing :py:class:`VehicleMode` to ``GUIDED`` if necessary).
+        Go to a specified global location (:py:class:`LocationGlobal`).
+
+        The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
 
         .. code:: python
 
             # Set mode to guided - this is optional as the goto method will change the mode if needed.
             vehicle.mode = VehicleMode("GUIDED")
 
-            # Set the location to goto() and flush()
-            a_location = Location(-34.364114, 149.166022, 30, is_relative=True)
+            # Set the LocationGlobal to head towards
+            a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
             vehicle.commands.goto(a_location)
-            vehicle.flush()
 
-        :param Location location: The target location.
+        :param LocationGlobal location: The target location.
         '''
         pass
 
@@ -1008,6 +1026,8 @@ class CommandSequence(object):
     def add(self, cmd):
         '''
         Add a new command (waypoint) at the end of the command list.
+        
+        .. note:: Commands are sent to the vehicle only after you call :py:func:`Vehicle.flush`.
 
         :param Command cmd: The command to be added.
         '''

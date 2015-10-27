@@ -43,7 +43,6 @@ def test_goto(connpath):
         # print "Arming motors"
         # Copter should arm in GUIDED mode
         vehicle.mode    = VehicleMode("GUIDED")
-        vehicle.flush()
 
         i = 60
         while vehicle.mode.name != 'GUIDED' and i > 0:
@@ -52,7 +51,6 @@ def test_goto(connpath):
             i = i - 1
 
         vehicle.armed = True
-        vehicle.flush()
 
         i = 60
         while not vehicle.armed and vehicle.mode.name == 'GUIDED' and i > 0:
@@ -66,7 +64,6 @@ def test_goto(connpath):
 
         # print "Taking off!"
         vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-        vehicle.flush()
 
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
@@ -86,7 +83,6 @@ def test_goto(connpath):
     # print "Going to first point..."
     point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
     vehicle.commands.goto(point1)
-    vehicle.flush()
 
     # sleep so we can see the change in map
     time.sleep(3)
@@ -94,11 +90,9 @@ def test_goto(connpath):
     # print "Going to second point..."
     point2 = LocationGlobal(-35.363244, 149.168801, 20, is_relative=True)
     vehicle.commands.goto(point2)
-    vehicle.flush()
 
     # sleep so we can see the change in map
     time.sleep(3)
 
     # print "Returning to Launch"
     vehicle.mode = VehicleMode("RTL")
-    vehicle.flush()

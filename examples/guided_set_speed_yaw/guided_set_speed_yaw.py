@@ -7,7 +7,7 @@ Example documentation: http://python.dronekit.io/examples/guided-set-speed-yaw-d
 """
 
 from dronekit import connect
-from dronekit.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, LocationGlobal
 from pymavlink import mavutil
 import time
 import math
@@ -43,21 +43,20 @@ def arm_and_takeoff(aTargetAltitude):
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True
-    vehicle.flush()
 
     while not vehicle.armed:
         print " Waiting for arming..."
+        vehicle.armed   = True
         time.sleep(1)
 
     print "Taking off!"
     vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-    vehicle.flush()
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
     while True:
-        print " Altitude: ", vehicle.location.alt
-        if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+        print " Altitude: ", vehicle.location.global_frame.alt 
+        if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
             print "Reached target altitude"
             break;
         time.sleep(1)
@@ -112,12 +111,12 @@ def condition_yaw(heading, relative=False):
         0, 0, 0)    # param 5 ~ 7 not used
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 def set_roi(location):
     """
-    Send MAV_CMD_DO_SET_ROI message to point camera gimbal at a specified region of interest (Location).
+    Send MAV_CMD_DO_SET_ROI message to point camera gimbal at a 
+    specified region of interest (LocationGlobal).
     The vehicle may also turn to face the ROI.
 
     For more information see: 
@@ -135,7 +134,6 @@ def set_roi(location):
         )
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 def set_speed(speed):
@@ -163,12 +161,11 @@ def set_speed(speed):
 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 def set_home(aLocation, aCurrent=1):
     """
-    Send MAV_CMD_DO_SET_HOME command to set the Home location to either the current location 
+    Send MAV_CMD_DO_SET_HOME command to set the Home location to either the current LocationGlobal 
     or a specified location.
 
     For more information see: 
@@ -188,7 +185,6 @@ def set_home(aLocation, aCurrent=1):
         )
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -201,15 +197,15 @@ The methods are approximations only, and may be less accurate over longer distan
 to the Earth's poles.
 
 Specifically, it provides:
-* get_location_metres - Get Location (decimal degrees) at distance (m) North & East of a given Location.
-* get_distance_metres - Get the distance between two Location objects in metres
-* get_bearing - Get the bearing in degrees to a Location
+* get_location_metres - Get LocationGlobal (decimal degrees) at distance (m) North & East of a given LocationGlobal.
+* get_distance_metres - Get the distance between two LocationGlobal objects in metres
+* get_bearing - Get the bearing in degrees to a LocationGlobal
 """
 
 def get_location_metres(original_location, dNorth, dEast):
     """
-    Returns a Location object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-    specified `original_location`. The returned Location has the same `alt and `is_relative` values 
+    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
+    specified `original_location`. The returned LocationGlobal has the same `alt and `is_relative` values 
     as `original_location`.
 
     The function is useful when you want to move the vehicle around specifying locations relative to 
@@ -228,12 +224,12 @@ def get_location_metres(original_location, dNorth, dEast):
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
-    return Location(newlat, newlon,original_location.alt,original_location.is_relative)
+    return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
 
 
 def get_distance_metres(aLocation1, aLocation2):
     """
-    Returns the ground distance in metres between two Location objects.
+    Returns the ground distance in metres between two LocationGlobal objects.
 
     This method is an approximation, and will not be accurate over large distances and close to the 
     earth's poles. It comes from the ArduPilot test code: 
@@ -246,7 +242,7 @@ def get_distance_metres(aLocation1, aLocation2):
 
 def get_bearing(aLocation1, aLocation2):
     """
-    Returns the bearing between the two Location objects passed as parameters.
+    Returns the bearing between the two LocationGlobal objects passed as parameters.
 
     This method is an approximation, and may not be accurate over large distances and close to the 
     earth's poles. It comes from the ArduPilot test code: 
@@ -277,7 +273,7 @@ The methods include:
 
 def goto_position_target_global_int(aLocation):
     """
-    Send SET_POSITION_TARGET_GLOBAL_INT command to request the vehicle fly to a specified location.
+    Send SET_POSITION_TARGET_GLOBAL_INT command to request the vehicle fly to a specified LocationGlobal.
 
     For more information see: https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT
 
@@ -300,7 +296,6 @@ def goto_position_target_global_int(aLocation):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -334,7 +329,6 @@ def goto_position_target_local_ned(north, east, down):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -342,21 +336,20 @@ def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
     """
     Moves the vehicle to a position dNorth metres North and dEast metres East of the current position.
 
-    The method takes a function pointer argument with a single `dronekit.lib.Location` parameter for 
+    The method takes a function pointer argument with a single `dronekit.lib.LocationGlobal` parameter for 
     the target position. This allows it to be called with different position-setting commands. 
     By default it uses the standard method: dronekit.lib.Vehicle.commands.goto().
 
     The method reports the distance to target every two seconds.
     """
-    currentLocation=vehicle.location
+    currentLocation=vehicle.location.global_frame
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
     targetDistance=get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
-    vehicle.flush()
 
 
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
-        remainingDistance=get_distance_metres(vehicle.location, targetLocation)
+        remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
         print "Distance to target: ", remainingDistance
         if remainingDistance<=targetDistance*0.01: #Just below target, in case of undershoot.
             print "Reached target"
@@ -395,7 +388,6 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -412,7 +404,7 @@ def send_global_velocity(velocity_x, velocity_y, velocity_z):
     msg = vehicle.message_factory.set_position_target_global_int_encode(
         0,       # time_boot_ms (not used)
         0, 0,    # target system, target component
-        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame		
+        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame
         0b0000111111000111, # type_mask (only speeds enabled)
         0, # lat_int - X Position in WGS84 frame in 1e7 * meters
         0, # lon_int - Y Position in WGS84 frame in 1e7 * meters
@@ -425,7 +417,6 @@ def send_global_velocity(velocity_x, velocity_y, velocity_z):
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
 
 
@@ -445,6 +436,8 @@ goto(0, 100)
 
 print("Position North -80 West 50")
 goto(-80, -50)
+
+
 
 
 
@@ -505,7 +498,7 @@ goto_position_target_local_ned(50,0,-10)
 print("Point ROI at current location (home position)") 
 # NOTE that this has to be called after the goto command as first "move" command of a particular type
 # "resets" ROI/YAW commands
-set_roi(vehicle.location)
+set_roi(vehicle.location.global_frame)
 time.sleep(DURATION)
 
 print("North 50m, East 50m, 10m altitude")
@@ -513,7 +506,7 @@ goto_position_target_local_ned(50,50,-10)
 time.sleep(DURATION)
 
 print("Point ROI at current location")
-set_roi(vehicle.location)
+set_roi(vehicle.location.global_frame)
 
 print("North 0m, East 50m, 10m altitude")
 goto_position_target_local_ned(0,50,-10)
@@ -614,7 +607,7 @@ time.sleep(DURATION)
 send_global_velocity(0,0,0)
 
 print("Set new Home location to current location")
-set_home(vehicle.location)
+set_home(vehicle.location.global_frame)
 print "Get new home location" #This reloads the home location in GCSs
 cmds = vehicle.commands
 cmds.download()
@@ -642,7 +635,6 @@ The example is completing. LAND at current location.
 
 print("Setting LAND mode...")
 vehicle.mode = VehicleMode("LAND")
-vehicle.flush()
 
 
 #Close vehicle object before exiting script

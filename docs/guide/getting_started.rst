@@ -142,8 +142,8 @@ the more common connection types:
      - ``127.0.0.1:14550``
    * - OSX computer connected to the vehicle via USB
      - ``dev/cu.usbmodem1``
-   * - Windows computer connected to the vehicle via USB
-     - ``/dev/cu.usbmodem1``
+   * - Windows computer connected to the vehicle via USB (in this case on COM14)
+     - ``com14``
 
 .. tip::
 

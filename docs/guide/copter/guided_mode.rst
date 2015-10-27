@@ -37,7 +37,7 @@ Position control
 
 Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
 
-The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. This takes a :py:class:`Location <dronekit.lib.Location>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
+The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. This takes a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
 
 The method is used as shown below:
 
@@ -46,10 +46,10 @@ The method is used as shown below:
     # Set mode to guided - this is optional as the goto method will change the mode if needed.
     vehicle.mode = VehicleMode("GUIDED")
 
-    # Set the target location and then call flush()
-    a_location = Location(-34.364114, 149.166022, 30, is_relative=True)
+    # Set the target location in global frame
+    a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
     vehicle.commands.goto(a_location)
-    vehicle.flush()
+
 
 ``Vehicle.commands.goto()`` can be interrupted by a later command, and does not provide any functionality to indicate when the vehicle has reached its destination. Developers can use either a time delay or :ref:`measure proximity to the target <example_guided_mode_goto_convenience>` to give the vehicle an opportunity to reach its destination. The :ref:`example-guided-mode-setting-speed-yaw` shows both approaches.
 
@@ -88,12 +88,12 @@ which is used to directly specify the speed components of the vehicle.
             0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
-		
+
+
 The ``type_mask`` parameter is a bitmask that indicates which of the other parameters in the message are used/ignored by the vehicle 
 (0 means that the dimension is enabled, 1 means ignored). In the example the value 0b0000111111000111 
 is used to enable the velocity components.
-		
+
 The speed components ``velocity_x`` and ``velocity_y`` are parallel to the North and East directions (not to the front and side of the vehicle). 
 The ``velocity_z`` component is perpendicular to the plane of ``velocity_x`` and ``velocity_y``, with a positive value **towards the ground**, following 
 the right-hand convention. For more information about the ``mavutil.mavlink.MAV_FRAME_BODY_NED`` frame of reference, see this wikipedia article 
@@ -140,7 +140,7 @@ ArduPilot does not currently support controlling the vehicle by specifying accel
 
 
 
-.. _guided_mode_copter_commands:	
+.. _guided_mode_copter_commands:
 
 Guided mode commands
 =====================
@@ -153,7 +153,7 @@ This section explains how to send MAVLink commands, what commands can be sent, a
 Sending messages/commands
 -------------------------
 
-MAVLink commands are sent by first using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` to encode the message and then calling :py:func:`send_mavlink <dronekit.lib.Vehicle.send_mavlink>` and ``flush()`` to send them.
+MAVLink commands are sent by first using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` to encode the message and then calling :py:func:`send_mavlink <dronekit.lib.Vehicle.send_mavlink>` to send them.
 
 ``message_factory()`` uses a factory method for the encoding. The name of this method will always be the lower case version of the message/command name with ``_encode`` appended. For example, to encode a `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ message we call ``message_factory.set_position_target_local_ned_encode()`` with values for all the message fields as arguments:
 
@@ -170,8 +170,7 @@ MAVLink commands are sent by first using :py:func:`message_factory <dronekit.lib
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
-	
+
 There is no need to specify the system id, component id or sequence number of messages (if defined in the message type) as the API will set these appropriately when the message is sent.
 
 .. _guided_mode_how_to_send_commands_command_long:
@@ -191,10 +190,8 @@ In Copter, the `COMMAND_LONG message <https://pixhawk.ethz.ch/mavlink/#COMMAND_L
         0, 0, 0)    # param 5 ~ 7 not used
     # send command to vehicle
     vehicle.send_mavlink(msg)
-    vehicle.flush()
 
-	
-	
+
 .. _guided_mode_supported_commands:
 
 Supported commands
@@ -236,10 +233,9 @@ You can set the yaw direction using the `MAV_CMD_CONDITION_YAW <http://copter.ar
             0, 0, 0)    # param 5 ~ 7 not used
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
 
 The command allows you to specify that whether the heading is an absolute angle in degrees (0 degrees is North) or a value that is relative to the previously set heading.
-	
+
 .. note:: 
 
     * The yaw will return to the default (facing direction of travel) after you set the mode or change the command used for controlling movement. 
@@ -271,7 +267,6 @@ Send `MAV_CMD_DO_CHANGE_SPEED <http://copter.ardupilot.com/common-mavlink-missio
 
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
 
 
 The command is useful when setting the vehicle position directly. It is not needed when controlling movement using velocity vectors.
@@ -287,8 +282,8 @@ The command is useful when setting the vehicle position directly. It is not need
 Setting the ROI
 ---------------
 
-Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command to point camera gimbal at a specified region of interest (:py:class:`Location <dronekit.lib.Location>`). The vehicle may also turn to face the ROI.	
-	
+Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ command to point camera gimbal at a specified region of interest (:py:class:`LocationGlobal <dronekit.lib.LocationGlobal>`). The vehicle may also turn to face the ROI.
+
 .. code-block:: python
 
     def set_roi(location):
@@ -304,13 +299,12 @@ Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission
             )
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
 
 
 .. versionadded:: Copter 3.2.1. You can explicitly reset the ROI by sending the 
     `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_roi>`_ 
-	command with zero in all parameters. The front of the vehicle will then follow the direction of travel.
-	
+    command with zero in all parameters. The front of the vehicle will then follow the direction of travel.
+
 The ROI (and yaw) is also reset when the mode, or the command used to control movement, is changed.
 
 
@@ -329,29 +323,28 @@ Send the `MAV_CMD_DO_SET_HOME <http://copter.ardupilot.com/common-mavlink-missio
             mavutil.mavlink.MAV_CMD_DO_SET_HOME, #command
             0, #confirmation
             aCurrent, #param 1: 1 to use current position, 2 to use the entered values.
-	    	0, 0, 0, #params 2-4
+            0, 0, 0, #params 2-4
             aLocation.lat,
             aLocation.lon,
             aLocation.alt
             )
         # send command to vehicle
         vehicle.send_mavlink(msg)
-        vehicle.flush()
 
 
 The *home location* is updated immediately in ArduPilot, but the change may not appear in the GCS/*Mission Planner*. You can force an update by reading the mission commands (this works, because the home location is currently implemented as the 0th waypoint command):
 
 .. code-block:: python
 
-    # Set new Home location to current location 
-    set_home(vehicle.location)
+    # Set new Home location to current LocationGlobal
+    set_home(vehicle.location.global_frame)
     # Reloads the home location in GCSs
     cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
     print " Home WP: %s" % cmds[0]
 
-.. _guided_mode_copter_responses:	
+.. _guided_mode_copter_responses:
 
 Command acknowledgements and response values
 --------------------------------------------
@@ -377,8 +370,8 @@ to the Earth's poles.
 
     def get_location_metres(original_location, dNorth, dEast):
         """
-        Returns a Location object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-        specified `original_location`. The returned Location has the same `alt and `is_relative` values 
+        Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
+        specified `original_location`. The returned LocationGlobal has the same `alt and `is_relative` values 
         as `original_location`.
 
         The function is useful when you want to move the vehicle around specifying locations relative to 
@@ -397,34 +390,34 @@ to the Earth's poles.
         #New position in decimal degrees
         newlat = original_location.lat + (dLat * 180/math.pi)
         newlon = original_location.lon + (dLon * 180/math.pi)
-        return Location(newlat, newlon,original_location.alt,original_location.is_relative)
+        return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
 
 
 .. code-block:: python
 
     def get_distance_metres(aLocation1, aLocation2):
         """
-        Returns the ground distance in metres between two Location objects.
-	
+        Returns the ground distance in metres between two LocationGlobal objects.
+
         This method is an approximation, and will not be accurate over large distances and close to the 
         earth's poles. It comes from the ArduPilot test code: 
         https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
         """
-        dlat 		= aLocation2.lat - aLocation1.lat
-        dlong		= aLocation2.lon - aLocation1.lon
+        dlat = aLocation2.lat - aLocation1.lat
+        dlong = aLocation2.lon - aLocation1.lon
         return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
 
-		
+
 .. code-block:: python
 
     def get_bearing(aLocation1, aLocation2):
         """
-        Returns the bearing between the two Location objects passed as parameters.
-	
+        Returns the bearing between the two LocationGlobal objects passed as parameters.
+
         This method is an approximation, and may not be accurate over large distances and close to the 
         earth's poles. It comes from the ArduPilot test code: 
         https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
-        """	
+        """
         off_x = aLocation2.lon - aLocation1.lon
         off_y = aLocation2.lat - aLocation1.lat
         bearing = 90.00 + math.atan2(-off_y, off_x) * 57.2957795

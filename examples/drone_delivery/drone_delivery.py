@@ -11,7 +11,7 @@ import simplejson
 from pymavlink import mavutil
 import dronekit.lib
 from dronekit import connect
-from dronekit.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, LocationGlobal
 
 import cherrypy
 from cherrypy.process import wspbus, plugins
@@ -68,12 +68,10 @@ class Drone(object):
     def takeoff(self):
         self._log("Taking off")
         self.commands.takeoff(30.0)
-        self.vehicle.flush()
 
     def arm(self):
         self._log("Arming")
         self.vehicle.armed = True
-        self.vehicle.flush()
 
     def run(self):
         self._log('Running initial boot sequence')
@@ -98,9 +96,8 @@ class Drone(object):
 
     def change_mode(self, mode):
         self._log("Mode: {0}".format(mode))
-
         self.vehicle.mode = VehicleMode(mode)
-        self.vehicle.flush()
+
 
     def goto(self, location, relative=None):
         self._log("Goto: {0}, {1}".format(location, self.altitude))
@@ -112,13 +109,12 @@ class Drone(object):
                 is_relative=relative
             )
         )
-        self.vehicle.flush()
 
     def get_location(self):
         return [self.current_location.lat, self.current_location.lon]
 
     def location_callback(self, location):
-        location = self.vehicle.location
+        location = self.vehicle.location.global_frame
 
         if location.alt is not None:
             self.altitude = location.alt

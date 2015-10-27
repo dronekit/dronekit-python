@@ -137,7 +137,7 @@ The :ref:`source code <example_mission_basic_source_code>` is relatively self-do
 operations are explained in the guide topic :ref:`auto_mode_vehicle_control` .
 
 In overview, the example first calls ``clear_mission()`` to clear the current mission and then creates and 
-uploads a new mission using ``adds_square_mission(vehicle.location,50)``. This function defines a mission with a takeoff 
+uploads a new mission using ``adds_square_mission(vehicle.location.global_frame,50)``. This function defines a mission with a takeoff 
 command and four waypoints arranged in a square around the central position.
 
 After taking off (in guided mode using the ``takeoff()`` function) the example starts the mission by setting the mode to AUTO:
@@ -147,7 +147,6 @@ After taking off (in guided mode using the ``takeoff()`` function) the example s
     print "Starting mission"
     # Set mode to AUTO to start mission
     vehicle.mode = VehicleMode("AUTO")
-    vehicle.flush()
 
 The progress of the mission is monitored in a loop. The convenience function 
 :ref:`distance_to_current_waypoint() <auto_mode_mission_distance_to_waypoint>` 
@@ -187,9 +186,11 @@ This example fails in DroneKit 2.0.0b6 and earlier releases (see `#355 DKPY2 Can
 
     This is blocked by https://github.com/dronekit/dronekit-python/issues/355 (vehicle.commands.clear not working).
     The code output in "running the example needs to be updated once this runs cleanly.
-    The above text for the error needs to be replaced with original text 
-       > "This example works around the :ref:`known issues in the API <auto_mode_mission_known_issues>`. 
-       > Provided that the vehicle is connected and able to arm, it should run through to completion."
+    The above text for the error needs to be replaced with original text:
+    
+    > "This example works around the :ref:`known issues in the API <auto_mode_mission_known_issues>`. 
+    > Provided that the vehicle is connected and able to arm, it should run through to completion."
+    
     Need to check all that clearing is still strictly necessary in DKPY2 which handles race conditions more gracefully.
     Add image of waypoints /flight for top of page.
 

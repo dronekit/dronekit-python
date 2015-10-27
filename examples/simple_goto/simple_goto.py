@@ -8,7 +8,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 
 import time
 from dronekit import connect
-from dronekit.lib import VehicleMode, Location
+from dronekit.lib import VehicleMode, LocationGlobal
 from pymavlink import mavutil
 import time
 
@@ -40,25 +40,24 @@ def arm_and_takeoff(aTargetAltitude):
         print "Waiting for GPS...:", vehicle.gps_0.fix_type
         time.sleep(1)
 
+        
     print "Arming motors"
     # Copter should arm in GUIDED mode
     vehicle.mode    = VehicleMode("GUIDED")
-    vehicle.armed   = True
-    vehicle.flush()
+    vehicle.armed   = True    
 
-    while not vehicle.armed:
+    while not vehicle.armed:      
         print " Waiting for arming..."
         time.sleep(1)
 
     print "Taking off!"
     vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
-    vehicle.flush()
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
     while True:
-        print " Altitude: ", vehicle.location.alt
-        if vehicle.location.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+        print " Altitude: ", vehicle.location.global_frame.alt      
+        if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
             print "Reached target altitude"
             break
         time.sleep(1)
@@ -67,24 +66,21 @@ arm_and_takeoff(20)
 
 
 print "Going to first point..."
-point1 = Location(-35.361354, 149.165218, 20, is_relative=True)
+point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
 vehicle.commands.goto(point1)
-vehicle.flush()
 
 # sleep so we can see the change in map
 time.sleep(30)
 
 print "Going to second point..."
-point2 = Location(-35.363244, 149.168801, 20, is_relative=True)
+point2 = LocationGlobal(-35.363244, 149.168801, 20, is_relative=True)
 vehicle.commands.goto(point2)
-vehicle.flush()
 
 # sleep so we can see the change in map
 time.sleep(30)
 
 print "Returning to Launch"
 vehicle.mode    = VehicleMode("RTL")
-vehicle.flush()
 
 #Close vehicle object before exiting script
 print "Close vehicle object"
