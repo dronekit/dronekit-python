@@ -92,14 +92,14 @@ class MPCommandSequence(CommandSequence):
         '''Clears the command list'''
         self.wait_valid()
         self.__module.wploader.clear()
-        self.__module.vehicle.wpts_dirty = True
+        self.__module.api._FakeAPI__vehicle.wpts_dirty = True
 
     def add(self, cmd):
         '''Add a new command at the end of the command list'''
         self.wait_valid()
         self.__module.fix_targets(cmd)
         self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
-        self.__module.vehicle.wpts_dirty = True
+        self.__module.api._FakeAPI__vehicle.wpts_dirty = True
 
     @property
     def count(self):
@@ -123,7 +123,7 @@ class MPCommandSequence(CommandSequence):
 
     def __setitem__(self, index, value):
         self.__module.wploader.set(value, index)
-        self.__module.vehicle.wpts_dirty = True
+        self.__module.api._FakeAPI__vehicle.wpts_dirty = True
 
 class MPVehicle(Vehicle):
     def __init__(self, module):
