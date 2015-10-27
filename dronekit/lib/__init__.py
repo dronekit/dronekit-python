@@ -60,27 +60,6 @@ from pymavlink import mavutil
 
 local_path = ''
 
-
-
-def web_connect(authinfo):
-    """
-    .. warning:: This API is not fully implemented and should not be used.
-
-    Connect to the central dronehub server.
-
-    :param AuthInfo authinfo: A container for authentication information (username, password, challenge info, etc.)
-    """
-    return APIConnection()
-
-def local_connect():
-    """
-    Connect to the API provider for the local vehicle or ground control station.
-
-    :return: The API provider.
-    :rtype: APIConnection
-    """
-    return APIConnection()
-
 class APIException(Exception):
     """
     Base class for DroneKit related exceptions.
@@ -90,30 +69,6 @@ class APIException(Exception):
 
     def __init__(self, msg):
         self.msg = msg
-
-class AuthInfo(object):
-    """
-    Not implemented. This is part of a (currently) internal API.
-
-    .. INTERNAL NOTE: Base class for various authentication flavors.
-
-        Currently only simple username & password authentication are supported
-
-        :param object: username/password values.
-    """
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
-class ConnectionInfo(object):
-    """
-    Internal API. Do not use.
-
-    Connection information object used by MAVProxy.
-    """
-
-    def __init__(self, mavproxy_options):
-        self.maxproxy_options = mavproxy_options
 
 class Attitude(object):
     """
@@ -307,56 +262,6 @@ class VehicleMode(object):
 
     def __ne__(self, other):
         return self.name != other
-
-class APIConnection(object):
-    """
-    An API provider.
-
-    This is the top level API connection returned from :py:func:`local_connect()`.  You should not manually create instances of
-    this class.
-
-    .. INTERNAL_COMMENT: This is also returned by :py:func:`web_connect()` (not supported/fully implemented).
-    """
-
-    def get_vehicles(self, query=None):
-        """
-        Get the set of vehicles that are controllable from this connection.
-
-        For example, to get the first vehicle in the set with ``get_vehicles()``:
-
-        .. code:: python
-
-            api = local_connect()     # Get an APIConnection
-            first_vehicle = api.get_vehicles()[0]
-
-        .. note::
-
-            The set of vehicles connected by the API is configured through MAVProxy. When running on a companion computer there will only ever
-            be one ``Vehicle`` in the returned set. A ground control station might potentially control (and hence return) more than one vehicle.
-
-
-        :param query: This parameter is ignored. Use the default.
-        :returns: Set of :py:class:`Vehicle` objects controllable from this connection.
-        """
-        # return [ Vehicle(), Vehicle() ]
-        raise Exception("Subclasses must override")
-
-    @property
-    def exit(self):
-        """
-        True if the current thread has been asked to exit.
-
-        The connection to the UAV is owned by MAVProxy, which uses this property to signal that the thread should be closed (for whatever reason).
-        Scripts are expected to check the property and close the thread if this if ``True``. For example:
-
-        .. code:: python
-
-            while not api.exit:
-                # send commands to vehicle etc.
-
-        .. todo:: FIXME: APIConnection.exit - should this be private, or even part of the drone api at all?
-        """
-        return threading.current_thread().exit
 
 class HasObservers(object):
     def __init__(self):
@@ -803,45 +708,6 @@ class Vehicle(HasObservers):
         exception) and future reads will see their effects.
         """
         pass
-
-#===============================================================================
-#     def __getattr__(self, name):
-#         """
-#         Attributes are automatically populated based on vehicle type.
-#
-#         This override provides that behavior.
-#         """
-#
-#         try:
-#             return self.__dict[name]
-#         except KeyError:
-#             msg = "'{0}' object has no attribute '{1}'"
-#             raise AttributeError(msg.format(type(self).__name__, name))
-#
-#     def __setattr__(self, name, value):
-#         """
-#         An override to support setting for vehicle attributes.
-#
-#         Note: Exceptions due to loss of communications, missing attributes or insufficient permissions are not guaranteed
-#         to be thrown from inside this method.  Most failures will not be seen until flush() is called.  If you require immediate
-#         notification of failure set autoflush.
-#         """
-#         pass
-#===============================================================================
-
-class Mission(object):
-    """
-    Access to historical missions.
-
-    .. warning:: 
-    
-        This function is a *placeholder*. It has no implementation in DroneKit-Python release 1.
-
-        Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
-
-    .. todo:: FIXME: Mission class needs to be updated when it is implemented (after DroneKit Python release 1).
-    """
-    pass
 
 class Parameters(HasObservers):
     """
