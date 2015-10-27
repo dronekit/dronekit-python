@@ -5,7 +5,7 @@ import sys
 import os
 import platform
 import re
-import dronekit.module.api
+import dronekit.lib
 from pymavlink import mavutil, mavwp
 from Queue import Empty
 from pymavlink.dialects.v10 import ardupilotmega
@@ -19,7 +19,11 @@ else:
     from errno import ECONNABORTED
 
 # Public re-exports
-Vehicle = dronekit.module.api.MPVehicle
+Vehicle = dronekit.lib.Vehicle
+VehicleMode = dronekit.lib.VehicleMode
+LocationGlobal = dronekit.lib.LocationGlobal
+LocationLocal = dronekit.lib.LocationLocal
+CloudClient = dronekit.lib.CloudClient
 
 def errprinter(*args):
     print(*args, file=sys.stderr)

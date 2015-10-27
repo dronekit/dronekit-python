@@ -1,6 +1,6 @@
+import time
 from dronekit import connect, Vehicle
 from dronekit.tools import with_sitl
-import time
 from nose.tools import assert_equals
 
 class DummyVehicle(Vehicle):

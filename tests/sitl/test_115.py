@@ -1,10 +1,8 @@
-from dronekit import connect
-from dronekit.lib import VehicleMode
-from dronekit.tools import with_sitl
-from pymavlink import mavutil
 import time
 import sys
 import os
+from dronekit import connect, VehicleMode
+from dronekit.tools import with_sitl
 from nose.tools import assert_equals
 
 @with_sitl
