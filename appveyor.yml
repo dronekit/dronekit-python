@@ -1,6 +1,6 @@
 environment:
   global:
-    SITL_SPEEDUP: 10
+    SITL_SPEEDUP: 20
     SITL_RATE: 200
 
 cache:
@@ -26,7 +26,7 @@ install:
 
 build_script:
   - cmd: 'nosetests tests\\web'
-  - cmd: 'nosetests -s -v tests\\sitl'
+  - cmd: 'nosetests -s -v tests\\sitl || nosetests -s -v tests\\sitl || nosetests -s -v tests\\sitl || nosetests -s -v tests\\sitl'
   - cmd: 'nosetests tests\\unit'
 
 clone_depth: 10
