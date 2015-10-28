@@ -5,9 +5,12 @@ import sys
 import os
 import platform
 import re
+import dronekit.lib
 from pymavlink import mavutil, mavwp
 from Queue import Empty
 from pymavlink.dialects.v10 import ardupilotmega
+from Queue import Queue
+from threading import Thread
 import types
 
 if platform.system() == 'Windows':
@@ -15,27 +18,15 @@ if platform.system() == 'Windows':
 else:
     from errno import ECONNABORTED
 
-# Clean impl of mp dependencies for dronekit
-
-import dronekit.module.api as api
-
-# Public exports
-Vehicle = api.MPVehicle
+# Public re-exports
+Vehicle = dronekit.lib.Vehicle
+VehicleMode = dronekit.lib.VehicleMode
+LocationGlobal = dronekit.lib.LocationGlobal
+LocationLocal = dronekit.lib.LocationLocal
+CloudClient = dronekit.lib.CloudClient
 
 def errprinter(*args):
     print(*args, file=sys.stderr)
-
-class FakeAPI:
-    def __init__(self, module):
-        self.__vehicle = module.vehicle_class(module)
-        self.exit = False
-
-    def get_vehicles(self, query=None):
-        return [ self.__vehicle ]
-
-# def mav_thread(conn, state):
-
-#     return (in_queue, out_queue)
 
 class MavWriter():
     def __init__(self, queue):
@@ -55,42 +46,24 @@ def request_data_stream_send(master, rate=1):
     master.mav.request_data_stream_send(master.target_system, master.target_component,
                                         mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
 
-from Queue import Queue
-from threading import Thread
-
 class MPFakeState:
     def __init__(self, master, vehicle_class=Vehicle):
         self.vehicle_class = vehicle_class
 
         self.master = master
-        out_queue = Queue()
-        # self.mav_thread = mav_thread(master, self)
-        # self.mav = master.mav
-
-        self.api = None
+        self.vehicle = None
 
         # TODO get rid of "master" object as exposed,
         # keep it private, expose something smaller for dronekit
-        self.out_queue = out_queue
+        self.out_queue = Queue()
         self.master.mav = mavutil.mavlink.MAVLink(MavWriter(self.out_queue), srcSystem=self.master.source_system, use_native=False)
 
-        self.command_map = {}
-        self.completions = {}
-
+        # Targets
         self.target_system = 0
         self.target_component = 0
 
-        self.status = type('MPStatus',(object,),{
-            'flightmode': 'AUTO',
-            'armed': False,
-        })()
-
+        # Parameters
         self.mav_param = {} 
-
-        # Weird
-        self.mpstate = self
-        self.functions = self
-        self.mpstate.settings = self
 
         # waypoints
         self.wploader = mavwp.MAVWPLoader()
@@ -204,10 +177,14 @@ class MPFakeState:
             self.level = m.battery_remaining
             self._notify_attribute_listeners('battery')
 
+        self.flightmode = 'AUTO'
+        self.armed = False
         self.system_status = None
 
         @message_default('HEARTBEAT')
         def listener(self, name, m):
+            self.armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+            self.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[m.custom_mode]
             self.system_status = m.system_status
             self._notify_attribute_listeners('mode', 'armed')
 
@@ -269,7 +246,7 @@ class MPFakeState:
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             status_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
 
-            if self.status.armed:
+            if self.armed:
                 self.ekf_ok = status_poshorizabs and not status_constposmode
             else:
                 self.ekf_ok = status_poshorizabs or status_predposhorizabs
@@ -294,11 +271,10 @@ class MPFakeState:
     def fix_targets(self, message):
         pass
         # """Set correct target IDs for our vehicle"""
-        # settings = self.mpstate.settings
         # if hasattr(message, 'target_system'):
-        #     message.target_system = settings.target_system
+        #     message.target_system = self.target_system
         # if hasattr(message, 'target_component'):
-        #     message.target_component = settings.target_component
+        #     message.target_component = self.target_component
 
     def module(self, which):
         # psyche
@@ -331,8 +307,7 @@ class MPFakeState:
 
     def __on_change(self, *args):
         for a in args:
-            for v in self.api.get_vehicles():
-                v.notify_observers(a)
+            self.vehicle.notify_observers(a)
 
     def _notify_attribute_listeners(self, *args):
         return self.__on_change(*args)
@@ -366,16 +341,16 @@ class MPFakeState:
         for fn in self.message_listeners.get('*', []):
             fn(self, typ, m)
 
-        if self.api:
-            for v in self.api.get_vehicles():
-                if v.mavrx_callback:
-                    v.mavrx_callback(m)
+        if self.vehicle.mavrx_callback:
+            self.vehicle.mavrx_callback(m)
 
     def prepare(self, await_params=False, rate=None):
         # errprinter('Await heartbeat.')
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
         #   invalid MAVLink prefix '13'
+
+        self.vehicle = self.vehicle_class(self)
 
         params = type('PState',(object,),{
             "mav_param_count": -1,
@@ -385,7 +360,6 @@ class MPFakeState:
         })()
         self.mav_param = {}
         self.pstate = params
-        self.api = FakeAPI(self)
 
         import atexit
         self.exiting = False
@@ -541,12 +515,9 @@ class MPFakeState:
 
                         # Heartbeat: armed + mode update
                         if msg.get_type() == 'HEARTBEAT':
-                            self.status.armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-                            self.status.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[msg.custom_mode]
                             last_heartbeat_received = time.time()
 
-                        if self.api:
-                            self.mavlink_packet(msg)
+                        self.mavlink_packet(msg)
 
             except Exception as e:
                 # http://bugs.python.org/issue1856
@@ -592,8 +563,6 @@ class MPFakeState:
             while self.fix_type == None:
                 time.sleep(0.1)
 
-        return self.api
-
     def close(self):
         # TODO this can block forever if parameters continue to be added
         self.exiting = True
@@ -602,8 +571,7 @@ class MPFakeState:
         self.master.close()
 
 def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4):
-    import dronekit.module.api as api
     state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=vehicle_class)
     state.status_printer = status_printer
-    # api.init(state)
-    return state.prepare(await_params=await_params, rate=rate).get_vehicles()[0]
+    state.prepare(await_params=await_params, rate=rate)
+    return state.vehicle

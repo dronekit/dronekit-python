@@ -3,13 +3,11 @@ This test represents a simple demo for testing.
 Feel free to copy and modify at your leisure.
 """
 
-from dronekit import connect
-from dronekit.lib import VehicleMode
-from dronekit.tools import with_sitl
-from pymavlink import mavutil
 import time
 import sys
 import os
+from dronekit import connect, VehicleMode
+from dronekit.tools import with_sitl
 from nose.tools import assert_equals
 
 # This test runs first!

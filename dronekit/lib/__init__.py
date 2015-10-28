@@ -1,5 +1,10 @@
 # DroneAPI module
 
+import threading, time, math
+import CloudClient
+
+from pymavlink import mavutil
+
 """
 This is the API Reference for the DroneKit-Python API.
 
@@ -55,31 +60,7 @@ A number of other useful classes and methods are listed below.
     
 """
 
-import threading
-from pymavlink import mavutil
-
 local_path = ''
-
-
-
-def web_connect(authinfo):
-    """
-    .. warning:: This API is not fully implemented and should not be used.
-
-    Connect to the central dronehub server.
-
-    :param AuthInfo authinfo: A container for authentication information (username, password, challenge info, etc.)
-    """
-    return APIConnection()
-
-def local_connect():
-    """
-    Connect to the API provider for the local vehicle or ground control station.
-
-    :return: The API provider.
-    :rtype: APIConnection
-    """
-    return APIConnection()
 
 class APIException(Exception):
     """
@@ -90,30 +71,6 @@ class APIException(Exception):
 
     def __init__(self, msg):
         self.msg = msg
-
-class AuthInfo(object):
-    """
-    Not implemented. This is part of a (currently) internal API.
-
-    .. INTERNAL NOTE: Base class for various authentication flavors.
-
-        Currently only simple username & password authentication are supported
-
-        :param object: username/password values.
-    """
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
-
-class ConnectionInfo(object):
-    """
-    Internal API. Do not use.
-
-    Connection information object used by MAVProxy.
-    """
-
-    def __init__(self, mavproxy_options):
-        self.maxproxy_options = mavproxy_options
 
 class Attitude(object):
     """
@@ -307,56 +264,6 @@ class VehicleMode(object):
 
     def __ne__(self, other):
         return self.name != other
-
-class APIConnection(object):
-    """
-    An API provider.
-
-    This is the top level API connection returned from :py:func:`local_connect()`.  You should not manually create instances of
-    this class.
-
-    .. INTERNAL_COMMENT: This is also returned by :py:func:`web_connect()` (not supported/fully implemented).
-    """
-
-    def get_vehicles(self, query=None):
-        """
-        Get the set of vehicles that are controllable from this connection.
-
-        For example, to get the first vehicle in the set with ``get_vehicles()``:
-
-        .. code:: python
-
-            api = local_connect()     # Get an APIConnection
-            first_vehicle = api.get_vehicles()[0]
-
-        .. note::
-
-            The set of vehicles connected by the API is configured through MAVProxy. When running on a companion computer there will only ever
-            be one ``Vehicle`` in the returned set. A ground control station might potentially control (and hence return) more than one vehicle.
-
-
-        :param query: This parameter is ignored. Use the default.
-        :returns: Set of :py:class:`Vehicle` objects controllable from this connection.
-        """
-        # return [ Vehicle(), Vehicle() ]
-        raise Exception("Subclasses must override")
-
-    @property
-    def exit(self):
-        """
-        True if the current thread has been asked to exit.
-
-        The connection to the UAV is owned by MAVProxy, which uses this property to signal that the thread should be closed (for whatever reason).
-        Scripts are expected to check the property and close the thread if this if ``True``. For example:
-
-        .. code:: python
-
-            while not api.exit:
-                # send commands to vehicle etc.
-
-        .. todo:: FIXME: APIConnection.exit - should this be private, or even part of the drone api at all?
-        """
-        return threading.current_thread().exit
 
 class HasObservers(object):
     def __init__(self):
@@ -648,9 +555,134 @@ class Vehicle(HasObservers):
 
     """
 
-    def __init__(self):
+    def __init__(self, module):
         super(Vehicle, self).__init__()
         self.mavrx_callback = None
+        self.__module = module
+        self._parameters = Parameters(module)
+        self._waypoints = None
+        self.wpts_dirty = False
+
+    def close(self):
+        return self.__module.close()
+
+    def flush(self):
+        """
+        Call ``flush()`` after :py:func:`adding <CommandSequence.add>` or :py:func:`clearing <CommandSequence.clear>` mission commands.
+
+        After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
+        exception) and future reads will see their effects.
+        """
+        if self.wpts_dirty:
+            self.__module.send_all_waypoints()
+            self.wpts_dirty = False
+
+    #
+    # Private sugar methods
+    #
+
+    @property
+    def __master(self):
+        return self.__module.master
+
+    @property
+    def __mode_mapping(self):
+        return self.__master.mode_mapping()
+
+    #
+    # Operations to support the standard API (FIXME - possibly/probably this
+    # will move into a private dict of getter/setter tuples (invisible to the API consumer).
+    #
+
+    @property
+    def mode(self):
+        self.wait_init() # We must know vehicle type before this operation can work
+        return self.__get_mode()
+
+    def __get_mode(self):
+        """Private method to read current vehicle mode without polling"""
+        return VehicleMode(self.__module.flightmode)
+
+    @mode.setter
+    def mode(self, v):
+        self.wait_init() # We must know vehicle type before this operation can work
+        self.__master.set_mode(self.__mode_mapping[v.name])
+
+    @property
+    def location(self):
+        # For backward compatibility, this is (itself) a LocationLocal object.
+        ret = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        ret.local_frame = LocationLocal(self.__module.north, self.__module.east, self.__module.down)
+        ret.global_frame = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        return ret
+
+    @property
+    def battery(self):
+        return Battery(self.__module.voltage, self.__module.current, self.__module.level)
+
+    @property
+    def rangefinder(self):
+        return Rangefinder(self.__module.rngfnd_distance, self.__module.rngfnd_voltage)
+
+    @property
+    def velocity(self):
+        return [ self.__module.vx, self.__module.vy, self.__module.vz ]
+
+    @property
+    def attitude(self):
+        return Attitude(self.__module.pitch, self.__module.yaw, self.__module.roll)
+
+    @property
+    def gps_0(self):
+        return GPSInfo(self.__module.eph, self.__module.epv, self.__module.fix_type, self.__module.satellites_visible)
+
+    @property
+    def armed(self):
+        return self.__module.armed
+
+    @armed.setter
+    def armed(self, value):
+        if value:
+            self.__master.arducopter_arm()
+        else:
+            self.__master.arducopter_disarm()
+
+    @property
+    def system_status(self):
+        return self.__module.system_status
+
+    @property
+    def groundspeed(self):
+        return self.__module.groundspeed
+
+    @property
+    def airspeed(self):
+        return self.__module.airspeed
+
+    @property
+    def mount_status(self):
+        return [ self.__module.mount_pitch, self.__module.mount_yaw, self.__module.mount_roll ]
+
+    @property
+    def ekf_ok(self):
+        return self.__module.ekf_ok
+
+    @property
+    def channel_override(self):
+        overrides = self.__rc.override
+        # Only return entries that have a non zero override
+        return dict((str(num + 1), overrides[num]) for num in range(8) if overrides[num] != 0)
+
+    @channel_override.setter
+    def channel_override(self, newch):
+        overrides = self.__rc.override
+        for k, v in newch.iteritems():
+            overrides[int(k) - 1] = v
+        self.__rc.set_override(overrides)
+
+    @property
+    def channel_readback(self):
+        return self.__module.rc_readback
 
     @property
     def commands(self):
@@ -662,7 +694,9 @@ class Vehicle(HasObservers):
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
-        None
+        if(self._waypoints is None):  # We create the wpts lazily (because this will start a fetch)
+            self._waypoints = CommandSequence(self.__module)
+        return self._waypoints
 
     @property
     def parameters(self):
@@ -671,34 +705,67 @@ class Vehicle(HasObservers):
         """
         return self._parameters
 
-    def delete(self):
+    def unset_mavlink_callback(self):
         """
-        Delete this vehicle object.
+        Clears the asynchronous notification added by :py:func:`set_mavlink_callback <dronekit.lib.Vehicle.set_mavlink_callback>`.
 
-        This requests deletion of the Vehicle object on the server. This operation may throw an exception on failure (i.e. for
-        local connections or insufficient user permissions).
+        The code snippet below shows how to set, then clear, a MAVLink callback function.
 
-        It is not supported for local connections.
+        .. code:: python
+
+            # Set MAVLink callback handler (after getting Vehicle instance)
+            vehicle.set_mavlink_callback(mavrx_debug_handler)
+
+            # Remove the MAVLink callback handler. Callback will not be
+            # called after this point.
+            vehicle.unset_mavlink_callback()
         """
-        pass
+        self.mavrx_callback = None
 
-    def get_mission(self, query_params):
+    def set_mavlink_callback(self, callback):
         """
-        Not implemented.
+        Provides asynchronous notification when any MAVLink packet is received by this vehicle.
 
-        Returns an object providing access to historical missions.
+        Only a single callback can be set. :py:func:`unset_mavlink_callback <dronekit.lib.Vehicle.unset_mavlink_callback>` removes the callback.
 
-        .. warning::
+        .. tip::
 
-            Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a
+            This method is implemented - but we hope you don't need it.
 
-        :param query_params: Some set of arguments that can be used to find a past mission
-        :return: Mission - the mission object.
+            Because of the asynchronous attribute/waypoint/parameter notifications there should be no need for
+            API clients to see raw MAVLink.  Please provide feedback if we missed a use-case.
 
-        .. todo:: FIXME: get_mission needs to be updated when class Mission is implemented. The warning needs to be removed and the values of the query_params specified.
+        The code snippet below shows how to set a "demo" callback function as the callback handler:
+
+        .. code:: python
+
+            # Demo callback handler for raw MAVLink messages
+            def mavrx_debug_handler(message):
+                print "Received", message
+
+            # Set MAVLink callback handler (after getting Vehicle instance)
+            vehicle.set_mavlink_callback(mavrx_debug_handler)
+
+        :param callback: The callback function to be invoked when a raw MAVLink message is received.
+
         """
+        self.mavrx_callback = callback
 
-        return Mission()
+    def send_mavlink(self, message):
+        """
+        This method is used to send raw MAVLink "custom messages" to the vehicle.
+
+        The function can send arbitrary messages/commands to a vehicle at any time and in any vehicle mode. It is particularly useful for
+        controlling vehicles outside of missions (for example, in GUIDED mode).
+
+        The :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
+        Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
+
+        :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>`.
+            There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
+        """
+        self.__module.fix_targets(message)
+        self.__module.master.mav.send(message)
 
     @property
     def message_factory(self):
@@ -731,117 +798,26 @@ class Vehicle(HasObservers):
 
         .. todo:: Check if the standard MAV_CMD messages can be sent this way too, and if so add link.
         """
-        None
+        return self.__module.master.mav
 
-    def send_mavlink(self, message):
-        """
-        This method is used to send raw MAVLink "custom messages" to the vehicle.
+    def wait_init(self):
+        """Wait for the vehicle to exit the initializing step"""
+        timeout = 30
+        pollinterval = 0.2
+        for i in range(0, int(timeout / pollinterval)):
+            # Don't let the user try to fly while the board is still booting
+            mode = self.__get_mode().name
+            # print "mode is", mode
+            if mode != "INITIALISING" and mode != "MAV":
+                return
 
-        The function can send arbitrary messages/commands to a vehicle at any time and in any vehicle mode. It is particularly useful for
-        controlling vehicles outside of missions (for example, in GUIDED mode).
+            time.sleep(pollinterval)
+        raise APIException("Vehicle did not complete initialization")
 
-        The :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
-        Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
-
-        :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>`.
-            There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
-        """
-        pass
-
-
-    def set_mavlink_callback(self, callback):
-        """
-        Provides asynchronous notification when any MAVLink packet is received by this vehicle.
-
-        Only a single callback can be set. :py:func:`unset_mavlink_callback <dronekit.lib.Vehicle.unset_mavlink_callback>` removes the callback.
-
-        .. tip::
-
-            This method is implemented - but we hope you don't need it.
-
-            Because of the asynchronous attribute/waypoint/parameter notifications there should be no need for
-            API clients to see raw MAVLink.  Please provide feedback if we missed a use-case.
-
-        The code snippet below shows how to set a "demo" callback function as the callback handler:
-
-        .. code:: python
-
-            # Demo callback handler for raw MAVLink messages
-            def mavrx_debug_handler(message):
-                print "Received", message
-
-            # Set MAVLink callback handler (after getting Vehicle instance)
-            vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-        :param callback: The callback function to be invoked when a raw MAVLink message is received.
-
-        """
-        self.mavrx_callback = callback
-
-    def unset_mavlink_callback(self):
-        """
-        Clears the asynchronous notification added by :py:func:`set_mavlink_callback <dronekit.lib.Vehicle.set_mavlink_callback>`.
-
-        The code snippet below shows how to set, then clear, a MAVLink callback function.
-
-        .. code:: python
-
-            # Set MAVLink callback handler (after getting Vehicle instance)
-            vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-            # Remove the MAVLink callback handler. Callback will not be
-            # called after this point.
-            vehicle.unset_mavlink_callback()
-        """
-        self.mavrx_callback = None
-
-    def flush(self):
-        """
-        Call ``flush()`` after :py:func:`adding <CommandSequence.add>` or :py:func:`clearing <CommandSequence.clear>` mission commands.
-
-        After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
-        exception) and future reads will see their effects.
-        """
-        pass
-
-#===============================================================================
-#     def __getattr__(self, name):
-#         """
-#         Attributes are automatically populated based on vehicle type.
-#
-#         This override provides that behavior.
-#         """
-#
-#         try:
-#             return self.__dict[name]
-#         except KeyError:
-#             msg = "'{0}' object has no attribute '{1}'"
-#             raise AttributeError(msg.format(type(self).__name__, name))
-#
-#     def __setattr__(self, name, value):
-#         """
-#         An override to support setting for vehicle attributes.
-#
-#         Note: Exceptions due to loss of communications, missing attributes or insufficient permissions are not guaranteed
-#         to be thrown from inside this method.  Most failures will not be seen until flush() is called.  If you require immediate
-#         notification of failure set autoflush.
-#         """
-#         pass
-#===============================================================================
-
-class Mission(object):
-    """
-    Access to historical missions.
-
-    .. warning:: 
-    
-        This function is a *placeholder*. It has no implementation in DroneKit-Python release 1.
-
-        Mission objects are only accessible from the REST API in release 1 (most use-cases requiring missions prefer a REST interface).
-
-    .. todo:: FIXME: Mission class needs to be updated when it is implemented (after DroneKit Python release 1).
-    """
-    pass
+    def on_message(self, name, fn):
+        def handler(state, name, m):
+            return fn(self, name, m)
+        return self.__module.on_message(name, handler)
 
 class Parameters(HasObservers):
     """
@@ -870,6 +846,29 @@ class Parameters(HasObservers):
         Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
         https://github.com/dronekit/dronekit-python/issues/107
     """
+
+    def __init__(self, module):
+        self.__module = module
+
+    def __getitem__(self, name):
+        self.wait_valid()
+        return self.__module.mav_param[name]
+
+    def __setitem__(self, name, value):
+        self.wait_valid()
+        self.__module.param_set(name, value)
+
+    def set(self, name, value, retries=3, await_valid=False):
+        if await_valid:
+            self.wait_valid()
+        return self.__module.param_set(name, value, retries=retries)
+
+    def wait_valid(self):
+        '''Block the calling thread until parameters have been downloaded'''
+        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
+        pstate = self.__module.pstate
+        while (pstate.mav_param_count == 0 or len(pstate.mav_param_set) != pstate.mav_param_count) and not self.__module.api.exit:
+            time.sleep(0.200)
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
@@ -974,13 +973,18 @@ class CommandSequence(object):
         .. todo:: This is a hack. The actual function should be defined here. See https://github.com/dronekit/dronekit-python/issues/64
     """
 
+    def __init__(self, module):
+        self.__module = module
+
     def download(self):
         '''
         Download all waypoints from the vehicle.
 
         The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
         '''
-        pass
+        self.wait_valid()
+        self.__module.fetch()
+        # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_valid(self):
         '''
@@ -988,10 +992,22 @@ class CommandSequence(object):
 
         This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
         '''
-        pass
+        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
+        while not self.__module.wp_loaded:
+            time.sleep(0.1)
 
+    def takeoff(self, alt=None):
+        if alt is not None:
+            altitude = float(alt)
+            if math.isnan(alt) or math.isinf(alt):
+                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
+            self.__module.master.mav.command_long_send(self.__module.target_system,
+                                                    self.__module.target_component,
+                                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                                                    0, 0, 0, 0, 0, 0, 0,
+                                                    altitude)
 
-    def goto(self, location):
+    def goto(self, l):
         '''
         Go to a specified global location (:py:class:`LocationGlobal`).
 
@@ -1008,7 +1024,17 @@ class CommandSequence(object):
 
         :param LocationGlobal location: The target location.
         '''
-        pass
+        if l.is_relative:
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+        else:
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+        self.__module.master.mav.mission_item_send(self.__module.target_system,
+                                               self.__module.target_component,
+                                               0,
+                                               frame,
+                                               mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                                               2, 0, 0, 0, 0, 0,
+                                               l.lat, l.lon, l.alt)
 
     def clear(self):
         '''
@@ -1021,7 +1047,9 @@ class CommandSequence(object):
 
         .. todo:: The above note should be removed when https://github.com/dronekit/dronekit-python/issues/132 fixed
         '''
-        pass
+        self.wait_valid()
+        self.__module.wploader.clear()
+        self.__module.vehicle.wpts_dirty = True
 
     def add(self, cmd):
         '''
@@ -1031,7 +1059,10 @@ class CommandSequence(object):
 
         :param Command cmd: The command to be added.
         '''
-        pass
+        self.wait_valid()
+        self.__module.fix_targets(cmd)
+        self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.vehicle.wpts_dirty = True
 
     @property
     def count(self):
@@ -1040,22 +1071,25 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return 0
+        return self.__module.wploader.count()
 
     @property
     def next(self):
         """
         Get the currently active waypoint number.
-
-        .. INTERNAL NOTE: (implementation provided by subclass)
         """
-        return None
+        return self.__module.last_waypoint
 
     @next.setter
-    def next(self, value):
+    def next(self, index):
         """
         Set a new ``next`` waypoint for the vehicle.
-
-        .. INTERNAL NOTE: (implementation provided by subclass)
         """
-        pass
+        self.__module.master.waypoint_set_current_send(index)
+
+    def __getitem__(self, index):
+        return self.__module.wploader.wp(index)
+
+    def __setitem__(self, index, value):
+        self.__module.wploader.set(value, index)
+        self.__module.vehicle.wpts_dirty = True

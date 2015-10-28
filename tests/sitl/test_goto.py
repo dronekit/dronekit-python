@@ -8,10 +8,8 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
-from dronekit import connect
-from dronekit.lib import VehicleMode, LocationGlobal
+from dronekit import connect, VehicleMode, LocationGlobal
 from dronekit.tools import with_sitl
-from pymavlink import mavutil
 from nose.tools import assert_equals
 
 @with_sitl

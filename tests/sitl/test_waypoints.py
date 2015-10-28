@@ -1,10 +1,7 @@
-from dronekit import connect
 import time
 import math
-from dronekit import connect
+from dronekit import connect, VehicleMode, LocationGlobal
 from dronekit.tools import with_sitl
-from dronekit.lib import VehicleMode, LocationGlobal
-import time
 from nose.tools import assert_not_equals
 
 # This test runs first!
