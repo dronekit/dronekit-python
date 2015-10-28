@@ -38,7 +38,7 @@ Once you've got DroneKit set up, the [guide](http://python.dronekit.io/guide/ind
 
 ## Resources
 
-The project has documentation is available at http://python.dronekit.io/. This includes [guide](http://python.dronekit.io/guide/index.html), [example](http://python.dronekit.io/examples/index.html) and [API Reference](http://python.dronekit.io/automodule.html) material.
+The project documentation is available at [python.dronekit.io](http://python.dronekit.io/). This includes [guide](http://python.dronekit.io/guide/index.html), [example](http://python.dronekit.io/examples/index.html) and [API Reference](http://python.dronekit.io/automodule.html) material.
 
 The example source code is hosted here on Github as sub-folders of [/dronekit-python/examples](https://github.com/dronekit/dronekit-python/tree/master/examples).
 
@@ -56,7 +56,7 @@ The [DroneKit Forums](http://discuss.dronekit.io) are the best place to ask for 
 
 We'd love your [feedback and suggestions](https://github.com/dronekit/dronekit-python/issues) about this API and are eager to evolve it to meet your needs, please feel free to create an issue to report bugs or feature requests.
 
-If you want to contribute, see our [Contributing](http://python.dronekit.io/contributing/index.html) guidelines, we welcome all types of contributions but mostly contributions that would help us shrink our issues list [https://github.com/dronekit/dronekit-python/issues](https://github.com/dronekit/dronekit-python/issues)
+If you want to contribute, see our [Contributing](http://python.dronekit.io/contributing/index.html) guidelines, we welcome all types of contributions but mostly contributions that would help us shrink our [issues list](https://github.com/dronekit/dronekit-python/issues).
 
 
 ## Licence
