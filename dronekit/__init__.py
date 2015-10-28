@@ -70,6 +70,7 @@ class MPFakeState:
         # waypoints
         self.wploader = mavwp.MAVWPLoader()
         self.wp_loaded = True
+        self.wp_uploaded = None
 
         # Attaches message listeners.
         self.message_listeners = dict()
@@ -268,7 +269,11 @@ class MPFakeState:
         """
         self.master.waypoint_clear_all_send()
         if self.wploader.count() > 0:
+            self.wp_uploaded = [False]*self.wploader.count()
             self.master.waypoint_count_send(self.wploader.count())
+            while False in self.wp_uploaded:
+                time.sleep(0.1)
+            self.wp_uploaded = None
 
     def fix_targets(self, message):
         pass
@@ -511,9 +516,12 @@ class MPFakeState:
                             self.last_waypoint = msg.seq
 
                         # Waypoint send to master
-                        # TODO
-                        if msg.get_type() in ["WAYPOINT_REQUEST", "MISSION_REQUEST"]:
-                            pass
+                        if self.wp_uploaded != None and msg.get_type() in ["WAYPOINT_REQUEST", "MISSION_REQUEST"]:
+                            wp = self.wploader.wp(msg.seq)
+                            wp.target_system = self.target_system
+                            wp.target_component = self.target_component
+                            self.master.mav.send(wp)
+                            self.wp_uploaded[msg.seq] = True
 
                         # Heartbeat: armed + mode update
                         if msg.get_type() == 'HEARTBEAT':
