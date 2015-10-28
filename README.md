@@ -44,9 +44,9 @@ The example source code is hosted here on Github as sub-folders of [/dronekit-py
 
 The [DroneKit Forums](http://discuss.dronekit.io) are the best place to ask for technical support on how to use the library. You can also check out our [Gitter channel](https://gitter.im/dronekit/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) though we prefer posts on the forums where possible.
 
-* **Documentation:** (http://python.dronekit.io/)[http://python.dronekit.io/]
-* **Guides:** (http://python.dronekit.io/guide/index.html)[http://python.dronekit.io/guide/index.html]
-* **API Reference:** (http://python.dronekit.io/automodule.html)[http://python.dronekit.io/automodule.html]
+* **Documentation:** [http://python.dronekit.io/](http://python.dronekit.io/)
+* **Guides:** [http://python.dronekit.io/guide/index.html](http://python.dronekit.io/guide/index.html)
+* **API Reference:** [http://python.dronekit.io/automodule.html](http://python.dronekit.io/automodule.html)
 * **Examples:** [/dronekit-python/examples](https://github.com/dronekit/dronekit-python/tree/master/examples)
 * **Forums:** [http://discuss.dronekit.io/](http://discuss.dronekit.io)
 * **Gitter:** [https://gitter.im/dronekit/dronekit-python](https://gitter.im/dronekit/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) though we prefer posts on the forums where possible.
