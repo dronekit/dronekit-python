@@ -2,9 +2,10 @@
 About DroneKit
 ==============
 
-DroneKit-Python is DroneKit's main API for *Air Computing* — allowing developers to create apps that run on an onboard :ref:`companion computer <supported-companion-computers>` and communicate with the `ArduPilot <http://ardupilot.com>`_ flight controller using a low-latency link. *Air apps* can significantly enhance the autopilot, adding greater intelligence to vehicle behaviour, and performing tasks that are computationally intensive or time-sensitive (for example, computer vision, path planning, or 3D modelling). 
+DroneKit-Python allows developers to create apps that run on an onboard :ref:`companion computer <supported-companion-computers>` and communicate with the `ArduPilot <http://ardupilot.com>`_ flight controller using a low-latency link. Onboard apps can significantly enhance the autopilot, adding greater intelligence to vehicle behaviour, and performing tasks that are computationally intensive or time-sensitive (for example, computer vision, path planning, or 3D modelling). DroneKit-Python can also be used for ground station apps, communicating with vehicles over a higher latency RF-link. 
 
-The API communicates with "locally connected" vehicles over MAVLink. It provides programmatic access to a connected vehicle's telemetry, state and parameter information, and enables both mission management and direct control over vehicle movement and operations.
+The API communicates with vehicles over MAVLink. It provides programmatic access to a connected vehicle's telemetry, state and parameter information, and enables both mission management and direct control over vehicle movement and operations.
+
 
 
 Open source community
@@ -26,8 +27,6 @@ DroneKit-Python is compatible with vehicles that communicate using the `MAVLink 
     Vehicles running other autopilots may be be less compatible due to differences in adhererence/interpretation of the MAVLink specification. 
     Please report any autopilot-specific issues `on Github here <https://github.com/dronekit/dronekit-python/issues>`_.
 
-
-In addition to creating apps that run on companion computers, DroneKit-Python apps can be used on ground stations and communicate with vehicles over a higher latency RF-link. 
 
 
 API features
