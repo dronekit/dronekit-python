@@ -23,12 +23,14 @@ For information about all past releases, please see `this link on Github <https:
 Working with releases
 =======================
 
-The following PyPI commands are useful for working with different version of DroneKit Python: ::
+The following PyPI commands are useful for working with different version of DroneKit Python: 
+
+.. code-block:: bash
 
     pip install dronekit    # Install the latest version
     pip install dronekit --upgrade    # Update to the latest version
     pip show dronekit    # Find out what release you have installed
-    pip install dronekit=1.0.3    # Get a sepcific old release (in this case 1.0.3
-		
+    pip install dronekit==2.0.0rc1    # Get a sepcific old release (in this case 2.0.0rc1)
+
 See `Release History on the package ranking page <http://pypi-ranking.info/module/dronekit#release_history>`_  for a list of all releases available on PyPI.
 
