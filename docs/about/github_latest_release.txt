@@ -17,7 +17,7 @@ Source Code
 -----------
 
 
-Source code is available at <https://github.com/dronekit/dronekit-python/releases/tag/v1.5.0>.
+Source code is available `here <https://github.com/dronekit/dronekit-python/releases/tag/v1.5.0>`_.
 
 * View `**commits** included in this release <https://github.com/dronekit/dronekit-python/compare/v1.4.3...v1.5.0>`_
 * View `**bugs** closed by this release <https://github.com/dronekit/dronekit-python/issues?utf8=%E2%9C%93&q=is%3Aclosed+created%3A%3E2015-08-10+is%3Aissue+>`_

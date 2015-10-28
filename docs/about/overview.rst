@@ -18,9 +18,16 @@ If you want to join the community, then see our :doc:`contributing section <../c
 
 Compatibility
 =============
-DroneKit-Python is compatible with all vehicles using the `MAVLink protocol <http://qgroundcontrol.org/mavlink/start>`_ (including most vehicles made by 3DR and other members of the `DroneCode foundation <https://www.dronecode.org/about/project-members>`_). It runs on Linux, Mac OS X, or Windows. 
+DroneKit-Python is compatible with vehicles that communicate using the `MAVLink protocol <http://qgroundcontrol.org/mavlink/start>`_ (including most vehicles made by `3DR <https://3drobotics.com/>`_ and other members of the `DroneCode foundation <https://www.dronecode.org/about/project-members>`_). It runs on Linux, Mac OS X, or Windows.
 
-In addition to "Air apps", it can be used to create apps that run on a desktop ground station and communicate with ArduPilot over a higher latency RF-link. 
+.. note::
+
+    DroneKit-Python is validated against, and hence *most compatible* with, the `ArduPilot UAV Platform <http://ardupilot.com/>`_. 
+    Vehicles running other autopilots may be be less compatible due to differences in adhererence/interpretation of the MAVLink specification. 
+    Please report any autopilot-specific issues `on Github here <https://github.com/dronekit/dronekit-python/issues>`_.
+
+
+In addition to creating apps that run on companion computers, DroneKit-Python apps can be used on ground stations and communicate with vehicles over a higher latency RF-link. 
 
 
 API features
@@ -29,12 +36,12 @@ API features
 
 The API provides classes and methods to:
 
-- Get a list of connected vehicles.
+- Connect to a vehicle (or multiple vehicles) from a script
 - Get and set vehicle state/telemetry and parameter information.
 - Receive asynchronous notification of state changes.
-- Create and manage waypoint missions (AUTO mode).
 - Guide a UAV to specified position (GUIDED mode).
 - Send arbitrary custom messages to control UAV movement and other hardware (GUIDED mode).
+- Create and manage waypoint missions (AUTO mode).
 - Override RC channel settings.
 
 A complete API reference is available :ref:`here <api_reference>`.
