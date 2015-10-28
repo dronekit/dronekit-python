@@ -20,6 +20,8 @@ else:
 
 # Public re-exports
 Vehicle = dronekit.lib.Vehicle
+Command = dronekit.lib.Command
+CommandSequence = dronekit.lib.CommandSequence
 VehicleMode = dronekit.lib.VehicleMode
 LocationGlobal = dronekit.lib.LocationGlobal
 LocationLocal = dronekit.lib.LocationLocal

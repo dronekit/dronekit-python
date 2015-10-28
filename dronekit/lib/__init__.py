@@ -1087,6 +1087,14 @@ class CommandSequence(object):
         """
         self.__module.master.waypoint_set_current_send(index)
 
+    def __len__(self):
+        '''
+        Return number of waypoints.
+
+        :return: The number of waypoints in the sequence.
+        '''
+        return self.__module.wploader.count()
+
     def __getitem__(self, index):
         return self.__module.wploader.wp(index)
 
