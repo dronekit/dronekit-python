@@ -689,6 +689,12 @@ class Vehicle(HasObservers):
         return self.__module.rc_readback
 
     @property
+    def home_location(self):
+        if self._waypoints is None:  # We create the wpts lazily (because this will start a fetch)
+            self._waypoints = CommandSequence(self.__module)
+        return self.__module.wploader.wp(0)
+
+    @property
     def commands(self):
         """
         Gets the editable waypoints for this vehicle (the current "mission").
@@ -698,7 +704,7 @@ class Vehicle(HasObservers):
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
-        if(self._waypoints is None):  # We create the wpts lazily (because this will start a fetch)
+        if self._waypoints is None:  # We create the wpts lazily (because this will start a fetch)
             self._waypoints = CommandSequence(self.__module)
         return self._waypoints
 
@@ -1051,8 +1057,12 @@ class CommandSequence(object):
 
         .. todo:: The above note should be removed when https://github.com/dronekit/dronekit-python/issues/132 fixed
         '''
+
+        # Add home point again.
         self.wait_valid()
+        home = self.__module.wploader.wp(0)
         self.__module.wploader.clear()
+        self.__module.wploader.add(home, comment='Added by DroneKit')
         self.__module.vehicle.wpts_dirty = True
 
     def add(self, cmd):
@@ -1065,7 +1075,7 @@ class CommandSequence(object):
         '''
         self.wait_valid()
         self.__module.fix_targets(cmd)
-        self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.wploader.add(cmd, comment='Added by DroneKit')
         self.__module.vehicle.wpts_dirty = True
 
     @property
@@ -1075,7 +1085,7 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.wploader.count()
+        return self.__module.wploader.count() - 1
 
     @property
     def next(self):
@@ -1089,7 +1099,7 @@ class CommandSequence(object):
         """
         Set a new ``next`` waypoint for the vehicle.
         """
-        self.__module.master.waypoint_set_current_send(index)
+        self.__module.master.waypoint_set_current_send(index - 1)
 
     def __len__(self):
         '''
@@ -1097,11 +1107,11 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.wploader.count()
+        return self.__module.wploader.count() - 1
 
     def __getitem__(self, index):
-        return self.__module.wploader.wp(index)
+        return self.__module.wploader.wp(index - 1)
 
     def __setitem__(self, index, value):
-        self.__module.wploader.set(value, index)
+        self.__module.wploader.set(value, index - 1)
         self.__module.vehicle.wpts_dirty = True

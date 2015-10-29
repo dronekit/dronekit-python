@@ -13,14 +13,14 @@ def test_parameter(connpath):
     cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
-    assert_equals(len(cmds), 1)
+    assert_equals(len(cmds), 0)
 
     # After clearing
     cmds.clear()
     vehicle.flush()
     cmds.download()
     cmds.wait_valid()
-    assert_equals(len(cmds), 1)
+    assert_equals(len(cmds), 0)
 
     # Upload
     for command in [
@@ -39,4 +39,4 @@ def test_parameter(connpath):
     # After upload
     cmds.download()
     cmds.wait_valid()
-    assert_equals(len(cmds), 9)
+    assert_equals(len(cmds), 8)
