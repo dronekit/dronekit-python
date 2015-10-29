@@ -26,6 +26,6 @@ setup(name='dronekit',
       ],
       license='apache',
       packages=[
-          'dronekit', 'dronekit.module', 'dronekit.lib'
+          'dronekit', 'dronekit.lib'
       ],
       ext_modules=[])
