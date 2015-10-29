@@ -8,12 +8,23 @@ from nose.tools import assert_not_equals, assert_equals
 def test_parameter(connpath):
     # Connect to the Vehicle
     vehicle = connect(connpath, await_params=True)
+    cmds = vehicle.commands
+
+    # Home should be None at first.
+    assert_equals(vehicle.home_location, None)
+    
+    # Wait for home position to be real and not 0, 0, 0
+    # once we request it via cmds.download()
+    time.sleep(10)
 
     # Initial
-    cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
     assert_equals(len(cmds), 0)
+    assert_not_equals(vehicle.home_location, None)
+
+    # Save home for comparison.
+    home = vehicle.home_location
 
     # After clearing
     cmds.clear()
@@ -40,3 +51,8 @@ def test_parameter(connpath):
     cmds.download()
     cmds.wait_valid()
     assert_equals(len(cmds), 8)
+
+    # Home should be preserved
+    assert_equals(home.x, vehicle.home_location.x)
+    assert_equals(home.y, vehicle.home_location.y)
+    assert_equals(home.z, vehicle.home_location.z)

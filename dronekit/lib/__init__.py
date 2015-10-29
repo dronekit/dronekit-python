@@ -560,7 +560,7 @@ class Vehicle(HasObservers):
         self.mavrx_callback = None
         self.__module = module
         self._parameters = Parameters(module)
-        self._waypoints = None
+        self._waypoints = CommandSequence(self.__module)
         self.wpts_dirty = False
 
     def close(self):
@@ -690,8 +690,6 @@ class Vehicle(HasObservers):
 
     @property
     def home_location(self):
-        if self._waypoints is None:  # We create the wpts lazily (because this will start a fetch)
-            self._waypoints = CommandSequence(self.__module)
         return self.__module.wploader.wp(0)
 
     @property
@@ -704,8 +702,6 @@ class Vehicle(HasObservers):
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
-        if self._waypoints is None:  # We create the wpts lazily (because this will start a fetch)
-            self._waypoints = CommandSequence(self.__module)
         return self._waypoints
 
     @property
