@@ -5,6 +5,17 @@ from dronekit.tools import with_sitl
 from nose.tools import assert_not_equals, assert_equals
 
 @with_sitl
+def test_empty_clear(connpath):
+    # Connect to the Vehicle
+    vehicle = connect(connpath)
+
+    # Calling clear() on an empty object should not crash.
+    vehicle.commands.clear()
+    vehicle.flush()
+
+    assert_equals(len(vehicle.commands), 0)
+
+@with_sitl
 def test_parameter(connpath):
     # Connect to the Vehicle
     vehicle = connect(connpath, await_params=True)

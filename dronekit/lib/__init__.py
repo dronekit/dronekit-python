@@ -1058,7 +1058,8 @@ class CommandSequence(object):
         self.wait_valid()
         home = self.__module.wploader.wp(0)
         self.__module.wploader.clear()
-        self.__module.wploader.add(home, comment='Added by DroneKit')
+        if home:
+            self.__module.wploader.add(home, comment='Added by DroneKit')
         self.__module.vehicle.wpts_dirty = True
 
     def add(self, cmd):
@@ -1081,7 +1082,7 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.wploader.count() - 1
+        return max(self.__module.wploader.count() - 1, 0)
 
     @property
     def next(self):
@@ -1103,7 +1104,7 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.wploader.count() - 1
+        return max(self.__module.wploader.count() - 1, 0)
 
     def __getitem__(self, index):
         return self.__module.wploader.wp(index - 1)
