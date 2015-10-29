@@ -690,7 +690,9 @@ class Vehicle(HasObservers):
 
     @property
     def home_location(self):
-        return self.__module.wploader.wp(0)
+        loc = self.__module.wploader.wp(0)
+        if loc:
+            return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)
 
     @property
     def commands(self):

@@ -6,7 +6,6 @@ from nose.tools import assert_not_equals, assert_equals
 
 @with_sitl
 def test_empty_clear(connpath):
-    # Connect to the Vehicle
     vehicle = connect(connpath)
 
     # Calling clear() on an empty object should not crash.
@@ -17,7 +16,6 @@ def test_empty_clear(connpath):
 
 @with_sitl
 def test_parameter(connpath):
-    # Connect to the Vehicle
     vehicle = connect(connpath, await_params=True)
     cmds = vehicle.commands
 
@@ -64,6 +62,6 @@ def test_parameter(connpath):
     assert_equals(len(cmds), 8)
 
     # Home should be preserved
-    assert_equals(home.x, vehicle.home_location.x)
-    assert_equals(home.y, vehicle.home_location.y)
-    assert_equals(home.z, vehicle.home_location.z)
+    assert_equals(home.lat, vehicle.home_location.lat)
+    assert_equals(home.lon, vehicle.home_location.lon)
+    assert_equals(home.alt, vehicle.home_location.alt)
