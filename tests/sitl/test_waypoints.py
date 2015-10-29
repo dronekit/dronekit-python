@@ -61,6 +61,18 @@ def test_parameter(connpath):
     cmds.wait_valid()
     assert_equals(len(cmds), 8)
 
+    # Test iteration.
+    out = []
+    for cmd in vehicle.commands:
+        assert_not_equals(cmd, None)
+
+    # Test slicing
+    count = 0
+    for cmd in vehicle.commands[2:5]:
+        assert_not_equals(cmd, None)
+        count += 1
+    assert_equals(count, 3)
+
     # Home should be preserved
     assert_equals(home.lat, vehicle.home_location.lat)
     assert_equals(home.lon, vehicle.home_location.lon)

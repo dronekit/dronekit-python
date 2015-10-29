@@ -1109,7 +1109,15 @@ class CommandSequence(object):
         return max(self.__module.wploader.count() - 1, 0)
 
     def __getitem__(self, index):
-        return self.__module.wploader.wp(index - 1)
+        if isinstance(index, slice):
+            return [self[ii] for ii in xrange(*index.indices(len(self)))]
+        elif isinstance(index, int):
+            item = self.__module.wploader.wp(index - 1)
+            if not item:
+                raise IndexError('Index %s out of range.' % index)
+            return item
+        else:
+            raise TypeError('Invalid argument type.')
 
     def __setitem__(self, index, value):
         self.__module.wploader.set(value, index - 1)
