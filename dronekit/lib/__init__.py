@@ -586,7 +586,7 @@ class Vehicle(HasObservers):
         return self.__module.master
 
     @property
-    def __mode_mapping(self):
+    def _mode_mapping(self):
         return self.__master.mode_mapping()
 
     #
@@ -606,7 +606,7 @@ class Vehicle(HasObservers):
     @mode.setter
     def mode(self, v):
         self.wait_init() # We must know vehicle type before this operation can work
-        self.__master.set_mode(self.__mode_mapping[v.name])
+        self.__master.set_mode(self._mode_mapping[v.name])
 
     @property
     def location(self):
