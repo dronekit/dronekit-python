@@ -10,14 +10,13 @@ def test_empty_clear(connpath):
 
     # Calling clear() on an empty object should not crash.
     vehicle.commands.clear()
-    vehicle.flush()
+    vehicle.commands.upload()
 
     assert_equals(len(vehicle.commands), 0)
 
 @with_sitl
 def test_parameter(connpath):
     vehicle = connect(connpath, await_params=True)
-    cmds = vehicle.commands
 
     # Home should be None at first.
     assert_equals(vehicle.home_location, None)
@@ -27,20 +26,20 @@ def test_parameter(connpath):
     time.sleep(10)
 
     # Initial
-    cmds.download()
-    cmds.wait_valid()
-    assert_equals(len(cmds), 0)
+    vehicle.commands.download()
+    vehicle.commands.wait_valid()
+    assert_equals(len(vehicle.commands), 0)
     assert_not_equals(vehicle.home_location, None)
 
     # Save home for comparison.
     home = vehicle.home_location
 
     # After clearing
-    cmds.clear()
-    vehicle.flush()
-    cmds.download()
-    cmds.wait_valid()
-    assert_equals(len(cmds), 0)
+    vehicle.commands.clear()
+    vehicle.commands.upload()
+    vehicle.commands.download()
+    vehicle.commands.wait_valid()
+    assert_equals(len(vehicle.commands), 0)
 
     # Upload
     for command in [
@@ -53,13 +52,13 @@ def test_parameter(connpath):
         Command(0, 0, 0, 3, 115, 0, 1, 2.0, 22.0, 1.0, 3.0, 0.0, 0.0, 0.0),
         Command(0, 0, 0, 3, 16, 0, 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
     ]:
-        cmds.add(command)
-    vehicle.flush()
+        vehicle.commands.add(command)
+    vehicle.commands.upload()
 
     # After upload
-    cmds.download()
-    cmds.wait_valid()
-    assert_equals(len(cmds), 8)
+    vehicle.commands.download()
+    vehicle.commands.wait_valid()
+    assert_equals(len(vehicle.commands), 8)
 
     # Test iteration.
     count = 0

@@ -1077,6 +1077,17 @@ class CommandSequence(object):
         self.__module.wploader.add(cmd, comment='Added by DroneKit')
         self.__module.vehicle.wpts_dirty = True
 
+    def upload(self):
+        """
+        Call ``upload()`` after :py:func:`adding <CommandSequence.add>` or :py:func:`clearing <CommandSequence.clear>` mission commands.
+
+        After the return from ``upload()`` any writes are guaranteed to have completed (or thrown an
+        exception) and future reads will see their effects.
+        """
+        if self.__module.vehicle.wpts_dirty:
+            self.__module.send_all_waypoints()
+            self.__module.vehicle.wpts_dirty = False
+
     @property
     def count(self):
         '''
