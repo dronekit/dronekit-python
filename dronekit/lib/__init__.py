@@ -1098,7 +1098,7 @@ class CommandSequence(object):
         """
         Set a new ``next`` waypoint for the vehicle.
         """
-        self.__module.master.waypoint_set_current_send(index - 1)
+        self.__module.master.waypoint_set_current_send(index + 1)
 
     def __len__(self):
         '''
@@ -1112,7 +1112,7 @@ class CommandSequence(object):
         if isinstance(index, slice):
             return [self[ii] for ii in xrange(*index.indices(len(self)))]
         elif isinstance(index, int):
-            item = self.__module.wploader.wp(index - 1)
+            item = self.__module.wploader.wp(index + 1)
             if not item:
                 raise IndexError('Index %s out of range.' % index)
             return item
@@ -1120,5 +1120,5 @@ class CommandSequence(object):
             raise TypeError('Invalid argument type.')
 
     def __setitem__(self, index, value):
-        self.__module.wploader.set(value, index - 1)
+        self.__module.wploader.set(value, index + 1)
         self.__module.vehicle.wpts_dirty = True
