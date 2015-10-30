@@ -652,6 +652,10 @@ class Vehicle(HasObservers):
         return self.__module.system_status
 
     @property
+    def heading(self):
+        return self.__module.heading
+
+    @property
     def groundspeed(self):
         return self.__module.groundspeed
 
