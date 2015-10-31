@@ -855,11 +855,9 @@ class Parameters(HasObservers):
         self.__module = module
 
     def __getitem__(self, name):
-        self.wait_valid()
         return self.__module.mav_param[name]
 
     def __setitem__(self, name, value):
-        self.wait_valid()
         self.__module.param_set(name, value)
 
     def set(self, name, value, retries=3, await_valid=False):
