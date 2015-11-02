@@ -161,3 +161,17 @@ Instead, use normal Python methods for getting file system information:
     full_directory_path_of_current_script = os.path.dirname(os.path.abspath(__file__))
 
 
+Home location
+-------------
+
+DroneKit-Python 1.x code retrieved the home location from the first element in :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`.
+This code must be replaced with the DroneKit-Python 2.x :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` attribute.
+
+.. tip::
+
+    Even though the home location is no longer returned as the first waypoint in :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`,
+    you will still need to download the commands in order to populate the value of 
+    :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`. 
+
+
+

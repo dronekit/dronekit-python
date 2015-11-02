@@ -572,6 +572,8 @@ class Vehicle(HasObservers):
 
         After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
+        
+        .. deprecated: In 2.x.
         """
         if self.wpts_dirty:
             self.__module.send_all_waypoints()
@@ -690,6 +692,29 @@ class Vehicle(HasObservers):
 
     @property
     def home_location(self):
+        """
+        The current home location in a :py:class:`LocationGlobal`. This value is typically the
+        GPS location of the vehicle at the point it is armed.
+        
+        .. code-block:: python
+
+            #Connect to a vehicle object (for example, on com14)
+            vehicle = connect('com14', await_params=True)
+
+            # Download the vehicle waypoints (commands). Wait until download is complete.
+            cmds = vehicle.commands
+            cmds.download()
+            cmds.wait_valid()
+            
+            # Get the home location
+            home = vehicle.home_location
+        
+        .. warning:: 
+        
+            The home location will have a value of ``None`` until :py:func:`Vehicle.commands` has been 
+            downloaded. If no home position has been set the returned location will have 
+            zero values for its member attributes.
+        """
         loc = self.__module.wploader.wp(0)
         if loc:
             return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)

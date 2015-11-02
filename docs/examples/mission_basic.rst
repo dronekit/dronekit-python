@@ -12,13 +12,11 @@ command.
 The guide topic :ref:`auto_mode_vehicle_control` provides more detailed explanation of how the API
 should be used.
 
-.. warning:: 
+.. figure:: mission_basic_example_copter_path.png
+   :width: 50 %
+   :alt: Basic Mission Path
 
-    At time of writing this example fails with an exception in DKYP2: `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_.
-
-.. todo:: 
-
-    Check if `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ is fixed and re-review example.
+   Basic Mission Example: Flight path
 
 
 Running the example
@@ -47,8 +45,8 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The command parameter above is the default, and may be omitted. This
-       connects to SITL on udp port 127.0.0.1:14550.
+       The ``--connect`` parameter above specifies the default value, and may be omitted. 
+       This connects to SITL on udp port 127.0.0.1:14550.
 
        
 .. tip::
@@ -64,69 +62,66 @@ On the command prompt you should see (something like):
     Connecting to vehicle on: 127.0.0.1:14550
     >>> APM:Copter V3.4-dev (e0810c2e)
     >>> Frame: QUAD
-    Clear the current mission
-
-    Requesting 0 waypoints t=Wed Jul 29 21:27:58 2015 now=Wed Jul 29 21:27:58 2015
     Create a new mission
-    Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-    Sent waypoint 0 : MISSION_ITEM {target_system : 1, target_component : 0, seq : 0, frame : 0, command : 16, current : 0, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x : -35.3632621765, y : 149.165237427, z : 584.0}
-    Sent waypoint 1 : MISSION_ITEM {target_system : 1, target_component : 0, seq : 1, frame : 3, command : 22, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : 0, y : 0, z : 10}
-    Sent waypoint 2 : MISSION_ITEM {target_system : 1, target_component : 0, seq : 2, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : -35.3628118424, y : 149.164679124, z : 11}
-    Sent waypoint 3 : MISSION_ITEM {target_system : 1, target_component : 0, seq : 3, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : -35.3628118424, y : 149.165780676, z : 12}
-    Sent waypoint 4 : MISSION_ITEM {target_system : 1, target_component : 0, seq : 4, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : -35.3637101576, y : 149.165780676, z : 13}
-    Sent waypoint 5 : MISSION_ITEM {target_system : 1, target_component : 0, seq : 5, frame : 3, command : 16, current : 0, autocontinue : 0, param1 : 0, param2 : 0, param3 : 0, param4 : 0, x : -35.3637101576, y : 149.164679124, z : 14}
-    Sent all 6 waypoints
-    Got MAVLink msg: MISSION_ACK {target_system : 255, target_component : 0, type : 0}
-    APM: flight plan received
+     Clear any existing commands
+     Define/add new commands.
+     Upload new commands to vehicle
     Basic pre-arm checks
+    MODE: STABILIZE
     Arming motors
      Waiting for arming...
-    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
+    >>> flight plan received
      Waiting for arming...
-    APM: ARMING MOTORS
-    APM: GROUND START
      Waiting for arming...
-    GUIDED> Mode GUIDED
-    APM: Initialising APM...
-    Got MAVLink msg: COMMAND_ACK {command : 400, result : 0}
+    >>> ARMING MOTORS
+    >>> GROUND START
      Waiting for arming...
-    ARMED
+     Waiting for arming...
+    >>> Initialising APM...
     Taking off!
      Altitude:  0.0
-    Got MAVLink msg: COMMAND_ACK {command : 22, result : 0}
-    GPS lock at 0 meters
-     Altitude:  0.10000000149
+     Altitude:  0.170000001788
+     Altitude:  1.37000000477
      ...
-     Altitude:  8.84000015259
-     Altitude:  9.60999965668
+     Altitude:  8.98999977112
+     Altitude:  9.64000034332
     Reached target altitude
     Starting mission
-    Got MAVLink msg: COMMAND_ACK {command : 11, result : 0}
-    waypoint 1
-    waypoint 2
-    AUTO> Mode AUTO
-    Distance to waypoint (2): 79.3138466142
-    Distance to waypoint (2): 79.1869592549
-    Distance to waypoint (2): 77.8436803794
+    Distance to waypoint (0): None
+    Distance to waypoint (1): 78.8589586333
+    Distance to waypoint (1): 78.4539918222
     ...
-    Distance to waypoint (2): 20.7677087176
-    Distance to waypoint (2): 15.4592692026
-    APM: Reached Command #2
-    waypoint 3
-    Distance to waypoint (3): 115.328425048
-    Skipping to Waypoint 4 when reach waypoint 3
-    waypoint 4
-    Distance to waypoint (4): 152.376018911
-    Distance to waypoint (4): 154.882233097
+    Distance to waypoint (1): 21.1854880899
+    Distance to waypoint (1): 15.9962142785
+    >>> Reached Command #1
+    Distance to waypoint (2): 114.244008966
+    Distance to waypoint (2): 117.552371221
+    Distance to waypoint (2): 120.961820592
     ...
-    Distance to waypoint (4): 20.4052797291
-    Distance to waypoint (4): 15.0592597507
-    APM: Reached Command #4
-    waypoint 5
-    Distance to waypoint (5): 114.450267446
+    Distance to waypoint (2): 25.2782487833
+    Distance to waypoint (2): 19.3676312264
+    >>> Reached Command #2
+    Distance to waypoint (3): 101.094964838
+    Skipping to Waypoint 5 when reach waypoint 3
+    Distance to waypoint (3): 100.297254801
+    Skipping to Waypoint 5 when reach waypoint 3
+    ...
+    Distance to waypoint (3): 19.3298648648
+    Skipping to Waypoint 5 when reach waypoint 3
+    Distance to waypoint (3): 14.5179746603
+    Skipping to Waypoint 5 when reach waypoint 3
+    >>> Reached Command #3
+    Distance to waypoint (4): 123.867292399
+    Distance to waypoint (4): 123.019536579
+    Distance to waypoint (4): 121.278259418
+    ...
+    Distance to waypoint (4): 27.7386666676
+    Distance to waypoint (4): 20.3805334778
+    >>> Reached Command #4
+    Distance to waypoint (5): 14.5141106814
     Exit 'standard' mission when start heading to final waypoint (5)
     Return to launch
-    APIThread-0 exiting...
+    Close vehicle object
 
 
 
@@ -136,9 +131,11 @@ How does it work?
 The :ref:`source code <example_mission_basic_source_code>` is relatively self-documenting, and most of its main
 operations are explained in the guide topic :ref:`auto_mode_vehicle_control` .
 
-In overview, the example first calls ``clear_mission()`` to clear the current mission and then creates and 
-uploads a new mission using ``adds_square_mission(vehicle.location.global_frame,50)``. This function defines a mission with a takeoff 
-command and four waypoints arranged in a square around the central position.
+In overview, the example calls ``adds_square_mission(vehicle.location.global_frame,50)`` to first  
+clear the current mission and then define a new mission with a takeoff command and four waypoints arranged
+in a square around the central position (two waypoints are added in the last position - 
+we use :py:func:`next <dronekit.lib.CommandSequence.next>` to determine when we've reached the final point).  
+The clear command and new mission items are then uploaded to the vehicle.
 
 After taking off (in guided mode using the ``takeoff()`` function) the example starts the mission by setting the mode to AUTO:
 
@@ -160,18 +157,19 @@ We also show how to move to a specified command using
 .. code:: python
 
     while True:
-        nextwaypoint =vehicle.commands.next
-        if nextwaypoint  > 1:
-            print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
-        if nextwaypoint ==3: #Skip to next waypoint
-            print 'Skipping to Waypoint 4 when reach waypoint 3'
-            vehicle.commands.next=4
-        if nextwaypoint ==5: #Skip to next waypoint
+        nextwaypoint=vehicle.commands.next
+        print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
+      
+        if nextwaypoint==3: #Skip to next waypoint
+            print 'Skipping to Waypoint 5 when reach waypoint 3'
+            vehicle.commands.next=5
+            vehicle.commands.upload()
+        if nextwaypoint==5: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
             print "Exit 'standard' mission when start heading to final waypoint (5)"
             break;
         time.sleep(1)
 
-When the vehicle starts the 5th command the loop breaks and the mode is set to RTL (return to launch).
+When the vehicle starts the 5th command (a dummy waypoint) the loop breaks and the mode is set to RTL (return to launch).
 
 
 .. _example_mission_basic_known_issues:
@@ -179,21 +177,10 @@ When the vehicle starts the 5th command the loop breaks and the mode is set to R
 Known issues
 ============
 
-This example fails in DroneKit 2.0.0b6 and earlier releases (see `#355 DKPY2 Can't clear waypoints  <https://github.com/dronekit/dronekit-python/issues/355>`_ to see if it has been fixed in the current release).
+This example has the following issues:
 
-
-.. todo:: 
-
-    This is blocked by https://github.com/dronekit/dronekit-python/issues/355 (vehicle.commands.clear not working).
-    The code output in "running the example needs to be updated once this runs cleanly.
-    The above text for the error needs to be replaced with original text:
-    
-    > "This example works around the :ref:`known issues in the API <auto_mode_mission_known_issues>`. 
-    > Provided that the vehicle is connected and able to arm, it should run through to completion."
-    
-    Need to check all that clearing is still strictly necessary in DKPY2 which handles race conditions more gracefully.
-    Add image of waypoints /flight for top of page.
-
+* :py:func:`next <dronekit.lib.CommandSequence.next>` does not appear to be writable, so the example does not skip steps as documented. 
+   This is tracked as `#390 <#https://github.com/dronekit/dronekit-python/issues/390>`_.
 
 
 .. _example_mission_basic_source_code:
