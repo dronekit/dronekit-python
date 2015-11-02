@@ -43,8 +43,8 @@ In summary, after cloning the repository:
   
    .. note::
    
-       The ``--connect`` parameter above specifies the default value, and may be omitted. 
-       This connects to SITL on udp port 127.0.0.1:14550.
+       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
+       This is the default value for the parameter, and may be omitted. 
 
 
 On the command prompt you should see (something like):

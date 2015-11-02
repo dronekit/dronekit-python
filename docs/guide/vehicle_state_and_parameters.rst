@@ -30,6 +30,7 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`,
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
+:py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`
 :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
 :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
@@ -44,7 +45,7 @@ status can be :ref:`written <vehicle_state_set_attributes>`.
 Getting attributes
 ------------------
 
-The code fragment below shows how to read and print all the attributes. The values are retrieved from the remote device 
+The code fragment below shows how to read and print almost the attributes. The values are retrieved from the remote device 
 (not cached).
 
 .. code:: python
@@ -72,6 +73,9 @@ If an attribute cannot be retrieved then the returned object will contain
 with ``None`` values for ``eph``, ``satellites_visible`` etc.) 
 Attributes will also return  ``None`` if the associated hardware is not present on the connected device. 
 
+The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is different, 
+:ref:`as discussed below <vehicle_state_home_location>`.
+
 .. tip::
 
     If you're using a :ref:`simulated vehicle <sitl_setup>` you can add support for optional hardware including
@@ -79,7 +83,7 @@ Attributes will also return  ``None`` if the associated hardware is not present 
     and `optical flow sensors <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_optical_flow_sensor>`_.
 
 
-
+    
 .. todo:: we need to be able to verify mount_status works/setup.
 
 
@@ -127,7 +131,7 @@ to confirm they have changed before proceeding.
 Observing attribute changes
 ---------------------------
 
-You can observe any of the attributes and will receive notification every time a value is received from the connected vehicle.  
+You can observe any of the attributes (except the ``home_location``) and will receive notification every time a value is received from the connected vehicle.  
 This allows you to monitor changes to velocity and other vehicle state without the need for polling.
 
 Observers are added using :py:func:`Vehicle.add_attribute_observer() <dronekit.lib.Vehicle.add_attribute_observer>`, 
@@ -174,6 +178,33 @@ For example, the following code can be used in the callback to only print output
     vehicle.add_attribute_observer('rangefinder', rangefinder_callback)
 
 
+
+.. _vehicle_state_home_location:
+
+Home location
+-------------
+
+The *Home location* is set when a vehicle is armed and first gets a good location fix from the GPS. The location is used 
+as the target when the vehicle does a "return to launch". In Copter missions (and often Plane) missions, the altitude of 
+waypoints is set relative to this position.
+
+The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is slightly different than other attributes:
+
+* In order to get the current value you must first download :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`, as shown:
+
+  .. code:: python
+    
+      cmds = vehicle.commands
+      cmds.download()
+      cmds.wait_valid()
+      print " Home Location: %s" % vehicle.home_location
+
+  The returned value is a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
+  (or ``None`` before you download the commands).
+* The attribute is not observable.
+* While you cannot directly set the attribute it can be :ref:`set using a message <guided_mode_copter_set_home>`.    
+    
+    
 
 .. _vehicle_state_parameters:
 
@@ -235,28 +266,6 @@ At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not su
 
 
 
-.. _vehicle_state_home_location:
-
-Home location
-=============
-
-The *Home location* is set when a vehicle is armed and first gets a good location fix from the GPS. The location is used 
-as the target when the vehicle does a "return to launch". In Copter missions (and most Plane) missions, the altitude of 
-waypoints is set relative to this position.
-
-Unlike other vehicle state information, the home location is accessed as the 0 index value of 
-:py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`:
-
-.. code:: python
-    
-    cmds = vehicle.commands
-    cmds.download()
-    cmds.wait_valid()
-    print " Home WP: %s" % cmds[0]
-
-The returned value is a :py:class:`Command <dronekit.lib.Command>` object.
-
-
 
 .. _api-information-known-issues:
 
@@ -268,6 +277,7 @@ Below are a number of bugs and known issues related to vehicle state and setting
 * `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/dronekit/dronekit-python/issues/60>`_
 * `#107 Add implementation for observer methods in Parameter class <https://github.com/dronekit/dronekit-python/issues/107>`_ 
 * `#114 DroneKit has no method for detecting command failure <https://github.com/dronekit/dronekit-python/issues/114>`_
+* `#392 vehicle.home_location should be settable <https://github.com/dronekit/dronekit-python/issues/392>`_
 
 
 Other API issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 

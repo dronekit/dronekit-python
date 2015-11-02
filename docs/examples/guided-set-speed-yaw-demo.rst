@@ -4,9 +4,14 @@
 Example: Guided Mode Movement and Commands (Copter)
 ===================================================
 
-This example shows how to control Copter movement and send immediate commands in :ref:`GUIDED mode <guided_mode_copter>`. It demonstrates three methods for explicitly specifying a target position and two commands for controlling movement by setting the vehicle's velocity vectors. It also shows how to send commands to control the yaw (direction that the front of the vehicle is pointing), region of interest, speed and home position, along with some useful functions for converting between frames of reference.
+This example shows how to control Copter movement and send immediate commands in :ref:`GUIDED mode <guided_mode_copter>`. 
+It demonstrates three methods for explicitly specifying a target position and two commands for controlling movement by 
+setting the vehicle's velocity vectors. It also shows how to send commands to control the yaw (direction that the front 
+of the vehicle is pointing), region of interest, speed and home location, along with some useful functions for 
+converting between frames of reference.
 
-The example is :ref:`documented in the source code <guided_example_source_code>`. More detailed information about using GUIDED mode can be found in the guide: :ref:`guided_mode_copter`.
+The example is :ref:`documented in the source code <guided_example_source_code>`. 
+More detailed information about using GUIDED mode can be found in the guide: :ref:`guided_mode_copter`.
 
 
 .. figure:: GuidedModeExample_FlyByPosition.png
@@ -50,8 +55,8 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The command parameter above is the default, and may be omitted. This
-       connects to SITL on udp port 127.0.0.1:14550.
+       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
+       This is the default value for the parameter, and may be omitted. 
 
        
 .. tip::
@@ -152,8 +157,7 @@ On the command prompt you should see (something like):
     Yaw 90 relative (to previous yaw heading)
     Set new Home location to current location
     Get new home location
-     Home WP: MISSION_ITEM {target_system : 255, target_component : 0, seq : 0, frame : 0, command : 16, current : 0, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x :
-    -35.3632583618, y : 149.164352417, z : 593.91998291}
+     Home Location: LocationGlobal:lat=-35.3639335632,lon=149.165328979,alt=628.679992676,is_relative=False
     Velocity South and West
     Yaw 90 relative (to previous yaw heading)
     Velocity North and West
@@ -266,8 +270,9 @@ which is used to directly specify the speed components of the vehicle. The funct
 goto_position_target_global_int()
 ---------------------------------
 
-The function ``goto_position_target_global_int()`` generates a `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ MAVLink message 
-which is used to directly specify the target location of the vehicle. When used with ``MAV_FRAME_GLOBAL_RELATIVE_ALT_INT`` as shown below, this method is effectively the same as  :ref:`Vehicle.commands.goto <guided_mode_copter_position_control>`.
+The function ``goto_position_target_global_int()`` generates a `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ 
+MAVLink message which is used to directly specify the target location of the vehicle. When used with ``MAV_FRAME_GLOBAL_RELATIVE_ALT_INT`` as shown below, 
+this method is effectively the same as  :ref:`Vehicle.commands.goto <guided_mode_copter_position_control>`.
 
 .. code-block:: python
 
@@ -310,7 +315,8 @@ which is used to directly specify the target location in the North, East, Down f
 
 .. note:: 
 
-    The `documentation <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ lists a number of possible frames of reference. At time of writing experimentation indicates that the actual frame use is always relative to the home location (not the vehicle, as indicated by MAV_FRAME_BODY_NED).
+    The `documentation <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ lists a number of possible frames of reference. 
+    Up until Copter 3.2.1 the actual frame use is always relative to the home location (not the vehicle, as indicated by MAV_FRAME_BODY_NED).
 
 
 .. code-block:: python
@@ -333,7 +339,7 @@ which is used to directly specify the target location in the North, East, Down f
         vehicle.send_mavlink(msg)
 
 
-At time of writing, acceleration and yaw bits are ignored.		
+At time of writing, acceleration and yaw bits are ignored.
 
 
 Testbed settings
@@ -359,7 +365,8 @@ ArduPilot version:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/guided_set_speed_yaw/guided_set_speed_yaw.py>`_):
+The full source code at documentation build-time is listed below 
+(`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/guided_set_speed_yaw/guided_set_speed_yaw.py>`_):
 
 .. literalinclude:: ../../examples/guided_set_speed_yaw/guided_set_speed_yaw.py
     :language: python

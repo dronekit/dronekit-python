@@ -40,8 +40,8 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
-       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
+       This is the default value for the parameter, and may be omitted. 
           
 
 
@@ -50,35 +50,37 @@ On the command prompt you should see (something like):
 .. code:: bash
 
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> APM:Copter V3.3-rc1 (d66eec53)
+    >>> APM:Copter V3.3 (d6053245)
     >>> Frame: QUAD
 
-    Accumulating vehicle attribute messages (2s)
+    Accumulating vehicle attribute messages
 
     Get all vehicle attribute values:
-     Global Location: LocationGlobal:lat=-35.363261,lon=149.1652299,alt=0.0,is_relative=False
+     Global Location: LocationGlobal:lat=-35.3632615,lon=149.1652301,alt=0.0,is_relative=False
      Local Location: LocationLocal:north=None,east=None,down=None
-     Attitude: Attitude:pitch=0.00486609805375,yaw=0.489637970924,roll=0.00645932834595
-     Velocity: [-0.12, 0.06, 0.0]
+     Attitude: Attitude:pitch=0.00589594058692,yaw=-0.0884591862559,roll=0.000426373298978
+     Velocity: [-0.02, 0.02, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery:voltage=0.0,current=None,level=None
+     Battery: Battery:voltage=12.587,current=0.0,level=99
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
      Mode: STABILIZE
      Armed: False
 
+     Home Location (before downloading waypoints): None
+     Home Location (after downloading waypoints): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
+
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
 
     Set Vehicle.armed=True (currently: False)
      Waiting for arming...
-    >>> ☺ARMING MOTORS
-    >>> ☺Initialising APM...
-     Waiting for arming...
+    >>> ARMING MOTORS
+    >>> Initialising APM...
 
     Add mode attribute observer for Vehicle.mode
      Set mode=STABILIZE (currently: GUIDED)
@@ -86,17 +88,15 @@ On the command prompt you should see (something like):
      CALLBACK: Mode changed to:  STABILIZE
      CALLBACK: Mode changed to:  STABILIZE
 
-    Get home location
-     Home WP: MISSION_ITEM {target_system : 255, target_component : 0, seq : 0, frame : 0, command : 16, current : 0, autocontinue : 1, param1 : 0.0, param2 : 0.0, param3 : 0.0, param4 : 0.0, x : -35.3632583618, y : 149.165222168, z : 583.729980469}
-
     Read vehicle param 'THR_MIN': 130.0
     Write vehicle param 'THR_MIN' : 10
     Read new value of param 'THR_MIN': 10.0
 
     Reset vehicle attributes/parameters and exit
-    >>> ☺DISARMING MOTORS
+    >>> DISARMING MOTORS
 
     Close vehicle object
+    Completed
 
 
 

@@ -573,7 +573,7 @@ class Vehicle(HasObservers):
         After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
         
-        .. deprecated: In 2.x.
+        .. deprecated: This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
         if self.wpts_dirty:
             self.__module.send_all_waypoints()
@@ -708,6 +708,8 @@ class Vehicle(HasObservers):
             
             # Get the home location
             home = vehicle.home_location
+            
+        The attribute is not writeable or observable.
         
         .. warning:: 
         
@@ -969,13 +971,12 @@ class CommandSequence(object):
         cmds.wait_valid()
 
     The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until
-    :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
+    :py:func:`upload() <Vehicle.commands.upload>` is called.
 
     .. code:: python
 
         cmds = vehicle.commands
         cmds.clear()
-        vehicle.flush()
         lat = -34.364114,
         lon = 149.166022
         altitude = 30.0
@@ -983,7 +984,7 @@ class CommandSequence(object):
             0, 0, 0, 0, 0, 0,
             lat, lon, altitude)
         cmds.add(cmd)
-        vehicle.flush()
+        cmds.upload()
 
     .. py:function:: takeoff(altitude)
 
@@ -1071,14 +1072,9 @@ class CommandSequence(object):
 
     def clear(self):
         '''
-        Clear the command list.
-
-        .. warning::
-
-            Call ``flush()`` immediately after clearing the commands/before adding new commands (see
-            `#132 for more information <https://github.com/dronekit/dronekit-python/issues/132>`_).
-
-        .. todo:: The above note should be removed when https://github.com/dronekit/dronekit-python/issues/132 fixed
+        Clear the command list. 
+        
+        This command will be sent to the vehicleonly after you call :py:func:`upload() <Vehicle.commands.upload>`.
         '''
 
         # Add home point again.
@@ -1093,7 +1089,7 @@ class CommandSequence(object):
         '''
         Add a new command (waypoint) at the end of the command list.
         
-        .. note:: Commands are sent to the vehicle only after you call :py:func:`Vehicle.flush`.
+        .. note:: Commands are sent to the vehicle only after you call ::py:func:`upload() <Vehicle.commands.upload>`.
 
         :param Command cmd: The command to be added.
         '''

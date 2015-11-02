@@ -50,6 +50,15 @@ print " Mode: %s" % vehicle.mode.name    # settable
 print " Armed: %s" % vehicle.armed    # settable
 
 
+# Get Vehicle Home location
+print "\n Home Location (before downloading waypoints): %s" % vehicle.home_location
+
+cmds = vehicle.commands
+cmds.download()
+cmds.wait_valid()
+print " Home Location (after downloading waypoints): %s" % vehicle.home_location
+
+
 # Set vehicle mode and armed attributes (the only settable attributes)
 print "\nSet Vehicle.mode=GUIDED (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("GUIDED")
@@ -76,7 +85,7 @@ def mode_callback(attribute):
     print " CALLBACK: Mode changed to: ", vehicle.mode.name
 
 print "\nAdd mode attribute observer for Vehicle.mode" 
-vehicle.add_attribute_observer('mode', mode_callback)	
+vehicle.add_attribute_observer('mode', mode_callback)
 
 print " Set mode=STABILIZE (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("STABILIZE")
@@ -86,14 +95,6 @@ time.sleep(2)
 
 # Remove observer - specifying the attribute and previously registered callback function
 vehicle.remove_attribute_observer('mode', mode_callback)
-
-
-# Get Vehicle Home location ((0 index in Vehicle.commands)
-print "\nGet home location" 
-cmds = vehicle.commands
-cmds.download()
-cmds.wait_valid()
-print " Home WP: %s" % cmds[0]
 
 
 # Get/Set Vehicle Parameters
