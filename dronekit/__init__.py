@@ -431,11 +431,7 @@ class MPFakeState:
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
                                 errprinter('reestablishing connection after read timeout')
-                                try:
-                                    self.master.close()
-                                except:
-                                    pass
-                                self.master = mavutil.mavlink_connection(self.master.address)
+                                self.master.reset()
                                 continue
 
                             # If connection reset (closed), stop polling.
@@ -452,11 +448,7 @@ class MPFakeState:
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
                                 errprinter('reestablishing connection after send timeout')
-                                try:
-                                    self.master.close()
-                                except:
-                                    pass
-                                self.master = mavutil.mavlink_connection(self.master.address)
+                                self.master.reset()
                                 continue
 
                             # If connection reset (closed), stop polling.
