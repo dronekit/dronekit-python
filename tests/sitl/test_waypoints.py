@@ -75,6 +75,13 @@ def test_parameter(connpath):
         count += 1
     assert_equals(count, 6)
 
+    # Test next property
+    assert_equals(vehicle.commands.next, 0)
+    vehicle.commands.next = 3
+    while vehicle.commands.next != 3:
+        time.sleep(0.1)
+    assert_equals(vehicle.commands.next, 3)
+
     # Home should be preserved
     assert_equals(home.lat, vehicle.home_location.lat)
     assert_equals(home.lon, vehicle.home_location.lon)
