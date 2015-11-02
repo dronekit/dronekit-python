@@ -792,52 +792,6 @@ class Vehicle(HasObservers):
         """
         return self._parameters
 
-    def unset_mavlink_callback(self):
-        """
-        Clears the asynchronous notification added by :py:func:`set_mavlink_callback <dronekit.lib.Vehicle.set_mavlink_callback>`.
-
-        The code snippet below shows how to set, then clear, a MAVLink callback function.
-
-        .. code:: python
-
-            # Set MAVLink callback handler (after getting Vehicle instance)
-            vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-            # Remove the MAVLink callback handler. Callback will not be
-            # called after this point.
-            vehicle.unset_mavlink_callback()
-        """
-        self.mavrx_callback = None
-
-    def set_mavlink_callback(self, callback):
-        """
-        Provides asynchronous notification when any MAVLink packet is received by this vehicle.
-
-        Only a single callback can be set. :py:func:`unset_mavlink_callback <dronekit.lib.Vehicle.unset_mavlink_callback>` removes the callback.
-
-        .. tip::
-
-            This method is implemented - but we hope you don't need it.
-
-            Because of the asynchronous attribute/waypoint/parameter notifications there should be no need for
-            API clients to see raw MAVLink.  Please provide feedback if we missed a use-case.
-
-        The code snippet below shows how to set a "demo" callback function as the callback handler:
-
-        .. code:: python
-
-            # Demo callback handler for raw MAVLink messages
-            def mavrx_debug_handler(message):
-                print "Received", message
-
-            # Set MAVLink callback handler (after getting Vehicle instance)
-            vehicle.set_mavlink_callback(mavrx_debug_handler)
-
-        :param callback: The callback function to be invoked when a raw MAVLink message is received.
-
-        """
-        self.mavrx_callback = callback
-
     def send_mavlink(self, message):
         """
         This method is used to send raw MAVLink "custom messages" to the vehicle.
