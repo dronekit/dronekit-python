@@ -572,8 +572,8 @@ class MPFakeState:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4):
-    state = MPFakeState(mavutil.mavlink_connection(ip), vehicle_class=vehicle_class)
+def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
+    state = MPFakeState(mavutil.mavlink_connection(ip, baud=baud), vehicle_class=vehicle_class)
     state.status_printer = status_printer
     state.prepare(await_params=await_params, rate=rate)
     return state.vehicle
