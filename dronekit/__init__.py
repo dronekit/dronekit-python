@@ -431,7 +431,7 @@ class MPFakeState:
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
                                 errprinter('reestablishing connection after read timeout')
-                                if hasattr(self.master, 'reset'):
+                                if self.master.reset:
                                     self.master.reset()
                                 else:
                                     try:
@@ -455,7 +455,7 @@ class MPFakeState:
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
                                 errprinter('reestablishing connection after send timeout')
-                                if hasattr(self.master, 'reset'):
+                                if self.master.reset:
                                     self.master.reset()
                                 else:
                                     try:
