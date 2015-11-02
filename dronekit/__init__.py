@@ -348,8 +348,11 @@ class MPFakeState:
         for fn in self.message_listeners.get('*', []):
             fn(self, typ, m)
 
-        if self.vehicle.mavrx_callback:
-            self.vehicle.mavrx_callback(m)
+        # Downstream.
+        for fn in self.vehicle.message_listeners.get(typ, []):
+            fn(self.vehicle, typ, m)
+        for fn in self.vehicle.message_listeners.get('*', []):
+            fn(self.vehicle, typ, m)
 
     def prepare(self, await_params=False, rate=None):
         # errprinter('Await heartbeat.')

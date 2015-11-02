@@ -563,6 +563,29 @@ class Vehicle(HasObservers):
         self._waypoints = CommandSequence(self.__module)
         self.wpts_dirty = False
 
+        # Attaches message listeners.
+        self.message_listeners = dict()
+
+    def on_message(self, name, fn):
+        """
+        Adds a message listener.
+        """
+        name = str(name)
+        if name not in self.message_listeners:
+            self.message_listeners[name] = []
+        if fn not in self.message_listeners[name]:
+            self.message_listeners[name].append(fn)
+
+    def remove_message_listener(self, name, fn):
+        """
+        Removes a message listener.
+        """
+        name = str(name)
+        if name in self.message_listeners:
+            self.message_listeners[name].remove(fn)
+            if len(self.message_listeners[name]) == 0:
+                del self.message_listeners[name]
+
     def close(self):
         """
         Call ``Vehicle.close()`` before exiting scripts to ensure that all messages have been uploaded/sent:
@@ -877,11 +900,6 @@ class Vehicle(HasObservers):
 
             time.sleep(pollinterval)
         raise APIException("Vehicle did not complete initialization")
-
-    def on_message(self, name, fn):
-        def handler(state, name, m):
-            return fn(self, name, m)
-        return self.__module.on_message(name, handler)
 
 class Parameters(HasObservers):
     """
