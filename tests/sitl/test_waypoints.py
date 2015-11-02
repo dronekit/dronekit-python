@@ -15,6 +15,28 @@ def test_empty_clear(connpath):
     assert_equals(len(vehicle.commands), 0)
 
 @with_sitl
+def test_set_home(connpath):
+    vehicle = connect(connpath, await_params=True)
+
+    # Wait for home position to be real and not 0, 0, 0
+    # once we request it via cmds.download()
+    time.sleep(10)
+    vehicle.commands.download()
+    vehicle.commands.wait_valid()
+    assert_not_equals(vehicle.home_location, None)
+
+    # Note: If the GPS values differ heavily from EKF values, this command
+    # will basically fail silently. This GPS coordinate is tailored for that
+    # the with_sitl initializer uses to not fail.
+    vehicle.home_location = LocationGlobal(-35, 149, 600)
+    vehicle.commands.download()
+    vehicle.commands.wait_valid()
+
+    assert_equals(vehicle.home_location.lat, -35)
+    assert_equals(vehicle.home_location.lon, 149)
+    assert_equals(vehicle.home_location.alt, 600)
+
+@with_sitl
 def test_parameter(connpath):
     vehicle = connect(connpath, await_params=True)
 

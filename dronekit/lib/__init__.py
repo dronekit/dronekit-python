@@ -720,6 +720,24 @@ class Vehicle(HasObservers):
         loc = self.__module.wploader.wp(0)
         if loc:
             return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)
+    
+    @home_location.setter
+    def home_location(self, pos):
+        """
+        Sets the home location to that of a LocationGlobal object.
+
+        .. note:: If the GPS values differ heavily from EKF values, setting this value will fail silently.
+        """
+        self.send_mavlink(self.message_factory.command_long_encode(
+            0, 0, # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME, # command
+            0, # confirmation
+            2, # param 1: 1 to use current position, 2 to use the entered values.
+            0, 0, 0, # params 2-4
+            pos.lat,
+            pos.lon,
+            pos.alt
+            ))
 
     @property
     def commands(self):
