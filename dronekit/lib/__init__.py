@@ -5,7 +5,6 @@ import CloudClient
 from pymavlink.dialects.v10 import ardupilotmega
 from pymavlink import mavutil, mavwp
 from dronekit.tools import errprinter
-
 """
 This is the API Reference for the DroneKit-Python API.
 
@@ -60,6 +59,7 @@ A number of other useful classes and methods are listed below.
 
 local_path = ''
 
+
 class APIException(Exception):
     """
     Base class for DroneKit related exceptions.
@@ -69,6 +69,7 @@ class APIException(Exception):
 
     def __init__(self, msg):
         self.msg = msg
+
 
 class Attitude(object):
     """
@@ -85,13 +86,16 @@ class Attitude(object):
     :param yaw: Yaw in radians
     :param roll: Roll in radians
     """
+
     def __init__(self, pitch, yaw, roll):
         self.pitch = pitch
         self.yaw = yaw
         self.roll = roll
 
     def __str__(self):
-        return "Attitude:pitch=%s,yaw=%s,roll=%s" % (self.pitch, self.yaw, self.roll)
+        return "Attitude:pitch=%s,yaw=%s,roll=%s" % (self.pitch, self.yaw,
+                                                     self.roll)
+
 
 class LocationGlobal(object):
     """
@@ -113,6 +117,7 @@ class LocationGlobal(object):
     :param alt: Altitude in meters (either relative or absolute).
     :param is_relative: ``True`` if the specified altitude is relative to a 'home' location (this is usually desirable). ``False`` to set altitude relative to "mean sea-level".
     """
+
     def __init__(self, lat, lon, alt=None, is_relative=True):
         self.lat = lat
         self.lon = lon
@@ -124,10 +129,12 @@ class LocationGlobal(object):
         self.global_fame = None
 
     def __str__(self):
-        return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
+        return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (
+            self.lat, self.lon, self.alt, self.is_relative)
 
 # Back-compatibility for earlier clients.
 Location = LocationGlobal
+
 
 class LocationLocal(object):
     """
@@ -139,13 +146,16 @@ class LocationLocal(object):
     :param east: Position east of the EKF origin in meters.
     :param down: Position down from the EKF origin in meters. (i.e. negative altitude in meters)
     """
+
     def __init__(self, north, east, down):
         self.north = north
         self.east = east
         self.down = down
 
     def __str__(self):
-        return "LocationLocal:north=%s,east=%s,down=%s" % (self.north, self.east, self.down)
+        return "LocationLocal:north=%s,east=%s,down=%s" % (
+            self.north, self.east, self.down)
+
 
 class GPSInfo(object):
     """
@@ -160,6 +170,7 @@ class GPSInfo(object):
 
     .. todo:: FIXME: GPSInfo class - possibly normalize eph/epv?  report fix type as string?
     """
+
     def __init__(self, eph, epv, fix_type, satellites_visible):
         self.eph = eph
         self.epv = epv
@@ -167,7 +178,9 @@ class GPSInfo(object):
         self.satellites_visible = satellites_visible
 
     def __str__(self):
-        return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type, self.satellites_visible)
+        return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type,
+                                              self.satellites_visible)
+
 
 class Battery(object):
     """
@@ -177,6 +190,7 @@ class Battery(object):
     :param current: Battery current, in 10 * milliamperes. ``None`` if the autopilot does not support current measurement.
     :param level: Remaining battery energy. ``None`` if the autopilot cannot estimate the remaining battery.
     """
+
     def __init__(self, voltage, current, level):
         self.voltage = voltage / 1000.0
         if current == -1:
@@ -189,7 +203,9 @@ class Battery(object):
             self.level = level
 
     def __str__(self):
-        return "Battery:voltage={},current={},level={}".format(self.voltage, self.current, self.level)
+        return "Battery:voltage={},current={},level={}".format(
+            self.voltage, self.current, self.level)
+
 
 class Rangefinder(object):
     """
@@ -198,12 +214,15 @@ class Rangefinder(object):
     :param distance: Distance (metres). ``None`` if the vehicle doesn't have a rangefinder.
     :param voltage: Voltage (volts). ``None`` if the vehicle doesn't have a rangefinder.
     """
+
     def __init__(self, distance, voltage):
         self.distance = distance
         self.voltage = voltage
 
     def __str__(self):
-        return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
+        return "Rangefinder: distance={}, voltage={}".format(self.distance,
+                                                             self.voltage)
+
 
 class VehicleMode(object):
     """
@@ -247,6 +266,7 @@ class VehicleMode(object):
 
         The mode name, as a ``string``.
     """
+
     def __init__(self, name):
         self.name = name
 
@@ -259,6 +279,7 @@ class VehicleMode(object):
     def __ne__(self, other):
         return self.name != other
 
+
 class HasObservers(object):
     def __init__(self):
         # A mapping from attr_name to a list of observers
@@ -269,6 +290,7 @@ class HasObservers(object):
 
     The argument list for observer is ``observer(object, attr_name)``.
     """
+
     def on_attribute(self, attr_name, observer):
         """
         Add an attribute listener.
@@ -347,13 +369,16 @@ class HasObservers(object):
             def attitude_listener(self, name, msg):
                 pass
         """
+
         def decorator(fn):
             if isinstance(name, list):
                 for n in name:
                     self.on_attribute(n, fn)
             else:
                 self.on_attribute(name, fn)
+
         return decorator
+
 
 class Vehicle(HasObservers):
     """
@@ -561,7 +586,8 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
             self._notify_attribute_listeners('location')
-            (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
+            (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz
+                                              / 100.0)
             self._notify_attribute_listeners('velocity')
 
         self._north = None
@@ -683,11 +709,14 @@ class Vehicle(HasObservers):
         @self.message_listener('EKF_STATUS_REPORT')
         def listener(self, name, m):
             # boolean: EKF's horizontal position (absolute) estimate is good
-            self._ekf_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
+            self._ekf_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS
+                                     ) > 0
             # boolean: EKF is in constant position mode and does not know it's absolute or relative position
-            self._ekf_constposmode = (m.flags & ardupilotmega.EKF_CONST_POS_MODE) > 0
+            self._ekf_constposmode = (
+                m.flags & ardupilotmega.EKF_CONST_POS_MODE) > 0
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
-            self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+            self._ekf_predposhorizabs = (
+                m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
 
             self._notify_attribute_listeners('ekf_ok')
 
@@ -697,9 +726,13 @@ class Vehicle(HasObservers):
 
         @self.message_listener('HEARTBEAT')
         def listener(self, name, m):
-            self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+            self._armed = (
+                m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self._notify_attribute_listeners('armed')
-            self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
+            self._flightmode = {
+                v: k
+                for k, v in self._master.mode_mapping().items()
+            }[m.custom_mode]
             self._system_status = m.system_status
             self._notify_attribute_listeners('mode')
 
@@ -711,7 +744,7 @@ class Vehicle(HasObservers):
         self._wpts_dirty = False
         self._commands = CommandSequence(self)
 
-        @self.message_listener(['WAYPOINT_COUNT','MISSION_COUNT'])
+        @self.message_listener(['WAYPOINT_COUNT', 'MISSION_COUNT'])
         def listener(self, name, msg):
             if not self._wp_loaded:
                 self._wploader.clear()
@@ -757,7 +790,7 @@ class Vehicle(HasObservers):
         self._params_loaded = False
         self._params_start = False
         self._params_map = {}
-        self._params_last = time.time() # Last new param.
+        self._params_last = time.time()  # Last new param.
         self._params_duration = start_duration
         self._parameters = Parameters(self)
 
@@ -769,11 +802,13 @@ class Vehicle(HasObservers):
                     self._params_loaded = True
                     self._notify_attribute_listeners('parameters')
 
-                if not self._params_loaded and time.time() - self._params_last > self._params_duration:
+                if not self._params_loaded and time.time(
+                ) - self._params_last > self._params_duration:
                     c = 0
                     for i, v in enumerate(self._params_set):
                         if v == None:
-                            self._master.mav.param_request_read_send(0, 0, '', i)
+                            self._master.mav.param_request_read_send(0, 0, '',
+                                                                     i)
                             c += 1
                             if c > 50:
                                 break
@@ -788,7 +823,7 @@ class Vehicle(HasObservers):
                 self._params_loaded = False
                 self._params_start = True
                 self._params_count = msg.param_count
-                self._params_set = [None]*msg.param_count
+                self._params_set = [None] * msg.param_count
 
             # Attempt to set the params. We throw an error
             # if the index is out of range of the count or
@@ -814,7 +849,9 @@ class Vehicle(HasObservers):
         def listener(_):
             # Send 1 heartbeat per second
             if time.time() - self._heartbeat_lastsent > 1:
-                self._master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
+                self._master.mav.heartbeat_send(
+                    mavutil.mavlink.MAV_TYPE_GCS,
+                    mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
                 self._heartbeat_lastsent = time.time()
 
             # And timeout after 5.
@@ -839,12 +876,14 @@ class Vehicle(HasObservers):
             def my_method(self, name, msg):
                 pass
         """
+
         def decorator(fn):
             if isinstance(name, list):
                 for n in name:
                     self.on_message(n, fn)
             else:
                 self.on_message(name, fn)
+
         return decorator
 
     def on_message(self, name, fn):
@@ -914,9 +953,11 @@ class Vehicle(HasObservers):
     @property
     def location(self):
         # For backward compatibility, this is (itself) a LocationLocal object.
-        ret = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
+        ret = LocationGlobal(self._lat, self._lon, self._alt,
+                             is_relative=False)
         ret.local_frame = LocationLocal(self._north, self._east, self._down)
-        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
+        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt,
+                                          is_relative=False)
         return ret
 
     @property
@@ -929,7 +970,7 @@ class Vehicle(HasObservers):
 
     @property
     def velocity(self):
-        return [ self._vx, self._vy, self._vz ]
+        return [self._vx, self._vy, self._vz]
 
     @property
     def attitude(self):
@@ -937,7 +978,8 @@ class Vehicle(HasObservers):
 
     @property
     def gps_0(self):
-        return GPSInfo(self._eph, self._epv, self._fix_type, self._satellites_visible)
+        return GPSInfo(self._eph, self._epv, self._fix_type,
+                       self._satellites_visible)
 
     @property
     def armed(self):
@@ -968,7 +1010,7 @@ class Vehicle(HasObservers):
 
     @property
     def mount_status(self):
-        return [ self._mount_pitch, self._mount_yaw, self._mount_roll ]
+        return [self._mount_pitch, self._mount_yaw, self._mount_roll]
 
     @property
     def ekf_ok(self):
@@ -983,7 +1025,8 @@ class Vehicle(HasObservers):
     def channel_override(self):
         overrides = self.__rc.override
         # Only return entries that have a non zero override
-        return dict((str(num + 1), overrides[num]) for num in range(8) if overrides[num] != 0)
+        return dict((str(num + 1), overrides[num]) for num in range(8)
+                    if overrides[num] != 0)
 
     @channel_override.setter
     def channel_override(self, newch):
@@ -1036,15 +1079,13 @@ class Vehicle(HasObservers):
             If the GPS values differ heavily from EKF values, setting this value will fail silently.
         """
         self.send_mavlink(self.message_factory.command_long_encode(
-            0, 0, # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_SET_HOME, # command
-            0, # confirmation
-            2, # param 1: 1 to use current position, 2 to use the entered values.
-            0, 0, 0, # params 2-4
-            pos.lat,
-            pos.lon,
-            pos.alt
-            ))
+            0, 0,  # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
+            0,  # confirmation
+            2,
+            # param 1: 1 to use current position, 2 to use the entered values.
+            0, 0, 0,  # params 2-4
+            pos.lat, pos.lon, pos.alt))
 
     @property
     def commands(self):
@@ -1133,8 +1174,8 @@ class Vehicle(HasObservers):
 
         # Initialize data stream.
         if rate != None:
-            self._master.mav.request_data_stream_send(0, 0,
-                                                      mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
+            self._master.mav.request_data_stream_send(
+                0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
 
         # Ensure initial parameter download has started.
         while True:
@@ -1150,7 +1191,8 @@ class Vehicle(HasObservers):
         raise_exception = kwargs.get('raise_exception', True)
 
         if not all(isinstance(item, basestring) for item in types):
-            raise APIException('wait_ready expects one or more string arguments.')
+            raise APIException(
+                'wait_ready expects one or more string arguments.')
 
         # Wait for these attributes to have been set.
         await = set(types)
@@ -1159,11 +1201,14 @@ class Vehicle(HasObservers):
             time.sleep(0.1)
             if time.time() - start > timeout:
                 if raise_exception:
-                    raise APIException('wait_ready experienced a timeout after %s seconds.' % timeout)
+                    raise APIException(
+                        'wait_ready experienced a timeout after %s seconds.' %
+                        timeout)
                 else:
                     return False
 
         return True
+
 
 class Parameters(HasObservers):
     """
@@ -1223,7 +1268,9 @@ class Parameters(HasObservers):
                 break
             remaining -= 1
             while time.time() - tstart < 1:
-                if name in self._vehicle._params_map and self._vehicle._params_map[name] == value:
+                if name in self._vehicle._params_map and self._vehicle._params_map[
+                    name
+                ] == value:
                     return True
                 time.sleep(0.1)
 
@@ -1236,6 +1283,7 @@ class Parameters(HasObservers):
         Block the calling thread until parameters have been downloaded
         """
         self._vehicle.wait_ready('parameters', **kwargs)
+
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
@@ -1277,6 +1325,7 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
     .. todo:: FIXME: Command class - for now we just inherit the standard MAVLink mission item contents.
     """
     pass
+
 
 class CommandSequence(object):
     """
@@ -1362,11 +1411,11 @@ class CommandSequence(object):
         if alt is not None:
             altitude = float(alt)
             if math.isnan(alt) or math.isinf(alt):
-                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
-            self._vehicle._master.mav.command_long_send(0, 0,
-                                                        mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-                                                        0, 0, 0, 0, 0, 0, 0,
-                                                        altitude)
+                raise ValueError(
+                    "Altitude was NaN or Infinity. Please provide a real number")
+            self._vehicle._master.mav.command_long_send(
+                0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0,
+                altitude)
 
     def goto(self, l):
         '''
@@ -1389,11 +1438,9 @@ class CommandSequence(object):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
         else:
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL
-        self._vehicle._master.mav.mission_item_send(0, 0, 0,
-                                                    frame,
-                                                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                                                    2, 0, 0, 0, 0, 0,
-                                                    l.lat, l.lon, l.alt)
+        self._vehicle._master.mav.mission_item_send(
+            0, 0, 0, frame, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0, 0,
+            0, 0, l.lat, l.lon, l.alt)
 
     def clear(self):
         '''
@@ -1432,8 +1479,11 @@ class CommandSequence(object):
         if self._vehicle._wpts_dirty:
             self._vehicle._master.waypoint_clear_all_send()
             if self._vehicle._wploader.count() > 0:
-                self._vehicle._wp_uploaded = [False]*self._vehicle._wploader.count()
-                self._vehicle._master.waypoint_count_send(self._vehicle._wploader.count())
+                self._vehicle._wp_uploaded = [
+                    False
+                ] * self._vehicle._wploader.count()
+                self._vehicle._master.waypoint_count_send(
+                    self._vehicle._wploader.count())
                 while False in self._vehicle._wp_uploaded:
                     time.sleep(0.1)
                 self._vehicle._wp_uploaded = None

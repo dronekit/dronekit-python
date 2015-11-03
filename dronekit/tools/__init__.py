@@ -11,20 +11,26 @@ if 'SITL_SPEEDUP' in os.environ:
 if 'SITL_RATE' in os.environ:
     sitl_args += ['-r', str(os.environ['SITL_RATE'])]
 
+
 def setup_sitl():
     global sitl
     sitl = SITL('copter', '3.3-rc5')
     sitl.launch(sitl_args, await_ready=True, restart=True)
 
+
 def teardown_sitl():
     sitl.stop()
 
+
 def with_sitl(fn):
     from nose.tools import assert_equals, with_setup
+
     @with_setup(setup_sitl, teardown_sitl)
     def test(*args, **kargs):
         return fn('tcp:127.0.0.1:5760', *args, **kargs)
+
     return test
+
 
 def errprinter(*args):
     print(*args, file=sys.stderr)
