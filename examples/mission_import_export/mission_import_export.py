@@ -145,4 +145,3 @@ print "\nShow original and uploaded/downloaded files:"
 printfile(import_mission_filename)
 #Print exported file (for demo purposes only)
 printfile(export_mission_filename)
-

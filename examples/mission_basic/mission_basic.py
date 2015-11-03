@@ -76,7 +76,7 @@ def distance_to_current_waypoint():
     targetWaypointLocation=LocationGlobal(lat,lon,alt,is_relative=True)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
     return distancetopoint
-    
+
 
 def download_mission():
     """
@@ -84,7 +84,7 @@ def download_mission():
     """
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid() # wait until download is complete.
+    cmds.wait_ready() # wait until download is complete.
 
 
 

@@ -66,7 +66,7 @@ attribute. The attribute is of type :py:class:`CommandSequence <dronekit.lib.Com
 waypoints which make up the mission.
 
 Waypoints are not downloaded from vehicle until :py:func:`download() <dronekit.lib.CommandSequence.download>` is called. The download is asynchronous; 
-use :py:func:`wait_valid() <dronekit.lib.CommandSequence.wait_valid>` to block your thread until the download is complete:
+use :py:func:`wait_ready() <dronekit.lib.CommandSequence.wait_ready>` to block your thread until the download is complete:
 
 .. code:: python
 
@@ -76,7 +76,7 @@ use :py:func:`wait_valid() <dronekit.lib.CommandSequence.wait_valid>` to block y
     # Download the vehicle waypoints (commands). Wait until download is complete.
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid()
+    cmds.wait_ready()
 
 .. note::
 
@@ -133,7 +133,7 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
     # Get the set of commands from the vehicle
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid()
+    cmds.wait_ready()
 
     # Create and add commands
     cmd1=Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10)
@@ -166,7 +166,7 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
     # Get the set of commands from the vehicle
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid()
+    cmds.wait_ready()
 
     # Save the vehicle commands to a list
     missionlist=[]
@@ -270,7 +270,7 @@ The implementation calls ``readmission()`` (below) to import the mission from a 
 clears the existing mission and uploads the new version. 
 
 Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_command>`.
-  
+
 .. code:: python
 
     def upload_mission(aFileName):
@@ -370,7 +370,7 @@ adds them to a list. Downloading mission is discussed :ref:`in the guide <auto_m
         missionlist=[]
         cmds = vehicle.commands
         cmds.download()
-        cmds.wait_valid()
+        cmds.wait_ready()
         for cmd in cmds[1:]:  #skip first item as it is home waypoint.
             missionlist.append(cmd)
         return missionlist

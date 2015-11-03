@@ -22,7 +22,7 @@ def test_set_home(connpath):
     # once we request it via cmds.download()
     time.sleep(10)
     vehicle.commands.download()
-    vehicle.commands.wait_valid()
+    vehicle.commands.wait_ready()
     assert_not_equals(vehicle.home_location, None)
 
     # Note: If the GPS values differ heavily from EKF values, this command
@@ -30,7 +30,7 @@ def test_set_home(connpath):
     # the with_sitl initializer uses to not fail.
     vehicle.home_location = LocationGlobal(-35, 149, 600)
     vehicle.commands.download()
-    vehicle.commands.wait_valid()
+    vehicle.commands.wait_ready()
 
     assert_equals(vehicle.home_location.lat, -35)
     assert_equals(vehicle.home_location.lon, 149)
@@ -49,7 +49,7 @@ def test_parameter(connpath):
 
     # Initial
     vehicle.commands.download()
-    vehicle.commands.wait_valid()
+    vehicle.commands.wait_ready()
     assert_equals(len(vehicle.commands), 0)
     assert_not_equals(vehicle.home_location, None)
 
@@ -60,7 +60,7 @@ def test_parameter(connpath):
     vehicle.commands.clear()
     vehicle.commands.upload()
     vehicle.commands.download()
-    vehicle.commands.wait_valid()
+    vehicle.commands.wait_ready()
     assert_equals(len(vehicle.commands), 0)
 
     # Upload
@@ -79,7 +79,7 @@ def test_parameter(connpath):
 
     # After upload
     vehicle.commands.download()
-    vehicle.commands.wait_valid()
+    vehicle.commands.wait_ready()
     assert_equals(len(vehicle.commands), 8)
 
     # Test iteration.

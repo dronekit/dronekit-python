@@ -55,7 +55,7 @@ print "\n Home Location (before downloading waypoints): %s" % vehicle.home_locat
 
 cmds = vehicle.commands
 cmds.download()
-cmds.wait_valid()
+cmds.wait_ready()
 print " Home Location (after downloading waypoints): %s" % vehicle.home_location
 
 

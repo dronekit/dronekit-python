@@ -196,7 +196,7 @@ The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_loca
     
       cmds = vehicle.commands
       cmds.download()
-      cmds.wait_valid()
+      cmds.wait_ready()
       print " Home Location: %s" % vehicle.home_location
 
   The returned value is a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
@@ -262,7 +262,6 @@ At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not su
 
     Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
     https://github.com/dronekit/dronekit-python/issues/107
-
 
 
 
