@@ -282,7 +282,7 @@ class HasObservers(object):
         .. code:: python
 
             #Callback to print the location in global and local frames
-            def location_callback(vehicle, location):
+            def location_callback(vehicle, attr_name):
                 print "Location (Global): ", vehicle.location.global_frame
                 print "Location (Local): ", vehicle.location.local_frame
 
