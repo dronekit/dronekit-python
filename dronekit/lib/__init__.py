@@ -1286,7 +1286,7 @@ class CommandSequence(object):
 
     The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute.
     Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous;
-    use :py:func:`wait_valid()` to block your thread until the download is complete.
+    use :py:func:`wait_ready()` to block your thread until the download is complete.
     The code to download the commands from a vehicle is shown below:
 
     .. code-block:: python
@@ -1298,7 +1298,7 @@ class CommandSequence(object):
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = vehicle.commands
         cmds.download()
-        cmds.wait_valid()
+        cmds.wait_ready()
 
     The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until
     :py:func:`upload() <Vehicle.commands.upload>` is called.
@@ -1342,7 +1342,7 @@ class CommandSequence(object):
     def download(self):
         '''
         Download all waypoints from the vehicle.
-        The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
+        The download is asynchronous. Use :py:func:`wait_ready()` to block your thread until the download is complete.
         '''
         self.wait_ready()
         self._vehicle._ready_attrs.remove('commands')

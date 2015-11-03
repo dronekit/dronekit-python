@@ -54,7 +54,7 @@ print " Armed: %s" % vehicle.armed    # settable
 #   Note: home_location attributes will be 0.0 if the autopilot has not yet set the home location.
 cmds = vehicle.commands
 cmds.download()
-cmds.wait_valid()
+cmds.wait_ready()
 print " Home Location: %s" % vehicle.home_location
 
 
@@ -65,7 +65,7 @@ print "\nSet new home location"
 while vehicle.home_location.lat == 0.0:
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid()
+    cmds.wait_ready()
     if vehicle.home_location.lat == 0.0:
         print " Waiting for home location: %s" % vehicle.home_location
     else:
@@ -80,7 +80,7 @@ vehicle.home_location=my_location_alt
 #Confirm it is written out (note that you must re-download commands)
 cmds = vehicle.commands
 cmds.download()
-cmds.wait_valid()
+cmds.wait_ready()
 print " New Home Location (altitude should be 222): %s" % vehicle.home_location
 
 
