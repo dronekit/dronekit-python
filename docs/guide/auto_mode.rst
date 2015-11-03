@@ -71,7 +71,7 @@ use :py:func:`wait_ready() <dronekit.lib.CommandSequence.wait_ready>` to block y
 .. code:: python
 
     # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
     # Download the vehicle waypoints (commands). Wait until download is complete.
     cmds = vehicle.commands
@@ -96,7 +96,7 @@ To clear a mission you call :py:func:`clear() <dronekit.lib.CommandSequence.clea
 .. code:: python
 
     # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
     
     # Get commands object from Vehicle.
     cmds = vehicle.commands
@@ -128,7 +128,7 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
 .. code:: python
 
     # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
     # Get the set of commands from the vehicle
     cmds = vehicle.commands
@@ -161,7 +161,7 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
 .. code:: python
 
     # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
     
     # Get the set of commands from the vehicle
     cmds = vehicle.commands
@@ -200,7 +200,7 @@ To start a mission, change the mode to AUTO:
 .. code:: python
 
     # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
     # Set the vehicle into auto mode
     vehicle.mode = VehicleMode("AUTO")

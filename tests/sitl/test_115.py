@@ -7,7 +7,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_115(connpath):
-    v = connect(connpath, await_params=True)
+    v = connect(connpath, wait_ready=True)
 
     # Dummy callback
     def mavlink_callback(*args):

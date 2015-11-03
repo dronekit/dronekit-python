@@ -113,11 +113,11 @@ and attributes, and control vehicle movement.
     from dronekit import connect
     
     # Connect to UDP endpoint.
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
     
 .. note:: 
 
-    Calling ``connect()`` with ``await_params=True`` (as shown above) ensures that the method will not return until 
+    Calling ``connect()`` with ``wait_ready=True`` (as shown above) ensures that the method will not return until 
     :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` is fully populated with values from the vehicle. 
     Vehicle *attributes* are populated in parallel but are not guaranteed to have values when ``connect()`` completes 
     (an attribute will have value ``None`` if a corresponding MAVLink message has not been received - for example, 

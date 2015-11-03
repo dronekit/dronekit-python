@@ -16,7 +16,7 @@ def test_empty_clear(connpath):
 
 @with_sitl
 def test_set_home(connpath):
-    vehicle = connect(connpath, await_params=True)
+    vehicle = connect(connpath, wait_ready=True)
 
     # Wait for home position to be real and not 0, 0, 0
     # once we request it via cmds.download()
@@ -38,7 +38,7 @@ def test_set_home(connpath):
 
 @with_sitl
 def test_parameter(connpath):
-    vehicle = connect(connpath, await_params=True)
+    vehicle = connect(connpath, wait_ready=True)
 
     # Home should be None at first.
     assert_equals(vehicle.home_location, None)
