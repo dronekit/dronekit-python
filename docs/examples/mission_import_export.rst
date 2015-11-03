@@ -91,6 +91,15 @@ On the command prompt you should see (something like):
      6      0       0       16      0.0     0.0     0.0     0.0     -35.3621482849  149.165039062   100.0   1
 
 
+.. note:: 
+
+    The position values uploaded and then downloaded above do not match exactly. This rounding error can be ignored 
+    because the difference is much smaller than the precision provided by GPS. 
+    
+    The error occurs because all the params are encoded as 32-bit floats rather than 64-bit doubles (Python's native datatype).
+
+
+     
 
 How does it work?
 =================
