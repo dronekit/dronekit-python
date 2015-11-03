@@ -26,6 +26,7 @@ LocationGlobal = dronekit.lib.LocationGlobal
 LocationLocal = dronekit.lib.LocationLocal
 CloudClient = dronekit.lib.CloudClient
 
+
 class MavWriter():
     def __init__(self, queue):
         self.queue = queue
@@ -37,6 +38,7 @@ class MavWriter():
         errprinter('writer should not have had a read request')
         os._exit(43)
 
+
 class MAVHandler:
     def __init__(self, master, vehicle_class=Vehicle):
         self.vehicle_class = vehicle_class
@@ -46,7 +48,10 @@ class MAVHandler:
         # TODO get rid of "master" object as exposed,
         # keep it private, expose something smaller for dronekit
         self.out_queue = Queue()
-        self.master.mav = mavutil.mavlink.MAVLink(MavWriter(self.out_queue), srcSystem=self.master.source_system, use_native=False)
+        self.master.mav = mavutil.mavlink.MAVLink(
+            MavWriter(self.out_queue),
+            srcSystem=self.master.source_system,
+            use_native=False)
 
         # Targets
         self.target_system = 0
@@ -58,15 +63,17 @@ class MAVHandler:
 
         import atexit
         self.exiting = False
+
         def onexit():
             self.exiting = True
+
         atexit.register(onexit)
 
         def mavlink_thread():
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
                 while True:
-                    # Downtime                    
+                    # Downtime
                     time.sleep(0.05)
 
                     # Loop listeners.
@@ -80,7 +87,8 @@ class MAVHandler:
                             self.master.write(msg)
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                errprinter('reestablishing connection after read timeout')
+                                errprinter(
+                                    'reestablishing connection after read timeout')
                                 if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
@@ -88,7 +96,8 @@ class MAVHandler:
                                         self.master.close()
                                     except:
                                         pass
-                                    self.master = mavutil.mavlink_connection(self.master.address)
+                                    self.master = mavutil.mavlink_connection(
+                                        self.master.address)
                                 continue
 
                             # If connection reset (closed), stop polling.
@@ -104,7 +113,8 @@ class MAVHandler:
                             msg = self.master.recv_msg()
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                errprinter('reestablishing connection after send timeout')
+                                errprinter(
+                                    'reestablishing connection after send timeout')
                                 if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
@@ -112,7 +122,8 @@ class MAVHandler:
                                         self.master.close()
                                     except:
                                         pass
-                                    self.master = mavutil.mavlink_connection(self.master.address)
+                                    self.master = mavutil.mavlink_connection(
+                                        self.master.address)
                                 continue
 
                             # If connection reset (closed), stop polling.
@@ -171,15 +182,22 @@ class MAVHandler:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
+
+def connect(ip,
+            await_params=False,
+            status_printer=errprinter,
+            vehicle_class=Vehicle,
+            rate=4,
+            baud=115200):
     handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud))
     vehicle = vehicle_class(handler)
 
     if status_printer:
+
         @vehicle.message_listener('STATUSTEXT')
         def listener(self, name, m):
             status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
-    
+
     vehicle.initialize(rate=rate)
     if await_params:
         vehicle.wait_ready('parameters', 'gps_0')
