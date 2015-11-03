@@ -171,7 +171,7 @@ class MAVHandler:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
+def connect(ip, await_params=False, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
     handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud))
     vehicle = vehicle_class(handler)
 
@@ -181,6 +181,15 @@ def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Veh
             status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
     
     vehicle.initialize(rate=rate)
+
+    # Legacy / deprecated.
     if await_params:
         vehicle.wait_ready('parameters', 'gps_0')
+
+    if wait_ready:
+        if wait_ready == True:
+            vehicle.wait_ready(True)
+        else:
+            vehicle.wait_ready(*wait_ready)
+
     return vehicle

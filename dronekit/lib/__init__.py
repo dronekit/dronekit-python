@@ -540,6 +540,9 @@ class Vehicle(HasObservers):
         # By default, we presume all "commands" are loaded.
         self._ready_attrs = set(['commands'])
 
+        # Default parameters when calling wait_ready() or wait_ready(True).
+        self._default_ready_attrs = ['parameters', 'gps_0', 'armed', 'mode', 'attitude']
+
         @self.attribute_listener('*')
         def listener(_, name):
             self._ready_attrs.add(name)
@@ -1148,6 +1151,10 @@ class Vehicle(HasObservers):
     def wait_ready(self, *types, **kwargs):
         timeout = kwargs.get('timeout', 30)
         raise_exception = kwargs.get('raise_exception', True)
+
+        # Vehicle defaults for wait_ready(True) or wait_ready()
+        if types == [True] or types == []:
+            types = self._default_ready_attrs
 
         if not all(isinstance(item, basestring) for item in types):
             raise APIException('wait_ready expects one or more string arguments.')
