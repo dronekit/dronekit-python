@@ -920,24 +920,17 @@ class Vehicle(HasObservers):
         return self._master.mode_mapping()
 
     #
-    # Operations to support the standard API (FIXME - possibly/probably this
-    # will move into a private dict of getter/setter tuples (invisible to the API consumer).
+    # Operations to support the standard API.
     #
 
     @property
     def mode(self):
-        self.wait_init() # We must know vehicle type before this operation can work
-        return self.__get_mode()
-
-    def __get_mode(self):
-        """
-        Private method to read current vehicle mode without polling
-        """
+        if not self._flightmode:
+            return None
         return VehicleMode(self._flightmode)
 
     @mode.setter
     def mode(self, v):
-        self.wait_init() # We must know vehicle type before this operation can work
         self._master.set_mode(self._mode_mapping[v.name])
 
     @property
@@ -1141,20 +1134,6 @@ class Vehicle(HasObservers):
         .. todo:: Check if the standard MAV_CMD messages can be sent this way too, and if so add link.
         """
         return self._master.mav
-
-    def wait_init(self):
-        """Wait for the vehicle to exit the initializing step"""
-        timeout = 30
-        pollinterval = 0.2
-        for i in range(0, int(timeout / pollinterval)):
-            # Don't let the user try to fly while the board is still booting
-            mode = self.__get_mode().name
-            # print "mode is", mode
-            if mode != "INITIALISING" and mode != "MAV":
-                return
-
-            time.sleep(pollinterval)
-        raise APIException("Vehicle did not complete initialization")
 
     def initialize(self, await_params=False, rate=None):
         self._handler.start()
