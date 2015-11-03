@@ -565,6 +565,14 @@ class Vehicle(HasObservers):
         # Attaches message listeners.
         self.message_listeners = dict()
 
+        @module.message_listener
+        def listener(_, msg):
+            typ = msg.get_type()
+            for fn in self.message_listeners.get(typ, []):
+                fn(self, typ, msg)
+            for fn in self.message_listeners.get('*', []):
+                fn(self, typ, msg)
+
         self._lat = None
         self._lon = None
         self._vx = None
@@ -723,7 +731,7 @@ class Vehicle(HasObservers):
         self._wp_loaded = True
         self._wp_uploaded = None
         self._wpts_dirty = False
-        self._commands = CommandSequence(self.__module)
+        self._commands = CommandSequence(self)
 
         @self.message_listener(['WAYPOINT_COUNT','MISSION_COUNT'])
         def listener(self, name, msg):
@@ -917,12 +925,8 @@ class Vehicle(HasObservers):
     #
 
     @property
-    def __master(self):
-        return self.__module.master
-
-    @property
     def _mode_mapping(self):
-        return self.__master.mode_mapping()
+        return self._master.mode_mapping()
 
     #
     # Operations to support the standard API (FIXME - possibly/probably this
@@ -941,7 +945,7 @@ class Vehicle(HasObservers):
     @mode.setter
     def mode(self, v):
         self.wait_init() # We must know vehicle type before this operation can work
-        self.__master.set_mode(self._mode_mapping[v.name])
+        self._master.set_mode(self._mode_mapping[v.name])
 
     @property
     def location(self):
@@ -978,9 +982,9 @@ class Vehicle(HasObservers):
     @armed.setter
     def armed(self, value):
         if value:
-            self.__master.arducopter_arm()
+            self._master.arducopter_arm()
         else:
-            self.__master.arducopter_disarm()
+            self._master.arducopter_disarm()
 
     @property
     def system_status(self):
@@ -1110,7 +1114,6 @@ class Vehicle(HasObservers):
         :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>`.
             There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
         """
-        self.__module.fix_targets(message)
         self.__module.master.mav.send(message)
 
     @property
@@ -1159,6 +1162,42 @@ class Vehicle(HasObservers):
 
             time.sleep(pollinterval)
         raise APIException("Vehicle did not complete initialization")
+
+    def initialize(self, await_params=False, rate=None):
+        self.__module.start()
+
+        # Wait for first heartbeat.
+        while True:
+            try:
+                self._master.wait_heartbeat()
+                break
+            except mavutil.mavlink.MAVError:
+                continue
+        self._heartbeat_started = True
+
+        # Request a list of all parameters.
+        if rate != None:
+            self._master.mav.request_data_stream_send(self.__module.target_system,
+                                                      self.__module.target_component,
+                                                      mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
+        while True:
+            # This fn actually rate limits itself to every 2s.
+            # Just retry with persistence to get our first param stream.
+            self._master.param_fetch_all()
+            time.sleep(0.1)
+            if self._params_count > -1:
+                break
+
+        # We now should get parameters streaming in.
+        # We may not get the full set; we leave the logic to mavlink_thread
+        # to determine what params we yet need. Wait if await_params is True.
+        if await_params:
+            while not self._params_loaded:
+                time.sleep(0.1)
+
+            # Await GPS lock
+            while self._fix_type == None:
+                time.sleep(0.1)
 
 class Parameters(HasObservers):
     """
@@ -1337,8 +1376,8 @@ class CommandSequence(object):
         .. todo:: This is a hack. The actual function should be defined here. See https://github.com/dronekit/dronekit-python/issues/64
     """
 
-    def __init__(self, module):
-        self.__module = module
+    def __init__(self, vehicle):
+        self._vehicle = vehicle
 
     def download(self):
         '''
@@ -1347,8 +1386,8 @@ class CommandSequence(object):
         The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
         '''
         self.wait_valid()
-        self.__module.vehicle._wp_loaded = False
-        self.__module.master.waypoint_request_list_send()
+        self._vehicle._wp_loaded = False
+        self._vehicle._master.waypoint_request_list_send()
         # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_valid(self):
@@ -1358,7 +1397,7 @@ class CommandSequence(object):
         This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
         '''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        while not self.__module.vehicle._wp_loaded:
+        while not self._vehicle._wp_loaded:
             time.sleep(0.1)
 
     def takeoff(self, alt=None):
@@ -1366,11 +1405,10 @@ class CommandSequence(object):
             altitude = float(alt)
             if math.isnan(alt) or math.isinf(alt):
                 raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
-            self.__module.master.mav.command_long_send(self.__module.target_system,
-                                                    self.__module.target_component,
-                                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-                                                    0, 0, 0, 0, 0, 0, 0,
-                                                    altitude)
+            self._vehicle._master.mav.command_long_send(0, 0,
+                                                        mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                                                        0, 0, 0, 0, 0, 0, 0,
+                                                        altitude)
 
     def goto(self, l):
         '''
@@ -1393,13 +1431,11 @@ class CommandSequence(object):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
         else:
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL
-        self.__module.master.mav.mission_item_send(self.__module.target_system,
-                                               self.__module.target_component,
-                                               0,
-                                               frame,
-                                               mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                                               2, 0, 0, 0, 0, 0,
-                                               l.lat, l.lon, l.alt)
+        self._vehicle._master.mav.mission_item_send(0, 0, 0,
+                                                    frame,
+                                                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                                                    2, 0, 0, 0, 0, 0,
+                                                    l.lat, l.lon, l.alt)
 
     def clear(self):
         '''
@@ -1410,8 +1446,8 @@ class CommandSequence(object):
 
         # Add home point again.
         self.wait_valid()
-        self.__module.vehicle._wploader.clear()
-        self.__module.vehicle._wpts_dirty = True
+        self._vehicle._wploader.clear()
+        self._vehicle._wpts_dirty = True
 
     def add(self, cmd):
         '''
@@ -1422,9 +1458,8 @@ class CommandSequence(object):
         :param Command cmd: The command to be added.
         '''
         self.wait_valid()
-        self.__module.fix_targets(cmd)
-        self.__module.vehicle._wploader.add(cmd, comment = 'Added by DroneAPI')
-        self.__module.vehicle._wpts_dirty = True
+        self._vehicle._wploader.add(cmd, comment = 'Added by DroneAPI')
+        self._vehicle._wpts_dirty = True
 
     def upload(self):
         """
@@ -1444,21 +1479,21 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.vehicle._wploader.count()
+        return self._vehicle._wploader.count()
 
     @property
     def next(self):
         """
         Get the currently active waypoint number.
         """
-        return self.__module.vehicle._last_waypoint
+        return self._vehicle._last_waypoint
 
     @next.setter
     def next(self, index):
         """
         Set a new ``next`` waypoint for the vehicle.
         """
-        self.__module.master.waypoint_set_current_send(index + 1)
+        self._vehicle._master.waypoint_set_current_send(index)
 
     def __len__(self):
         '''
@@ -1466,11 +1501,11 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.vehicle._wploader.count()
+        return self._vehicle._wploader.count()
 
     def __getitem__(self, index):
-        return self.__module.vehicle._wploader.wp(index)
+        return self._vehicle._wploader.wp(index)
 
     def __setitem__(self, index, value):
-        self.__module.vehicle._wploader.set(value, index)
-        self.__module.vehicle._wpts_dirty = True
+        self._vehicle._wploader.set(value, index)
+        self._vehicle._wpts_dirty = True
