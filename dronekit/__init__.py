@@ -65,31 +65,7 @@ class MPFakeState:
         # Parameters
         self.mav_param = {} 
 
-        # waypoints
-        self.wploader = mavwp.MAVWPLoader()
-        self.wp_loaded = True
-        self.wp_uploaded = None
-
         self.vehicle = self.vehicle_class(self)
-
-    def fetch(self):
-        """
-        Fetch waypoints.
-        """
-        self.wp_loaded = False
-        self.master.waypoint_request_list_send()
-
-    def send_all_waypoints(self):
-        """
-        Send waypoints to master.
-        """
-        self.master.waypoint_clear_all_send()
-        if self.wploader.count() > 0:
-            self.wp_uploaded = [False]*self.wploader.count()
-            self.master.waypoint_count_send(self.wploader.count())
-            while False in self.wp_uploaded:
-                time.sleep(0.1)
-            self.wp_uploaded = None
 
     def fix_targets(self, message):
         pass
@@ -288,35 +264,6 @@ class MPFakeState:
                             except:
                                 import traceback
                                 traceback.print_exc()
-
-                        # Waypoint receive
-                        if not self.wp_loaded:
-                            if msg.get_type() in ['WAYPOINT_COUNT','MISSION_COUNT']:
-                                self.wploader.clear()
-                                self.wploader.expected_count = msg.count
-                                self.master.waypoint_request_send(0)
-                            if msg.get_type() in ['WAYPOINT', 'MISSION_ITEM']:
-                                if msg.seq > self.wploader.count():
-                                    # Unexpected waypoint
-                                    pass
-                                elif msg.seq < self.wploader.count():
-                                    # Waypoint duplicate
-                                    pass
-                                else:
-                                    self.wploader.add(msg)
-
-                                    if msg.seq + 1 < self.wploader.expected_count:
-                                        self.master.waypoint_request_send(msg.seq + 1)
-                                    else:
-                                        self.wp_loaded = True
-
-                        # Waypoint send to master
-                        if self.wp_uploaded != None and msg.get_type() in ["WAYPOINT_REQUEST", "MISSION_REQUEST"]:
-                            wp = self.wploader.wp(msg.seq)
-                            wp.target_system = self.target_system
-                            wp.target_component = self.target_component
-                            self.master.mav.send(wp)
-                            self.wp_uploaded[msg.seq] = True
 
                         # Heartbeat: armed + mode update
                         if msg.get_type() == 'HEARTBEAT':

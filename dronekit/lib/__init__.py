@@ -3,7 +3,7 @@
 import threading, time, math, copy
 import CloudClient
 from pymavlink.dialects.v10 import ardupilotmega
-from pymavlink import mavutil
+from pymavlink import mavutil, mavwp
 
 """
 This is the API Reference for the DroneKit-Python API.
@@ -560,8 +560,6 @@ class Vehicle(HasObservers):
         self.mavrx_callback = None
         self.__module = module
         self._parameters = Parameters(module)
-        self._waypoints = CommandSequence(self.__module)
-        self.wpts_dirty = False
 
         # Attaches message listeners.
         self.message_listeners = dict()
@@ -718,6 +716,47 @@ class Vehicle(HasObservers):
             self._system_status = m.system_status
             self.notify_observers('mode')
 
+        # waypoints
+        self._wploader = mavwp.MAVWPLoader()
+        self._wp_loaded = True
+        self._wp_uploaded = None
+        self._wpts_dirty = False
+        self._commands = CommandSequence(self.__module)
+
+        @self.message_listener(['WAYPOINT_COUNT','MISSION_COUNT'])
+        def listener(self, name, msg):
+            if not self._wp_loaded:
+                self._wploader.clear()
+                self._wploader.expected_count = msg.count
+                module.master.waypoint_request_send(0)
+
+        @self.message_listener(['WAYPOINT', 'MISSION_ITEM'])
+        def listener(self, name, msg):
+            if not self._wp_loaded:
+                if msg.seq > self._wploader.count():
+                    # Unexpected waypoint
+                    pass
+                elif msg.seq < self._wploader.count():
+                    # Waypoint duplicate
+                    pass
+                else:
+                    self._wploader.add(msg)
+
+                    if msg.seq + 1 < self._wploader.expected_count:
+                        module.master.waypoint_request_send(msg.seq + 1)
+                    else:
+                        self._wp_loaded = True
+
+        # Waypoint send to master
+        @self.message_listener(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
+        def listener(self, name, msg):
+            if self._wp_uploaded != None:
+                wp = self._wploader.wp(msg.seq)
+                wp.target_system = module.target_system
+                wp.target_component = module.target_component
+                module.master.mav.send(wp)
+                self._wp_uploaded[msg.seq] = True
+
     def message_listener(self, name):
         """
         Decorator for default message handlers.
@@ -777,9 +816,15 @@ class Vehicle(HasObservers):
         
             This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
-        if self.wpts_dirty:
-            self.__module.send_all_waypoints()
-            self.wpts_dirty = False
+        if self._wpts_dirty:
+            self.__module.master.waypoint_clear_all_send()
+            if self._wploader.count() > 0:
+                self._wp_uploaded = [False]*self._wploader.count()
+                self.__module.master.waypoint_count_send(self._wploader.count())
+                while False in self._wp_uploaded:
+                    time.sleep(0.1)
+                self._wp_uploaded = None
+            self._wpts_dirty = False
 
     #
     # Private sugar methods
@@ -957,7 +1002,7 @@ class Vehicle(HasObservers):
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
-        return self._waypoints
+        return self._commands
 
     @property
     def parameters(self):
@@ -1192,7 +1237,8 @@ class CommandSequence(object):
         The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
         '''
         self.wait_valid()
-        self.__module.fetch()
+        self.__module.vehicle._wp_loaded = False
+        self.__module.master.waypoint_request_list_send()
         # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_valid(self):
@@ -1202,7 +1248,7 @@ class CommandSequence(object):
         This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
         '''
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        while not self.__module.wp_loaded:
+        while not self.__module.vehicle._wp_loaded:
             time.sleep(0.1)
 
     def takeoff(self, alt=None):
@@ -1254,11 +1300,8 @@ class CommandSequence(object):
 
         # Add home point again.
         self.wait_valid()
-        home = self.__module.wploader.wp(0)
-        self.__module.wploader.clear()
-        if home:
-            self.__module.wploader.add(home, comment='Added by DroneKit')
-        self.__module.vehicle.wpts_dirty = True
+        self.__module.vehicle._wploader.clear()
+        self.__module.vehicle._wpts_dirty = True
 
     def add(self, cmd):
         '''
@@ -1270,8 +1313,8 @@ class CommandSequence(object):
         '''
         self.wait_valid()
         self.__module.fix_targets(cmd)
-        self.__module.wploader.add(cmd, comment='Added by DroneKit')
-        self.__module.vehicle.wpts_dirty = True
+        self.__module.vehicle._wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.vehicle._wpts_dirty = True
 
     def upload(self):
         """
@@ -1291,14 +1334,14 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return max(self.__module.wploader.count() - 1, 0)
+        return self.__module.vehicle._wploader.count()
 
     @property
     def next(self):
         """
         Get the currently active waypoint number.
         """
-        return self._last_waypoint
+        return self.__module.vehicle._last_waypoint
 
     @next.setter
     def next(self, index):
@@ -1313,19 +1356,11 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return max(self.__module.wploader.count() - 1, 0)
+        return self.__module.vehicle._wploader.count()
 
     def __getitem__(self, index):
-        if isinstance(index, slice):
-            return [self[ii] for ii in xrange(*index.indices(len(self)))]
-        elif isinstance(index, int):
-            item = self.__module.wploader.wp(index + 1)
-            if not item:
-                raise IndexError('Index %s out of range.' % index)
-            return item
-        else:
-            raise TypeError('Invalid argument type.')
+        return self.__module.vehicle._wploader.wp(index)
 
     def __setitem__(self, index, value):
-        self.__module.wploader.set(value, index + 1)
-        self.__module.vehicle.wpts_dirty = True
+        self.__module.vehicle._wploader.set(value, index)
+        self.__module.vehicle._wpts_dirty = True
