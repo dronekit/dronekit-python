@@ -55,7 +55,7 @@ print "\n Home Location (before downloading waypoints): %s" % vehicle.home_locat
 
 cmds = vehicle.commands
 cmds.download()
-cmds.wait_valid()
+cmds.wait_ready()
 print " Home Location (after downloading waypoints): %s" % vehicle.home_location
 
 
@@ -95,14 +95,6 @@ time.sleep(2)
 
 # Remove observer - specifying the attribute and previously registered callback function
 vehicle.remove_attribute_observer('mode', mode_callback)
-
-
-# Get Vehicle Home location ((0 index in Vehicle.commands)
-print "\nGet home location" 
-cmds = vehicle.commands
-cmds.download()
-cmds.wait_ready()
-print " Home WP: %s" % cmds[0]
 
 
 # Get/Set Vehicle Parameters

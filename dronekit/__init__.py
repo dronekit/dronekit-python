@@ -81,7 +81,7 @@ class MAVHandler:
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
                                 errprinter('reestablishing connection after read timeout')
-                                if self.master.reset:
+                                if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
                                     try:
@@ -105,7 +105,7 @@ class MAVHandler:
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
                                 errprinter('reestablishing connection after send timeout')
-                                if self.master.reset:
+                                if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
                                     try:
@@ -118,7 +118,7 @@ class MAVHandler:
                             # If connection reset (closed), stop polling.
                             return
                         except Exception as e:
-                            # TODO this should be more rigious. How to avoid
+                            # TODO this should be more rigorous. How to avoid
                             #   invalid MAVLink prefix '73'
                             #   invalid MAVLink prefix '13'
                             # errprinter('mav recv error:', e)

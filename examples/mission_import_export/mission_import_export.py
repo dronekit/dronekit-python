@@ -71,14 +71,8 @@ def upload_mission(aFileName):
     #Clear existing mission from vehicle
     print ' Clear mission'
     cmds = vehicle.commands
-    cmds.download()
-    cmds.wait_ready()
     cmds.clear()
-    vehicle.flush()
-    print 'ClearCount: %s' % cmds.count
-    #add new mission
-    cmds.download()
-    cmds.wait_ready()
+    #Add new mission to vehicle
     for command in missionlist:
         cmds.add(command)
     print ' Upload mission'
@@ -94,8 +88,8 @@ def download_mission():
     missionlist=[]
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_ready()
-    for cmd in cmds[1:]:  #skip first item as it is home waypoint.
+    cmds.wait_valid()
+    for cmd in cmds:  
         missionlist.append(cmd)
     return missionlist
 
@@ -151,4 +145,3 @@ print "\nShow original and uploaded/downloaded files:"
 printfile(import_mission_filename)
 #Print exported file (for demo purposes only)
 printfile(export_mission_filename)
-

@@ -78,22 +78,6 @@ def distance_to_current_waypoint():
     return distancetopoint
 
 
-def clear_mission():
-    """
-    Clear the current mission.
-    """
-    cmds = vehicle.commands
-    vehicle.commands.clear()
-    vehicle.flush()
-
-    # After clearing the mission you MUST re-download the mission from the vehicle 
-    # before vehicle.commands can be used again
-    # (see https://github.com/dronekit/dronekit-python/issues/230)
-    cmds = vehicle.commands
-    cmds.download()
-    cmds.wait_ready()
-    
-
 def download_mission():
     """
     Download the current mission from the vehicle.

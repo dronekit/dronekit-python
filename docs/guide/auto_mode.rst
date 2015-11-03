@@ -103,13 +103,7 @@ To clear a mission you call :py:func:`clear() <dronekit.lib.CommandSequence.clea
 
     # Call clear() on Vehicle.commands and upload the command to the vehicle.
     cmds.clear()
-    vehicle.flush()
-
-    # Reset the Vehicle.commands from the vehicle.
-    cmds.download()
-    cmds.wait_ready()
-
-.. warning:: 
+    cmds.upload()
 
 .. note:: 
 
@@ -185,9 +179,6 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
 
     # Clear the current mission (command is sent when we call upload()) 
     cmds.clear()
-    vehicle.flush()
-    cmds.download()
-    cmds.wait_ready()
 
     #Write the modified mission and flush to the vehicle
     for cmd in missionlist:
@@ -279,28 +270,26 @@ The implementation calls ``readmission()`` (below) to import the mission from a 
 clears the existing mission and uploads the new version. 
 
 Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_command>`.
-  
+
 .. code:: python
 
     def upload_mission(aFileName):
-        """
-        Upload a mission from a file.
-        """
-        missionlist = readmission(aFileName)
-        #clear existing mission
-        print 'Clear mission'
-        cmds = vehicle.commands
-        cmds.download()
-        cmds.wait_ready()
-        cmds.clear()
-        vehicle.flush()
-        print 'ClearCount: %s' % cmds.count
-        #add new mission
-        cmds.download()
-        cmds.wait_ready()
-        for command in missionlist:
-            cmds.add(command)
-        vehicle.flush()
+            """
+            Upload a mission from a file. 
+            """
+            #Read mission from file
+            missionlist = readmission(aFileName)
+            
+            print "\nUpload mission from a file: %s" % import_mission_filename
+            #Clear existing mission from vehicle
+            print ' Clear mission'
+            cmds = vehicle.commands
+            cmds.clear()
+            #Add new mission to vehicle
+            for command in missionlist:
+                cmds.add(command)
+            print ' Upload mission'
+            vehicle.commands.upload()
 
 
 ``readmission()`` reads a mission from the specified file and returns a list of :py:class:`Command <dronekit.lib.Command>` objects. 

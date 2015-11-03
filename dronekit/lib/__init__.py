@@ -15,10 +15,9 @@ The code snippet below shows how to use :py:func:`connect` to obtain an instance
 .. code:: python
 
     from dronekit import connect
-    
+
     # Connect to the Vehicle using "connection string" (in this case an address on network)
     vehicle = connect('127.0.0.1:14550', await_params=True)
-
 
 :py:class:`Vehicle <dronekit.lib.Vehicle>` provides access to vehicle *state* through python attributes
 (e.g. :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`)
@@ -33,14 +32,12 @@ Asynchronous notification on vehicle attribute changes is available by registeri
   (:py:func:`Vehicle.send_mavlink <dronekit.lib.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <dronekit.lib.Vehicle.message_factory>`).
 * Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute
   (see :py:class:`CommandSequence <dronekit.lib.CommandSequence>` for more information).
-  
+
 A number of other useful classes and methods are listed below.
 
 ----
 
 .. todo:: Update this when have confirmed how to register for parameter notifications.
-
-
 
 .. py:function:: connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4)
 
@@ -52,13 +49,13 @@ A number of other useful classes and methods are listed below.
     :param status_printer: NA    
     :param Vehicle vehicle_class: NA     
     :param int rate: NA
-    
+
     :returns: A connected :py:class:`Vehicle` object.
 
 ----
-    
+
     .. todo:: Confirm what status_printer, vehicle_class and rate "mean". Can we hide in API. Can we get method defined in this file.
-    
+
 """
 
 local_path = ''
@@ -121,7 +118,7 @@ class LocationGlobal(object):
         self.lon = lon
         self.alt = alt
         self.is_relative = is_relative
-        
+
         # This is for backward compatibility.
         self.local_frame = None
         self.global_fame = None
@@ -135,9 +132,9 @@ Location = LocationGlobal
 class LocationLocal(object):
     """
     A local location object.
-    
+
     The north, east and down are relative to the EKF origin.  This is most likely the location where the vehicle was turned on.  
-    
+
     :param north: Position north of the EKF origin in meters.
     :param east: Position east of the EKF origin in meters.
     :param down: Position down from the EKF origin in meters. (i.e. negative altitude in meters)
@@ -146,7 +143,7 @@ class LocationLocal(object):
         self.north = north
         self.east = east
         self.down = down
-        
+
     def __str__(self):
         return "LocationLocal:north=%s,east=%s,down=%s" % (self.north, self.east, self.down)
 
@@ -172,7 +169,6 @@ class GPSInfo(object):
     def __str__(self):
         return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type, self.satellites_visible)
 
-
 class Battery(object):
     """
     System battery information.
@@ -195,7 +191,6 @@ class Battery(object):
     def __str__(self):
         return "Battery:voltage={},current={},level={}".format(self.voltage, self.current, self.level)
 
-
 class Rangefinder(object):
     """
     Rangefinder readings.
@@ -209,7 +204,6 @@ class Rangefinder(object):
 
     def __str__(self):
         return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
-
 
 class VehicleMode(object):
     """
@@ -239,7 +233,6 @@ class VehicleMode(object):
             print "Vehicle Mode", vehicle.mode
 
         vehicle.on_attribute('mode', mode_callback)
-
 
     The code snippet below shows how to change the vehicle mode to AUTO:
 
@@ -283,7 +276,7 @@ class HasObservers(object):
         The listener callback function is called with the ``vehicle`` and ``attr_name`` arguments.
         This can be used to infer the related attribute if the same callback is used 
         for watching several attributes.
-        
+
         The example below shows how to get callbacks for location changes:
 
         .. code:: python
@@ -295,7 +288,7 @@ class HasObservers(object):
 
             #Add observer for the vehicle's current location
             vehicle.on_attribute('location', location_callback)
-            
+
         .. note::
             Attribute changes will only be published for changes due to some other entity.
             They will not be published for changes made by the local API client
@@ -303,7 +296,6 @@ class HasObservers(object):
 
         :param attr_name: The attribute to watch.
         :param observer: The callback to invoke when a change in the attribute is detected.
-
 
         """
         l = self.__observers.get(attr_name)
@@ -323,10 +315,8 @@ class HasObservers(object):
 
             vehicle.remove_attribute_listener('global_frame', location_callback)
 
-
         :param attr_name: The attribute name that is to have an observer removed.
         :param observer: The callback function to remove.
-
 
         """
         l = self.__observers.get(attr_name)
@@ -390,26 +380,21 @@ class Vehicle(HasObservers):
 
         Current :py:class:`LocationGlobal`.
 
-
     .. py:attribute:: location.local_frame
 
         Current :py:class:`LocationLocal`.
-
 
     .. py:attribute:: attitude
 
         Current vehicle :py:class:`Attitude` (pitch, yaw, roll).
 
-
     .. py:attribute:: velocity
 
         Current velocity as a three element list ``[ vx, vy, vz ]`` (in meter/sec).
 
-
     .. py:attribute:: mode
 
         This attribute is used to get and set the current flight mode (:py:class:`VehicleMode`).
-
 
     .. py:attribute:: airspeed
 
@@ -424,7 +409,6 @@ class Vehicle(HasObservers):
     .. py:attribute:: gps_0
 
         GPS position information (:py:class:`GPSInfo`).
-
 
     .. py:attribute:: armed
 
@@ -443,23 +427,19 @@ class Vehicle(HasObservers):
             # Arm the vehicle
             vehicle.armed = True
 
-
     .. py:attribute:: mount_status
 
         Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``.
 
         The values in the list are set to ``None`` if no mount is configured.
 
-
     .. py:attribute:: battery
 
         Current system :py:class:`Battery` status.
 
-
     .. py:attribute:: rangefinder
 
         :py:class:`Rangefinder` distance and voltage values.
-
 
     .. py:attribute:: channel_override
 
@@ -497,11 +477,9 @@ class Vehicle(HasObservers):
             # Cancel override on channel 1 and 4 by sending 0
             vehicle.channel_override = { "1" : 0, "4" : 0 }
 
-
         .. versionchanged:: 1.0
 
             This update replaces ``rc_override`` with ``channel_override``/``channel_readback`` documentation.
-
 
         .. todo:: Add note to the examples/guide like warning above not to use this mechanism except as intended:
 
@@ -525,7 +503,6 @@ class Vehicle(HasObservers):
             * how to address the units issue?  Merely with documentation or some other way?
             * is there any benefit of using lists rather than tuples for these attributes
 
-
     .. py:attribute:: channel_readback
 
         This read-only attribute returns a dictionary containing the *original* vehicle RC channel values (ignoring any overrides set using
@@ -536,8 +513,6 @@ class Vehicle(HasObservers):
         .. code:: python
 
             RC readback: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800} ? Dictionary () (read only)
-
-
 
     .. todo:: In V2, there may be ardupilot specific attributes & types (as in the introduction). If so, text below might be useful.
 
@@ -550,7 +525,6 @@ class Vehicle(HasObservers):
         .. py:attribute:: ap_pin5_value
 
             ? double (0, 1, 2.3 etc...)
-
 
     .. todo:: Add waypoint_home attribute IF this is added: https://github.com/dronekit/dronekit-python/issues/105
 
@@ -582,7 +556,7 @@ class Vehicle(HasObservers):
         self._vx = None
         self._vy = None
         self._vz = None
-        
+
         @self.message_listener('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
@@ -607,7 +581,7 @@ class Vehicle(HasObservers):
         self._pitchspeed = None
         self._yawspeed = None
         self._rollspeed = None
-        
+
         @self.message_listener('ATTITUDE')
         def listener(self, name, m):
             self._pitch = m.pitch
@@ -622,7 +596,7 @@ class Vehicle(HasObservers):
         self._alt = None
         self._airspeed = None
         self._groundspeed = None
-        
+
         @self.message_listener('VFR_HUD')
         def listener(self, name, m):
             self._heading = m.heading
@@ -675,7 +649,7 @@ class Vehicle(HasObservers):
         self._voltage = None
         self._current = None
         self._level = None
-        
+
         @self.message_listener('SYS_STATUS')
         def listener(self, name, m):
             self._voltage = m.voltage_battery
@@ -687,7 +661,7 @@ class Vehicle(HasObservers):
         self._epv = None
         self._satellites_visible = None
         self._fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
-        
+
         @self.message_listener('GPS_RAW_INT')
         def listener(self, name, m):
             self._eph = m.eph
@@ -700,7 +674,7 @@ class Vehicle(HasObservers):
 
         @self.message_listener(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
         def listener(self, name, m):
-            self._last_waypoint = m.seq
+            self._last_waypoint = max(m.seq - 1, 0)
 
         self._ekf_poshorizabs = False
         self._ekf_constposmode = False
@@ -770,7 +744,7 @@ class Vehicle(HasObservers):
                 handler.fix_targets(wp)
                 self._master.mav.send(wp)
                 self._wp_uploaded[msg.seq] = True
-        
+
         # TODO: Waypoint loop listeners
 
         # Parameters.
@@ -831,7 +805,7 @@ class Vehicle(HasObservers):
                 traceback.print_exc()
 
         # Heartbeats.
-        
+
         self._heartbeat_started = False
         self._heartbeat_lastsent = 0
         self._heartbeat_lastreceived = 0
@@ -908,20 +882,12 @@ class Vehicle(HasObservers):
 
         After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
-        
+
         .. warning:: 
-        
+
             This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
-        if self._wpts_dirty:
-            self._master.waypoint_clear_all_send()
-            if self._wploader.count() > 0:
-                self._wp_uploaded = [False]*self._wploader.count()
-                self._master.waypoint_count_send(self._wploader.count())
-                while False in self._wp_uploaded:
-                    time.sleep(0.1)
-                self._wp_uploaded = None
-            self._wpts_dirty = False
+        return self.commands.upload()
 
     #
     # Private sugar methods
@@ -1034,12 +1000,12 @@ class Vehicle(HasObservers):
     def home_location(self):
         """
         The current home location in a :py:class:`LocationGlobal`. 
-        
+
         This value is initially set by the autopilot as the location of first GPS Lock.
         The attribute has a value of ``None`` until :py:func:`Vehicle.commands` has been downloaded. 
         If the attribute is queried before the home location is set the returned `LocationGlobal` 
         will have zero values for its member attributes.
-        
+
         .. code-block:: python
 
             #Connect to a vehicle object (for example, on com14)
@@ -1048,25 +1014,25 @@ class Vehicle(HasObservers):
             # Download the vehicle waypoints (commands). Wait until download is complete.
             cmds = vehicle.commands
             cmds.download()
-            cmds.wait_valid()
-            
+            cmds.wait_ready()
+
             # Get the home location
             home = vehicle.home_location
-            
+
         The attribute is not writeable or observable.
-        
+
         """
-        loc = self.__module.wploader.wp(0)
+        loc = self._wploader.wp(0)
         if loc:
             return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)
-    
+
     @home_location.setter
     def home_location(self, pos):
         """
         Sets the home location to that of a ``LocationGlobal`` object.
 
         .. note:: 
-        
+
             If the GPS values differ heavily from EKF values, setting this value will fail silently.
         """
         self.send_mavlink(self.message_factory.command_long_encode(
@@ -1215,7 +1181,6 @@ class Parameters(HasObservers):
         # Change the parameter value to something different.
         vehicle.parameters['THR_MIN']=100
 
-
     .. note::
 
         At time of writing ``Parameters`` does not implement the observer methods, and change notification for parameters
@@ -1261,7 +1226,7 @@ class Parameters(HasObservers):
                 if name in self._vehicle._params_map and self._vehicle._params_map[name] == value:
                     return True
                 time.sleep(0.1)
-        
+
         if retries > 0:
             errprinter("timeout setting parameter %s to %f" % (name, value))
         return False
@@ -1285,7 +1250,6 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
 
         cmd = Command(0,0,0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0,-34.364114, 149.166022, 30)
-
 
     :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network.
         Set this to zero (broadcast) when communicating with a companion computer.
@@ -1322,8 +1286,7 @@ class CommandSequence(object):
 
     The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute.
     Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous;
-    use :py:func:`wait_ready()` to block your thread until the download is complete.
-
+    use :py:func:`wait_valid()` to block your thread until the download is complete.
     The code to download the commands from a vehicle is shown below:
 
     .. code-block:: python
@@ -1335,13 +1298,12 @@ class CommandSequence(object):
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = vehicle.commands
         cmds.download()
-        cmds.wait_ready()
+        cmds.wait_valid()
 
     The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until
     :py:func:`upload() <Vehicle.commands.upload>` is called.
 
     .. code:: python
-
         cmds = vehicle.commands
         cmds.clear()
         lat = -34.364114,
@@ -1380,8 +1342,7 @@ class CommandSequence(object):
     def download(self):
         '''
         Download all waypoints from the vehicle.
-
-        The download is asynchronous. Use :py:func:`wait_ready()` to block your thread until the download is complete.
+        The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
         '''
         self.wait_ready()
         self._vehicle._ready_attrs.remove('commands')
@@ -1437,23 +1398,28 @@ class CommandSequence(object):
     def clear(self):
         '''
         Clear the command list. 
-        
+
         This command will be sent to the vehicleonly after you call :py:func:`upload() <Vehicle.commands.upload>`.
         '''
+
+        # Add home point again.
         self.wait_ready()
+        home = self._vehicle._wploader.wp(0)
         self._vehicle._wploader.clear()
+        if home:
+            self._vehicle._wploader.add(home, comment='Added by DroneKit')
         self._vehicle._wpts_dirty = True
 
     def add(self, cmd):
         '''
         Add a new command (waypoint) at the end of the command list.
-        
-        .. note:: Commands are sent to the vehicle only after you call ::py:func:`upload() <Vehicle.commands.upload>`.
 
+        .. note:: Commands are sent to the vehicle only after you call ::py:func:`upload() <Vehicle.commands.upload>`.
         :param Command cmd: The command to be added.
         '''
         self.wait_ready()
-        self._vehicle._wploader.add(cmd, comment = 'Added by DroneAPI')
+        self._vehicle._handler.fix_targets(cmd)
+        self._vehicle._wploader.add(cmd, comment='Added by DroneKit')
         self._vehicle._wpts_dirty = True
 
     def upload(self):
@@ -1463,9 +1429,15 @@ class CommandSequence(object):
         After the return from ``upload()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
         """
-        if self.__module.vehicle.wpts_dirty:
-            self.__module.send_all_waypoints()
-            self.__module.vehicle.wpts_dirty = False
+        if self._vehicle._wpts_dirty:
+            self._vehicle._master.waypoint_clear_all_send()
+            if self._vehicle._wploader.count() > 0:
+                self._vehicle._wp_uploaded = [False]*self._vehicle._wploader.count()
+                self._vehicle._master.waypoint_count_send(self._vehicle._wploader.count())
+                while False in self._vehicle._wp_uploaded:
+                    time.sleep(0.1)
+                self._vehicle._wp_uploaded = None
+            self._vehicle._wpts_dirty = False
 
     @property
     def count(self):
@@ -1474,7 +1446,7 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self._vehicle._wploader.count()
+        return max(self._vehicle._wploader.count() - 1, 0)
 
     @property
     def next(self):
@@ -1488,7 +1460,7 @@ class CommandSequence(object):
         """
         Set a new ``next`` waypoint for the vehicle.
         """
-        self._vehicle._master.waypoint_set_current_send(index)
+        self._vehicle._master.waypoint_set_current_send(index + 1)
 
     def __len__(self):
         '''
@@ -1496,11 +1468,19 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self._vehicle._wploader.count()
+        return max(self._vehicle._wploader.count() - 1, 0)
 
     def __getitem__(self, index):
-        return self._vehicle._wploader.wp(index)
+        if isinstance(index, slice):
+            return [self[ii] for ii in xrange(*index.indices(len(self)))]
+        elif isinstance(index, int):
+            item = self._vehicle._wploader.wp(index + 1)
+            if not item:
+                raise IndexError('Index %s out of range.' % index)
+            return item
+        else:
+            raise TypeError('Invalid argument type.')
 
     def __setitem__(self, index, value):
-        self._vehicle._wploader.set(value, index)
+        self._vehicle._wploader.set(value, index + 1)
         self._vehicle._wpts_dirty = True
