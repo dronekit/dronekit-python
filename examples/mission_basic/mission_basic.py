@@ -76,6 +76,22 @@ def distance_to_current_waypoint():
     targetWaypointLocation=LocationGlobal(lat,lon,alt,is_relative=True)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
     return distancetopoint
+
+
+def clear_mission():
+    """
+    Clear the current mission.
+    """
+    cmds = vehicle.commands
+    vehicle.commands.clear()
+    vehicle.flush()
+
+    # After clearing the mission you MUST re-download the mission from the vehicle 
+    # before vehicle.commands can be used again
+    # (see https://github.com/dronekit/dronekit-python/issues/230)
+    cmds = vehicle.commands
+    cmds.download()
+    cmds.wait_ready()
     
 
 def download_mission():
@@ -84,7 +100,7 @@ def download_mission():
     """
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid() # wait until download is complete.
+    cmds.wait_ready() # wait until download is complete.
 
 
 

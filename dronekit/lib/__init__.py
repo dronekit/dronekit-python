@@ -563,7 +563,8 @@ class Vehicle(HasObservers):
         self._master = handler.master
 
         # Cache all updated attributes for wait_ready.
-        self._ready_attrs = set()
+        # By default, we presume all "commands" are loaded.
+        self._ready_attrs = set(['commands'])
 
         @self.attribute_listener('*')
         def listener(_, name):
@@ -1230,16 +1231,16 @@ class Parameters(HasObservers):
         self._vehicle = vehicle
 
     def __getitem__(self, name):
-        self.wait_valid()
+        self.wait_ready()
         return self._vehicle._params_map[name]
 
     def __setitem__(self, name, value):
-        self.wait_valid()
+        self.wait_ready()
         self.set(name, value)
 
-    def set(self, name, value, retries=3, await_valid=False):
-        if await_valid:
-            self.wait_valid()
+    def set(self, name, value, retries=3, wait_ready=False):
+        if wait_ready:
+            self.wait_ready()
 
         # TODO dumbly reimplement this using timeout loops
         # because we should actually be awaiting an ACK of PARAM_VALUE
@@ -1265,13 +1266,11 @@ class Parameters(HasObservers):
             errprinter("timeout setting parameter %s to %f" % (name, value))
         return False
 
-    def wait_valid(self):
+    def wait_ready(self, **kwargs):
         """
         Block the calling thread until parameters have been downloaded
         """
-        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        while self._vehicle._params_count == 0 or len(self._vehicle._params_set) != self._vehicle._params_count:
-            time.sleep(0.200)
+        self._vehicle.wait_ready('parameters', **kwargs)
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
@@ -1323,7 +1322,7 @@ class CommandSequence(object):
 
     The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` attribute.
     Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous;
-    use :py:func:`wait_valid()` to block your thread until the download is complete.
+    use :py:func:`wait_ready()` to block your thread until the download is complete.
 
     The code to download the commands from a vehicle is shown below:
 
@@ -1336,7 +1335,7 @@ class CommandSequence(object):
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = vehicle.commands
         cmds.download()
-        cmds.wait_valid()
+        cmds.wait_ready()
 
     The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until
     :py:func:`upload() <Vehicle.commands.upload>` is called.
@@ -1382,22 +1381,21 @@ class CommandSequence(object):
         '''
         Download all waypoints from the vehicle.
 
-        The download is asynchronous. Use :py:func:`wait_valid()` to block your thread until the download is complete.
+        The download is asynchronous. Use :py:func:`wait_ready()` to block your thread until the download is complete.
         '''
-        self.wait_valid()
+        self.wait_ready()
+        self._vehicle._ready_attrs.remove('commands')
         self._vehicle._wp_loaded = False
         self._vehicle._master.waypoint_request_list_send()
         # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
-    def wait_valid(self):
-        '''
+    def wait_ready(self, **kwargs):
+        """
         Block the calling thread until waypoints have been downloaded.
 
         This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
-        '''
-        # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        while not self._vehicle._wp_loaded:
-            time.sleep(0.1)
+        """
+        return self._vehicle.wait_ready('commands', **kwargs)
 
     def takeoff(self, alt=None):
         if alt is not None:
@@ -1442,9 +1440,7 @@ class CommandSequence(object):
         
         This command will be sent to the vehicleonly after you call :py:func:`upload() <Vehicle.commands.upload>`.
         '''
-
-        # Add home point again.
-        self.wait_valid()
+        self.wait_ready()
         self._vehicle._wploader.clear()
         self._vehicle._wpts_dirty = True
 
@@ -1456,7 +1452,7 @@ class CommandSequence(object):
 
         :param Command cmd: The command to be added.
         '''
-        self.wait_valid()
+        self.wait_ready()
         self._vehicle._wploader.add(cmd, comment = 'Added by DroneAPI')
         self._vehicle._wpts_dirty = True
 

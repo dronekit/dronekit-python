@@ -111,7 +111,7 @@ def replay_mission(payload):
 
 # Now download the vehicle waypoints
 cmds = vehicle.commands
-cmds.wait_valid()
+cmds.wait_ready()
 mission_id = int(args.mission_id)
 max_freq = 0.1
 json = download_messages(mission_id, max_freq)

@@ -355,7 +355,7 @@ The *home location* is updated immediately in ArduPilot, but the change may not 
     # Reloads the home location in GCSs
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid()
+    cmds.wait_ready()
     print " Home WP: %s" % cmds[0]
 
 .. _guided_mode_copter_responses:

@@ -266,6 +266,28 @@ At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not su
 
 
 
+.. _vehicle_state_home_location:
+
+Home location
+=============
+
+The *Home location* is set when a vehicle is armed and first gets a good location fix from the GPS. The location is used 
+as the target when the vehicle does a "return to launch". In Copter missions (and most Plane) missions, the altitude of 
+waypoints is set relative to this position.
+
+Unlike other vehicle state information, the home location is accessed as the 0 index value of 
+:py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`:
+
+.. code:: python
+    
+    cmds = vehicle.commands
+    cmds.download()
+    cmds.wait_ready()
+    print " Home WP: %s" % cmds[0]
+
+The returned value is a :py:class:`Command <dronekit.lib.Command>` object.
+
+
 
 .. _api-information-known-issues:
 

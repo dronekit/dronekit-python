@@ -228,7 +228,7 @@ vehicle.set_mavlink_callback(mavrx_debug_handler)
 # Now download the vehicle waypoints
 cmds = vehicle.commands
 cmds.download()
-cmds.wait_valid()
+cmds.wait_ready()
 print "Home WP: %s" % cmds[0]
 print "Current dest: %s" % cmds.next
 

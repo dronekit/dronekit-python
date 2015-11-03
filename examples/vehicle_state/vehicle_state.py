@@ -97,6 +97,14 @@ time.sleep(2)
 vehicle.remove_attribute_observer('mode', mode_callback)
 
 
+# Get Vehicle Home location ((0 index in Vehicle.commands)
+print "\nGet home location" 
+cmds = vehicle.commands
+cmds.download()
+cmds.wait_ready()
+print " Home WP: %s" % cmds[0]
+
+
 # Get/Set Vehicle Parameters
 print "\nRead vehicle param 'THR_MIN': %s" % vehicle.parameters['THR_MIN']
 print "Write vehicle param 'THR_MIN' : 10"

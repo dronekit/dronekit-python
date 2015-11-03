@@ -611,8 +611,8 @@ set_home(vehicle.location.global_frame)
 print "Get new home location" #This reloads the home location in GCSs
 cmds = vehicle.commands
 cmds.download()
-cmds.wait_valid()
-print " Home Location: %s" % vehicle.home_location
+cmds.wait_ready()
+print " Home WP: %s" % cmds[0]
 
 print("Velocity South and West")
 send_global_velocity(NORTH,EAST,0)
