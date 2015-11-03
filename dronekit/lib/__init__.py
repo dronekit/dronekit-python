@@ -4,6 +4,7 @@ import threading, time, math, copy
 import CloudClient
 from pymavlink.dialects.v10 import ardupilotmega
 from pymavlink import mavutil, mavwp
+from dronekit.tools import errprinter
 
 """
 This is the API Reference for the DroneKit-Python API.
@@ -559,7 +560,7 @@ class Vehicle(HasObservers):
         super(Vehicle, self).__init__()
         self.mavrx_callback = None
         self.__module = module
-        self._parameters = Parameters(module)
+        self._master = module.master
 
         # Attaches message listeners.
         self.message_listeners = dict()
@@ -716,7 +717,8 @@ class Vehicle(HasObservers):
             self._system_status = m.system_status
             self.notify_observers('mode')
 
-        # waypoints
+        # Waypoints.
+
         self._wploader = mavwp.MAVWPLoader()
         self._wp_loaded = True
         self._wp_uploaded = None
@@ -756,6 +758,90 @@ class Vehicle(HasObservers):
                 wp.target_component = module.target_component
                 module.master.mav.send(wp)
                 self._wp_uploaded[msg.seq] = True
+        
+        # TODO: Waypoint loop listeners
+
+        # Parameters.
+
+        start_duration = 0.2
+        repeat_duration = 1
+
+        self._params_count = -1
+        self._params_set = []
+        self._params_loaded = False
+        self._params_start = False
+        self._params_map = {}
+        self._params_last = time.time() # Last new param.
+        self._params_duration = start_duration
+        self._parameters = Parameters(self)
+
+        @module.loop_listener
+        def listener(_):
+            # Check the time duration for last "new" params exceeds watchdog.
+            if self._params_start:
+                if None not in self._params_set:
+                    self._params_loaded = True
+
+                if not self._params_loaded and time.time() - self._params_last > self._params_duration:
+                    c = 0
+                    for i, v in enumerate(self._params_set):
+                        if v == None:
+                            module.master.mav.param_request_read_send(module.master.target_system, module.master.target_component, '', i)
+                            c += 1
+                            if c > 50:
+                                break
+                    self._params_duration = repeat_duration
+                    self._params_last = time.time()
+
+        @self.message_listener(['PARAM_VALUE'])
+        def listener(self, name, msg):
+            # If we discover a new param count, assume we
+            # are receiving a new param set.
+            if self._params_count != msg.param_count:
+                self._params_loaded = False
+                self._params_start = True
+                self._params_count = msg.param_count
+                self._params_set = [None]*msg.param_count
+
+            # Attempt to set the params. We throw an error
+            # if the index is out of range of the count or
+            # we lack a param_id.
+            try:
+                if msg.param_index < msg.param_count and msg:
+                    if self._params_set[msg.param_index] == None:
+                        self._params_last = time.time()
+                        self._params_duration = start_duration
+                    self._params_set[msg.param_index] = msg
+                self._params_map[msg.param_id] = msg.param_value
+            except:
+                import traceback
+                traceback.print_exc()
+
+        # Heartbeats.
+        
+        self._heartbeat_started = False
+        self._heartbeat_lastsent = 0
+        self._heartbeat_lastreceived = 0
+
+        @module.loop_listener
+        def listener(_):
+            # Send 1 heartbeat per second
+            if time.time() - self._heartbeat_lastsent > 1:
+                module.master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
+                self._heartbeat_lastsent = time.time()
+
+            # And timeout after 5.
+            if self._heartbeat_started:
+                if self._heartbeat_lastreceived == 0:
+                    self._heartbeat_lastreceived = time.time()
+                elif time.time() - self._heartbeat_lastreceived > 5:
+                    # raise Exception('Link timeout, no heartbeat in last 5 seconds')
+                    errprinter('Link timeout, no heartbeat in last 5 seconds')
+                    self._heartbeat_lastreceived = time.time()
+
+        @self.message_listener(['HEARTBEAT'])
+        def listener(self, name, msg):
+            self._heartbeat_lastreceived = time.time()
 
     def message_listener(self, name):
         """
@@ -1102,27 +1188,51 @@ class Parameters(HasObservers):
         https://github.com/dronekit/dronekit-python/issues/107
     """
 
-    def __init__(self, module):
-        self.__module = module
+    def __init__(self, vehicle):
+        self._vehicle = vehicle
 
     def __getitem__(self, name):
         self.wait_valid()
-        return self.__module.mav_param[name]
+        return self._vehicle._params_map[name]
 
     def __setitem__(self, name, value):
         self.wait_valid()
-        self.__module.param_set(name, value)
+        self.set(name, value)
 
     def set(self, name, value, retries=3, await_valid=False):
         if await_valid:
             self.wait_valid()
-        return self.__module.param_set(name, value, retries=retries)
+
+        # TODO dumbly reimplement this using timeout loops
+        # because we should actually be awaiting an ACK of PARAM_VALUE
+        # changed, but we don't have a proper ack structure, we'll
+        # instead just wait until the value itself was changed
+
+        name = name.upper()
+        value = float(value)
+        success = False
+        remaining = retries
+        while True:
+            self._vehicle._master.param_set_send(name.upper(), value)
+            tstart = time.time()
+            if remaining == 0:
+                break
+            remaining -= 1
+            while time.time() - tstart < 1:
+                if name in self._vehicle._params_map and self._vehicle._params_map[name] == value:
+                    return True
+                time.sleep(0.1)
+        
+        if retries > 0:
+            errprinter("timeout setting parameter %s to %f" % (name, value))
+        return False
 
     def wait_valid(self):
-        '''Block the calling thread until parameters have been downloaded'''
+        """
+        Block the calling thread until parameters have been downloaded
+        """
         # FIXME this is a super crufty spin-wait, also we should give the user the option of specifying a timeout
-        pstate = self.__module.pstate
-        while (pstate.mav_param_count == 0 or len(pstate.mav_param_set) != pstate.mav_param_count) and not self.__module.api.exit:
+        while self._vehicle._params_count == 0 or len(self._vehicle._params_set) != self._vehicle._params_count:
             time.sleep(0.200)
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
