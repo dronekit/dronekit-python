@@ -238,7 +238,7 @@ class VehicleMode(object):
         def mode_callback(self, mode):
             print "Vehicle Mode", vehicle.mode
 
-        vehicle.add_attribute_observer('mode', mode_callback)
+        vehicle.on_attribute('mode', mode_callback)
 
 
     The code snippet below shows how to change the vehicle mode to AUTO:
@@ -274,13 +274,13 @@ class HasObservers(object):
     """
     Provides callback based notification on attribute changes.
 
-    The argument list for observer is ``observer(attr_name)``.
+    The argument list for observer is ``observer(object, attr_name)``.
     """
-    def add_attribute_observer(self, attr_name, observer):
+    def on_attribute(self, attr_name, observer):
         """
-        Add an attribute observer.
+        Add an attribute listener.
 
-        The observer callback function is called with the ``attr_name`` argument. 
+        The listener callback function is called with the ``vehicle`` and ``attr_name`` arguments.
         This can be used to infer the related attribute if the same callback is used 
         for watching several attributes.
         
@@ -289,12 +289,12 @@ class HasObservers(object):
         .. code:: python
 
             #Callback to print the location in global and local frames
-            def location_callback(location):
+            def location_callback(vehicle, location):
                 print "Location (Global): ", vehicle.location.global_frame
                 print "Location (Local): ", vehicle.location.local_frame
 
             #Add observer for the vehicle's current location
-            vehicle.add_attribute_observer('location', location_callback)
+            vehicle.on_attribute('location', location_callback)
             
         .. note::
             Attribute changes will only be published for changes due to some other entity.
@@ -313,15 +313,15 @@ class HasObservers(object):
         if not observer in l:
             l.append(observer)
 
-    def remove_attribute_observer(self, attr_name, observer):
+    def remove_attribute_listener(self, attr_name, observer):
         """
-        Remove an observer.
+        Remove an attribute listener.
 
         For example, the following line would remove a previously added vehicle 'global_frame' observer called location_callback:
 
         .. code:: python
 
-            vehicle.remove_attribute_observer('global_frame', location_callback)
+            vehicle.remove_attribute_listener('global_frame', location_callback)
 
 
         :param attr_name: The attribute name that is to have an observer removed.
@@ -335,7 +335,7 @@ class HasObservers(object):
             if len(l) == 0:
                 del self.__observers[attr_name]
 
-    def notify_observers(self, attr_name):
+    def _notify_attribute_listeners(self, attr_name):
         """
         Internal function. Do not use.
 
@@ -343,27 +343,27 @@ class HasObservers(object):
 
         .. INTERNAL NOTE: (For subclass use only)
         """
-        # print "Notify: " + attr_name
-        l = self.__observers.get(attr_name)
-        if l is not None:
-            for o in l:
-                try:
-                    o(attr_name)
-                except TypeError as e:
-                    # This is commonly called by a bad argument list
-                    print("TypeError calling observer: ", e)
-                except Exception as e:
-                    print("Error calling observer: ", e)
+        for fn in self.__observers.get(attr_name, []):
+            fn(self, attr_name)
+        for fn in self.__observers.get('*', []):
+            fn(self, attr_name)
 
-    def remove_all_observers(self):
+    def attribute_listener(self, name):
         """
-        Internal function. Do not use.
+        Decorator for attribute listeners.
 
-        This method removes all attached observers.
-
-        .. INTERNAL NOTE: (For subclass use only)
+        .. code:: python
+            @vehicle.attribute_listener('attitude')
+            def attitude_listener(self, name, msg):
+                pass
         """
-        self.__observers = {}
+        def decorator(fn):
+            if isinstance(name, list):
+                for n in name:
+                    self.on_attribute(n, fn)
+            else:
+                self.on_attribute(name, fn)
+        return decorator
 
 class Vehicle(HasObservers):
     """
@@ -562,16 +562,19 @@ class Vehicle(HasObservers):
         self._handler = handler
         self._master = handler.master
 
+        # Cache all updated attributes for wait_ready.
+        self._ready_attrs = set()
+
+        @self.attribute_listener('*')
+        def listener(_, name):
+            self._ready_attrs.add(name)
+
         # Attaches message listeners.
         self._message_listeners = dict()
 
         @handler.message_listener
         def listener(_, msg):
-            typ = msg.get_type()
-            for fn in self._message_listeners.get(typ, []):
-                fn(self, typ, msg)
-            for fn in self._message_listeners.get('*', []):
-                fn(self, typ, msg)
+            self._notify_message_listeners(msg.get_type(), msg)
 
         self._lat = None
         self._lon = None
@@ -582,9 +585,9 @@ class Vehicle(HasObservers):
         @self.message_listener('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self.notify_observers('location')
+            self._notify_attribute_listeners('location')
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
-            self.notify_observers('velocity')
+            self._notify_attribute_listeners('velocity')
 
         self._north = None
         self._east = None
@@ -595,7 +598,7 @@ class Vehicle(HasObservers):
             self._north = m.x
             self._east = m.y
             self._down = m.z
-            self.notify_observers('local_position')
+            self._notify_attribute_listeners('local_position')
 
         self._pitch = None
         self._yaw = None
@@ -612,7 +615,7 @@ class Vehicle(HasObservers):
             self._pitchspeed = m.pitchspeed
             self._yawspeed = m.yawspeed
             self._rollspeed = m.rollspeed
-            self.notify_observers('attitude')
+            self._notify_attribute_listeners('attitude')
 
         self._heading = None
         self._alt = None
@@ -622,13 +625,13 @@ class Vehicle(HasObservers):
         @self.message_listener('VFR_HUD')
         def listener(self, name, m):
             self._heading = m.heading
-            self.notify_observers('heading')
+            self._notify_attribute_listeners('heading')
             self._alt = m.alt
-            self.notify_observers('location')
+            self._notify_attribute_listeners('location')
             self._airspeed = m.airspeed
-            self.notify_observers('airspeed')
+            self._notify_attribute_listeners('airspeed')
             self._groundspeed = m.groundspeed
-            self.notify_observers('groundspeed')
+            self._notify_attribute_listeners('groundspeed')
 
         self._rngfnd_distance = None
         self._rngfnd_voltage = None
@@ -637,7 +640,7 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._rngfnd_distance = m.distance
             self._rngfnd_voltage = m.voltage
-            self.notify_observers('rangefinder')
+            self._notify_attribute_listeners('rangefinder')
 
         self._mount_pitch = None
         self._mount_yaw = None
@@ -648,7 +651,7 @@ class Vehicle(HasObservers):
             self._mount_pitch = m.pointing_a / 100
             self._mount_roll = m.pointing_b / 100
             self._mount_yaw = m.pointing_c / 100
-            self.notify_observers('mount')
+            self._notify_attribute_listeners('mount')
 
         self._rc_readback = {}
 
@@ -677,7 +680,7 @@ class Vehicle(HasObservers):
             self._voltage = m.voltage_battery
             self._current = m.current_battery
             self._level = m.battery_remaining
-            self.notify_observers('battery')
+            self._notify_attribute_listeners('battery')
 
         self._eph = None
         self._epv = None
@@ -690,7 +693,7 @@ class Vehicle(HasObservers):
             self._epv = m.epv
             self._satellites_visible = m.satellites_visible
             self._fix_type = m.fix_type
-            self.notify_observers('gps_0')
+            self._notify_attribute_listeners('gps_0')
 
         self._last_waypoint = 0
 
@@ -711,7 +714,7 @@ class Vehicle(HasObservers):
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
 
-            self.notify_observers('ekf_ok')
+            self._notify_attribute_listeners('ekf_ok')
 
         self._flightmode = 'AUTO'
         self._armed = False
@@ -720,10 +723,10 @@ class Vehicle(HasObservers):
         @self.message_listener('HEARTBEAT')
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-            self.notify_observers('armed')
+            self._notify_attribute_listeners('armed')
             self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
             self._system_status = m.system_status
-            self.notify_observers('mode')
+            self._notify_attribute_listeners('mode')
 
         # Waypoints.
 
@@ -756,6 +759,7 @@ class Vehicle(HasObservers):
                         self._master.waypoint_request_send(msg.seq + 1)
                     else:
                         self._wp_loaded = True
+                        self._notify_attribute_listeners('commands')
 
         # Waypoint send to master
         @self.message_listener(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
@@ -786,8 +790,9 @@ class Vehicle(HasObservers):
         def listener(_):
             # Check the time duration for last "new" params exceeds watchdog.
             if self._params_start:
-                if None not in self._params_set:
+                if None not in self._params_set and not self._params_loaded:
                     self._params_loaded = True
+                    self._notify_attribute_listeners('parameters')
 
                 if not self._params_loaded and time.time() - self._params_last > self._params_duration:
                     c = 0
@@ -852,7 +857,7 @@ class Vehicle(HasObservers):
 
     def message_listener(self, name):
         """
-        Decorator for default message handlers.
+        Decorator for message listeners.
 
         .. code:: python
             @vehicle.message_listener('HEARTBEAT')
@@ -886,6 +891,12 @@ class Vehicle(HasObservers):
             self._message_listeners[name].remove(fn)
             if len(self._message_listeners[name]) == 0:
                 del self._message_listeners[name]
+
+    def _notify_message_listeners(self, name, msg):
+        for fn in self._message_listeners.get(name, []):
+            fn(self, name, msg)
+        for fn in self._message_listeners.get('*', []):
+            fn(self, name, msg)
 
     def close(self):
         return self._handler.close()
@@ -1167,14 +1178,25 @@ class Vehicle(HasObservers):
             if self._params_count > -1:
                 break
 
-    def wait_ready(self, *types):
-        # We now should get parameters streaming in. The loop listener sets _params_loaded.
-        while not self._params_loaded:
-            time.sleep(0.1)
+    def wait_ready(self, *types, **kwargs):
+        timeout = kwargs.get('timeout', 30)
+        raise_exception = kwargs.get('raise_exception', True)
 
-        # Await GPS lock.
-        while self._fix_type == None:
+        if not all(isinstance(item, basestring) for item in types):
+            raise APIException('wait_ready expects one or more string arguments.')
+
+        # Wait for these attributes to have been set.
+        await = set(types)
+        start = time.time()
+        while not await.issubset(self._ready_attrs):
             time.sleep(0.1)
+            if time.time() - start > timeout:
+                if raise_exception:
+                    raise APIException('wait_ready experienced a timeout after %s seconds.' % timeout)
+                else:
+                    return False
+
+        return True
 
 class Parameters(HasObservers):
     """

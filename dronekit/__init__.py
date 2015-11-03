@@ -182,5 +182,5 @@ def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Veh
     
     vehicle.initialize(rate=rate)
     if await_params:
-        vehicle.wait_ready()
+        vehicle.wait_ready('parameters', 'gps_0')
     return vehicle
