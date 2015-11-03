@@ -564,6 +564,14 @@ class Vehicle(HasObservers):
         self.wpts_dirty = False
 
     def close(self):
+        """
+        Call ``Vehicle.close()`` before exiting scripts to ensure that all messages have been uploaded/sent:
+
+        .. code:: python
+
+            # About to exit script
+            vehicle.close()
+        """
         return self.__module.close()
 
     def flush(self):
@@ -573,7 +581,9 @@ class Vehicle(HasObservers):
         After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
         
-        .. deprecated: This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
+        .. warning:: 
+        
+            This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
         if self.wpts_dirty:
             self.__module.send_all_waypoints()
@@ -693,8 +703,12 @@ class Vehicle(HasObservers):
     @property
     def home_location(self):
         """
-        The current home location in a :py:class:`LocationGlobal`. This value is typically the
-        GPS location of the vehicle at the point it is armed.
+        The current home location in a :py:class:`LocationGlobal`. 
+        
+        This value is initially set by the autopilot as the location of first GPS Lock.
+        The attribute has a value of ``None`` until :py:func:`Vehicle.commands` has been downloaded. 
+        If the attribute is queried before the home location is set the returned `LocationGlobal` 
+        will have zero values for its member attributes.
         
         .. code-block:: python
 
@@ -711,11 +725,6 @@ class Vehicle(HasObservers):
             
         The attribute is not writeable or observable.
         
-        .. warning:: 
-        
-            The home location will have a value of ``None`` until :py:func:`Vehicle.commands` has been 
-            downloaded. If no home position has been set the returned location will have 
-            zero values for its member attributes.
         """
         loc = self.__module.wploader.wp(0)
         if loc:
@@ -724,9 +733,11 @@ class Vehicle(HasObservers):
     @home_location.setter
     def home_location(self, pos):
         """
-        Sets the home location to that of a LocationGlobal object.
+        Sets the home location to that of a ``LocationGlobal`` object.
 
-        .. note:: If the GPS values differ heavily from EKF values, setting this value will fail silently.
+        .. note:: 
+        
+            If the GPS values differ heavily from EKF values, setting this value will fail silently.
         """
         self.send_mavlink(self.message_factory.command_long_encode(
             0, 0, # target system, target component
