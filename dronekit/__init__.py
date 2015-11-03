@@ -142,12 +142,11 @@ class MAVHandler:
         self.mavlink_thread = t
 
     def fix_targets(self, message):
-        pass
-        # """Set correct target IDs for our vehicle"""
-        # if hasattr(message, 'target_system'):
-        #     message.target_system = self.target_system
-        # if hasattr(message, 'target_component'):
-        #     message.target_component = self.target_component
+        """Set correct target IDs for our vehicle"""
+        if hasattr(message, 'target_system'):
+            message.target_system = self.target_system
+        if hasattr(message, 'target_component'):
+            message.target_component = self.target_component
 
     def loop_listener(self, fn):
         """
@@ -173,15 +172,15 @@ class MAVHandler:
         self.master.close()
 
 def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
-    socket = mavutil.mavlink_connection(ip, baud=baud)
-    handler = MAVHandler(socket)
+    handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud))
     vehicle = vehicle_class(handler)
 
     if status_printer:
-        print('ok')
         @vehicle.message_listener('STATUSTEXT')
         def listener(self, name, m):
             status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
     
-    vehicle.initialize(await_params=await_params, rate=rate)
+    vehicle.initialize(rate=rate)
+    if await_params:
+        vehicle.wait_ready()
     return vehicle

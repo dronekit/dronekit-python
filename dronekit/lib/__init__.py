@@ -556,21 +556,21 @@ class Vehicle(HasObservers):
 
     """
 
-    def __init__(self, module):
+    def __init__(self, handler):
         super(Vehicle, self).__init__()
-        self.mavrx_callback = None
-        self.__module = module
-        self._master = module.master
+
+        self._handler = handler
+        self._master = handler.master
 
         # Attaches message listeners.
-        self.message_listeners = dict()
+        self._message_listeners = dict()
 
-        @module.message_listener
+        @handler.message_listener
         def listener(_, msg):
             typ = msg.get_type()
-            for fn in self.message_listeners.get(typ, []):
+            for fn in self._message_listeners.get(typ, []):
                 fn(self, typ, msg)
-            for fn in self.message_listeners.get('*', []):
+            for fn in self._message_listeners.get('*', []):
                 fn(self, typ, msg)
 
         self._lat = None
@@ -721,7 +721,7 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_observers('armed')
-            self._flightmode = {v: k for k, v in self.__module.master.mode_mapping().items()}[m.custom_mode]
+            self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
             self._system_status = m.system_status
             self.notify_observers('mode')
 
@@ -738,7 +738,7 @@ class Vehicle(HasObservers):
             if not self._wp_loaded:
                 self._wploader.clear()
                 self._wploader.expected_count = msg.count
-                module.master.waypoint_request_send(0)
+                self._master.waypoint_request_send(0)
 
         @self.message_listener(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
@@ -753,7 +753,7 @@ class Vehicle(HasObservers):
                     self._wploader.add(msg)
 
                     if msg.seq + 1 < self._wploader.expected_count:
-                        module.master.waypoint_request_send(msg.seq + 1)
+                        self._master.waypoint_request_send(msg.seq + 1)
                     else:
                         self._wp_loaded = True
 
@@ -762,9 +762,8 @@ class Vehicle(HasObservers):
         def listener(self, name, msg):
             if self._wp_uploaded != None:
                 wp = self._wploader.wp(msg.seq)
-                wp.target_system = module.target_system
-                wp.target_component = module.target_component
-                module.master.mav.send(wp)
+                handler.fix_targets(wp)
+                self._master.mav.send(wp)
                 self._wp_uploaded[msg.seq] = True
         
         # TODO: Waypoint loop listeners
@@ -783,7 +782,7 @@ class Vehicle(HasObservers):
         self._params_duration = start_duration
         self._parameters = Parameters(self)
 
-        @module.loop_listener
+        @handler.loop_listener
         def listener(_):
             # Check the time duration for last "new" params exceeds watchdog.
             if self._params_start:
@@ -794,7 +793,7 @@ class Vehicle(HasObservers):
                     c = 0
                     for i, v in enumerate(self._params_set):
                         if v == None:
-                            module.master.mav.param_request_read_send(module.master.target_system, module.master.target_component, '', i)
+                            self._master.mav.param_request_read_send(0, 0, '', i)
                             c += 1
                             if c > 50:
                                 break
@@ -831,11 +830,11 @@ class Vehicle(HasObservers):
         self._heartbeat_lastsent = 0
         self._heartbeat_lastreceived = 0
 
-        @module.loop_listener
+        @handler.loop_listener
         def listener(_):
             # Send 1 heartbeat per second
             if time.time() - self._heartbeat_lastsent > 1:
-                module.master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
+                self._master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
                 self._heartbeat_lastsent = time.time()
 
             # And timeout after 5.
@@ -873,31 +872,23 @@ class Vehicle(HasObservers):
         Adds a message listener.
         """
         name = str(name)
-        if name not in self.message_listeners:
-            self.message_listeners[name] = []
-        if fn not in self.message_listeners[name]:
-            self.message_listeners[name].append(fn)
+        if name not in self._message_listeners:
+            self._message_listeners[name] = []
+        if fn not in self._message_listeners[name]:
+            self._message_listeners[name].append(fn)
 
     def remove_message_listener(self, name, fn):
         """
         Removes a message listener.
         """
         name = str(name)
-        if name in self.message_listeners:
-            self.message_listeners[name].remove(fn)
-            if len(self.message_listeners[name]) == 0:
-                del self.message_listeners[name]
+        if name in self._message_listeners:
+            self._message_listeners[name].remove(fn)
+            if len(self._message_listeners[name]) == 0:
+                del self._message_listeners[name]
 
     def close(self):
-        """
-        Call ``Vehicle.close()`` before exiting scripts to ensure that all messages have been uploaded/sent:
-
-        .. code:: python
-
-            # About to exit script
-            vehicle.close()
-        """
-        return self.__module.close()
+        return self._handler.close()
 
     def flush(self):
         """
@@ -911,10 +902,10 @@ class Vehicle(HasObservers):
             This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
         if self._wpts_dirty:
-            self.__module.master.waypoint_clear_all_send()
+            self._master.waypoint_clear_all_send()
             if self._wploader.count() > 0:
                 self._wp_uploaded = [False]*self._wploader.count()
-                self.__module.master.waypoint_count_send(self._wploader.count())
+                self._master.waypoint_count_send(self._wploader.count())
                 while False in self._wp_uploaded:
                     time.sleep(0.1)
                 self._wp_uploaded = None
@@ -939,7 +930,9 @@ class Vehicle(HasObservers):
         return self.__get_mode()
 
     def __get_mode(self):
-        """Private method to read current vehicle mode without polling"""
+        """
+        Private method to read current vehicle mode without polling
+        """
         return VehicleMode(self._flightmode)
 
     @mode.setter
@@ -1114,7 +1107,7 @@ class Vehicle(HasObservers):
         :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>`.
             There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
         """
-        self.__module.master.mav.send(message)
+        self._master.mav.send(message)
 
     @property
     def message_factory(self):
@@ -1147,7 +1140,7 @@ class Vehicle(HasObservers):
 
         .. todo:: Check if the standard MAV_CMD messages can be sent this way too, and if so add link.
         """
-        return self.__module.master.mav
+        return self._master.mav
 
     def wait_init(self):
         """Wait for the vehicle to exit the initializing step"""
@@ -1164,7 +1157,7 @@ class Vehicle(HasObservers):
         raise APIException("Vehicle did not complete initialization")
 
     def initialize(self, await_params=False, rate=None):
-        self.__module.start()
+        self._handler.start()
 
         # Wait for first heartbeat.
         while True:
@@ -1175,11 +1168,18 @@ class Vehicle(HasObservers):
                 continue
         self._heartbeat_started = True
 
-        # Request a list of all parameters.
+        # Wait until board has booted.
+        while True:
+            if self._flightmode not in [None, 'INITIALISING', 'MAV']:
+                break
+            time.sleep(0.1)
+
+        # Initialize data stream.
         if rate != None:
-            self._master.mav.request_data_stream_send(self.__module.target_system,
-                                                      self.__module.target_component,
+            self._master.mav.request_data_stream_send(0, 0,
                                                       mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
+
+        # Ensure initial parameter download has started.
         while True:
             # This fn actually rate limits itself to every 2s.
             # Just retry with persistence to get our first param stream.
@@ -1188,16 +1188,14 @@ class Vehicle(HasObservers):
             if self._params_count > -1:
                 break
 
-        # We now should get parameters streaming in.
-        # We may not get the full set; we leave the logic to mavlink_thread
-        # to determine what params we yet need. Wait if await_params is True.
-        if await_params:
-            while not self._params_loaded:
-                time.sleep(0.1)
+    def wait_ready(self, *types):
+        # We now should get parameters streaming in. The loop listener sets _params_loaded.
+        while not self._params_loaded:
+            time.sleep(0.1)
 
-            # Await GPS lock
-            while self._fix_type == None:
-                time.sleep(0.1)
+        # Await GPS lock.
+        while self._fix_type == None:
+            time.sleep(0.1)
 
 class Parameters(HasObservers):
     """
