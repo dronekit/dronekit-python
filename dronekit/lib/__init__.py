@@ -2,7 +2,7 @@
 
 import threading, time, math, copy
 import CloudClient
-
+from pymavlink.dialects.v10 import ardupilotmega
 from pymavlink import mavutil
 
 """
@@ -685,6 +685,39 @@ class Vehicle(HasObservers):
             self._fix_type = m.fix_type
             self.notify_observers('gps_0')
 
+        self._last_waypoint = 0
+
+        @self.message_listener(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
+        def listener(self, name, m):
+            self._last_waypoint = m.seq
+
+        self._ekf_poshorizabs = False
+        self._ekf_constposmode = False
+        self._ekf_predposhorizabs = False
+
+        @self.message_listener('EKF_STATUS_REPORT')
+        def listener(self, name, m):
+            # boolean: EKF's horizontal position (absolute) estimate is good
+            self._ekf_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
+            # boolean: EKF is in constant position mode and does not know it's absolute or relative position
+            self._ekf_constposmode = (m.flags & ardupilotmega.EKF_CONST_POS_MODE) > 0
+            # boolean: EKF's predicted horizontal position (absolute) estimate is good
+            self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+
+            self.notify_observers('ekf_ok')
+
+        self._flightmode = 'AUTO'
+        self._armed = False
+        self._system_status = None
+
+        @self.message_listener('HEARTBEAT')
+        def listener(self, name, m):
+            self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+            self.notify_observers('armed')
+            self._flightmode = {v: k for k, v in self.__module.master.mode_mapping().items()}[m.custom_mode]
+            self._system_status = m.system_status
+            self.notify_observers('mode')
+
     def message_listener(self, name):
         """
         Decorator for default message handlers.
@@ -772,7 +805,7 @@ class Vehicle(HasObservers):
 
     def __get_mode(self):
         """Private method to read current vehicle mode without polling"""
-        return VehicleMode(self.__module.flightmode)
+        return VehicleMode(self._flightmode)
 
     @mode.setter
     def mode(self, v):
@@ -809,7 +842,7 @@ class Vehicle(HasObservers):
 
     @property
     def armed(self):
-        return self.__module.armed
+        return self._armed
 
     @armed.setter
     def armed(self, value):
@@ -820,7 +853,7 @@ class Vehicle(HasObservers):
 
     @property
     def system_status(self):
-        return self.__module.system_status
+        return self._system_status
 
     @property
     def heading(self):
@@ -840,7 +873,12 @@ class Vehicle(HasObservers):
 
     @property
     def ekf_ok(self):
-        return self.__module.ekf_ok
+        # legacy check for dronekit-python for solo
+        # use same check that ArduCopter::system.pde::position_ok() is using
+        if self.armed:
+            return self._ekf_poshorizabs and not self._ekf_constposmode
+        else:
+            return self._ekf_poshorizabs or self._ekf_predposhorizabs
 
     @property
     def channel_override(self):
@@ -1260,7 +1298,7 @@ class CommandSequence(object):
         """
         Get the currently active waypoint number.
         """
-        return self.__module.last_waypoint
+        return self._last_waypoint
 
     @next.setter
     def next(self, index):

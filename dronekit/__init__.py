@@ -7,9 +7,7 @@ import platform
 import re
 import dronekit.lib
 from pymavlink import mavutil, mavwp
-from Queue import Empty
-from pymavlink.dialects.v10 import ardupilotmega
-from Queue import Queue
+from Queue import Queue, Empty
 from threading import Thread
 import types
 
@@ -71,59 +69,6 @@ class MPFakeState:
         self.wploader = mavwp.MAVWPLoader()
         self.wp_loaded = True
         self.wp_uploaded = None
-
-        # Attaches message listeners.
-        self.message_listeners = dict()
-
-        def message_default(name):
-            """
-            Decorator for default message handlers.
-            """
-            def decorator(fn):
-                if isinstance(name, list):
-                    for n in name:
-                        self.on_message(n, fn)
-                else:
-                    self.on_message(name, fn)
-            return decorator
-
-        self.flightmode = 'AUTO'
-        self.armed = False
-        self.system_status = None
-
-        @message_default('HEARTBEAT')
-        def listener(self, name, m):
-            self.armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-            self.flightmode = {v: k for k, v in self.master.mode_mapping().items()}[m.custom_mode]
-            self.system_status = m.system_status
-            self._notify_attribute_listeners('mode', 'armed')
-
-        self.last_waypoint = 0
-
-        @message_default(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
-        def listener(self, name, m):
-            self.last_waypoint = max(m.seq - 1, 0)
-
-        self.ekf_ok = False
-
-        @message_default('EKF_STATUS_REPORT')
-        def listener(self, name, m):
-            # legacy check for dronekit-python for solo
-            # use same check that ArduCopter::system.pde::position_ok() is using
-
-            # boolean: EKF's horizontal position (absolute) estimate is good
-            status_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
-            # boolean: EKF is in constant position mode and does not know it's absolute or relative position
-            status_constposmode = m.flags & ardupilotmega.EKF_CONST_POS_MODE > 0
-            # boolean: EKF's predicted horizontal position (absolute) estimate is good
-            status_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
-
-            if self.armed:
-                self.ekf_ok = status_poshorizabs and not status_constposmode
-            else:
-                self.ekf_ok = status_poshorizabs or status_predposhorizabs
-
-            self._notify_attribute_listeners('ekf_ok')
 
         self.vehicle = self.vehicle_class(self)
 
@@ -190,34 +135,8 @@ class MPFakeState:
     def _notify_attribute_listeners(self, *args):
         return self.__on_change(*args)
 
-    def on_message(self, name, fn):
-        """
-        Adds a message listener.
-        """
-        name = str(name)
-        if name not in self.message_listeners:
-            self.message_listeners[name] = []
-        if fn not in self.message_listeners[name]:
-            self.message_listeners[name].append(fn)
-
-    def remove_message_listener(self, name, fn):
-        """
-        Removes a message listener.
-        """
-        name = str(name)
-        if name in self.message_listeners:
-            self.message_listeners[name].remove(fn)
-            if len(self.message_listeners[name]) == 0:
-                del self.message_listeners[name]
-
     def mavlink_packet(self, m):
         typ = m.get_type()
-
-        # Call message listeners.
-        for fn in self.message_listeners.get(typ, []):
-            fn(self, typ, m)
-        for fn in self.message_listeners.get('*', []):
-            fn(self, typ, m)
 
         # Downstream.
         for fn in self.vehicle.message_listeners.get(typ, []):
@@ -390,8 +309,6 @@ class MPFakeState:
                                         self.master.waypoint_request_send(msg.seq + 1)
                                     else:
                                         self.wp_loaded = True
-                        if msg.get_type() in ["WAYPOINT_CURRENT", "MISSION_CURRENT"]:
-                            self.last_waypoint = msg.seq
 
                         # Waypoint send to master
                         if self.wp_uploaded != None and msg.get_type() in ["WAYPOINT_REQUEST", "MISSION_REQUEST"]:
