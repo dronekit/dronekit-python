@@ -7,7 +7,7 @@ from nose.tools import assert_equals
 
 @with_sitl
 def test_110(connpath):
-    v = connect(connpath, await_params=True)
+    v = connect(connpath, wait_ready=True)
 
     # NOTE these are *very inappropriate settings*
     # to make on a real vehicle. They are leveraged

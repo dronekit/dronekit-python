@@ -59,10 +59,10 @@ values as were passed to *MAVProxy* when setting up a connection in DKPY 1.x (in
     from dronekit import connect
 
     # Connect to the Vehicle (in this case a UDP endpoint)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
 
-The ``await_params=True`` parameter ensures that ``connect()`` won't return until 
+The ``wait_ready=True`` parameter ensures that ``connect()`` won't return until 
 :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` has been populated. 
 This also allows *MAVLink* messages to arrive from the connected vehicle 
 and populate other ``Vehicle`` attributes. 

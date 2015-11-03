@@ -47,7 +47,7 @@ class Drone(object):
     def __init__(self, home_coords, server_enabled=True):
         # Connect to the Vehicle
         print 'Connecting to vehicle on: %s' % args.connect
-        self.vehicle = connect(args.connect, await_params=True)
+        self.vehicle = connect(args.connect, wait_ready=True)
         print "connected ..."
         self.gps_lock = False
         self.altitude = 30.0

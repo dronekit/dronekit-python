@@ -17,7 +17,7 @@ The code snippet below shows how to use :py:func:`connect` to obtain an instance
     from dronekit import connect
 
     # Connect to the Vehicle using "connection string" (in this case an address on network)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
 :py:class:`Vehicle <dronekit.lib.Vehicle>` provides access to vehicle *state* through python attributes
 (e.g. :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`)
@@ -39,13 +39,13 @@ A number of other useful classes and methods are listed below.
 
 .. todo:: Update this when have confirmed how to register for parameter notifications.
 
-.. py:function:: connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4)
+.. py:function:: connect(ip, wait_ready=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4)
 
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
     Connection string parameters for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
 
     :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
-    :param Bool await_params: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
+    :param Bool wait_ready: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
     :param status_printer: NA    
     :param Vehicle vehicle_class: NA     
     :param int rate: NA
@@ -1012,7 +1012,7 @@ class Vehicle(HasObservers):
         .. code-block:: python
 
             #Connect to a vehicle object (for example, on com14)
-            vehicle = connect('com14', await_params=True)
+            vehicle = connect('com14', wait_ready=True)
 
             # Download the vehicle waypoints (commands). Wait until download is complete.
             cmds = vehicle.commands
@@ -1116,7 +1116,7 @@ class Vehicle(HasObservers):
         """
         return self._master.mav
 
-    def initialize(self, await_params=False, rate=None):
+    def initialize(self, wait_ready=False, rate=None):
         self._handler.start()
 
         # Wait for first heartbeat.
@@ -1153,7 +1153,7 @@ class Vehicle(HasObservers):
         raise_exception = kwargs.get('raise_exception', True)
 
         # Vehicle defaults for wait_ready(True) or wait_ready()
-        if types == [True] or types == []:
+        if list(types) == [True] or list(types) == []:
             types = self._default_ready_attrs
 
         if not all(isinstance(item, basestring) for item in types):
@@ -1305,7 +1305,7 @@ class CommandSequence(object):
         :emphasize-lines: 5-10
 
         #Connect to a vehicle object (for example, on com14)
-        vehicle = connect('com14', await_params=True)
+        vehicle = connect('com14', wait_ready=True)
 
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = vehicle.commands

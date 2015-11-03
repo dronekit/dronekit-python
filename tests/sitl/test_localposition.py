@@ -5,7 +5,7 @@ from nose.tools import assert_not_equals
 
 @with_sitl
 def test_timeout(connpath):
-    vehicle = connect(connpath, await_params=True)
+    vehicle = connect(connpath, wait_ready=True)
 
     # NOTE these are *very inappropriate settings*
     # to make on a real vehicle. They are leveraged

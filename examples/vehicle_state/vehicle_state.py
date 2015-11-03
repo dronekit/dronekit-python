@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 # Connect to the Vehicle
 print "\nConnecting to vehicle on: %s" % args.connect
-vehicle = connect(args.connect, await_params=True)
+vehicle = connect(args.connect, wait_ready=True)
 
 if vehicle.mode.name == "INITIALISING":
     print "Waiting for vehicle to initialise"

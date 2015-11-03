@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 # Connect to the Vehicle
 print 'Connecting to vehicle on: %s' % args.connect
-vehicle = connect(args.connect, await_params=True)
+vehicle = connect(args.connect, wait_ready=True)
 
 def setMode(mode):
     # Now change the vehicle into auto mode

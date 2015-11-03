@@ -25,7 +25,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
 .. code-block:: python
 
     # Connect to the Vehicle (in this case a simulator running the same computer)
-    vehicle = connect('127.0.0.1:14550', await_params=True)
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
     def arm_and_takeoff(aTargetAltitude):
         """

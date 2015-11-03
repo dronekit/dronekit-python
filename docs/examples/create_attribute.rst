@@ -124,7 +124,7 @@ All values in the new attribute should be set to ``None`` so that it is obvious 
 .. code:: python
 
     # Connect to the Vehicle passed in as args.connect
-    vehicle = connect(args.connect, await_params=True)
+    vehicle = connect(args.connect, wait_ready=True)
 
     #Create an Vehicle.raw_imu object and set all values to None.
     vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
