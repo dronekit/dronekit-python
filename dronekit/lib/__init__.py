@@ -1,6 +1,6 @@
 # DroneAPI module
 
-import threading, time, math
+import threading, time, math, copy
 import CloudClient
 
 from pymavlink import mavutil
@@ -566,6 +566,142 @@ class Vehicle(HasObservers):
         # Attaches message listeners.
         self.message_listeners = dict()
 
+        self._lat = None
+        self._lon = None
+        self._vx = None
+        self._vy = None
+        self._vz = None
+        
+        @self.message_listener('GLOBAL_POSITION_INT')
+        def listener(self, name, m):
+            (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            self.notify_observers('location')
+            (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
+            self.notify_observers('velocity')
+
+        self._north = None
+        self._east = None
+        self._down = None
+
+        @self.message_listener('LOCAL_POSITION_NED')
+        def listener(self, name, m):
+            self._north = m.x
+            self._east = m.y
+            self._down = m.z
+            self.notify_observers('local_position')
+
+        self._pitch = None
+        self._yaw = None
+        self._roll = None
+        self._pitchspeed = None
+        self._yawspeed = None
+        self._rollspeed = None
+        
+        @self.message_listener('ATTITUDE')
+        def listener(self, name, m):
+            self._pitch = m.pitch
+            self._yaw = m.yaw
+            self._roll = m.roll
+            self._pitchspeed = m.pitchspeed
+            self._yawspeed = m.yawspeed
+            self._rollspeed = m.rollspeed
+            self.notify_observers('attitude')
+
+        self._heading = None
+        self._alt = None
+        self._airspeed = None
+        self._groundspeed = None
+        
+        @self.message_listener('VFR_HUD')
+        def listener(self, name, m):
+            self._heading = m.heading
+            self.notify_observers('heading')
+            self._alt = m.alt
+            self.notify_observers('location')
+            self._airspeed = m.airspeed
+            self.notify_observers('airspeed')
+            self._groundspeed = m.groundspeed
+            self.notify_observers('groundspeed')
+
+        self._rngfnd_distance = None
+        self._rngfnd_voltage = None
+
+        @self.message_listener('RANGEFINDER')
+        def listener(self, name, m):
+            self._rngfnd_distance = m.distance
+            self._rngfnd_voltage = m.voltage
+            self.notify_observers('rangefinder')
+
+        self._mount_pitch = None
+        self._mount_yaw = None
+        self._mount_roll = None
+
+        @self.message_listener('MOUNT_STATUS')
+        def listener(self, name, m):
+            self._mount_pitch = m.pointing_a / 100
+            self._mount_roll = m.pointing_b / 100
+            self._mount_yaw = m.pointing_c / 100
+            self.notify_observers('mount')
+
+        self._rc_readback = {}
+
+        @self.message_listener('RC_CHANNELS_RAW')
+        def listener(self, name, m):
+            def set_rc(chnum, v):
+                '''Private utility for handling rc channel messages'''
+                # use port to allow ch nums greater than 8
+                self._rc_readback[str(m.port * 8 + chnum)] = v
+
+            set_rc(1, m.chan1_raw)
+            set_rc(2, m.chan2_raw)
+            set_rc(3, m.chan3_raw)
+            set_rc(4, m.chan4_raw)
+            set_rc(5, m.chan5_raw)
+            set_rc(6, m.chan6_raw)
+            set_rc(7, m.chan7_raw)
+            set_rc(8, m.chan8_raw)
+
+        self._voltage = None
+        self._current = None
+        self._level = None
+        
+        @self.message_listener('SYS_STATUS')
+        def listener(self, name, m):
+            self._voltage = m.voltage_battery
+            self._current = m.current_battery
+            self._level = m.battery_remaining
+            self.notify_observers('battery')
+
+        self._eph = None
+        self._epv = None
+        self._satellites_visible = None
+        self._fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
+        
+        @self.message_listener('GPS_RAW_INT')
+        def listener(self, name, m):
+            self._eph = m.eph
+            self._epv = m.epv
+            self._satellites_visible = m.satellites_visible
+            self._fix_type = m.fix_type
+            self.notify_observers('gps_0')
+
+    def message_listener(self, name):
+        """
+        Decorator for default message handlers.
+
+        .. code:: python
+            @vehicle.message_listener('HEARTBEAT')
+            def my_method(self, name, msg):
+                pass
+        """
+        def decorator(fn):
+            if isinstance(name, list):
+                for n in name:
+                    self.on_message(n, fn)
+            else:
+                self.on_message(name, fn)
+        return decorator
+
     def on_message(self, name, fn):
         """
         Adds a message listener.
@@ -646,30 +782,30 @@ class Vehicle(HasObservers):
     @property
     def location(self):
         # For backward compatibility, this is (itself) a LocationLocal object.
-        ret = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
-        ret.local_frame = LocationLocal(self.__module.north, self.__module.east, self.__module.down)
-        ret.global_frame = LocationGlobal(self.__module.lat, self.__module.lon, self.__module.alt, is_relative=False)
+        ret = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
+        ret.local_frame = LocationLocal(self._north, self._east, self._down)
+        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
         return ret
 
     @property
     def battery(self):
-        return Battery(self.__module.voltage, self.__module.current, self.__module.level)
+        return Battery(self._voltage, self._current, self._level)
 
     @property
     def rangefinder(self):
-        return Rangefinder(self.__module.rngfnd_distance, self.__module.rngfnd_voltage)
+        return Rangefinder(self._rngfnd_distance, self._rngfnd_voltage)
 
     @property
     def velocity(self):
-        return [ self.__module.vx, self.__module.vy, self.__module.vz ]
+        return [ self._vx, self._vy, self._vz ]
 
     @property
     def attitude(self):
-        return Attitude(self.__module.pitch, self.__module.yaw, self.__module.roll)
+        return Attitude(self._pitch, self._yaw, self._roll)
 
     @property
     def gps_0(self):
-        return GPSInfo(self.__module.eph, self.__module.epv, self.__module.fix_type, self.__module.satellites_visible)
+        return GPSInfo(self._eph, self._epv, self._fix_type, self._satellites_visible)
 
     @property
     def armed(self):
@@ -688,19 +824,19 @@ class Vehicle(HasObservers):
 
     @property
     def heading(self):
-        return self.__module.heading
+        return self._heading
 
     @property
     def groundspeed(self):
-        return self.__module.groundspeed
+        return self._groundspeed
 
     @property
     def airspeed(self):
-        return self.__module.airspeed
+        return self._airspeed
 
     @property
     def mount_status(self):
-        return [ self.__module.mount_pitch, self.__module.mount_yaw, self.__module.mount_roll ]
+        return [ self._mount_pitch, self._mount_yaw, self._mount_roll ]
 
     @property
     def ekf_ok(self):
@@ -721,7 +857,7 @@ class Vehicle(HasObservers):
 
     @property
     def channel_readback(self):
-        return self.__module.rc_readback
+        return copy.copy(self._rc_readback)
 
     @property
     def home_location(self):

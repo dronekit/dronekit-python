@@ -87,99 +87,6 @@ class MPFakeState:
                     self.on_message(name, fn)
             return decorator
 
-        self.status_printer = None
-
-        @message_default('STATUSTEXT')
-        def listener(self, name, m):
-            if self.status_printer:
-                self.status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
-
-        self.lat = None
-        self.lon = None
-        self.alt = None
-        self.vx = None
-        self.vy = None
-        self.vz = None
-        
-        @message_default('GLOBAL_POSITION_INT')
-        def listener(self, name, m):
-            (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            (self.vx, self.vy, self.vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
-            self._notify_attribute_listeners('location', 'velocity')
-
-        self.north = None
-        self.east = None
-        self.down = None
-
-        @message_default('LOCAL_POSITION_NED')
-        def listener(self, name, m):
-            self.north = m.x
-            self.east = m.y
-            self.down = m.z
-            self._notify_attribute_listeners('local_position')
-
-        @message_default('GPS_RAW')
-        def listener(self, name, m):
-            # (self.lat, self.lon) = (m.lat, m.lon)
-            # self.__on_change('location')
-            # better to just use global position int
-            pass 
-
-        self.eph = None
-        self.epv = None
-        self.satellites_visible = None
-        self.fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
-        
-        @message_default('GPS_RAW_INT')
-        def listener(self, name, m):
-            # (self.lat, self.lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self.eph = m.eph
-            self.epv = m.epv
-            self.satellites_visible = m.satellites_visible
-            self.fix_type = m.fix_type
-            self._notify_attribute_listeners('gps_0')
-
-        self.heading = None
-        # self.alt = None
-        self.airspeed = None
-        self.groundspeed = None
-        
-        @message_default('VFR_HUD')
-        def listener(self, name, m):
-            self.heading = m.heading
-            self.alt = m.alt
-            self.airspeed = m.airspeed
-            self.groundspeed = m.groundspeed
-            self._notify_attribute_listeners('location', 'airspeed', 'groundspeed')
-
-        self.pitch = None
-        self.yaw = None
-        self.roll = None
-        self.pitchspeed = None
-        self.yawspeed = None
-        self.rollspeed = None
-        
-        @message_default('ATTITUDE')
-        def listener(self, name, m):
-            self.pitch = m.pitch
-            self.yaw = m.yaw
-            self.roll = m.roll
-            self.pitchspeed = m.pitchspeed
-            self.yawspeed = m.yawspeed
-            self.rollspeed = m.rollspeed
-            self._notify_attribute_listeners('attitude')
-
-        self.voltage = -1
-        self.current = -1
-        self.level = -1
-        
-        @message_default('SYS_STATUS')
-        def listener(self, name, m):
-            self.voltage = m.voltage_battery
-            self.current = m.current_battery
-            self.level = m.battery_remaining
-            self._notify_attribute_listeners('battery')
-
         self.flightmode = 'AUTO'
         self.armed = False
         self.system_status = None
@@ -196,44 +103,6 @@ class MPFakeState:
         @message_default(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
         def listener(self, name, m):
             self.last_waypoint = max(m.seq - 1, 0)
-
-        self.rc_readback = {}
-
-        @message_default('RC_CHANNELS_RAW')
-        def listener(self, name, m):
-            def set(chnum, v):
-                '''Private utility for handling rc channel messages'''
-                # use port to allow ch nums greater than 8
-                self.rc_readback[str(m.port * 8 + chnum)] = v
-
-            set(1, m.chan1_raw)
-            set(2, m.chan2_raw)
-            set(3, m.chan3_raw)
-            set(4, m.chan4_raw)
-            set(5, m.chan5_raw)
-            set(6, m.chan6_raw)
-            set(7, m.chan7_raw)
-            set(8, m.chan8_raw)
-
-        self.mount_pitch = None
-        self.mount_yaw = None
-        self.mount_roll = None
-
-        @message_default('MOUNT_STATUS')
-        def listener(self, name, m):
-            self.mount_pitch = m.pointing_a / 100
-            self.mount_roll = m.pointing_b / 100
-            self.mount_yaw = m.pointing_c / 100
-            self._notify_attribute_listeners('mount')
-
-        self.rngfnd_distance = None
-        self.rngfnd_voltage = None
-
-        @message_default('RANGEFINDER')
-        def listener(self, name, m):
-            self.rngfnd_distance = m.distance
-            self.rngfnd_voltage = m.voltage
-            self._notify_attribute_listeners('rangefinder')
 
         self.ekf_ok = False
 
@@ -255,6 +124,8 @@ class MPFakeState:
                 self.ekf_ok = status_poshorizabs or status_predposhorizabs
 
             self._notify_attribute_listeners('ekf_ok')
+
+        self.vehicle = self.vehicle_class(self)
 
     def fetch(self):
         """
@@ -359,8 +230,6 @@ class MPFakeState:
         # TODO this should be more rigious. How to avoid
         #   invalid MAVLink prefix '73'
         #   invalid MAVLink prefix '13'
-
-        self.vehicle = self.vehicle_class(self)
 
         params = type('PState',(object,),{
             "mav_param_count": -1,
@@ -579,7 +448,7 @@ class MPFakeState:
                 time.sleep(0.1)
 
             # Await GPS lock
-            while self.fix_type == None:
+            while self.vehicle._fix_type == None:
                 time.sleep(0.1)
 
     def close(self):
@@ -591,6 +460,12 @@ class MPFakeState:
 
 def connect(ip, await_params=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
     state = MPFakeState(mavutil.mavlink_connection(ip, baud=baud), vehicle_class=vehicle_class)
-    state.status_printer = status_printer
+
+    if status_printer:
+        print('ok')
+        @state.vehicle.message_listener('STATUSTEXT')
+        def listener(self, name, m):
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
+    
     state.prepare(await_params=await_params, rate=rate)
     return state.vehicle
