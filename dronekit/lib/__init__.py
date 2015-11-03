@@ -817,6 +817,10 @@ class Vehicle(HasObservers):
         self._heartbeat_started = False
         self._heartbeat_lastsent = 0
         self._heartbeat_lastreceived = 0
+        self._heartbeat_timeout = False
+
+        self._heartbeat_warning = 5
+        self._heartbeat_error = 30
 
         @handler.loop_listener
         def listener(_):
@@ -825,18 +829,21 @@ class Vehicle(HasObservers):
                 self._master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
                 self._heartbeat_lastsent = time.time()
 
-            # And timeout after 5.
-            if self._heartbeat_started:
-                if self._heartbeat_lastreceived == 0:
-                    self._heartbeat_lastreceived = time.time()
-                elif time.time() - self._heartbeat_lastreceived > 5:
-                    # raise Exception('Link timeout, no heartbeat in last 5 seconds')
-                    errprinter('Link timeout, no heartbeat in last 5 seconds')
-                    self._heartbeat_lastreceived = time.time()
+            # Timeouts.
+            if self._heartbeat_started and self._heartbeat_lastreceived != 0:
+                if time.time() - self._heartbeat_lastreceived > self._heartbeat_error:
+                    raise Exception('>>> No heartbeat in %s seconds, aborting.' % self._heartbeat_error)
+                elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
+                    if self._heartbeat_timeout == False:
+                        errprinter('>>> Link timeout, no heartbeat in last %s seconds' % self._heartbeat_warning)
+                        self._heartbeat_timeout = True
 
         @self.message_listener(['HEARTBEAT'])
         def listener(self, name, msg):
             self._heartbeat_lastreceived = time.time()
+            if self._heartbeat_timeout:
+                errprinter('>>> ...link restored.')
+            self._heartbeat_timeout = False
 
     def message_listener(self, name):
         """

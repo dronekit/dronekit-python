@@ -56,10 +56,13 @@ class MAVHandler:
         self.loop_listeners = []
         self.message_listeners = []
 
+        # Debug flag.
+        self._accept_input = True
+        self._alive = True
+
         import atexit
-        self.exiting = False
         def onexit():
-            self.exiting = True
+            self._alive = False
         atexit.register(onexit)
 
         def mavlink_thread():
@@ -99,7 +102,7 @@ class MAVHandler:
                             errprinter('mav send error:', e)
                             break
 
-                    while True:
+                    while self._accept_input:
                         try:
                             msg = self.master.recv_msg()
                         except socket.error as error:
@@ -132,9 +135,11 @@ class MAVHandler:
 
             except Exception as e:
                 # http://bugs.python.org/issue1856
-                if self.exiting:
+                if not self._alive:
                     pass
                 else:
+                    self._alive = False
+                    self.master.close()
                     raise
 
         t = Thread(target=mavlink_thread)
@@ -166,7 +171,7 @@ class MAVHandler:
 
     def close(self):
         # TODO this can block forever if parameters continue to be added
-        self.exiting = True
+        self._alive = False
         while not self.out_queue.empty():
             time.sleep(0.1)
         self.master.close()
