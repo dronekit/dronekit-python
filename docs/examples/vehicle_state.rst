@@ -20,8 +20,8 @@ the vehicle and DroneKit have been set up as described in :ref:`get-started`).
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run. You can also 
 `add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
-(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
-and voltage). 
+(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` attribute may return 
+values of ``None`` for the distance and voltage). 
 
 In summary, after cloning the repository:
 
@@ -70,10 +70,17 @@ On the command prompt you should see (something like):
      Rangefinder voltage: None
      Mode: STABILIZE
      Armed: False
+     Home Location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
 
-     Home Location (before downloading waypoints): None
-     Home Location (after downloading waypoints): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
+    Set new home location
+     Waiting for home location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
+     ...
+     Waiting for home location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
+     Waiting for home location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
 
+     Autopilot set home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
+     New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0,is_relative=False
+ 
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
 

@@ -30,15 +30,18 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`,
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
-:py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`
+:py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
 :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
 :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>` and :ref:`observed <vehicle_state_observe_attributes>`, 
-but only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
+but only the :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`, 
+:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and 
+:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
 status can be :ref:`written <vehicle_state_set_attributes>`.
 
-
+The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is different 
+from the other attributes, and is :ref:`discussed in its own section below <vehicle_state_home_location>`.
 
 .. _vehicle_state_read_attributes:
 
@@ -73,15 +76,12 @@ If an attribute cannot be retrieved then the returned object will contain
 with ``None`` values for ``eph``, ``satellites_visible`` etc.) 
 Attributes will also return  ``None`` if the associated hardware is not present on the connected device. 
 
-The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is different, 
-:ref:`as discussed below <vehicle_state_home_location>`.
 
 .. tip::
 
     If you're using a :ref:`simulated vehicle <sitl_setup>` you can add support for optional hardware including
     `rangefinders <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
     and `optical flow sensors <http://dev.ardupilot.com/using-sitl-for-ardupilot-testing/#adding_a_virtual_optical_flow_sensor>`_.
-
 
     
 .. todo:: we need to be able to verify mount_status works/setup.
@@ -184,13 +184,13 @@ For example, the following code can be used in the callback to only print output
 Home location
 -------------
 
-The *Home location* is set when a vehicle is armed and first gets a good location fix from the GPS. The location is used 
+The *Home location* is set when a vehicle first gets a good location fix from the GPS. The location is used 
 as the target when the vehicle does a "return to launch". In Copter missions (and often Plane) missions, the altitude of 
 waypoints is set relative to this position.
 
-The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is slightly different than other attributes:
+:py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` has the following behaviour:
 
-* In order to get the current value you must first download :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`, as shown:
+* In order to *get* the current value you must first download :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`, as shown:
 
   .. code:: python
     
@@ -200,11 +200,35 @@ The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_loca
       print " Home Location: %s" % vehicle.home_location
 
   The returned value is a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
-  (or ``None`` before you download the commands).
+  (or ``None`` before you download the commands). If the location has not been set, then 
+  the returned value's attributes will all be set to zero.
+
+* The attribute can be *set* to a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
+  (the code fragment below sets it to the current location):
+
+  .. code:: python
+    
+        vehicle.home_location=vehicle.location.global_frame
+        
+  There are some caveats:
+  
+  * You must download the commands again to read the changed ``home_location``.
+  * The autopilot must first set the value (on startup) before it can be changed by DroneKit-Python code.
+  * The new location must be within 50 km of the EKF origin or setting the value will silently fail.
+    
 * The attribute is not observable.
-* While you cannot directly set the attribute it can be :ref:`set using a message <guided_mode_copter_set_home>`.    
+
+ 
+.. note::
+
+    :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` behaves this way because
+    ArduPilot implements/stores the home location as a waypoint rather than sending them as messages. 
+    While DroneKit-Python hides this fact from you when working with commands, to access the value
+    you still need to download the commands.
     
-    
+    We hope to improve this attribute in later versions of ArduPilot, where there may be specific 
+    commands to get the home location from the vehicle.
+
 
 .. _vehicle_state_parameters:
 
