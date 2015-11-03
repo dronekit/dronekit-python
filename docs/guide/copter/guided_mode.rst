@@ -136,7 +136,7 @@ The command can be interrupted by a later movement command. When moving the vehi
     You can also control the velocity using the `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ MAVLink command in almost exactly the same way (there is no real benefit in sending one command over the other). For more information on this option see :ref:`example_guided_mode_send_global_velocity` in the example code.
 
 
-	
+
 .. _guided_mode_copter_accel_force_control:
 
 Acceleration and force control
@@ -214,7 +214,7 @@ Supported commands
 
 DroneKit-Python provides a friendly Python API that abstracts many of the commands. Where possible you should use the API rather than send messages directly. For example it is better to use :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>` than to explicitly send the ``MAV_CMD_NAV_TAKEOFF`` command.
 
-Some of the MAV_CMD commands that you might want to send include: :ref:`MAV_CMD_CONDITION_YAW <guided_mode_copter_set_yaw>`, :ref:`MAV_CMD_DO_CHANGE_SPEED <guided_mode_copter_set_speed>`, :ref:`MAV_CMD_DO_SET_HOME <guided_mode_copter_set_home>`, :ref:`MAV_CMD_DO_SET_ROI <guided_mode_copter_set_roi>`, ``MAV_CMD_DO_SET_SERVO``, ``MAV_CMD_DO_REPEAT_SERVO``, ``MAV_CMD_DO_SET_RELAY``, ``MAV_CMD_DO_REPEAT_RELAY``, ``MAV_CMD_DO_FENCE_ENABLE``, ``MAV_CMD_DO_PARACHUTE``, ``MAV_CMD_DO_GRIPPER``, ``MAV_CMD_MISSION_START``. These would be sent in a ``COMMAND_LONG`` message :ref:`as discussed above <guided_mode_how_to_send_commands_command_long>`.
+Some of the MAV_CMD commands that you might want to send include: :ref:`MAV_CMD_CONDITION_YAW <guided_mode_copter_set_yaw>`, :ref:`MAV_CMD_DO_CHANGE_SPEED <guided_mode_copter_set_speed>`, :ref:`MAV_CMD_DO_SET_ROI <guided_mode_copter_set_roi>`, ``MAV_CMD_DO_SET_SERVO``, ``MAV_CMD_DO_REPEAT_SERVO``, ``MAV_CMD_DO_SET_RELAY``, ``MAV_CMD_DO_REPEAT_RELAY``, ``MAV_CMD_DO_FENCE_ENABLE``, ``MAV_CMD_DO_PARACHUTE``, ``MAV_CMD_DO_GRIPPER``, ``MAV_CMD_MISSION_START``. These would be sent in a ``COMMAND_LONG`` message :ref:`as discussed above <guided_mode_how_to_send_commands_command_long>`.
 
 
 
@@ -321,42 +321,6 @@ Send the `MAV_CMD_DO_SET_ROI <http://copter.ardupilot.com/common-mavlink-mission
 The ROI (and yaw) is also reset when the mode, or the command used to control movement, is changed.
 
 
-.. _guided_mode_copter_set_home:
-
-Setting the home location
--------------------------
-
-Send the `MAV_CMD_DO_SET_HOME <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_home>`_ 
-command to set the *home location* to either the current location or a specified location.  
-
-.. code-block:: python
-
-    def set_home(aLocation, aCurrent=1):
-        msg = vehicle.message_factory.command_long_encode(
-            0, 0,    # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_SET_HOME, #command
-            0, #confirmation
-            aCurrent, #param 1: 1 to use current position, 2 to use the entered values.
-            0, 0, 0, #params 2-4
-            aLocation.lat,
-            aLocation.lon,
-            aLocation.alt
-            )
-        # send command to vehicle
-        vehicle.send_mavlink(msg)
-
-
-The *home location* is updated immediately in ArduPilot, but the change may not appear in the GCS/*Mission Planner*. You can force an update by reading the mission commands (this works, because the home location is currently implemented as the 0th waypoint command):
-
-.. code-block:: python
-
-    # Set new Home location to current LocationGlobal
-    set_home(vehicle.location.global_frame)
-    # Reloads the home location in GCSs
-    cmds = vehicle.commands
-    cmds.download()
-    cmds.wait_ready()
-    print " Home WP: %s" % cmds[0]
 
 .. _guided_mode_copter_responses:
 

@@ -74,7 +74,6 @@ The set of commands demonstrated here include:
 * MAV_CMD_CONDITION_YAW - set direction of the front of the Copter (latitude, longitude)
 * MAV_CMD_DO_SET_ROI - set direction where the camera gimbal is aimed (latitude, longitude, altitude)
 * MAV_CMD_DO_CHANGE_SPEED - set target speed in metres/second.
-* MAV_CMD_DO_SET_HOME - set the home location.
 
 
 The full set of available commands are listed here:
@@ -162,29 +161,6 @@ def set_speed(speed):
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
-
-def set_home(aLocation, aCurrent=1):
-    """
-    Send MAV_CMD_DO_SET_HOME command to set the Home location to either the current LocationGlobal 
-    or a specified location.
-
-    For more information see: 
-    http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_home
-    """
-    # create the MAV_CMD_DO_SET_HOME command: 
-    # http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_home
-    msg = vehicle.message_factory.command_long_encode(
-        0, 0,    # target system, target component
-        mavutil.mavlink.MAV_CMD_DO_SET_HOME, #command
-        0, #confirmation
-        aCurrent, #param 1: 1 to use current position, 2 to use the entered values.
-        0, 0, 0, #params 2-4
-        aLocation.lat,
-        aLocation.lon,
-        aLocation.alt
-        )
-    # send command to vehicle
-    vehicle.send_mavlink(msg)
 
 
 
@@ -606,9 +582,10 @@ condition_yaw(90,relative=True)
 time.sleep(DURATION)
 send_global_velocity(0,0,0)
 
-print("Set new Home location to current location")
-set_home(vehicle.location.global_frame)
-print "Get new home location" #This reloads the home location in GCSs
+print("Set new home location to current location")
+vehicle.home_location=vehicle.location.global_frame
+print "Get new home location"
+#This reloads the home location in DroneKit and GCSs
 cmds = vehicle.commands
 cmds.download()
 cmds.wait_ready()

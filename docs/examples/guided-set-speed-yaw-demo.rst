@@ -189,7 +189,6 @@ The functions sending immediate commands are:
 * :ref:`condition_yaw() <guided_mode_copter_set_yaw>` 
 * :ref:`set_roi(location) <guided_mode_copter_set_roi>`
 * :ref:`set_speed(speed) <guided_mode_copter_set_speed>`
-* :ref:`set_home() <guided_mode_copter_set_home>`
 
 The example uses a number functions to convert global locations co-ordinates (decimal degrees) into local coordinates relative to the vehicle (in metres). These are :ref:`described in the guide <guided_mode_copter_useful_conversion_functions>`.
 
@@ -349,14 +348,14 @@ This demo has been tested on Windows against SITL running both natively and in a
 
 DroneKit environment (from PIP):
 
-* droneapi: 1.2.0
+* droneapi: 2.0.0rc2
 * pymavlink: 1.1.57
 * MAVProxy: 1.4.23
 * protobuf: 2.6.1
 
 ArduPilot version: 
 
-* `3.3.0beta2 <https://github.com/diydrones/ardupilot/commit/c73945686c821cab1034c0d434fc7d3f66a0fd50>`_.
+* 3.3.0.
 
 
 
