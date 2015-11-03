@@ -90,7 +90,6 @@ def replay_mission(payload):
     print "Generating %s waypoints from replay..." % len(messages)
     cmds = vehicle.commands
     cmds.clear()
-    vehicle.flush()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
@@ -106,7 +105,8 @@ def replay_mission(payload):
                        0, 0, 0, 0, 0, 0,
                        lat, lon, altitude)
         cmds.add(cmd)
-    vehicle.flush()
+    #Upload clear message and command messages to vehicle.
+    cmds.upload()
 
 
 # Now download the vehicle waypoints
@@ -117,6 +117,10 @@ max_freq = 0.1
 json = download_messages(mission_id, max_freq)
 print "JSON downloaded..."
 replay_mission(json)
+
+
+#Here you could actually replay the mission by
+#taking off and changing to AUTO mode.
 
 
 #Close vehicle object before exiting script

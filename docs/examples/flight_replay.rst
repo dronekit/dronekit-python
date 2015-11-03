@@ -2,17 +2,17 @@
 Example: Flight Replay
 =========================
 
-This example requests a past flight from Droneshare, and then "replays" the mission 
-by sending waypoints to a vehicle. For safety reasons, the vehicle is replayed at a height of 30 meters.
+This example requests a past flight from Droneshare, and then writes the recorded path to the vehicle as mission waypoints. 
+For safety reasons, the altitude for the waypoints is set to 30 meters (irrespective of the recorded height).
 
-.. warning:: 
+.. note::
 
-    At time of writing this example fails with an exception in DKYP2: `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_.
+    The mission is not actually run by this code - though it easily could be by taking off and putting the vehicle into
+    AUTO mode.
 
-.. todo:: Check if `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ is fixed and re-review example. 
 
 You can specify which mission to replay using a parameter when starting the script (for example, to replay your own local flights).
-By default the code gets (and replays) the public `Droneshare mission with ID 101 <http://www.droneshare.com/mission/101>`_. 
+By default the code gets the public `Droneshare mission with ID 101 <http://www.droneshare.com/mission/101>`_. 
 
 .. figure:: flight_replay_example.png
 
@@ -47,8 +47,9 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The command parameters above are the defaults, and may be omitted. These
-       connect to SITL on udp port 127.0.0.1:14550 and replay the mission with id 101.
+       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550, while
+       ``--mission_id`` specifies we're replaying mission 101. Both of these are the default 
+       values for the parameters, and may be omitted.
 
        
 .. tip::
@@ -60,22 +61,20 @@ On the command prompt you should see (something like):
 
 .. code-block:: bash
 
-
-    \dronekit-python\examples\flight_replay>flight_replay.py
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> APM:Copter V3.3 (d6053245)
     >>> Frame: QUAD
     JSON downloaded...
     Generating 95 waypoints from replay...
-    ...
+    Close vehicle object
+    Completed...
 
 
 How it works
 ============
 
 The example requests the web server for representative points from the flight, parses the JSON response 
-and uses that data to generate 100 waypoints. These are then sent to the vehicle.  
-
+and uses that data to generate 100 waypoints. These are then sent to the vehicle.
 
 
 Getting the points
@@ -111,7 +110,6 @@ shown in :ref:`example_mission_basic`):
     print "Generating %s waypoints from replay..." % len(messages)
     cmds = vehicle.commands
     cmds.clear()
-    vehicle.flush()
     for i in xrange(0, len(messages)):
         pt = messages[i]
         lat = pt['lat']
@@ -127,19 +125,14 @@ shown in :ref:`example_mission_basic`):
                        0, 0, 0, 0, 0, 0,
                        lat, lon, altitude)
         cmds.add(cmd)
-    vehicle.flush()
+    #Upload clear message and command messages to vehicle.
+    cmds.upload()
 
 
 Known issues
 ============
 
-At time of writing this example fails with an exception. See `#355 DKPY2 Can't clear waypoints <https://github.com/dronekit/dronekit-python/issues/355>`_ for more information.
-
-.. todo:: 
-
-    When example is fixed replace above text with 
-    "This example works around the :ref:`known issues in the API <api-information-known-issues>`. 
-    Provided that the vehicle is connected and able to arm, it should run through to completion."
+There are no known issues with this example.
 
   
 

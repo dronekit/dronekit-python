@@ -37,7 +37,10 @@ Position control
 
 Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
 
-The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. This takes a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` argument for the target position in the global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude relative to the home location (home altitude = 0).
+The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>`. 
+This takes a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` argument for the target position in the 
+global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude 
+relative to the home location (home altitude = 0).
 
 The method is used as shown below:
 
@@ -51,13 +54,23 @@ The method is used as shown below:
     vehicle.commands.goto(a_location)
 
 
-``Vehicle.commands.goto()`` can be interrupted by a later command, and does not provide any functionality to indicate when the vehicle has reached its destination. Developers can use either a time delay or :ref:`measure proximity to the target <example_guided_mode_goto_convenience>` to give the vehicle an opportunity to reach its destination. The :ref:`example-guided-mode-setting-speed-yaw` shows both approaches.
+``Vehicle.commands.goto()`` can be interrupted by a later command, and does not provide any functionality 
+to indicate when the vehicle has reached its destination. Developers can use either a time delay or 
+:ref:`measure proximity to the target <example_guided_mode_goto_convenience>` to give the vehicle an 
+opportunity to reach its destination. The :ref:`example-guided-mode-setting-speed-yaw` shows both approaches.
 
 When moving the vehicle you can send a separate command to :ref:`control the speed <guided_mode_copter_set_speed>` (and other vehicle behaviour).
 
 .. tip::
 
-    You can also set the position by sending the MAVLink commands `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ or `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_, specifying a ``type_mask`` bitmask that enables the position parameters. The main difference between these commands is that the former allows you to specify the location relative to the "global" frames (like ``Vehicle.commands.goto()``), while the later lets you specify the location in NED co-ordinates relative to the home location. For more information on these options see the example code: :ref:`example_guided_mode_goto_position_target_global_int` and :ref:`example_guided_mode_goto_position_target_local_ned`.
+    You can also set the position by sending the MAVLink commands 
+    `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ or 
+    `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_, specifying 
+    a ``type_mask`` bitmask that enables the position parameters. The main difference between these commands is 
+    that the former allows you to specify the location relative to the "global" frames (like 
+    ``Vehicle.commands.goto()``), while the later lets you specify the location in NED co-ordinates relative 
+    to the home location. For more information on these options see the example code: 
+    :ref:`example_guided_mode_goto_position_target_global_int` and :ref:`example_guided_mode_goto_position_target_local_ned`.
 
 
 
@@ -313,7 +326,8 @@ The ROI (and yaw) is also reset when the mode, or the command used to control mo
 Setting the home location
 -------------------------
 
-Send the `MAV_CMD_DO_SET_HOME <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_home>`_ command to set the *home location* to either the current location or a specified location.  
+Send the `MAV_CMD_DO_SET_HOME <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_set_home>`_ 
+command to set the *home location* to either the current location or a specified location.  
 
 .. code-block:: python
 

@@ -560,10 +560,18 @@ class Vehicle(HasObservers):
         self.mavrx_callback = None
         self.__module = module
         self._parameters = Parameters(module)
-        self._waypoints = None
+        self._waypoints = CommandSequence(self.__module)
         self.wpts_dirty = False
 
     def close(self):
+        """
+        Call ``Vehicle.close()`` before exiting scripts to ensure that all messages have been uploaded/sent:
+
+        .. code:: python
+
+            # About to exit script
+            vehicle.close()
+        """
         return self.__module.close()
 
     def flush(self):
@@ -572,6 +580,10 @@ class Vehicle(HasObservers):
 
         After the return from ``flush()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
+        
+        .. warning:: 
+        
+            This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
         if self.wpts_dirty:
             self.__module.send_all_waypoints()
@@ -689,6 +701,56 @@ class Vehicle(HasObservers):
         return self.__module.rc_readback
 
     @property
+    def home_location(self):
+        """
+        The current home location in a :py:class:`LocationGlobal`. 
+        
+        This value is initially set by the autopilot as the location of first GPS Lock.
+        The attribute has a value of ``None`` until :py:func:`Vehicle.commands` has been downloaded. 
+        If the attribute is queried before the home location is set the returned `LocationGlobal` 
+        will have zero values for its member attributes.
+        
+        .. code-block:: python
+
+            #Connect to a vehicle object (for example, on com14)
+            vehicle = connect('com14', await_params=True)
+
+            # Download the vehicle waypoints (commands). Wait until download is complete.
+            cmds = vehicle.commands
+            cmds.download()
+            cmds.wait_valid()
+            
+            # Get the home location
+            home = vehicle.home_location
+            
+        The attribute is not writeable or observable.
+        
+        """
+        loc = self.__module.wploader.wp(0)
+        if loc:
+            return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)
+    
+    @home_location.setter
+    def home_location(self, pos):
+        """
+        Sets the home location to that of a ``LocationGlobal`` object.
+
+        .. note:: 
+        
+            If the GPS values differ heavily from EKF values, setting this value will fail silently.
+        """
+        self.send_mavlink(self.message_factory.command_long_encode(
+            0, 0, # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME, # command
+            0, # confirmation
+            2, # param 1: 1 to use current position, 2 to use the entered values.
+            0, 0, 0, # params 2-4
+            pos.lat,
+            pos.lon,
+            pos.alt
+            ))
+
+    @property
     def commands(self):
         """
         Gets the editable waypoints for this vehicle (the current "mission").
@@ -698,8 +760,6 @@ class Vehicle(HasObservers):
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
-        if(self._waypoints is None):  # We create the wpts lazily (because this will start a fetch)
-            self._waypoints = CommandSequence(self.__module)
         return self._waypoints
 
     @property
@@ -940,13 +1000,12 @@ class CommandSequence(object):
         cmds.wait_valid()
 
     The set of commands can be changed and uploaded to the client. The changes are not guaranteed to be complete until
-    :py:func:`flush() <Vehicle.flush>` is called on the parent :py:class:`Vehicle` object.
+    :py:func:`upload() <Vehicle.commands.upload>` is called.
 
     .. code:: python
 
         cmds = vehicle.commands
         cmds.clear()
-        vehicle.flush()
         lat = -34.364114,
         lon = 149.166022
         altitude = 30.0
@@ -954,7 +1013,7 @@ class CommandSequence(object):
             0, 0, 0, 0, 0, 0,
             lat, lon, altitude)
         cmds.add(cmd)
-        vehicle.flush()
+        cmds.upload()
 
     .. py:function:: takeoff(altitude)
 
@@ -1042,31 +1101,42 @@ class CommandSequence(object):
 
     def clear(self):
         '''
-        Clear the command list.
-
-        .. warning::
-
-            Call ``flush()`` immediately after clearing the commands/before adding new commands (see
-            `#132 for more information <https://github.com/dronekit/dronekit-python/issues/132>`_).
-
-        .. todo:: The above note should be removed when https://github.com/dronekit/dronekit-python/issues/132 fixed
+        Clear the command list. 
+        
+        This command will be sent to the vehicleonly after you call :py:func:`upload() <Vehicle.commands.upload>`.
         '''
+
+        # Add home point again.
         self.wait_valid()
+        home = self.__module.wploader.wp(0)
         self.__module.wploader.clear()
+        if home:
+            self.__module.wploader.add(home, comment='Added by DroneKit')
         self.__module.vehicle.wpts_dirty = True
 
     def add(self, cmd):
         '''
         Add a new command (waypoint) at the end of the command list.
         
-        .. note:: Commands are sent to the vehicle only after you call :py:func:`Vehicle.flush`.
+        .. note:: Commands are sent to the vehicle only after you call ::py:func:`upload() <Vehicle.commands.upload>`.
 
         :param Command cmd: The command to be added.
         '''
         self.wait_valid()
         self.__module.fix_targets(cmd)
-        self.__module.wploader.add(cmd, comment = 'Added by DroneAPI')
+        self.__module.wploader.add(cmd, comment='Added by DroneKit')
         self.__module.vehicle.wpts_dirty = True
+
+    def upload(self):
+        """
+        Call ``upload()`` after :py:func:`adding <CommandSequence.add>` or :py:func:`clearing <CommandSequence.clear>` mission commands.
+
+        After the return from ``upload()`` any writes are guaranteed to have completed (or thrown an
+        exception) and future reads will see their effects.
+        """
+        if self.__module.vehicle.wpts_dirty:
+            self.__module.send_all_waypoints()
+            self.__module.vehicle.wpts_dirty = False
 
     @property
     def count(self):
@@ -1075,7 +1145,7 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.wploader.count()
+        return max(self.__module.wploader.count() - 1, 0)
 
     @property
     def next(self):
@@ -1089,7 +1159,7 @@ class CommandSequence(object):
         """
         Set a new ``next`` waypoint for the vehicle.
         """
-        self.__module.master.waypoint_set_current_send(index)
+        self.__module.master.waypoint_set_current_send(index + 1)
 
     def __len__(self):
         '''
@@ -1097,11 +1167,19 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return self.__module.wploader.count()
+        return max(self.__module.wploader.count() - 1, 0)
 
     def __getitem__(self, index):
-        return self.__module.wploader.wp(index)
+        if isinstance(index, slice):
+            return [self[ii] for ii in xrange(*index.indices(len(self)))]
+        elif isinstance(index, int):
+            item = self.__module.wploader.wp(index + 1)
+            if not item:
+                raise IndexError('Index %s out of range.' % index)
+            return item
+        else:
+            raise TypeError('Invalid argument type.')
 
     def __setitem__(self, index, value):
-        self.__module.wploader.set(value, index)
+        self.__module.wploader.set(value, index + 1)
         self.__module.vehicle.wpts_dirty = True

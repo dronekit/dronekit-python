@@ -67,31 +67,15 @@ def distance_to_current_waypoint():
     It returns None for the first waypoint (Home location).
     """
     nextwaypoint=vehicle.commands.next
-    if nextwaypoint ==1:
+    if nextwaypoint ==0:
         return None
-    missionitem=vehicle.commands[nextwaypoint]
+    missionitem=vehicle.commands[nextwaypoint-1] #commands are zero indexed
     lat=missionitem.x
     lon=missionitem.y
     alt=missionitem.z
     targetWaypointLocation=LocationGlobal(lat,lon,alt,is_relative=True)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
     return distancetopoint
-
-
-def clear_mission():
-    """
-    Clear the current mission.
-    """
-    cmds = vehicle.commands
-    vehicle.commands.clear()
-    vehicle.flush()
-
-    # After clearing the mission you MUST re-download the mission from the vehicle 
-    # before vehicle.commands can be used again
-    # (see https://github.com/dronekit/dronekit-python/issues/230)
-    cmds = vehicle.commands
-    cmds.download()
-    cmds.wait_valid()
     
 
 def download_mission():
@@ -112,8 +96,15 @@ def adds_square_mission(aLocation, aSize):
     The function assumes vehicle.commands matches the vehicle mission state 
     (you must have called download at least once in the session and after clearing the mission)
     """	
-    # Add the commands. The meaning/order of the parameters is documented in the Command class.
+
     cmds = vehicle.commands
+
+    print " Clear any existing commands"
+    cmds.clear() 
+    
+    print " Define/add new commands."
+    # Add new commands. The meaning/order of the parameters is documented in the Command class. 
+     
     #Add MAV_CMD_NAV_TAKEOFF command. This is ignored if the vehicle is already in the air.
     cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 0, 10))
 
@@ -126,9 +117,11 @@ def adds_square_mission(aLocation, aSize):
     cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point2.lat, point2.lon, 12))
     cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point3.lat, point3.lon, 13))
     cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point4.lat, point4.lon, 14))
+    #add dummy waypoint "5" at point 4 (lets us know when have reached destination)
+    cmds.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, point4.lat, point4.lon, 14))    
 
-    # Send commands to vehicle.
-    vehicle.flush() 
+    print " Upload new commands to vehicle"
+    cmds.upload()
 
 
 def arm_and_takeoff(aTargetAltitude):
@@ -169,13 +162,8 @@ def arm_and_takeoff(aTargetAltitude):
         time.sleep(1)
 
 
-
-print 'Clear the current mission'
-clear_mission()
-
 print 'Create a new mission'
 adds_square_mission(vehicle.location.global_frame,50)
-time.sleep(2)  # This is here so that mission being sent is displayed on console
 
 
 # From Copter 3.3 you will be able to take off using a mission item. Plane must take off using a mission item (currently).
@@ -190,15 +178,14 @@ vehicle.mode = VehicleMode("AUTO")
 # Demonstrates getting and setting the command number 
 # Uses distance_to_current_waypoint(), a convenience function for finding the 
 #   distance to the next waypoint.
-
 while True:
     nextwaypoint=vehicle.commands.next
-    if nextwaypoint > 1:
-        print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
+    print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
+  
     if nextwaypoint==3: #Skip to next waypoint
-        print 'Skipping to Waypoint 4 when reach waypoint 3'
-        vehicle.commands.next=4
-    if nextwaypoint==5: #Skip to next waypoint
+        print 'Skipping to Waypoint 5 when reach waypoint 3'
+        vehicle.commands.next=5
+    if nextwaypoint==5: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
         print "Exit 'standard' mission when start heading to final waypoint (5)"
         break;
     time.sleep(1)

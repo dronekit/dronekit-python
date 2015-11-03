@@ -80,13 +80,9 @@ use :py:func:`wait_valid() <dronekit.lib.CommandSequence.wait_valid>` to block y
 
 .. note::
 
-    The commands downloaded from the vehicle will include a waypoint for the :ref:`home location <vehicle_state_home_location>` in the first position (0 index).
-    This waypoint is not editable - it cannot be removed or modified.
+    In DroneKit-Python 2 :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` contains just the editable waypoints (in version 1.x, the 
+    commands included the non-editable home location as the first item).
 
-.. todo:: 
-
-    The information about home location will change with 
-    `#207 WIP:Adds separate .home_location from .commands array <https://github.com/dronekit/dronekit-python/pull/207>`_.
 
 
 .. _auto_mode_clear_mission: 
@@ -95,33 +91,25 @@ Clearing current mission
 ========================
 
 To clear a mission you call :py:func:`clear() <dronekit.lib.CommandSequence.clear>` and then 
-:py:func:`flush() <dronekit.lib.Vehicle.flush>` (to upload the changes to the vehicle):
+:py:func:`Vehicle.commands.upload() <dronekit.lib.Vehicle.commands.upload>` (to upload the changes to the vehicle):
 
 .. code:: python
 
     # Connect to the Vehicle (in this case a simulated vehicle at 127.0.0.1:14550)
     vehicle = connect('127.0.0.1:14550', await_params=True)
     
-    # Get commands from Vehicle object.
+    # Get commands object from Vehicle.
     cmds = vehicle.commands
 
-    # Clear Vehicle.commands and flush.
+    # Call clear() on Vehicle.commands and upload the command to the vehicle.
     cmds.clear()
-    vehicle.flush()
+    cmds.upload()
 
-    # Reset the Vehicle.commands from the vehicle.
-    cmds.download()
-    cmds.wait_valid()
+.. note:: 
 
-.. warning:: 
+    If a mission that is underway is cleared, the mission will continue to the next waypoint. If you don't add a new command
+    before the waypoint is reached then the vehicle mode will change to RTL (return to launch) mode.
 
-    You must re-download the mission from the vehicle after clearing (as shown above) or the first command you add 
-    will be lost when you upload the new mission. 
-
-    This happens because :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` removes the :ref:`home location <vehicle_state_home_location>` 
-    (see `#132 <https://github.com/dronekit/dronekit-python/issues/132>`_). Downloading adds it back again.
-
-If the current command completes before you add a new mission, then the vehicle mode will change to RTL (return to launch).
 
 
 .. _auto_mode_adding_command: 
@@ -131,7 +119,7 @@ Creating/adding mission commands
 
 After :ref:`downloading <auto_mode_download_mission>` or :ref:`clearing <auto_mode_clear_mission>` a mission new commands 
 can be added and uploaded to the vehicle. Commands are added to the mission using :py:func:`add() <dronekit.lib.CommandSequence.add>`
-and are sent to the vehicle (either individually or in batches) using :py:func:`flush() <dronekit.lib.Vehicle.flush>`.
+and are sent to the vehicle (either individually or in batches) using :py:func:`upload() <dronekit.lib.Vehicle.commands.upload>`.
 
 Each command is packaged in a :py:class:`Command <dronekit.lib.Command>` object (see that class for the order/meaning of the parameters). 
 The supported commands for each vehicle are :ref:`linked above <auto_mode_supported_commands>`. 
@@ -152,7 +140,7 @@ The supported commands for each vehicle are :ref:`linked above <auto_mode_suppor
     cmd2=Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, 10, 10, 10)
     cmds.add(cmd1)
     cmds.add(cmd2)
-    vehicle.flush() # Send commands
+    cmds.upload() # Send commands
 
 
 
@@ -163,7 +151,9 @@ Modifying missions
 
 While you can :ref:`add new commands <auto_mode_adding_command>` after :ref:`downloading a mission <auto_mode_download_mission>` 
 it is not possible to directly modify and upload existing commands in ``Vehicle.commands`` (you can modify the commands but 
-changes do not propagate to the vehicle). 
+changes do not propagate to the vehicle).
+
+.. todo:: test above statement. Might not be true in DKPY2. Also check if we can flush items in a cycle.
 
 Instead you copy all the commands into another container (e.g. a list), 
 modify them as needed, then clear ``Vehicle.commands`` and upload the list as a new mission:
@@ -180,27 +170,24 @@ modify them as needed, then clear ``Vehicle.commands`` and upload the list as a 
 
     # Save the vehicle commands to a list
     missionlist=[]
-    for cmd in cmds[1:]:  #skip first item as it is home waypoint.
+    for cmd in cmds:
         missionlist.append(cmd)
 
     # Modify the mission as needed. For example, here we change the 
     # first waypoint into a MAV_CMD_NAV_TAKEOFF command. 
     missionlist[0].command=mavutil.mavlink.MAV_CMD_NAV_TAKEOFF
 
-    # Clear the current mission 
+    # Clear the current mission (command is sent when we call upload()) 
     cmds.clear()
-    vehicle.flush()
-    cmds.download()
-    cmds.wait_valid()
 
     #Write the modified mission and flush to the vehicle
     for cmd in missionlist:
         cmds.add(cmd)
-    vehicle.flush()
+    cmds.upload()
 
 
 The changes are not guaranteed to be complete until 
-:py:func:`flush() <dronekit.lib.Vehicle.flush>` is called on the parent ``Vehicle`` object.
+:py:func:`upload() <dronekit.lib.Vehicle.commands.upload>` is called on the parent ``Vehicle.commands`` object.
 
 
 .. _auto_mode_monitoring_controlling: 
@@ -208,7 +195,7 @@ The changes are not guaranteed to be complete until
 Running and monitoring missions
 ===============================
 
-To start a mission change the mode to AUTO:
+To start a mission, change the mode to AUTO:
 
 .. code:: python
 
@@ -242,8 +229,8 @@ to get the current command number. You can also change the current command by se
     vehicle.commands.next=4
     print "Current Waypoint: %s" % vehicle.commands.next
 
-There is no need to ``flush()`` changes to ``next`` to the vehicle (and as with other attributes, if you fetch a value, it is updated
-from the vehicle).
+There is no need to ``upload()`` changes to send an update to the  ``next`` attribute to the vehicle 
+(and as with other attributes, if you fetch a value, it is updated from the vehicle).
 
 
 .. _auto_mode_handle_mission_end: 
@@ -260,7 +247,7 @@ to perform some other operation) then you can either:
 
 * Add a dummy mission command and poll :py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` for the 
   transition to the final command, or
-* Compare the current position to the position in the last command.
+* Compare the current position to the target position in the final waypoint.
 
 
 
@@ -287,24 +274,22 @@ Adding mission commands is discussed :ref:`here in the guide <auto_mode_adding_c
 .. code:: python
 
     def upload_mission(aFileName):
-        """
-        Upload a mission from a file.
-        """
-        missionlist = readmission(aFileName)
-        #clear existing mission
-        print 'Clear mission'
-        cmds = vehicle.commands
-        cmds.download()
-        cmds.wait_valid()
-        cmds.clear()
-        vehicle.flush()
-        print 'ClearCount: %s' % cmds.count
-        #add new mission
-        cmds.download()
-        cmds.wait_valid()
-        for command in missionlist:
-            cmds.add(command)
-        vehicle.flush()
+            """
+            Upload a mission from a file. 
+            """
+            #Read mission from file
+            missionlist = readmission(aFileName)
+            
+            print "\nUpload mission from a file: %s" % import_mission_filename
+            #Clear existing mission from vehicle
+            print ' Clear mission'
+            cmds = vehicle.commands
+            cmds.clear()
+            #Add new mission to vehicle
+            for command in missionlist:
+                cmds.add(command)
+            print ' Upload mission'
+            vehicle.commands.upload()
 
 
 ``readmission()`` reads a mission from the specified file and returns a list of :py:class:`Command <dronekit.lib.Command>` objects. 
@@ -331,7 +316,6 @@ The commands are added to a list which is returned by the function.
                     if not line.startswith('QGC WPL 110'):
                         raise Exception('File is not supported WP version')
                 else:
-                    print ' Import line: %s' % line
                     linearray=line.split('\t')
                     ln_index=int(linearray[0])
                     ln_currentwp=int(linearray[1])
@@ -410,9 +394,9 @@ Get distance to waypoint
         It returns None for the first waypoint (Home location).
         """
         nextwaypoint=vehicle.commands.next
-        if nextwaypoint==1:
+        if nextwaypoint ==0:
             return None
-        missionitem=vehicle.commands[nextwaypoint]
+        missionitem=vehicle.commands[nextwaypoint-1] #commands are zero indexed
         lat=missionitem.x
         lon=missionitem.y
         alt=missionitem.z
@@ -424,8 +408,6 @@ The function determines the current target waypoint number with :py:func:`Vehicl
 and uses it to index the commands to get the latitude, longitude and altitude of the target waypoint. The ``get_distance_metres()`` function
 (see :ref:`guided_mode_copter_useful_conversion_functions`) is then used to calculate and return the (horizontal) distance 
 from the current vehicle location.
-
-The implementation ignores the first waypoint (which will be the "home location"). 
 
 .. tip:: 
 
@@ -449,9 +431,4 @@ Known Issues
 
 AUTO Mode/mission control has the following known issues (at time of writing):
 
-* `#230 vehicle.commands must be reset after clearing <https://github.com/dronekit/dronekit-python/issues/230)>`_
-* `#132 Vehicle.commands is throwing away the first command sent <https://github.com/dronekit/dronekit-python/issues/132>`_
-* `#252 Expose home location as separate from .commands array <https://github.com/dronekit/dronekit-python/issues/252>`_
-* `#207 WIP:Adds separate .home_location from .commands array <https://github.com/dronekit/dronekit-python/pull/207>`_
-* `#105 Implement Vehicle.waypoint_home <https://github.com/dronekit/dronekit-python/issues/105>`_
-* `#227 Race condition when updating and fetching commands <https://github.com/dronekit/dronekit-python/issues/227>`_
+* `#390 Vehicle.commands.next is not writeable <#https://github.com/dronekit/dronekit-python/issues/390>`_.

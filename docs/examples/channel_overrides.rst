@@ -43,8 +43,8 @@ In summary, after cloning the repository:
 
    .. note::
    
-       The examples uses the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
-       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
+       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
+       This is the default value for the parameter, and may be omitted. 
           
 
 

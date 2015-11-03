@@ -195,7 +195,7 @@ class MPFakeState:
 
         @message_default(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
         def listener(self, name, m):
-            self.last_waypoint = m.seq
+            self.last_waypoint = max(m.seq - 1, 0)
 
         self.rc_readback = {}
 

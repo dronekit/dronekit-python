@@ -10,10 +10,7 @@ Documentation is provided at http://python.dronekit.io/examples/mission_import_e
 
 
 from dronekit import connect
-import time
-import math
 from dronekit.lib import Command
-from pymavlink import mavutil
 
 
 #Set up option parsing to get connection string
@@ -24,7 +21,7 @@ parser.add_argument('--connect', default='127.0.0.1:14550',
 args = parser.parse_args()
 
 
-# Connect to the Vehicle
+#Connect to the Vehicle
 print 'Connecting to vehicle on: %s' % args.connect
 vehicle = connect(args.connect, await_params=True)
 
@@ -36,7 +33,7 @@ def readmission(aFileName):
 
     This function is used by upload_mission().
     """
-    print "Reading mission from file: %s\n" % aFileName
+    print "\nReading mission from file: %s" % aFileName
     cmds = vehicle.commands
     missionlist=[]
     with open(aFileName) as f:
@@ -45,7 +42,6 @@ def readmission(aFileName):
                 if not line.startswith('QGC WPL 110'):
                     raise Exception('File is not supported WP version')
             else:
-                print ' Import line: %s' % line
                 linearray=line.split('\t')
                 ln_index=int(linearray[0])
                 ln_currentwp=int(linearray[1])
@@ -68,21 +64,19 @@ def upload_mission(aFileName):
     """
     Upload a mission from a file. 
     """
+    #Read mission from file
     missionlist = readmission(aFileName)
-    #clear existing mission
-    print 'Clear mission'
+    
+    print "\nUpload mission from a file: %s" % import_mission_filename
+    #Clear existing mission from vehicle
+    print ' Clear mission'
     cmds = vehicle.commands
-    cmds.download()
-    cmds.wait_valid()
     cmds.clear()
-    vehicle.flush()
-    print 'ClearCount: %s' % cmds.count
-    #add new mission
-    cmds.download()
-    cmds.wait_valid()
+    #Add new mission to vehicle
     for command in missionlist:
         cmds.add(command)
-    vehicle.flush()
+    print ' Upload mission'
+    vehicle.commands.upload()
 
 
 def download_mission():
@@ -90,38 +84,65 @@ def download_mission():
     Downloads the current mission and returns it in a list.
     It is used in save_mission() to get the file information to save.
     """
+    print " Download mission from vehicle"
     missionlist=[]
     cmds = vehicle.commands
     cmds.download()
     cmds.wait_valid()
-    for cmd in cmds[1:]:  #skip first item as it is home waypoint.
+    for cmd in cmds:  
         missionlist.append(cmd)
     return missionlist
 
 def save_mission(aFileName):
     """
-    Save a mission in the Waypoint file format (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
+    Save a mission in the Waypoint file format 
+    (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
     """
+    print "\nSave mission from Vehicle to file: %s" % export_mission_filename    
+    #Download mission from vehicle
     missionlist = download_mission()
+    #Add file-format information
     output='QGC WPL 110\n'
+    #Add home location as 0th waypoint
+    home = vehicle.home_location
+    output+="%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (0,1,0,16,0,0,0,0,home.lat,home.lon,home.alt,1)
+    #Add commands
     for cmd in missionlist:
         commandline="%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (cmd.seq,cmd.current,cmd.frame,cmd.command,cmd.param1,cmd.param2,cmd.param3,cmd.param4,cmd.x,cmd.y,cmd.z,cmd.autocontinue)
         output+=commandline
     with open(aFileName, 'w') as file_:
-        file_.write(output)    
+        print " Write mission to file"
+        file_.write(output)
+        
+        
+def printfile(aFileName):
+    """
+    Print a mission file to demonstrate "round trip"
+    """
+    print "\nMission file: %s" % aFileName
+    with open(aFileName) as f:
+        for line in f:
+            print ' %s' % line.strip()        
 
 
 import_mission_filename = 'mpmission.txt'
 export_mission_filename = 'exportedmission.txt'
 
-print "\nUpload mission from a file: %s" % import_mission_filename
+#Upload mission from file
 upload_mission(import_mission_filename)
 
-time.sleep(1)
-
-print "\nSave mission from Vehicle to file: %s" % export_mission_filename
+#Download mission we just uploaded and save to a file
 save_mission(export_mission_filename)
 
 #Close vehicle object before exiting script
 print "Close vehicle object"
 vehicle.close()
+
+
+
+print "\nShow original and uploaded/downloaded files:"
+#Print original file (for demo purposes only)
+printfile(import_mission_filename)
+#Print exported file (for demo purposes only)
+printfile(export_mission_filename)
+
