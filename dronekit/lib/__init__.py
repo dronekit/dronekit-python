@@ -4,7 +4,7 @@ import threading, time, math, copy
 import CloudClient
 from pymavlink.dialects.v10 import ardupilotmega
 from pymavlink import mavutil, mavwp
-from dronekit.tools import errprinter
+from dronekit.util import errprinter
 
 """
 This is the API Reference for the DroneKit-Python API.

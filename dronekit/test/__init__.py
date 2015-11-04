@@ -1,6 +1,8 @@
 from __future__ import print_function
 import os
 import sys
+from dronekit_sitl import SITL
+from nose.tools import assert_equals, with_setup
 
 sitl = None
 sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
@@ -11,7 +13,6 @@ if 'SITL_RATE' in os.environ:
     sitl_args += ['-r', str(os.environ['SITL_RATE'])]
 
 def setup_sitl():
-    from dronekit_sitl import SITL
     global sitl
     sitl = SITL('copter', '3.3-rc5')
     sitl.launch(sitl_args, await_ready=True, restart=True)
@@ -20,11 +21,7 @@ def teardown_sitl():
     sitl.stop()
 
 def with_sitl(fn):
-    from nose.tools import assert_equals, with_setup
     @with_setup(setup_sitl, teardown_sitl)
     def test(*args, **kargs):
         return fn('tcp:127.0.0.1:5760', *args, **kargs)
     return test
-
-def errprinter(*args):
-    print(*args, file=sys.stderr)

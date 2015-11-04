@@ -7,7 +7,7 @@ import time
 import sys
 import os
 from dronekit import connect, VehicleMode
-from dronekit.tools import with_sitl
+from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
 # This test runs first!
