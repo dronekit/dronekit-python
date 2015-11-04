@@ -1,7 +1,6 @@
 from __future__ import print_function
 import os
 import sys
-from dronekit_sitl import SITL
 
 sitl = None
 sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
@@ -12,6 +11,7 @@ if 'SITL_RATE' in os.environ:
     sitl_args += ['-r', str(os.environ['SITL_RATE'])]
 
 def setup_sitl():
+    from dronekit_sitl import SITL
     global sitl
     sitl = SITL('copter', '3.3-rc5')
     sitl.launch(sitl_args, await_ready=True, restart=True)
