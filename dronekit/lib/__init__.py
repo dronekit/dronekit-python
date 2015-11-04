@@ -153,12 +153,12 @@ class LocationLocal(object):
 
 class GPSInfo(object):
     """
-    Standard information available about GPS.
+    Standard information about GPS.
 
     If there is no GPS lock the parameters are set to ``None``.
 
-    :param IntType eph: GPS horizontal dilution of position (HDOP) in cm (m*100).
-    :param IntType epv: GPS horizontal dilution of position (VDOP) in cm (m*100).
+    :param IntType eph: GPS horizontal dilution of position (HDOP).
+    :param IntType epv: GPS horizontal dilution of position (VDOP).
     :param IntType fix_type: 0-1: no fix, 2: 2D fix, 3: 3D fix
     :param IntType satellites_visible: Number of satellites visible.
 
