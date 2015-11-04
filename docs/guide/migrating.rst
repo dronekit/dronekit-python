@@ -174,4 +174,12 @@ This code must be replaced with the DroneKit-Python 2.x :py:attr:`Vehicle.home_l
     :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`. 
 
 
+Debugging
+=========
+
+DroneKit-Python 1.x scripts were run in the context of a MAVProxy. This made them difficult to debug because you had to 
+instrument your code in order to launch the debugger, and debug messages were interleaved with MAVProxy output.
+
+Debugging on DroneKit-Python 2.x is much easier. Apps are now just standalone scripts, and can be debugged 
+using standard Python methods (including the debugger/IDE of your choice). 
 

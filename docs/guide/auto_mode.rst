@@ -371,7 +371,7 @@ adds them to a list. Downloading mission is discussed :ref:`in the guide <auto_m
         cmds = vehicle.commands
         cmds.download()
         cmds.wait_ready()
-        for cmd in cmds[1:]:  #skip first item as it is home waypoint.
+        for cmd in cmds:
             missionlist.append(cmd)
         return missionlist
 

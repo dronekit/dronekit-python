@@ -137,7 +137,11 @@ the more common connection types:
    * - Linux computer connected to the vehicle via USB
      - ``/dev/ttyUSB0``
    * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
-     - ``/dev/ttyAMA0,57600``
+     - ``/dev/ttyAMA0``
+     
+       .. note:: 
+           To connect on a serial port you may also need to reduce the baud rate to 57600 
+           - e.g. ``vehicle=connect('/dev/ttyAMA0', baud=57600)``
    * - SITL connected to the vehicle via UDP
      - ``127.0.0.1:14550``
    * - OSX computer connected to the vehicle via USB
