@@ -1,7 +1,7 @@
 import time
 import math
 from dronekit import connect, VehicleMode, LocationGlobal, Command
-from dronekit.tools import with_sitl
+from dronekit.test import with_sitl
 from nose.tools import assert_not_equals, assert_equals
 
 @with_sitl

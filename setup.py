@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '2.0.0rc5'
+version = '2.0.0rc7'
 
 setup(name='dronekit',
       zip_safe=True,
@@ -26,6 +26,6 @@ setup(name='dronekit',
       ],
       license='apache',
       packages=[
-          'dronekit', 'dronekit.lib'
+          'dronekit', 'dronekit.lib', 'dronekit.test',
       ],
       ext_modules=[])

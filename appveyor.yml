@@ -25,9 +25,9 @@ install:
   - cmd: 'pip install -r requirements.txt -UI'
 
 build_script:
-  - cmd: 'nosetests tests\\web'
-  - cmd: 'nosetests -s -v tests\\sitl || nosetests -s -v tests\\sitl || nosetests -s -v tests\\sitl || nosetests -s -v tests\\sitl'
-  - cmd: 'nosetests tests\\unit'
+  - cmd: 'nosetests dronekit.test.web'
+  - cmd: 'nosetests dronekit.test.unit'
+  - cmd: 'nosetests -sv dronekit.test.sitl || nosetests -sv dronekit.test.sitl || nosetests -sv dronekit.test.sitl || nosetests -sv dronekit.test.sitl'
 
 clone_depth: 10
 test: 'off'

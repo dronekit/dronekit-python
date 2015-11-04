@@ -10,9 +10,9 @@ dependencies:
 
 test:
   override:
-    - 'nosetests tests/web'
-    - 'nosetests tests/unit'
-    - 'nosetests tests/sitl'
+    - 'nosetests dronekit.test.web'
+    - 'nosetests dronekit.test.unit'
+    - 'nosetests dronekit.test.sitl'
 
 general:
   build_dir: .

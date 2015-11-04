@@ -6,7 +6,7 @@ import os
 import platform
 import re
 import dronekit.lib
-from dronekit.tools import errprinter
+from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from Queue import Queue, Empty
 from threading import Thread
