@@ -868,12 +868,24 @@ class Vehicle(HasObservers):
     def message_listener(self, name):
         """
         Decorator for message listeners.
+        
+        A decorated message listener is called with three arguments every time the 
+        specified message is received: 
+        
+        * ``self`` - the current vehicle.
+        * ``name`` - the name of the message that was intercepted.
+        * ``message`` - the actual message, a `pymavlink <http://www.qgroundcontrol.org/mavlink/pymavlink>`_
+          `class <https://www.samba.org/tridge/UAV/pymavlink/apidocs/classIndex.html>`_.        
 
+        For example, in the fragment below ``my_method`` will be called for every heartbeat message:
+        
         .. code:: python
 
             @vehicle.message_listener('HEARTBEAT')
             def my_method(self, name, msg):
                 pass
+                
+        :param String name: The name of the message to be intercepted by the decorated listener function.
         """
         def decorator(fn):
             if isinstance(name, list):
@@ -895,7 +907,7 @@ class Vehicle(HasObservers):
 
     def remove_message_listener(self, name, fn):
         """
-        Removes a message listener.
+        Removes a message listener (that was added using :py:func:`message_listener`)
         """
         name = str(name)
         if name in self._message_listeners:

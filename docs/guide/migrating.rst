@@ -183,3 +183,26 @@ instrument your code in order to launch the debugger, and debug messages were in
 Debugging on DroneKit-Python 2.x is much easier. Apps are now just standalone scripts, and can be debugged 
 using standard Python methods (including the debugger/IDE of your choice). 
 
+Observing attribute changes
+---------------------------
+
+The DroneKit-Python 1.x observer functions ``vehicle.add_attribute_observer`` and ``Vehicle.remove_attribute_observer`` 
+have been replaced by :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>`
+and :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`, respectively.
+
+The functions are used in a very similar way, the main difference being that the callback function now takes two arguments
+(the vehicle and the attribute name) rather than just the attribute name.
+
+See :ref:`vehicle_state_observe_attributes` for more information.
+
+Intercepting MAVLink Messages
+-----------------------------
+
+DroneKit-Python 1.x used ``Vehicle.set_mavlink_callback()`` and ``Vehicle.unset_mavlink_callback``
+to set/unset a callback function that was invoked for every single mavlink message.
+
+In DKPY2 this has been replaced by the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` 
+decorator, which allows you to specify a callback function that will be invoked for a single message. The same
+mechanism is used internally for message capture and to create ``Vehicle`` attributes.
+
+See :ref:`mavlink_messages` for more information.
