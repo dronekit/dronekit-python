@@ -31,7 +31,7 @@ A number of other useful classes and methods are listed below.
 
 .. todo:: Update this when have confirmed how to register for parameter notifications.
 
-.. py:function:: connect(ip, wait_ready=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4)
+.. py:function:: connect(ip, wait_ready=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200)
 
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
     Connection string parameters for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
@@ -41,13 +41,17 @@ A number of other useful classes and methods are listed below.
     :param status_printer: NA    
     :param Vehicle vehicle_class: NA     
     :param int rate: NA
-
+    :param int baud: The baud rate for the connection. The default is 115200.
+    
     :returns: A connected :py:class:`Vehicle` object.
 
 ----
 
-    .. todo:: Confirm what status_printer, vehicle_class and rate "mean". Can we hide in API. Can we get method defined in this file.
-
+    .. todo:: 
+    
+        Confirm what status_printer, vehicle_class and rate "mean" (https://github.com/dronekit/dronekit-python/issues/395#issuecomment-153527657)
+        Can we hide in API. Can we get method defined in this file or connect method file exported
+        
 """
 
 # DroneAPI module
