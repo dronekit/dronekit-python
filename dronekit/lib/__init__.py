@@ -1,11 +1,3 @@
-# DroneAPI module
-
-import threading, time, math, copy
-import CloudClient
-from pymavlink.dialects.v10 import ardupilotmega
-from pymavlink import mavutil, mavwp
-from dronekit.util import errprinter
-
 """
 This is the API Reference for the DroneKit-Python API.
 
@@ -57,6 +49,14 @@ A number of other useful classes and methods are listed below.
     .. todo:: Confirm what status_printer, vehicle_class and rate "mean". Can we hide in API. Can we get method defined in this file.
 
 """
+
+# DroneAPI module
+
+import threading, time, math, copy
+import CloudClient
+from pymavlink.dialects.v10 import ardupilotmega
+from pymavlink import mavutil, mavwp
+from dronekit.util import errprinter
 
 local_path = ''
 
@@ -343,6 +343,7 @@ class HasObservers(object):
         Decorator for attribute listeners.
 
         .. code:: python
+
             @vehicle.attribute_listener('attitude')
             def attitude_listener(self, name, msg):
                 pass
@@ -838,6 +839,7 @@ class Vehicle(HasObservers):
         Decorator for message listeners.
 
         .. code:: python
+
             @vehicle.message_listener('HEARTBEAT')
             def my_method(self, name, msg):
                 pass
@@ -1316,6 +1318,7 @@ class CommandSequence(object):
     :py:func:`upload() <Vehicle.commands.upload>` is called.
 
     .. code:: python
+
         cmds = vehicle.commands
         cmds.clear()
         lat = -34.364114,
@@ -1426,7 +1429,10 @@ class CommandSequence(object):
         '''
         Add a new command (waypoint) at the end of the command list.
 
-        .. note:: Commands are sent to the vehicle only after you call ::py:func:`upload() <Vehicle.commands.upload>`.
+        .. note:: 
+
+            Commands are sent to the vehicle only after you call ::py:func:`upload() <Vehicle.commands.upload>`.
+        
         :param Command cmd: The command to be added.
         '''
         self.wait_ready()
