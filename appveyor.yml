@@ -1,6 +1,6 @@
 environment:
   global:
-    SITL_SPEEDUP: 20
+    SITL_SPEEDUP: 10
     SITL_RATE: 200
 
 cache:
@@ -25,9 +25,9 @@ install:
   - cmd: 'pip install -r requirements.txt -UI'
 
 build_script:
-  - cmd: 'nosetests dronekit.test.web'
-  - cmd: 'nosetests dronekit.test.unit'
-  - cmd: 'nosetests -sv dronekit.test.sitl || nosetests -sv dronekit.test.sitl || nosetests -sv dronekit.test.sitl || nosetests -sv dronekit.test.sitl'
+  - cmd: 'nosetests -vx dronekit.test.web'
+  - cmd: 'nosetests -vx dronekit.test.unit'
+  - cmd: 'nosetests -svx dronekit.test.sitl'
 
 clone_depth: 10
 test: 'off'

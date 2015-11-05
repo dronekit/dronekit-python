@@ -83,7 +83,7 @@ class MAVHandler:
                             self.master.write(msg)
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                errprinter('reestablishing connection after read timeout')
+                                errprinter('>>> reestablishing connection after read aborted')
                                 if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
@@ -107,7 +107,7 @@ class MAVHandler:
                             msg = self.master.recv_msg()
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                errprinter('reestablishing connection after send timeout')
+                                errprinter('>>> reestablishing connection after send aborted')
                                 if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:

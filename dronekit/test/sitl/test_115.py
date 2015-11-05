@@ -41,3 +41,5 @@ def test_115(connpath):
     v.armed = True
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
+
+    v.close()

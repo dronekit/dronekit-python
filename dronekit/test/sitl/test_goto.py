@@ -94,3 +94,5 @@ def test_goto(connpath):
 
     # print "Returning to Launch"
     vehicle.mode = VehicleMode("RTL")
+
+    vehicle.close()

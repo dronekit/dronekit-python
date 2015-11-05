@@ -820,7 +820,7 @@ class Vehicle(HasObservers):
         self._heartbeat_timeout = False
 
         self._heartbeat_warning = 5
-        self._heartbeat_error = 30
+        self._heartbeat_error = 60
 
         @handler.loop_listener
         def listener(_):

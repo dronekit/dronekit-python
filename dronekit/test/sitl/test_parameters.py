@@ -22,3 +22,5 @@ def test_parameters(connpath):
 
     # Garbage value after all parameters are downloaded should be None.
     assert_equals(vehicle.parameters.get('xXx_extreme_garbage_value_xXx', wait_ready=True), None)
+
+    vehicle.close()

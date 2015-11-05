@@ -11,6 +11,7 @@ def test_timeout(connpath):
     # to make on a real vehicle. They are leveraged
     # exclusively for simulation. Take heed!!!
     vehicle.parameters['ARMING_CHECK'] = 0
+    vehicle.parameters['EKF_CHECK_THRESH'] = 0
 
     # ARM
     vehicle.armed = True
@@ -27,3 +28,5 @@ def test_timeout(connpath):
     assert_not_equals(vehicle.location.local_frame.north, None)
     assert_not_equals(vehicle.location.local_frame.east, None)
     assert_not_equals(vehicle.location.local_frame.down, None)
+
+    vehicle.close()

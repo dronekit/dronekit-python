@@ -60,3 +60,5 @@ def test_110(connpath):
 
     # Ensure the callback was called zero times.
     assert_equals(armed_callback.called, callcount, "Callback should not have been called once removed.")
+
+    v.close()
