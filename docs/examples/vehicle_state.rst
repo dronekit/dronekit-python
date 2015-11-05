@@ -56,31 +56,25 @@ On the command prompt you should see (something like):
     Accumulating vehicle attribute messages
 
     Get all vehicle attribute values:
-     Global Location: LocationGlobal:lat=-35.3632615,lon=149.1652301,alt=0.0,is_relative=False
+     Global Location: LocationGlobal:lat=-35.3632585,lon=149.165227,alt=362.0,is_relative=False
      Local Location: LocationLocal:north=None,east=None,down=None
-     Attitude: Attitude:pitch=0.00589594058692,yaw=-0.0884591862559,roll=0.000426373298978
-     Velocity: [-0.02, 0.02, 0.0]
+     Attitude: Attitude:pitch=-0.00352983362973,yaw=-0.0589601770043,roll=-0.00761049194261
+     Velocity: [0.02, -0.02, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery:voltage=12.587,current=0.0,level=99
+     Battery: Battery:voltage=12.587,current=0.0,level=98
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
      Mode: STABILIZE
      Armed: False
-     Home Location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
+     Home Location: LocationGlobal:lat=-35.3632583618,lon=149.165222168,alt=222.0,is_relative=False
 
     Set new home location
-     Waiting for home location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
-     ...
-     Waiting for home location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
-     Waiting for home location: LocationGlobal:lat=0.0,lon=0.0,alt=0.0,is_relative=False
+     New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632583618,lon=149.165222168,alt=222.0,is_relative=False
 
-     Autopilot set home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
-     New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0,is_relative=False
- 
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
 
@@ -89,11 +83,12 @@ On the command prompt you should see (something like):
     >>> ARMING MOTORS
     >>> Initialising APM...
 
-    Add mode attribute observer for Vehicle.mode
+    Add attribute callback/observer on `vehicle` for `mode` attribute
      Set mode=STABILIZE (currently: GUIDED)
      Wait 2s so callback invoked before observer removed
-     CALLBACK: Mode changed to:  STABILIZE
-     CALLBACK: Mode changed to:  STABILIZE
+     CALLBACK: Mode changed to VehicleMode:STABILIZE
+     CALLBACK: Mode changed to VehicleMode:STABILIZE
+     Remove Vehicle.mode observer
 
     Read vehicle param 'THR_MIN': 130.0
     Write vehicle param 'THR_MIN' : 10
@@ -122,16 +117,7 @@ The guide topic :ref:`vehicle-information` provides an explanation of how this c
 Known issues
 ============
 
-This example works around the :ref:`known issues in the API <api-information-known-issues>`. 
-Provided that the vehicle is connected and able to arm, it should run through to completion.
-
-You may observe these issues:
-
-* When the observer sets the mode callback, it waits two seconds after changing the mode before removing the observer
-  (to ensure that the callback function is run before the observer is removed). In this time you may see the callback being 
-  called twice even though the mode is only changed once. 
-  See `#60 Attribute observer callbacks are called with heartbeat until disabled - after first called  <https://github.com/dronekit/dronekit-python/issues/60>`_ 
-  for more information.
+This example has no known issues.
 
 
 
