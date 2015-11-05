@@ -176,7 +176,7 @@ class MAVHandler:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
+def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30):
     handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud))
     vehicle = vehicle_class(handler)
 
@@ -185,7 +185,7 @@ def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicl
         def listener(self, name, m):
             status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
     
-    vehicle.initialize(rate=rate)
+    vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
 
     if wait_ready:
         if wait_ready == True:

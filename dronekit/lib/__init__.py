@@ -820,7 +820,7 @@ class Vehicle(HasObservers):
         self._heartbeat_timeout = False
 
         self._heartbeat_warning = 5
-        self._heartbeat_error = 60
+        self._heartbeat_error = 30
 
         @handler.loop_listener
         def listener(_):
@@ -830,7 +830,7 @@ class Vehicle(HasObservers):
                 self._heartbeat_lastsent = time.time()
 
             # Timeouts.
-            if self._heartbeat_started and self._heartbeat_lastreceived != 0:
+            if self._heartbeat_started:
                 if time.time() - self._heartbeat_lastreceived > self._heartbeat_error:
                     raise Exception('>>> No heartbeat in %s seconds, aborting.' % self._heartbeat_error)
                 elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
@@ -1129,17 +1129,23 @@ class Vehicle(HasObservers):
         """
         return self._master.mav
 
-    def initialize(self, wait_ready=False, rate=None):
+    def initialize(self, wait_ready=False, rate=None, heartbeat_timeout=30):
         self._handler.start()
 
-        # Wait for first heartbeat.
-        while True:
-            try:
-                self._master.wait_heartbeat()
-                break
-            except mavutil.mavlink.MAVError:
-                continue
+        # Start heartbeat polling.
+        start = time.time()
+        self._heartbeat_error = heartbeat_timeout
         self._heartbeat_started = True
+        self._heartbeat_lastreceived = start
+
+        # Poll for first heartbeat.
+        # If heartbeat times out, this will interrupt.
+        while self._handler._alive:
+            time.sleep(.1)
+            if self._heartbeat_lastreceived != start:
+                break
+        if not self._handler._alive:
+            raise APIException('Timeout in initializing connection.')
 
         # Wait until board has booted.
         while True:
