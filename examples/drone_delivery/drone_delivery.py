@@ -58,10 +58,10 @@ class Drone(object):
         self._log("DroneDelivery Start")
 
         # Register observers
-        self.vehicle.add_attribute_observer('armed', self.armed_callback)
-        self.vehicle.add_attribute_observer('location', self.location_callback)
-        #self.vehicle.add_attribute_observer('mode', self.mode_callback)
-        self.vehicle.add_attribute_observer('gps_0', self.gps_callback)
+        self.vehicle.on_attribute('armed', self.armed_callback)
+        self.vehicle.on_attribute('location', self.location_callback)
+        #self.vehicle.on_attribute('mode', self.mode_callback)
+        self.vehicle.on_attribute('gps_0', self.gps_callback)
 
         self._log("Waiting for GPS Lock")
 
@@ -123,7 +123,7 @@ class Drone(object):
 
     def armed_callback(self, armed):
         self._log("DroneDelivery Armed Callback")
-        self.vehicle.remove_attribute_observer('armed', self.armed_callback)
+        self.vehicle.remove_message_listener('armed', self.armed_callback)
 
     def mode_callback(self, mode):
         self._log("Mode: {0}".format(self.vehicle.mode))
@@ -132,7 +132,7 @@ class Drone(object):
         self._log("GPS: {0}".format(self.vehicle.gps_0))
         if self.gps_lock is False:
             self.gps_lock = True
-            self.vehicle.remove_attribute_observer('gps_0', self.gps_callback)
+            self.vehicle.remove_message_listener('gps_0', self.gps_callback)
             self.run()
 
     def _log(self, message):

@@ -5,7 +5,7 @@ Demonstrates how to create attributes for MAVLink messages within your DroneKit-
 and use them in the same way as the built-in Vehicle attributes.
 
 The code adds a new attribute to the Vehicle class, populating it with information from RAW_IMU messages 
-intercepted using set_mavlink_callback.
+intercepted using the message_listener decorator.
 
 Full documentation is provided at http://python.dronekit.io/examples/create_attribute.html
 """
@@ -27,7 +27,6 @@ args = parser.parse_args()
 # Connect to the Vehicle
 print 'Connecting to vehicle on: %s' % args.connect
 vehicle = connect(args.connect, wait_ready=True)
-
 
 
 class RawIMU(object):
@@ -73,57 +72,50 @@ class RawIMU(object):
 
 #Create an Vehicle.raw_imu object and set all values to None.
 vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
+ 
 
 
-def mav_raw_imu_handler(message):
+#Create a message listener using the decorator.   
+@vehicle.message_listener('RAW_IMU')
+def listener(self, name, message):
     """
-    Writes received message to the (newly attached) vehicle.raw_imu object and notifies observers.
+    The listener is called for messages that contain the string specified in the decorator,
+    passing the vehicle, message name, and the message.
+    
+    The listener writes the message to the (newly attached) ``vehicle.raw_imu`` object 
+    and notifies observers.
     """
-    messagetype=str(message).split('{')[0].strip()
-    if messagetype=='RAW_IMU':
-        vehicle.raw_imu.time_boot_us=message.time_usec
-        vehicle.raw_imu.xacc=message.xacc
-        vehicle.raw_imu.yacc=message.yacc
-        vehicle.raw_imu.zacc=message.zacc
-        vehicle.raw_imu.xgyro=message.xgyro
-        vehicle.raw_imu.ygyro=message.ygyro
-        vehicle.raw_imu.zgyro=message.zgyro
-        vehicle.raw_imu.xmag=message.xmag
-        vehicle.raw_imu.ymag=message.ymag
-        vehicle.raw_imu.zmag=message.zmag
-
-        #Add Notify all observers of new message.
-        vehicle.notify_observers('raw_imu') 
-
-        
-def mavrx_debug_handler(message):
-    """
-    Handler for MAVLink messages.
-    """
-    #Handle raw_imu messages
-    mav_raw_imu_handler(message)
-
-# Set MAVLink callback handler (after getting Vehicle instance)
-vehicle.set_mavlink_callback(mavrx_debug_handler)
+    self.raw_imu.time_boot_us=message.time_usec
+    self.raw_imu.xacc=message.xacc
+    self.raw_imu.yacc=message.yacc
+    self.raw_imu.zacc=message.zacc
+    self.raw_imu.xgyro=message.xgyro
+    self.raw_imu.ygyro=message.ygyro
+    self.raw_imu.zgyro=message.zgyro
+    self.raw_imu.xmag=message.xmag
+    self.raw_imu.ymag=message.ymag
+    self.raw_imu.zmag=message.zmag
+    
+    # Notify all observers of new message.
+    self._notify_attribute_listeners('raw_imu') 
+    
 
 """
 From this point vehicle.raw_imu can be used just like any other attribute.
 """
 
 #Callback to print the raw_imu
-def raw_imu_callback(rawimu):
-    print vehicle.raw_imu
+def raw_imu_callback(self,rawimu):
+    print self.raw_imu
 
 
 #Add observer for the vehicle's current location
-vehicle.add_attribute_observer('raw_imu', raw_imu_callback)
+vehicle.on_attribute('raw_imu', raw_imu_callback)
 
 print 'Display RAW_IMU messages for 5 seconds and then exit.'
 time.sleep(5)
 
-#The observer can be unset using ``vehicle.unset_mavlink_callback()`` OR 
-# ``vehicle.set_mavlink_callback(None)``. 
-#It is automatically removed when the thread exits.
+#The message listener can be unset using ``vehicle.remove_message_listener``
 
 
 #Close vehicle object before exiting script
