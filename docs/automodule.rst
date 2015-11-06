@@ -8,7 +8,6 @@ DroneKit-Python API Reference
 .. automodule:: dronekit.lib
    :members:
    :inherited-members:
-   :exclude-members: 
    
 
 

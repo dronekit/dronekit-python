@@ -10,6 +10,10 @@ dependencies:
 
 test:
   override:
+    # docs
+    - 'cd docs; make clean; make html'
+
+    # code
     - 'nosetests dronekit.test.web'
     - 'nosetests dronekit.test.unit'
     - 'nosetests dronekit.test.sitl'
