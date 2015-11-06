@@ -698,11 +698,11 @@ class Vehicle(HasObservers):
             self._fix_type = m.fix_type
             self._notify_attribute_listeners('gps_0')
 
-        self._last_waypoint = 0
+        self._current_waypoint = 0
 
         @self.message_listener(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
         def listener(self, name, m):
-            self._last_waypoint = max(m.seq - 1, 0)
+            self._current_waypoint = m.seq
 
         self._ekf_poshorizabs = False
         self._ekf_constposmode = False
@@ -1520,14 +1520,14 @@ class CommandSequence(object):
         """
         Get the currently active waypoint number.
         """
-        return self._vehicle._last_waypoint
+        return self._vehicle._current_waypoint
 
     @next.setter
     def next(self, index):
         """
         Set a new ``next`` waypoint for the vehicle.
         """
-        self._vehicle._master.waypoint_set_current_send(index + 1)
+        self._vehicle._master.waypoint_set_current_send(index)
 
     def __len__(self):
         '''
