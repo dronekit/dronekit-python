@@ -18,3 +18,5 @@ def test_timeout(connpath):
 
     while not v.success:
     	time.sleep(0.1)
+
+    v.close()

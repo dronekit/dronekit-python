@@ -14,6 +14,8 @@ def test_empty_clear(connpath):
 
     assert_equals(len(vehicle.commands), 0)
 
+    vehicle.close()
+
 @with_sitl
 def test_set_home(connpath):
     vehicle = connect(connpath, wait_ready=True)
@@ -108,3 +110,5 @@ def test_parameter(connpath):
     assert_equals(home.lat, vehicle.home_location.lat)
     assert_equals(home.lon, vehicle.home_location.lon)
     assert_equals(home.alt, vehicle.home_location.alt)
+
+    vehicle.close()

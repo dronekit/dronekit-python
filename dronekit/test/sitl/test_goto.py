@@ -19,10 +19,8 @@ def test_goto(connpath):
     # NOTE these are *very inappropriate settings*
     # to make on a real vehicle. They are leveraged
     # exclusively for simulation. Take heed!!!
-    vehicle.parameters['ARMING_CHECK'] = 0
-    vehicle.parameters['FS_THR_ENABLE'] = 0
     vehicle.parameters['FS_GCS_ENABLE'] = 0
-    vehicle.parameters['EKF_CHECK_THRESH'] = 0
+    vehicle.parameters['FS_EKF_THRESH'] = 100
 
     def arm_and_takeoff(aTargetAltitude):
         """
@@ -47,6 +45,10 @@ def test_goto(connpath):
             # print " Waiting for guided %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
+
+        # EKF warmup. Await that EKF's predicted horizontal position (absolute) estimate is good
+        while not vehicle._ekf_predposhorizabs:
+            time.sleep(1)
 
         vehicle.armed = True
 
@@ -94,3 +96,5 @@ def test_goto(connpath):
 
     # print "Returning to Launch"
     vehicle.mode = VehicleMode("RTL")
+
+    vehicle.close()

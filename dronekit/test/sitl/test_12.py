@@ -26,3 +26,5 @@ def test_timeout(connpath):
     # Checks that time to set parameter was <1s
     # see https://github.com/dronekit/dronekit-python/issues/12
     assert end - start < 1000, 'time to set parameter was %s, over 1s' % (end - start,)
+
+    v.close()

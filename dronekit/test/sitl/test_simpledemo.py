@@ -18,6 +18,8 @@ def test_parameter(connpath):
     # Perform a simple parameter check
     assert_equals(type(v.parameters['THR_MIN']), float)
 
+    v.close()
+
 # This test runs second. Add as many tests as you like
 @with_sitl
 def test_mode(connpath):
@@ -25,3 +27,5 @@ def test_mode(connpath):
 
     # Ensure Mode is an instance of VehicleMode
     assert isinstance(v.mode, VehicleMode)
+
+    v.close()

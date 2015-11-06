@@ -56,10 +56,13 @@ class MAVHandler:
         self.loop_listeners = []
         self.message_listeners = []
 
+        # Debug flag.
+        self._accept_input = True
+        self._alive = True
+
         import atexit
-        self.exiting = False
         def onexit():
-            self.exiting = True
+            self._alive = False
         atexit.register(onexit)
 
         def mavlink_thread():
@@ -80,7 +83,7 @@ class MAVHandler:
                             self.master.write(msg)
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                errprinter('reestablishing connection after read timeout')
+                                errprinter('>>> reestablishing connection after read aborted')
                                 if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
@@ -99,12 +102,12 @@ class MAVHandler:
                             errprinter('mav send error:', e)
                             break
 
-                    while True:
+                    while self._accept_input:
                         try:
                             msg = self.master.recv_msg()
                         except socket.error as error:
                             if error.errno == ECONNABORTED:
-                                errprinter('reestablishing connection after send timeout')
+                                errprinter('>>> reestablishing connection after send aborted')
                                 if hasattr(self.master, 'reset'):
                                     self.master.reset()
                                 else:
@@ -132,9 +135,11 @@ class MAVHandler:
 
             except Exception as e:
                 # http://bugs.python.org/issue1856
-                if self.exiting:
+                if not self._alive:
                     pass
                 else:
+                    self._alive = False
+                    self.master.close()
                     raise
 
         t = Thread(target=mavlink_thread)
@@ -166,12 +171,12 @@ class MAVHandler:
 
     def close(self):
         # TODO this can block forever if parameters continue to be added
-        self.exiting = True
+        self._alive = False
         while not self.out_queue.empty():
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200):
+def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30):
     handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud))
     vehicle = vehicle_class(handler)
 
@@ -180,7 +185,7 @@ def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicl
         def listener(self, name, m):
             status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
     
-    vehicle.initialize(rate=rate)
+    vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
 
     if wait_ready:
         if wait_ready == True:

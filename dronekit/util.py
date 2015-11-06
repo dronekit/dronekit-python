@@ -3,3 +3,4 @@ import sys
 
 def errprinter(*args):
     print(*args, file=sys.stderr)
+    sys.stderr.flush()

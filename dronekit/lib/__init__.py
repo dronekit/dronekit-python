@@ -817,6 +817,10 @@ class Vehicle(HasObservers):
         self._heartbeat_started = False
         self._heartbeat_lastsent = 0
         self._heartbeat_lastreceived = 0
+        self._heartbeat_timeout = False
+
+        self._heartbeat_warning = 5
+        self._heartbeat_error = 30
 
         @handler.loop_listener
         def listener(_):
@@ -825,18 +829,21 @@ class Vehicle(HasObservers):
                 self._master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS, mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
                 self._heartbeat_lastsent = time.time()
 
-            # And timeout after 5.
+            # Timeouts.
             if self._heartbeat_started:
-                if self._heartbeat_lastreceived == 0:
-                    self._heartbeat_lastreceived = time.time()
-                elif time.time() - self._heartbeat_lastreceived > 5:
-                    # raise Exception('Link timeout, no heartbeat in last 5 seconds')
-                    errprinter('Link timeout, no heartbeat in last 5 seconds')
-                    self._heartbeat_lastreceived = time.time()
+                if self._heartbeat_error and self._heartbeat_error > 0 and time.time() - self._heartbeat_lastreceived > self._heartbeat_error:
+                    raise Exception('>>> No heartbeat in %s seconds, aborting.' % self._heartbeat_error)
+                elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
+                    if self._heartbeat_timeout == False:
+                        errprinter('>>> Link timeout, no heartbeat in last %s seconds' % self._heartbeat_warning)
+                        self._heartbeat_timeout = True
 
         @self.message_listener(['HEARTBEAT'])
         def listener(self, name, msg):
             self._heartbeat_lastreceived = time.time()
+            if self._heartbeat_timeout:
+                errprinter('>>> ...link restored.')
+            self._heartbeat_timeout = False
 
     def message_listener(self, name):
         """
@@ -1122,17 +1129,23 @@ class Vehicle(HasObservers):
         """
         return self._master.mav
 
-    def initialize(self, wait_ready=False, rate=None):
+    def initialize(self, wait_ready=False, rate=None, heartbeat_timeout=30):
         self._handler.start()
 
-        # Wait for first heartbeat.
-        while True:
-            try:
-                self._master.wait_heartbeat()
-                break
-            except mavutil.mavlink.MAVError:
-                continue
+        # Start heartbeat polling.
+        start = time.time()
+        self._heartbeat_error = heartbeat_timeout or 0
         self._heartbeat_started = True
+        self._heartbeat_lastreceived = start
+
+        # Poll for first heartbeat.
+        # If heartbeat times out, this will interrupt.
+        while self._handler._alive:
+            time.sleep(.1)
+            if self._heartbeat_lastreceived != start:
+                break
+        if not self._handler._alive:
+            raise APIException('Timeout in initializing connection.')
 
         # Wait until board has booted.
         while True:

@@ -14,7 +14,8 @@ if 'SITL_RATE' in os.environ:
 
 def setup_sitl():
     global sitl
-    sitl = SITL('copter', '3.3-rc5')
+    sitl = SITL()
+    sitl.download('copter', '3.3')
     sitl.launch(sitl_args, await_ready=True, restart=True)
 
 def teardown_sitl():
