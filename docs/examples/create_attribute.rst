@@ -166,7 +166,7 @@ the attribute and then notifies all observers.
         self.raw_imu.zmag=message.zmag
         
         # Notify all observers of new message.
-        self._notify_attribute_listeners('raw_imu') 
+        self.notify_attribute_listeners('raw_imu') 
 
 
 .. note:: 
