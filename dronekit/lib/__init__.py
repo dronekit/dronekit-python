@@ -831,7 +831,7 @@ class Vehicle(HasObservers):
 
             # Timeouts.
             if self._heartbeat_started:
-                if time.time() - self._heartbeat_lastreceived > self._heartbeat_error:
+                if self._heartbeat_error and self._heartbeat_error > 0 and time.time() - self._heartbeat_lastreceived > self._heartbeat_error:
                     raise Exception('>>> No heartbeat in %s seconds, aborting.' % self._heartbeat_error)
                 elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
                     if self._heartbeat_timeout == False:
@@ -1134,7 +1134,7 @@ class Vehicle(HasObservers):
 
         # Start heartbeat polling.
         start = time.time()
-        self._heartbeat_error = heartbeat_timeout
+        self._heartbeat_error = heartbeat_timeout or 0
         self._heartbeat_started = True
         self._heartbeat_lastreceived = start
 
