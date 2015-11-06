@@ -82,44 +82,26 @@ class MAVHandler:
                             self.fix_targets(msg)
                             self.master.write(msg)
                         except socket.error as error:
-                            if error.errno == ECONNABORTED:
-                                errprinter('>>> reestablishing connection after read aborted')
-                                if hasattr(self.master, 'reset'):
-                                    self.master.reset()
-                                else:
-                                    try:
-                                        self.master.close()
-                                    except:
-                                        pass
-                                    self.master = mavutil.mavlink_connection(self.master.address)
-                                continue
-
                             # If connection reset (closed), stop polling.
-                            return
+                            if error.errno == ECONNABORTED:
+                                errprinter('>>> connection aborted during read')
+                                return
+                            raise
                         except Empty:
                             break
                         except Exception as e:
-                            errprinter('mav send error:', e)
+                            errprinter('>>> mav send error:', e)
                             break
 
                     while self._accept_input:
                         try:
                             msg = self.master.recv_msg()
                         except socket.error as error:
-                            if error.errno == ECONNABORTED:
-                                errprinter('>>> reestablishing connection after send aborted')
-                                if hasattr(self.master, 'reset'):
-                                    self.master.reset()
-                                else:
-                                    try:
-                                        self.master.close()
-                                    except:
-                                        pass
-                                    self.master = mavutil.mavlink_connection(self.master.address)
-                                continue
-
                             # If connection reset (closed), stop polling.
-                            return
+                            if error.errno == ECONNABORTED:
+                                errprinter('>>> connection aborting during send')
+                                return
+                            raise
                         except Exception as e:
                             # TODO this should be more rigorous. How to avoid
                             #   invalid MAVLink prefix '73'
@@ -145,6 +127,17 @@ class MAVHandler:
         t = Thread(target=mavlink_thread)
         t.daemon = True
         self.mavlink_thread = t
+
+    def reset(self):
+        self.out_queue = Queue()
+        if hasattr(self.master, 'reset'):
+            self.master.reset()
+        else:
+            try:
+                self.master.close()
+            except:
+                pass
+            self.master = mavutil.mavlink_connection(self.master.address)
 
     def fix_targets(self, message):
         """Set correct target IDs for our vehicle"""
