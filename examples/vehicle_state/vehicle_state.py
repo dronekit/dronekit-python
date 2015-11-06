@@ -104,12 +104,15 @@ while not vehicle.armed:
     time.sleep(1)
 
 
-# Show how to add and remove and attribute observer callbacks (using mode as example) 
-def mode_callback(attribute):
-    print " CALLBACK: Mode changed to: ", vehicle.mode.name
+# Add and remove and attribute callbacks (using mode as example)     
+def mode_callback(self, attr_name):
+    # `attr_name` is the observed attribute (used if callback is used for multiple attributes)
+    # `self` is the associated vehicle object (used if callback behaviouris different for multiple vehicles)
+    print " CALLBACK: Mode changed to", self.mode
 
-print "\nAdd mode attribute observer for Vehicle.mode" 
-vehicle.add_attribute_observer('mode', mode_callback)
+print "\nAdd attribute callback/observer on `vehicle` for `mode` attribute"     
+vehicle.on_attribute('mode', mode_callback)    
+
 
 print " Set mode=STABILIZE (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("STABILIZE")
@@ -117,8 +120,9 @@ vehicle.mode = VehicleMode("STABILIZE")
 print " Wait 2s so callback invoked before observer removed"
 time.sleep(2)
 
-# Remove observer - specifying the attribute and previously registered callback function
-vehicle.remove_attribute_observer('mode', mode_callback)
+print " Remove Vehicle.mode observer"    
+# Remove observer added with `on_attribute()`  - specifying the attribute and callback function
+vehicle.remove_attribute_listener('mode', mode_callback)
 
 
 # Get/Set Vehicle Parameters

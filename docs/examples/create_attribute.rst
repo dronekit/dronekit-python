@@ -7,6 +7,11 @@ Example: Create Attribute in App
 This example shows how you can create attributes for MAVLink messages within your DroneKit-Python script and 
 use them in *in the same way* as the built-in :py:class:`Vehicle <dronekit.lib.Vehicle>` attributes.
 
+It uses the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` decorator
+to set a function that is called to process a specific message, copy its values into an attribute, and notify
+observers. An observer is then set on the new attribute using 
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>`.
+
 Additional information is provided in the guide topic :ref:`mavlink_messages`.
 
 .. tip::
@@ -16,7 +21,7 @@ Additional information is provided in the guide topic :ref:`mavlink_messages`.
 
     Please :ref:`contribute your code to the API <contributing_api>` so that it is available to 
     (and can be tested by) the whole DroneKit-Python community. 
-    
+
 
 
 Running the example
@@ -51,21 +56,30 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    RAW_IMU: time_boot_us=41270000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=1,zgyro=1,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=41510000,xacc=0,yacc=0,zacc=-1000,xgyro=1,ygyro=0,zgyro=1,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=41750000,xacc=1,yacc=0,zacc=-1000,xgyro=1,ygyro=1,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=41990000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=42230000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=42470000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=0,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=42710000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=42950000,xacc=0,yacc=0,zacc=-1000,xgyro=1,ygyro=1,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=43190000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=1,zgyro=1,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=43430000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=43670000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=0,zgyro=1,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=43910000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=0,zgyro=1,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=44150000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=1,zgyro=0,xmag=153,ymag=52,zmag=-364
-    RAW_IMU: time_boot_us=44390000,xacc=0,yacc=0,zacc=-999,xgyro=1,ygyro=1,zgyro=0,xmag=153,ymag=52,zmag=-364
-    APIThread-0 exiting...
+    Connecting to vehicle on: tcp:127.0.0.1:14550
+    >>> APM:Copter V3.3 (d6053245)
+    >>> Frame: QUAD
+    Display RAW_IMU messages for 5 seconds and then exit.
+    RAW_IMU: time_boot_us=1593318928,xacc=-3,yacc=5,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1593558928,xacc=-4,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1593798928,xacc=-2,yacc=6,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1594038928,xacc=-2,yacc=6,zacc=-1000,xgyro=1,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1594278928,xacc=-2,yacc=5,zacc=-999,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1594518928,xacc=-2,yacc=4,zacc=-998,xgyro=1,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1594758928,xacc=-3,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1594998928,xacc=-2,yacc=4,zacc=-999,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1595238928,xacc=-3,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1595478928,xacc=-2,yacc=4,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1595718928,xacc=-2,yacc=4,zacc=-999,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1595958928,xacc=-3,yacc=6,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1596198928,xacc=-4,yacc=6,zacc=-1000,xgyro=1,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1596438928,xacc=-2,yacc=6,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1596678928,xacc=-3,yacc=4,zacc=-999,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1596918928,xacc=-2,yacc=4,zacc=-999,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1597158928,xacc=-2,yacc=6,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1597398928,xacc=-2,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
+    RAW_IMU: time_boot_us=1597638928,xacc=-3,yacc=5,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
+    Close vehicle object
 
 
 
@@ -116,7 +130,7 @@ representation for printing the object.
             """
             String representation of the RawIMU object
             """
-            return "RAW_IMU: time_boot_us={},xacc={},yacc={},zacc={},xgyro={},ygyro={},zgyro={},xmag={},ymag={},zmag={}".format(self.time_boot_us, self.xacc,     self.yacc,self.zacc,self.xgyro,self.ygyro,self.zgyro,self.xmag,self.ymag,self.zmag)
+            return "RAW_IMU: time_boot_us={},xacc={},yacc={},zacc={},xgyro={},ygyro={},zgyro={},xmag={},ymag={},zmag={}".format(self.time_boot_us, self.xacc, self.yacc,self.zacc,self.xgyro,self.ygyro,self.zgyro,self.xmag,self.ymag,self.zmag)
 
 The script should then create an instance of the class and add it as an attribute to the vehicle object retrieved from the connection.
 All values in the new attribute should be set to ``None`` so that it is obvious to users when no messages have been received. 
@@ -129,66 +143,51 @@ All values in the new attribute should be set to ``None`` so that it is obvious 
     #Create an Vehicle.raw_imu object and set all values to None.
     vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
     
-We set a callback to intercept all MAVLink messages using :py:func:`Vehicle.set_mavlink_callback() <dronekit.lib.Vehicle.set_mavlink_callback>` 
-as shown below. 
+We create a listener using the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` 
+decorator as shown below. The listener is called for messages that contain the string "RAW_IMU", 
+with arguments for the vehicle, message name, and the message. It copies the message information into 
+the attribute and then notifies all observers.
 
 .. code:: python
 
-    def mavrx_debug_handler(message):
-        """
-        Handler for MAVLink messages.
-        """
-        #Handle raw_imu messages
-        mav_raw_imu_handler(message)
+    #Create a message listener using the decorator.   
+    @vehicle.message_listener('RAW_IMU')
+    def listener(self, name, message):
+        #Copy the message contents into the raw_imu attribute
+        self.raw_imu.time_boot_us=message.time_usec
+        self.raw_imu.xacc=message.xacc
+        self.raw_imu.yacc=message.yacc
+        self.raw_imu.zacc=message.zacc
+        self.raw_imu.xgyro=message.xgyro
+        self.raw_imu.ygyro=message.ygyro
+        self.raw_imu.zgyro=message.zgyro
+        self.raw_imu.xmag=message.xmag
+        self.raw_imu.ymag=message.ymag
+        self.raw_imu.zmag=message.zmag
+        
+        # Notify all observers of new message.
+        self._notify_attribute_listeners('raw_imu') 
 
-    # Set MAVLink callback handler (after getting Vehicle instance)
-    vehicle.set_mavlink_callback(mavrx_debug_handler)
 
-For clarity we have separated the handling code for the RAW_IMU message into ``mav_raw_imu_handler()``.  The handler simply checks the message type and 
-(for the correct messages) writes the values into the attribute. It then calls ``vehicle.notify_observers('raw_imu')`` to notify all observers of this attribute type.
-    
-.. code:: python
+.. note:: 
 
-    def mav_raw_imu_handler(message):
-        """
-        Writes received message to the (newly attached) vehicle.raw_imu object and notifies observers.
-        """
-        messagetype=str(message).split('{')[0].strip()
-        if messagetype=='RAW_IMU':
-            vehicle.raw_imu.time_boot_us=message.time_usec
-            vehicle.raw_imu.xacc=message.xacc
-            vehicle.raw_imu.yacc=message.yacc
-            vehicle.raw_imu.zacc=message.zacc
-            vehicle.raw_imu.xgyro=message.xgyro
-            vehicle.raw_imu.ygyro=message.ygyro
-            vehicle.raw_imu.zgyro=message.zgyro
-            vehicle.raw_imu.xmag=message.xmag
-            vehicle.raw_imu.ymag=message.ymag
-            vehicle.raw_imu.zmag=message.zmag
-
-           #Add Notify all observers of new message.
-            vehicle.notify_observers('raw_imu') 
+    The decorator pattern means that you can have multiple listeners for a particular message or for different
+    messages and they can all have the same function name/prototype (in this case ``listener(self, name, message``).
 
         
-At this point the ``Vehicle.raw_imu`` attribute can be treated the same as any other attribute for the duration of the session.
-You can query the attribute to get any of the values, and even add an observer as shown:
+From this point the ``Vehicle.raw_imu`` attribute can be treated the same as any other (inbuilt) attribute.
+You can query the attribute to get any of its members, and even add an observer as shown:
 
 
 .. code:: python
 
     #Callback to print the raw_imu
-    def raw_imu_callback(rawimu):
-        print vehicle.raw_imu
+    def raw_imu_callback(self, attr_name):
+        print self.raw_imu
 
 
     #Add observer for the vehicle's current location
-    vehicle.add_attribute_observer('raw_imu', raw_imu_callback)
-
-
-.. note::
-
-    It is not possible to reliably use this approach to create independent modules because only one 
-    MAVLink callback can be set at a time in the running program (``set_mavlink_callback()``) 
+    vehicle.on_attribute('raw_imu', raw_imu_callback)
 
 
 Known issues

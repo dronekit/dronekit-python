@@ -228,14 +228,16 @@ class VehicleMode(object):
     `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_). If an unsupported mode is set the script
     will raise a ``KeyError`` exception.
 
-    The :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` attribute can be queried for the current mode. The code snippet
-    below shows how to read (print) and observe changes to the mode:
+    The :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` attribute can be queried for the current mode. 
+    The code snippet below shows how to observe changes to the mode and then read the value:
 
     .. code:: python
 
-        def mode_callback(self, mode):
-            print "Vehicle Mode", vehicle.mode
+        #Callback definition for mode observer
+        def mode_callback(self, attr_name):
+            print "Vehicle Mode", self.mode
 
+        #Add observer callback for attribute `mode`
         vehicle.on_attribute('mode', mode_callback)
 
     The code snippet below shows how to change the vehicle mode to AUTO:
@@ -245,7 +247,8 @@ class VehicleMode(object):
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
 
-    For more information on getting/setting/observing the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
+    For more information on getting/setting/observing the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` 
+    (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
 
     .. py:attribute:: name
 
@@ -277,28 +280,34 @@ class HasObservers(object):
         """
         Add an attribute listener.
 
-        The listener callback function is called with the ``vehicle`` and ``attr_name`` arguments.
-        This can be used to infer the related attribute if the same callback is used 
-        for watching several attributes.
+        The ``observer`` callback function is called with the ``self`` and ``attr_name`` 
+        arguments:
+        
+        * The ``attr_name`` (attribute name) can be used to infer which attribute has triggered
+          if the same callback is used for watching several attributes.
+        * The ``self`` attribute is the associated :py:class:`Vehicle`. If needed, it can be compared
+          to a global vehicle handle to implement vehicle-specific callback handling.
 
         The example below shows how to get callbacks for location changes:
 
         .. code:: python
 
             #Callback to print the location in global and local frames
-            def location_callback(vehicle, attr_name):
-                print "Location (Global): ", vehicle.location.global_frame
-                print "Location (Local): ", vehicle.location.local_frame
+            def location_callback(self, attr_name):
+                print "Location (Global): ", self.location.global_frame
+                print "Location (Local): ", self.location.local_frame
 
             #Add observer for the vehicle's current location
             vehicle.on_attribute('location', location_callback)
 
+          
         .. note::
-            Attribute changes will only be published for changes due to some other entity.
-            They will not be published for changes made by the local API client
-            (in order to prevent redundant notification for local changes).
 
-        :param attr_name: The attribute to watch.
+            The callback function is invoked every time the associated attribute is updated 
+            from the vehicle (the attribute value may not have *changed*).
+            The callback can be removed using :py:func:`remove_attribute_listener`.            
+        
+        :param String attr_name: The attribute to watch.
         :param observer: The callback to invoke when a change in the attribute is detected.
 
         """
@@ -311,15 +320,16 @@ class HasObservers(object):
 
     def remove_attribute_listener(self, attr_name, observer):
         """
-        Remove an attribute listener.
+        Remove an attribute listener (observer) that was previously added using :py:func:`on_attribute`.
 
-        For example, the following line would remove a previously added vehicle 'global_frame' observer called location_callback:
+        For example, the following line would remove a previously added vehicle 'global_frame' 
+        observer called ``location_callback``:
 
         .. code:: python
 
             vehicle.remove_attribute_listener('global_frame', location_callback)
 
-        :param attr_name: The attribute name that is to have an observer removed.
+        :param String attr_name: The attribute name that is to have an observer removed.
         :param observer: The callback function to remove.
 
         """
@@ -345,6 +355,16 @@ class HasObservers(object):
     def attribute_listener(self, name):
         """
         Decorator for attribute listeners.
+        
+        This is used to create/define new attribute listenters. After using this method you can 
+        register an observer for the attribute using :py:func:`on_attribute`.
+        
+        .. note:: 
+        
+            The in-built attributes already have listeners (created using this method). The
+            method is public so that you can use it to add listeners to *new* attributes. 
+        
+        The example below shows how you can create a listener for the attitude attribute.
 
         .. code:: python
 
@@ -848,12 +868,24 @@ class Vehicle(HasObservers):
     def message_listener(self, name):
         """
         Decorator for message listeners.
+        
+        A decorated message listener is called with three arguments every time the 
+        specified message is received: 
+        
+        * ``self`` - the current vehicle.
+        * ``name`` - the name of the message that was intercepted.
+        * ``message`` - the actual message, a `pymavlink <http://www.qgroundcontrol.org/mavlink/pymavlink>`_
+          `class <https://www.samba.org/tridge/UAV/pymavlink/apidocs/classIndex.html>`_.        
 
+        For example, in the fragment below ``my_method`` will be called for every heartbeat message:
+        
         .. code:: python
 
             @vehicle.message_listener('HEARTBEAT')
             def my_method(self, name, msg):
                 pass
+                
+        :param String name: The name of the message to be intercepted by the decorated listener function.
         """
         def decorator(fn):
             if isinstance(name, list):
@@ -875,7 +907,7 @@ class Vehicle(HasObservers):
 
     def remove_message_listener(self, name, fn):
         """
-        Removes a message listener.
+        Removes a message listener (that was added using :py:func:`message_listener`)
         """
         name = str(name)
         if name in self._message_listeners:
