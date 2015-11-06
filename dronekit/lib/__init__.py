@@ -418,6 +418,52 @@ class HasObservers(object):
                 self.add_attribute_listener(name, fn)
         return decorator
 
+class Channels(dict):
+    """
+    Implements RC object.
+    """
+
+    def __init__(self, vehicle, count):
+        self._count = count
+        self._readonly = False
+        self._overrides = {}
+        for k in range(0, count):
+            self[k + 1] = None
+        self._readonly = True
+
+    @property
+    def count(self):
+        return self._count
+
+    def __setitem__(self, key, value):
+        if self._readonly:
+            raise TypeError('__setitem__ is not supported on Channels object')
+        return dict.__setitem__(self, key, value)
+
+    def __len__(self):
+        return self._count
+
+    def _update_channel(self, channel, value):
+        # If we have channels on different ports, we expand the Channels
+        # object to support them.
+        channel = str(channel)
+        self._readonly = False
+        self[channel] = value
+        self._readonly = True
+        self._count = max(self._count, int(channel))
+
+    @property
+    def overrides(self):
+        return copy.copy(self._overrides)
+
+    @overrides.setter
+    def overrides(self, newch):
+        self._overrides = {}
+        for k, v in newch.iteritems():
+            if v:
+                self._overrides[str(k)] = v
+        self._master.mav.rc_channels_override_send(0, 0, *list(self._overrides.values()))
+
 class Vehicle(HasObservers):
     """
     The main vehicle API
@@ -694,14 +740,15 @@ class Vehicle(HasObservers):
             self._mount_yaw = m.pointing_c / 100
             self.notify_attribute_listeners('mount', self.mount_status)
 
-        self._rc_readback = {}
+        # All keys are strings.
+        self._channels = Channels(self, 8)
 
         @self.on_message('RC_CHANNELS_RAW')
         def listener(self, name, m):
             def set_rc(chnum, v):
                 '''Private utility for handling rc channel messages'''
                 # use port to allow ch nums greater than 8
-                self._rc_readback[str(m.port * 8 + chnum)] = v
+                self._channels._update_channel(str(m.port * 8 + chnum), v)
 
             set_rc(1, m.chan1_raw)
             set_rc(2, m.chan2_raw)
@@ -1150,21 +1197,8 @@ class Vehicle(HasObservers):
             return self._ekf_poshorizabs or self._ekf_predposhorizabs
 
     @property
-    def channel_override(self):
-        overrides = self.__rc.override
-        # Only return entries that have a non zero override
-        return dict((str(num + 1), overrides[num]) for num in range(8) if overrides[num] != 0)
-
-    @channel_override.setter
-    def channel_override(self, newch):
-        overrides = self.__rc.override
-        for k, v in newch.iteritems():
-            overrides[int(k) - 1] = v
-        self.__rc.set_override(overrides)
-
-    @property
-    def channel_readback(self):
-        return copy.copy(self._rc_readback)
+    def channels(self):
+        return self._channels
 
     @property
     def home_location(self):
