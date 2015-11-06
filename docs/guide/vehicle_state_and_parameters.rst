@@ -139,7 +139,7 @@ You can observe any of the attributes (except for :py:attr:`Vehicle.home_locatio
 :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`) and will receive notification every time a value is received 
 from the connected vehicle.  This allows you to monitor changes to velocity and other vehicle state without the need for polling.
 
-Observers are added using :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>`, 
+Observers are added using :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`, 
 specifying the name of the attribute to observe and a callback function. 
 Observers are removed using :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`.
 
@@ -163,7 +163,7 @@ callback is first run.
         print "Location (Local): ", self.location.local_frame
         
     # Add a callback. The first parameter the name of the observed attribute (a string).
-    vehicle.on_attribute('location', location_callback)
+    vehicle.add_attribute_listener('location', location_callback)
 
     # Wait 2s so callback can be notified before the observer is removed
     time.sleep(2)
@@ -189,7 +189,7 @@ For example, the following code can be used in the callback to only print output
         last_rangefinder_distance = round(self.rangefinder.distance, 1)
         print " Rangefinder (metres): %s" % last_rangefinder_distance
 
-    vehicle.on_attribute('rangefinder', rangefinder_callback)
+    vehicle.add_attribute_listener('rangefinder', rangefinder_callback)
 
 
 

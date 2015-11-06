@@ -111,7 +111,7 @@ def mode_callback(self, attr_name):
     print " CALLBACK: Mode changed to", self.mode
 
 print "\nAdd attribute callback/observer on `vehicle` for `mode` attribute"     
-vehicle.on_attribute('mode', mode_callback)    
+vehicle.add_attribute_listener('mode', mode_callback)    
 
 
 print " Set mode=STABILIZE (currently: %s)" % vehicle.mode.name 
@@ -121,7 +121,7 @@ print " Wait 2s so callback invoked before observer removed"
 time.sleep(2)
 
 print " Remove Vehicle.mode observer"    
-# Remove observer added with `on_attribute()`  - specifying the attribute and callback function
+# Remove observer added with `add_attribute_listener()`  - specifying the attribute and callback function
 vehicle.remove_attribute_listener('mode', mode_callback)
 
 

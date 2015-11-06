@@ -7,10 +7,10 @@ Example: Create Attribute in App
 This example shows how you can create attributes for MAVLink messages within your DroneKit-Python script and 
 use them in *in the same way* as the built-in :py:class:`Vehicle <dronekit.lib.Vehicle>` attributes.
 
-It uses the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` decorator
+It uses the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator
 to set a function that is called to process a specific message, copy its values into an attribute, and notify
 observers. An observer is then set on the new attribute using 
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>`.
+:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`.
 
 Additional information is provided in the guide topic :ref:`mavlink_messages`.
 
@@ -143,7 +143,7 @@ All values in the new attribute should be set to ``None`` so that it is obvious 
     #Create an Vehicle.raw_imu object and set all values to None.
     vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
     
-We create a listener using the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` 
+We create a listener using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
 decorator as shown below. The listener is called for messages that contain the string "RAW_IMU", 
 with arguments for the vehicle, message name, and the message. It copies the message information into 
 the attribute and then notifies all observers.
@@ -151,7 +151,7 @@ the attribute and then notifies all observers.
 .. code:: python
 
     #Create a message listener using the decorator.   
-    @vehicle.message_listener('RAW_IMU')
+    @vehicle.on_message('RAW_IMU')
     def listener(self, name, message):
         #Copy the message contents into the raw_imu attribute
         self.raw_imu.time_boot_us=message.time_usec
@@ -187,7 +187,7 @@ You can query the attribute to get any of its members, and even add an observer 
 
 
     #Add observer for the vehicle's current location
-    vehicle.on_attribute('raw_imu', raw_imu_callback)
+    vehicle.add_attribute_listener('raw_imu', raw_imu_callback)
 
 
 Known issues

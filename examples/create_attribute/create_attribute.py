@@ -76,7 +76,7 @@ vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
 
 
 #Create a message listener using the decorator.   
-@vehicle.message_listener('RAW_IMU')
+@vehicle.on_message('RAW_IMU')
 def listener(self, name, message):
     """
     The listener is called for messages that contain the string specified in the decorator,
@@ -110,7 +110,7 @@ def raw_imu_callback(self,rawimu):
 
 
 #Add observer for the vehicle's current location
-vehicle.on_attribute('raw_imu', raw_imu_callback)
+vehicle.add_attribute_listener('raw_imu', raw_imu_callback)
 
 print 'Display RAW_IMU messages for 5 seconds and then exit.'
 time.sleep(5)

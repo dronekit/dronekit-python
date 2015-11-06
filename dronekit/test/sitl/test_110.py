@@ -26,13 +26,13 @@ def test_110(connpath):
         armed_callback.called += 1
     armed_callback.called = 0
 
-    # When the same (event, callback) pair is passed to on_attribute,
+    # When the same (event, callback) pair is passed to add_attribute_listener,
     # only one instance of the observer callback should be added.
-    vehicle.on_attribute('armed', armed_callback)
-    vehicle.on_attribute('armed', armed_callback)
-    vehicle.on_attribute('armed', armed_callback)
-    vehicle.on_attribute('armed', armed_callback)
-    vehicle.on_attribute('armed', armed_callback)
+    vehicle.add_attribute_listener('armed', armed_callback)
+    vehicle.add_attribute_listener('armed', armed_callback)
+    vehicle.add_attribute_listener('armed', armed_callback)
+    vehicle.add_attribute_listener('armed', armed_callback)
+    vehicle.add_attribute_listener('armed', armed_callback)
 
     # Disarm and see update.
     vehicle.armed = False

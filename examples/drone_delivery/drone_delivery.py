@@ -58,10 +58,10 @@ class Drone(object):
         self._log("DroneDelivery Start")
 
         # Register observers
-        self.vehicle.on_attribute('armed', self.armed_callback)
-        self.vehicle.on_attribute('location', self.location_callback)
-        #self.vehicle.on_attribute('mode', self.mode_callback)
-        self.vehicle.on_attribute('gps_0', self.gps_callback)
+        self.vehicle.add_attribute_listener('armed', self.armed_callback)
+        self.vehicle.add_attribute_listener('location', self.location_callback)
+        #self.vehicle.add_attribute_listener('mode', self.mode_callback)
+        self.vehicle.add_attribute_listener('gps_0', self.gps_callback)
 
         self._log("Waiting for GPS Lock")
 

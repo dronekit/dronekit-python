@@ -8,7 +8,7 @@ Some useful MAVLink messages sent by the autopilot are not (yet) directly availa
 through the :ref:`observable attributes <vehicle_state_observe_attributes>` in :py:class:`Vehicle <dronekit.lib.Vehicle>`.
 
 This topic shows how you can intercept specific MAVLink messages by defining a listener callback function 
-using the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` 
+using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
 decorator.
 
 .. tip::
@@ -23,7 +23,7 @@ decorator.
 Creating a message listener
 ===========================
 
-The :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` decorator can be used to 
+The :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator can be used to 
 set a particular function as the callback handler for a particular message type. You can create listeners 
 for as many messages as you like, or even multiple listeners for the same message. 
 
@@ -32,7 +32,7 @@ For example, code snippet below shows how to set a listener for the ``RANGEFINDE
 .. code:: python
 
     #Create a message listener using the decorator.   
-    @vehicle.message_listener('RANGEFINDER')
+    @vehicle.on_message('RANGEFINDER')
     def listener(self, name, message):
         print message
 
@@ -56,7 +56,7 @@ function might look like this:
 .. code:: python
 
     #Create a message listener using the decorator.   
-    @vehicle.message_listener('RANGEFINDER')
+    @vehicle.on_message('RANGEFINDER')
     def listener(self, name, message):
         print 'distance: %s' % message.distance
         print 'voltage: %s' % message.voltage
