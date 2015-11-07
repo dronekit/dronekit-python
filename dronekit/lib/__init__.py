@@ -1166,6 +1166,8 @@ class Vehicle(HasObservers):
 
     @property
     def battery(self):
+        if not (self._voltage and self._current and self._level):
+            return None
         return Battery(self._voltage, self._current, self._level)
 
     @property
