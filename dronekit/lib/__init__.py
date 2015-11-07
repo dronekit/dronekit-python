@@ -749,6 +749,7 @@ class Vehicle(HasObservers):
 
         # Waypoints.
 
+        self._home_location = None
         self._wploader = mavwp.MAVWPLoader()
         self._wp_loaded = True
         self._wp_uploaded = None
@@ -765,6 +766,10 @@ class Vehicle(HasObservers):
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
+                if msg.seq == 0:
+                    if not (msg.x == 0 and msg.y == 0 and msg.z == 0):
+                        self._home_location = LocationGlobal(msg.x, msg.y, msg.z, is_relative=False)
+
                 if msg.seq > self._wploader.count():
                     # Unexpected waypoint
                     pass
@@ -1141,9 +1146,7 @@ class Vehicle(HasObservers):
         The attribute is not writeable or observable.
 
         """
-        loc = self._wploader.wp(0)
-        if loc:
-            return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)
+        return copy.copy(self._home_location)
 
     @home_location.setter
     def home_location(self, pos):
@@ -1154,6 +1157,14 @@ class Vehicle(HasObservers):
 
             If the GPS values differ heavily from EKF values, setting this value will fail silently.
         """
+
+        if not isinstance(pos, LocationGlobal):
+            raise Exception('Excepting home_location to be set to a LocationGlobal.')
+
+        # Set cached home location.
+        self._home_location = copy.copy(pos)
+
+        # Send MAVLink update.
         self.send_mavlink(self.message_factory.command_long_encode(
             0, 0, # target system, target component
             mavutil.mavlink.MAV_CMD_DO_SET_HOME, # command
