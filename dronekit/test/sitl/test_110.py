@@ -22,7 +22,7 @@ def test_110(connpath):
     time.sleep(3)
 
     # Define example callback for mode
-    def armed_callback(vehicle, attribute):
+    def armed_callback(vehicle, attribute, value):
         armed_callback.called += 1
     armed_callback.called = 0
 

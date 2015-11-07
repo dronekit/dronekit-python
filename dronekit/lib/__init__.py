@@ -339,7 +339,7 @@ class HasObservers(object):
             if len(l) == 0:
                 del self.__observers[attr_name]
 
-    def notify_attribute_listeners(self, attr_name):
+    def notify_attribute_listeners(self, attr_name, value):
         """
         Internal function. Do not use.
 
@@ -348,9 +348,9 @@ class HasObservers(object):
         .. INTERNAL NOTE: (For subclass use only)
         """
         for fn in self.__observers.get(attr_name, []):
-            fn(self, attr_name)
+            fn(self, attr_name, value)
         for fn in self.__observers.get('*', []):
-            fn(self, attr_name)
+            fn(self, attr_name, value)
 
     def on_attribute(self, name):
         """
@@ -569,7 +569,7 @@ class Vehicle(HasObservers):
         self._default_ready_attrs = ['parameters', 'gps_0', 'armed', 'mode', 'attitude']
 
         @self.on_attribute('*')
-        def listener(_, name):
+        def listener(_, name, value):
             self._ready_attrs.add(name)
 
         # Attaches message listeners.
@@ -588,9 +588,9 @@ class Vehicle(HasObservers):
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self.notify_attribute_listeners('location')
+            self.notify_attribute_listeners('location', self.location)
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
-            self.notify_attribute_listeners('velocity')
+            self.notify_attribute_listeners('velocity', self.velocity)
 
         self._north = None
         self._east = None
@@ -601,7 +601,7 @@ class Vehicle(HasObservers):
             self._north = m.x
             self._east = m.y
             self._down = m.z
-            self.notify_attribute_listeners('local_position')
+            self.notify_attribute_listeners('local_position', self.location.local_frame)
 
         self._pitch = None
         self._yaw = None
@@ -618,7 +618,7 @@ class Vehicle(HasObservers):
             self._pitchspeed = m.pitchspeed
             self._yawspeed = m.yawspeed
             self._rollspeed = m.rollspeed
-            self.notify_attribute_listeners('attitude')
+            self.notify_attribute_listeners('attitude', self.attitude)
 
         self._heading = None
         self._alt = None
@@ -628,13 +628,13 @@ class Vehicle(HasObservers):
         @self.on_message('VFR_HUD')
         def listener(self, name, m):
             self._heading = m.heading
-            self.notify_attribute_listeners('heading')
+            self.notify_attribute_listeners('heading', self.heading)
             self._alt = m.alt
-            self.notify_attribute_listeners('location')
+            self.notify_attribute_listeners('location', self.location)
             self._airspeed = m.airspeed
-            self.notify_attribute_listeners('airspeed')
+            self.notify_attribute_listeners('airspeed', self.airspeed)
             self._groundspeed = m.groundspeed
-            self.notify_attribute_listeners('groundspeed')
+            self.notify_attribute_listeners('groundspeed', self.groundspeed)
 
         self._rngfnd_distance = None
         self._rngfnd_voltage = None
@@ -643,7 +643,7 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._rngfnd_distance = m.distance
             self._rngfnd_voltage = m.voltage
-            self.notify_attribute_listeners('rangefinder')
+            self.notify_attribute_listeners('rangefinder', self.rangefinder)
 
         self._mount_pitch = None
         self._mount_yaw = None
@@ -654,7 +654,7 @@ class Vehicle(HasObservers):
             self._mount_pitch = m.pointing_a / 100
             self._mount_roll = m.pointing_b / 100
             self._mount_yaw = m.pointing_c / 100
-            self.notify_attribute_listeners('mount')
+            self.notify_attribute_listeners('mount', self.mount_status)
 
         self._rc_readback = {}
 
@@ -683,7 +683,7 @@ class Vehicle(HasObservers):
             self._voltage = m.voltage_battery
             self._current = m.current_battery
             self._level = m.battery_remaining
-            self.notify_attribute_listeners('battery')
+            self.notify_attribute_listeners('battery', self.battery)
 
         self._eph = None
         self._epv = None
@@ -696,7 +696,7 @@ class Vehicle(HasObservers):
             self._epv = m.epv
             self._satellites_visible = m.satellites_visible
             self._fix_type = m.fix_type
-            self.notify_attribute_listeners('gps_0')
+            self.notify_attribute_listeners('gps_0', self.gps_0)
 
         self._current_waypoint = 0
 
@@ -717,7 +717,7 @@ class Vehicle(HasObservers):
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
 
-            self.notify_attribute_listeners('ekf_ok')
+            self.notify_attribute_listeners('ekf_ok', self.ekf_ok)
 
         self._flightmode = 'AUTO'
         self._armed = False
@@ -726,10 +726,10 @@ class Vehicle(HasObservers):
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-            self.notify_attribute_listeners('armed')
+            self.notify_attribute_listeners('armed', self.armed)
             self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
             self._system_status = m.system_status
-            self.notify_attribute_listeners('mode')
+            self.notify_attribute_listeners('mode', self.mode)
 
         # Waypoints.
 
@@ -762,7 +762,7 @@ class Vehicle(HasObservers):
                         self._master.waypoint_request_send(msg.seq + 1)
                     else:
                         self._wp_loaded = True
-                        self.notify_attribute_listeners('commands')
+                        self.notify_attribute_listeners('commands', self.commands)
 
         # Waypoint send to master
         @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
@@ -795,7 +795,7 @@ class Vehicle(HasObservers):
             if self._params_start:
                 if None not in self._params_set and not self._params_loaded:
                     self._params_loaded = True
-                    self.notify_attribute_listeners('parameters')
+                    self.notify_attribute_listeners('parameters', self.parameters)
 
                 if not self._params_loaded and time.time() - self._params_last > self._params_duration:
                     c = 0
