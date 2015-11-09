@@ -71,10 +71,15 @@ On the command prompt you should see (something like):
      Heading: 341
      Mode: STABILIZE
      Armed: False
-     Home Location: LocationGlobal:lat=-35.3632392883,lon=149.165237427,alt=222.0,is_relative=False
+     Waiting for home location ...
+     ...
+     Waiting for home location ...
+
+     Home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
 
     Set new home location
-     New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632354736,lon=149.165237427,alt=222.0,is_relative=False
+     New Home Location (from attribute - altitude should be 222): LocationGlobal:lat=-35.363261,lon=149.1652299,alt=222,is_relative=False
+     New Home Location (from vehicle - altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0,is_relative=False
 
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...

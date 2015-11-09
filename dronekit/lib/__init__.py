@@ -749,6 +749,7 @@ class Vehicle(HasObservers):
 
         # Waypoints.
 
+        self._home_location = None
         self._wploader = mavwp.MAVWPLoader()
         self._wp_loaded = True
         self._wp_uploaded = None
@@ -765,6 +766,10 @@ class Vehicle(HasObservers):
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
+                if msg.seq == 0:
+                    if not (msg.x == 0 and msg.y == 0 and msg.z == 0):
+                        self._home_location = LocationGlobal(msg.x, msg.y, msg.z, is_relative=False)
+
                 if msg.seq > self._wploader.count():
                     # Unexpected waypoint
                     pass
@@ -1118,12 +1123,11 @@ class Vehicle(HasObservers):
     @property
     def home_location(self):
         """
-        The current home location in a :py:class:`LocationGlobal`. 
+        The current home location in a :py:class:`LocationGlobal`.
 
-        This value is initially set by the autopilot as the location of first GPS Lock.
-        The attribute has a value of ``None`` until :py:func:`Vehicle.commands` has been downloaded. 
-        If the attribute is queried before the home location is set the returned `LocationGlobal` 
-        will have zero values for its member attributes.
+        To get the attribute you must first download the :py:func:`Vehicle.commands`. 
+        The attribute has a value of ``None`` until :py:func:`Vehicle.commands` has been downloaded
+        **and** the autopilot has set an initial home location (typically where the vehicle first gets GPS lock).
 
         .. code-block:: python
 
@@ -1138,22 +1142,40 @@ class Vehicle(HasObservers):
             # Get the home location
             home = vehicle.home_location
 
-        The attribute is not writeable or observable.
+        The ``home_location`` is not observable.
+        
+        The attribute can be written (in the same way as any other attribute) after it has successfully 
+        been populated from the vehicle. The value sent to the vehicle is cached in the attribute 
+        (and can potentially get out of date if you don't re-download ``Vehicle.commands``):
+
+        .. warning:: 
+
+            Setting the value will fail silently if the specified location is more than 50km from the EKF origin.
+        
 
         """
-        loc = self._wploader.wp(0)
-        if loc:
-            return LocationGlobal(loc.x, loc.y, loc.z, is_relative=False)
+        return copy.copy(self._home_location)
 
     @home_location.setter
     def home_location(self, pos):
         """
         Sets the home location to that of a ``LocationGlobal`` object.
+        
+        The value cannot be set until it has successfully been read from the vehicle. After being
+        set the value is cached in the home_location attribute and does not have to be re-read.
 
         .. note:: 
 
-            If the GPS values differ heavily from EKF values, setting this value will fail silently.
+            Setting the value will fail silently if the specified location is more than 50km from the EKF origin.
         """
+
+        if not isinstance(pos, LocationGlobal):
+            raise Exception('Excepting home_location to be set to a LocationGlobal.')
+
+        # Set cached home location.
+        self._home_location = copy.copy(pos)
+
+        # Send MAVLink update.
         self.send_mavlink(self.message_factory.command_long_encode(
             0, 0, # target system, target component
             mavutil.mavlink.MAV_CMD_DO_SET_HOME, # command
