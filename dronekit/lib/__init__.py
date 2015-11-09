@@ -418,15 +418,50 @@ class HasObservers(object):
                 self.add_attribute_listener(name, fn)
         return decorator
 
+
+class ChannelsOverride(dict):
+    def __init__(self, vehicle):
+        self._vehicle = vehicle
+        self._count = 8 # Fixed by MAVLink
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self, str(key))
+
+    def __setitem__(self, key, value):
+        if not (int(key) >= 0 and int(key) < self._count):
+            raise Exception('Invalid channel index %s' % key)
+        if not value:
+            dict.__delitem__(self, str(key))
+        else:
+            dict.__setitem__(self, str(key), value)
+        self._send()
+
+    def __delitem__(self, key):
+        dict.__delitem__(self, str(key))
+        self._send()
+
+    def __len__(self):
+        return self._count
+
+    def _send(self):
+        overrides = [0] * 8
+        for k, v in self.iteritems():
+            overrides[int(k)-1] = v
+        self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
+
+
 class Channels(dict):
     """
     Implements RC object.
     """
 
     def __init__(self, vehicle, count):
+        self._vehicle = vehicle
         self._count = count
+        self._overrides = ChannelsOverride(vehicle)
+
+        # populate readback
         self._readonly = False
-        self._overrides = {}
         for k in range(0, count):
             self[k + 1] = None
         self._readonly = True
@@ -435,10 +470,13 @@ class Channels(dict):
     def count(self):
         return self._count
 
+    def __getitem__(self, key):
+        return dict.__getitem__(self, str(key))
+
     def __setitem__(self, key, value):
         if self._readonly:
             raise TypeError('__setitem__ is not supported on Channels object')
-        return dict.__setitem__(self, key, value)
+        return dict.__setitem__(self, str(key), value)
 
     def __len__(self):
         return self._count
@@ -446,23 +484,25 @@ class Channels(dict):
     def _update_channel(self, channel, value):
         # If we have channels on different ports, we expand the Channels
         # object to support them.
-        channel = str(channel)
+        channel = int(channel)
         self._readonly = False
         self[channel] = value
         self._readonly = True
-        self._count = max(self._count, int(channel))
+        self._count = max(self._count, channel)
 
     @property
     def overrides(self):
-        return copy.copy(self._overrides)
+        return self._overrides
 
     @overrides.setter
     def overrides(self, newch):
-        self._overrides = {}
         for k, v in newch.iteritems():
             if v:
                 self._overrides[str(k)] = v
-        self._master.mav.rc_channels_override_send(0, 0, *list(self._overrides.values()))
+            else:
+                del self._overrides[str(k)]
+        self._overrides._send()
+
 
 class Vehicle(HasObservers):
     """
