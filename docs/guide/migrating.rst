@@ -174,26 +174,27 @@ This code must be replaced with the DroneKit-Python 2.x :py:attr:`Vehicle.home_l
     :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`. 
 
 
-Debugging
-=========
-
-DroneKit-Python 1.x scripts were run in the context of a MAVProxy. This made them difficult to debug because you had to 
-instrument your code in order to launch the debugger, and debug messages were interleaved with MAVProxy output.
-
-Debugging on DroneKit-Python 2.x is much easier. Apps are now just standalone scripts, and can be debugged 
-using standard Python methods (including the debugger/IDE of your choice). 
 
 Observing attribute changes
 ---------------------------
 
-The DroneKit-Python 1.x observer functions ``vehicle.add_attribute_observer`` and ``Vehicle.remove_attribute_observer`` 
-have been replaced by :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`
-and :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`, respectively.
+The DroneKit-Python 1.x observer function ``vehicle.add_attribute_observer`` has been replaced by 
+:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` or 
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` in DKYP2.x,  and ``Vehicle.remove_attribute_observer`` 
+has been repaced by :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`.
 
-The functions are used in a very similar way, the main difference being that the callback function now takes two arguments
-(the vehicle and the attribute name) rather than just the attribute name.
+The main difference is that the callback function now takes three arguments (the vehicle object, attribute name, attribute value)
+rather than just the attribute name. This allows you to more easily write callbacks that support attribute-specific and 
+vehicle-specific handling and means that you can get the new value from the callback attribute rather than by re-querying
+the vehicle. 
+
+The difference between :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` and 
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` is that attribute listeners added using
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` cannot be removed (but ``on_attribute()`` does have
+a more elegant syntax).
 
 See :ref:`vehicle_state_observe_attributes` for more information.
+
 
 Intercepting MAVLink Messages
 -----------------------------
@@ -202,7 +203,27 @@ DroneKit-Python 1.x used ``Vehicle.set_mavlink_callback()`` and ``Vehicle.unset_
 to set/unset a callback function that was invoked for every single mavlink message.
 
 In DKPY2 this has been replaced by the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
-decorator, which allows you to specify a callback function that will be invoked for a single message. The same
-mechanism is used internally for message capture and to create ``Vehicle`` attributes.
+decorator, which allows you to specify a callback function that will be invoked for a single message 
+(or all messages, by specifying the message name as the wildcard string '``*``').
+
+.. tip::
+
+    :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` is used in core DroneKit code for 
+    message capture and to create ``Vehicle`` attributes.
+
+    The API also adds :py:func:`Vehicle.add_message_listener() <dronekit.lib.Vehicle.add_message_listener>`
+    and :py:func:`Vehicle.remove_message_listener() <dronekit.lib.Vehicle.remove_message_listener>`. 
+    These can be used instead of :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` when you need to be
+    able to *remove* an added listener.
 
 See :ref:`mavlink_messages` for more information.
+
+
+Debugging
+=========
+
+DroneKit-Python 1.x scripts were run in the context of a MAVProxy. This made them difficult to debug because you had to 
+instrument your code in order to launch the debugger, and debug messages were interleaved with MAVProxy output.
+
+Debugging on DroneKit-Python 2.x is much easier. Apps are now just standalone scripts, and can be debugged 
+using standard Python methods (including the debugger/IDE of your choice). 

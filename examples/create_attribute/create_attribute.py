@@ -47,7 +47,7 @@ class RawIMU(object):
     :param ymag: Y Magnetic field (milli tesla)
     :param zmag: Z Magnetic field (milli tesla)    
     """
-    def __init__(self, time_boot_us, xacc, yacc, zacc, xygro, ygyro, zgyro, xmag, ymag, zmag):
+    def __init__(self, time_boot_us=None, xacc=None, yacc=None, zacc=None, xygro=None, ygyro=None, zgyro=None, xmag=None, ymag=None, zmag=None):
         """
         RawIMU object constructor.
         """
@@ -70,8 +70,8 @@ class RawIMU(object):
 
    
 
-#Create an Vehicle.raw_imu object and set all values to None.
-vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
+#Create an Vehicle.raw_imu object with initial values set to None.
+vehicle.raw_imu=RawIMU()
  
 
 
@@ -96,8 +96,8 @@ def listener(self, name, message):
     self.raw_imu.ymag=message.ymag
     self.raw_imu.zmag=message.zmag
     
-    # Notify all observers of new message.
-    self.notify_attribute_listeners('raw_imu') 
+    # Notify all observers of new message (with new value)
+    self.notify_attribute_listeners('raw_imu', self.raw_imu) 
     
 
 """
@@ -105,8 +105,9 @@ From this point vehicle.raw_imu can be used just like any other attribute.
 """
 
 #Callback to print the raw_imu
-def raw_imu_callback(self,rawimu):
-    print self.raw_imu
+def raw_imu_callback(self,rawimu,msg):
+    #msg is the attribute/value that changed
+    print msg
 
 
 #Add observer for the vehicle's current location

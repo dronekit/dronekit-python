@@ -49,31 +49,30 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    Connecting to vehicle on: 127.0.0.1:14550
     >>> APM:Copter V3.3 (d6053245)
     >>> Frame: QUAD
 
     Accumulating vehicle attribute messages
 
     Get all vehicle attribute values:
-     Global Location: LocationGlobal:lat=-35.3632585,lon=149.165227,alt=362.0,is_relative=False
+     Global Location: LocationGlobal:lat=-35.3632361,lon=149.1652374,alt=361.989990234,is_relative=False
      Local Location: LocationLocal:north=None,east=None,down=None
-     Attitude: Attitude:pitch=-0.00352983362973,yaw=-0.0589601770043,roll=-0.00761049194261
-     Velocity: [0.02, -0.02, 0.0]
+     Attitude: Attitude:pitch=-0.0078572165221,yaw=-0.352846503258,roll=0.00523957656696
+     Velocity: [-0.02, 0.01, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery:voltage=12.587,current=0.0,level=98
+     Battery: Battery:voltage=12.587,current=0.0,level=95
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
      Mode: STABILIZE
      Armed: False
-     Home Location: LocationGlobal:lat=-35.3632583618,lon=149.165222168,alt=222.0,is_relative=False
+     Home Location: LocationGlobal:lat=-35.3632392883,lon=149.165237427,alt=222.0,is_relative=False
 
     Set new home location
-     New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632583618,lon=149.165222168,alt=222.0,is_relative=False
+     New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632354736,lon=149.165237427,alt=222.0,is_relative=False
 
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
@@ -87,8 +86,34 @@ On the command prompt you should see (something like):
      Set mode=STABILIZE (currently: GUIDED)
      Wait 2s so callback invoked before observer removed
      CALLBACK: Mode changed to VehicleMode:STABILIZE
-     CALLBACK: Mode changed to VehicleMode:STABILIZE
      Remove Vehicle.mode observer
+
+    Add attribute callback/observer `mode` attribute using decorator
+     Set mode=GUIDED (currently: STABILIZE)
+     Wait 2s so callback invoked before observer removed
+     CALLBACK: Mode changed to VehicleMode:GUIDED
+
+     Attempt to remove observer added with `on_attribute` decorator (should fail)
+     Exception: Cannot add observer added using decorator
+
+    Add attribute calback detecting any attribute change
+     Wait 1s so callback invoked before observer removed
+     CALLBACK: (battery): Battery:voltage=12.538,current=3.48,level=95
+     CALLBACK: (gps_0): GPSInfo:fix=3,num_sat=10
+     CALLBACK: (location): LocationGlobal:lat=-35.3632361,lon=149.1652379,alt=361.989990234,is_relative=False
+     CALLBACK: (velocity): [-0.01, 0.03, 0.0]
+     CALLBACK: (local_position): LocationLocal:north=2.78085613251,east=0.730665147305,down=0.00156301062088
+     CALLBACK: (attitude): Attitude:pitch=-0.00780974514782,yaw=-0.361094027758,roll=0.00564418500289
+     CALLBACK: (heading): 339
+     CALLBACK: (location): LocationGlobal:lat=-35.3632361,lon=149.1652379,alt=361.989990234,is_relative=False
+     CALLBACK: (airspeed): 0.019999999553
+     CALLBACK: (groundspeed): 0.019999999553
+     CALLBACK: (ekf_ok): True
+     CALLBACK: (armed): True
+     CALLBACK: (mode): VehicleMode:GUIDED
+     ...
+     CALLBACK: (ekf_ok): True
+     Remove Vehicle attribute observer
 
     Read vehicle param 'THR_MIN': 130.0
     Write vehicle param 'THR_MIN' : 10
@@ -96,6 +121,7 @@ On the command prompt you should see (something like):
 
     Reset vehicle attributes/parameters and exit
     >>> DISARMING MOTORS
+     CALLBACK: Mode changed to VehicleMode:STABILIZE
 
     Close vehicle object
     Completed

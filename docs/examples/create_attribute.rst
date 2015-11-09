@@ -111,7 +111,7 @@ representation for printing the object.
         :param zmag: Z Magnetic field (milli tesla)    
         """
 
-        def __init__(self, time_boot_us, xacc, yacc, zacc, xygro, ygyro, zgyro, xmag, ymag, zmag):
+        def __init__(self, time_boot_us=None, xacc=None, yacc=None, zacc=None, xygro=None, ygyro=None, zgyro=None, xmag=None, ymag=None, zmag=None):
             """
             RawIMU object constructor.
             """
@@ -140,8 +140,8 @@ All values in the new attribute should be set to ``None`` so that it is obvious 
     # Connect to the Vehicle passed in as args.connect
     vehicle = connect(args.connect, wait_ready=True)
 
-    #Create an Vehicle.raw_imu object and set all values to None.
-    vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
+    #Create an Vehicle.raw_imu object with values set to `None`.
+    vehicle.raw_imu=RawIMU()
     
 We create a listener using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
 decorator as shown below. The listener is called for messages that contain the string "RAW_IMU", 
@@ -165,8 +165,8 @@ the attribute and then notifies all observers.
         self.raw_imu.ymag=message.ymag
         self.raw_imu.zmag=message.zmag
         
-        # Notify all observers of new message.
-        self.notify_attribute_listeners('raw_imu') 
+        # Notify all observers of new message with new value
+        self.notify_attribute_listeners('raw_imu', self.raw_imu) 
 
 
 .. note:: 
@@ -182,8 +182,9 @@ You can query the attribute to get any of its members, and even add an observer 
 .. code:: python
 
     #Callback to print the raw_imu
-    def raw_imu_callback(self, attr_name):
-        print self.raw_imu
+    def raw_imu_callback(self, attr_name, msg):
+        #msg is the value/attribute that was updated.
+        print msg
 
 
     #Add observer for the vehicle's current location
