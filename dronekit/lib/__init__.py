@@ -238,7 +238,7 @@ class VehicleMode(object):
             print "Vehicle Mode", self.mode
 
         #Add observer callback for attribute `mode`
-        vehicle.on_attribute('mode', mode_callback)
+        vehicle.add_attribute_listener('mode', mode_callback)
 
     The code snippet below shows how to change the vehicle mode to AUTO:
 
@@ -274,40 +274,42 @@ class HasObservers(object):
     """
     Provides callback based notification on attribute changes.
 
-    The argument list for observer is ``observer(object, attr_name)``.
+    The argument list for observer is ``observer(object, attr_name, attribute_value)``.
     """
-    def on_attribute(self, attr_name, observer):
+    def add_attribute_listener(self, attr_name, observer):
         """
-        Add an attribute listener.
+        Add an attribute listener callback.
 
-        The ``observer`` callback function is called with the ``self`` and ``attr_name`` 
-        arguments:
+        The callback function (``observer``) is invoked every time the associated attribute is updated 
+        from the vehicle (the attribute value may not have *changed*). The callback can be removed 
+        using :py:func:`remove_attribute_listener`.
         
-        * The ``attr_name`` (attribute name) can be used to infer which attribute has triggered
-          if the same callback is used for watching several attributes.
-        * The ``self`` attribute is the associated :py:class:`Vehicle`. If needed, it can be compared
-          to a global vehicle handle to implement vehicle-specific callback handling.
+        .. note::
+        
+            The :py:func:`on_attribute` decorator performs the same operation as this method, but with 
+            a more elegant syntax. Use ``add_attribute_listener`` by preference if you will need to remove 
+            the observer.
 
-        The example below shows how to get callbacks for location changes:
+        The callback arguments are:
+        
+        * ``self`` - the associated :py:class:`Vehicle`. This may be compared to a global vehicle handle 
+          to implement vehicle-specific callback handling (if needed).
+        * ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
+          if the same callback is used for watching several attributes.
+        * ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
+
+        The example below shows how to get callbacks for (global) location changes:
 
         .. code:: python
 
-            #Callback to print the location in global and local frames
-            def location_callback(self, attr_name):
-                print "Location (Global): ", self.location.global_frame
-                print "Location (Local): ", self.location.local_frame
+            #Callback to print the location in global frame
+            def location_callback(self, attr_name, msg):
+                print "Location (Global): ", msg
 
             #Add observer for the vehicle's current location
-            vehicle.on_attribute('location', location_callback)
-
-          
-        .. note::
-
-            The callback function is invoked every time the associated attribute is updated 
-            from the vehicle (the attribute value may not have *changed*).
-            The callback can be removed using :py:func:`remove_attribute_listener`.            
+            vehicle.add_attribute_listener('global_frame', location_callback)     
         
-        :param String attr_name: The attribute to watch.
+        :param String attr_name: The name of the attribute to watch (or '*' to watch all attributes).
         :param observer: The callback to invoke when a change in the attribute is detected.
 
         """
@@ -320,7 +322,7 @@ class HasObservers(object):
 
     def remove_attribute_listener(self, attr_name, observer):
         """
-        Remove an attribute listener (observer) that was previously added using :py:func:`on_attribute`.
+        Remove an attribute listener (observer) that was previously added using :py:func:`add_attribute_listener`.
 
         For example, the following line would remove a previously added vehicle 'global_frame' 
         observer called ``location_callback``:
@@ -329,7 +331,7 @@ class HasObservers(object):
 
             vehicle.remove_attribute_listener('global_frame', location_callback)
 
-        :param String attr_name: The attribute name that is to have an observer removed.
+        :param String attr_name: The attribute name that is to have an observer removed (or '*' to remove an 'all attribute' observer).
         :param observer: The callback function to remove.
 
         """
@@ -339,45 +341,59 @@ class HasObservers(object):
             if len(l) == 0:
                 del self.__observers[attr_name]
 
-    def _notify_attribute_listeners(self, attr_name):
+    def notify_attribute_listeners(self, attr_name, value):
         """
-        Internal function. Do not use.
-
-        This method calls observers when the named attribute has changed.
-
-        .. INTERNAL NOTE: (For subclass use only)
+        This method calls attribute observers when the named attribute has changed.
+        
+        It should be called in message listeners after updating an attribute with new information
+        from the vehicle. 
+        
+        :param String attr_name: The name of the attribute that has been updated.
+        :param value: The current value of the attribute that has been updated.
         """
         for fn in self.__observers.get(attr_name, []):
-            fn(self, attr_name)
+            fn(self, attr_name, value)
         for fn in self.__observers.get('*', []):
-            fn(self, attr_name)
+            fn(self, attr_name, value)
 
-    def attribute_listener(self, name):
+    def on_attribute(self, name):
         """
         Decorator for attribute listeners.
         
-        This is used to create/define new attribute listenters. After using this method you can 
-        register an observer for the attribute using :py:func:`on_attribute`.
+        The decorated ``observer`` callback function is invoked every time the associated attribute is updated 
+        from the vehicle (the attribute value may not have *changed*). 
         
-        .. note:: 
+        The callback arguments are:
         
-            The in-built attributes already have listeners (created using this method). The
-            method is public so that you can use it to add listeners to *new* attributes. 
+        * ``self`` - the associated :py:class:`Vehicle`. This may be compared to a global vehicle handle 
+          to implement vehicle-specific callback handling (if needed).
+        * ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
+          if the same callback is used for watching several attributes.
+        * ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
         
-        The example below shows how you can create a listener for the attitude attribute.
+        .. note::
+        
+            There is no way to remove an attribute listener added with this decorator. Use 
+            :py:func:`add_attribute_listener` if you need to be able to remove 
+            the :py:func:`attribute listener <remove_attribute_listener>`.
+            
+        The code fragment below shows how you can create a listener for the attitude attribute.
 
         .. code:: python
 
-            @vehicle.attribute_listener('attitude')
+            @vehicle.on_attribute('attitude')
             def attitude_listener(self, name, msg):
-                pass
+                print '%s attribute is: %s' % (name, msg)
+
+        :param String attr_name: The name of the attribute to watch (or '*' to watch all attributes).
+        :param observer: The callback to invoke when a change in the attribute is detected.
         """
         def decorator(fn):
             if isinstance(name, list):
                 for n in name:
-                    self.on_attribute(n, fn)
+                    self.add_attribute_listener(n, fn)
             else:
-                self.on_attribute(name, fn)
+                self.add_attribute_listener(name, fn)
         return decorator
 
 class Vehicle(HasObservers):
@@ -568,16 +584,16 @@ class Vehicle(HasObservers):
         # Default parameters when calling wait_ready() or wait_ready(True).
         self._default_ready_attrs = ['parameters', 'gps_0', 'armed', 'mode', 'attitude']
 
-        @self.attribute_listener('*')
-        def listener(_, name):
+        @self.on_attribute('*')
+        def listener(_, name, value):
             self._ready_attrs.add(name)
 
         # Attaches message listeners.
         self._message_listeners = dict()
 
-        @handler.message_listener
+        @handler.forward_message
         def listener(_, msg):
-            self._notify_message_listeners(msg.get_type(), msg)
+            self.notify_message_listeners(msg.get_type(), msg)
 
         self._lat = None
         self._lon = None
@@ -585,23 +601,23 @@ class Vehicle(HasObservers):
         self._vy = None
         self._vz = None
 
-        @self.message_listener('GLOBAL_POSITION_INT')
+        @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self._notify_attribute_listeners('location')
+            self.notify_attribute_listeners('location', self.location)
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
-            self._notify_attribute_listeners('velocity')
+            self.notify_attribute_listeners('velocity', self.velocity)
 
         self._north = None
         self._east = None
         self._down = None
 
-        @self.message_listener('LOCAL_POSITION_NED')
+        @self.on_message('LOCAL_POSITION_NED')
         def listener(self, name, m):
             self._north = m.x
             self._east = m.y
             self._down = m.z
-            self._notify_attribute_listeners('local_position')
+            self.notify_attribute_listeners('local_position', self.location.local_frame)
 
         self._pitch = None
         self._yaw = None
@@ -610,7 +626,7 @@ class Vehicle(HasObservers):
         self._yawspeed = None
         self._rollspeed = None
 
-        @self.message_listener('ATTITUDE')
+        @self.on_message('ATTITUDE')
         def listener(self, name, m):
             self._pitch = m.pitch
             self._yaw = m.yaw
@@ -618,47 +634,47 @@ class Vehicle(HasObservers):
             self._pitchspeed = m.pitchspeed
             self._yawspeed = m.yawspeed
             self._rollspeed = m.rollspeed
-            self._notify_attribute_listeners('attitude')
+            self.notify_attribute_listeners('attitude', self.attitude)
 
         self._heading = None
         self._alt = None
         self._airspeed = None
         self._groundspeed = None
 
-        @self.message_listener('VFR_HUD')
+        @self.on_message('VFR_HUD')
         def listener(self, name, m):
             self._heading = m.heading
-            self._notify_attribute_listeners('heading')
+            self.notify_attribute_listeners('heading', self.heading)
             self._alt = m.alt
-            self._notify_attribute_listeners('location')
+            self.notify_attribute_listeners('location', self.location)
             self._airspeed = m.airspeed
-            self._notify_attribute_listeners('airspeed')
+            self.notify_attribute_listeners('airspeed', self.airspeed)
             self._groundspeed = m.groundspeed
-            self._notify_attribute_listeners('groundspeed')
+            self.notify_attribute_listeners('groundspeed', self.groundspeed)
 
         self._rngfnd_distance = None
         self._rngfnd_voltage = None
 
-        @self.message_listener('RANGEFINDER')
+        @self.on_message('RANGEFINDER')
         def listener(self, name, m):
             self._rngfnd_distance = m.distance
             self._rngfnd_voltage = m.voltage
-            self._notify_attribute_listeners('rangefinder')
+            self.notify_attribute_listeners('rangefinder', self.rangefinder)
 
         self._mount_pitch = None
         self._mount_yaw = None
         self._mount_roll = None
 
-        @self.message_listener('MOUNT_STATUS')
+        @self.on_message('MOUNT_STATUS')
         def listener(self, name, m):
             self._mount_pitch = m.pointing_a / 100
             self._mount_roll = m.pointing_b / 100
             self._mount_yaw = m.pointing_c / 100
-            self._notify_attribute_listeners('mount')
+            self.notify_attribute_listeners('mount', self.mount_status)
 
         self._rc_readback = {}
 
-        @self.message_listener('RC_CHANNELS_RAW')
+        @self.on_message('RC_CHANNELS_RAW')
         def listener(self, name, m):
             def set_rc(chnum, v):
                 '''Private utility for handling rc channel messages'''
@@ -678,29 +694,29 @@ class Vehicle(HasObservers):
         self._current = None
         self._level = None
 
-        @self.message_listener('SYS_STATUS')
+        @self.on_message('SYS_STATUS')
         def listener(self, name, m):
             self._voltage = m.voltage_battery
             self._current = m.current_battery
             self._level = m.battery_remaining
-            self._notify_attribute_listeners('battery')
+            self.notify_attribute_listeners('battery', self.battery)
 
         self._eph = None
         self._epv = None
         self._satellites_visible = None
         self._fix_type = None  # FIXME support multiple GPSs per vehicle - possibly by using componentId
 
-        @self.message_listener('GPS_RAW_INT')
+        @self.on_message('GPS_RAW_INT')
         def listener(self, name, m):
             self._eph = m.eph
             self._epv = m.epv
             self._satellites_visible = m.satellites_visible
             self._fix_type = m.fix_type
-            self._notify_attribute_listeners('gps_0')
+            self.notify_attribute_listeners('gps_0', self.gps_0)
 
         self._current_waypoint = 0
 
-        @self.message_listener(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
+        @self.on_message(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
         def listener(self, name, m):
             self._current_waypoint = m.seq
 
@@ -708,7 +724,7 @@ class Vehicle(HasObservers):
         self._ekf_constposmode = False
         self._ekf_predposhorizabs = False
 
-        @self.message_listener('EKF_STATUS_REPORT')
+        @self.on_message('EKF_STATUS_REPORT')
         def listener(self, name, m):
             # boolean: EKF's horizontal position (absolute) estimate is good
             self._ekf_poshorizabs = (m.flags & ardupilotmega.EKF_POS_HORIZ_ABS) > 0
@@ -717,19 +733,19 @@ class Vehicle(HasObservers):
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
 
-            self._notify_attribute_listeners('ekf_ok')
+            self.notify_attribute_listeners('ekf_ok', self.ekf_ok)
 
         self._flightmode = 'AUTO'
         self._armed = False
         self._system_status = None
 
-        @self.message_listener('HEARTBEAT')
+        @self.on_message('HEARTBEAT')
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-            self._notify_attribute_listeners('armed')
+            self.notify_attribute_listeners('armed', self.armed)
             self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
             self._system_status = m.system_status
-            self._notify_attribute_listeners('mode')
+            self.notify_attribute_listeners('mode', self.mode)
 
         # Waypoints.
 
@@ -739,14 +755,14 @@ class Vehicle(HasObservers):
         self._wpts_dirty = False
         self._commands = CommandSequence(self)
 
-        @self.message_listener(['WAYPOINT_COUNT','MISSION_COUNT'])
+        @self.on_message(['WAYPOINT_COUNT','MISSION_COUNT'])
         def listener(self, name, msg):
             if not self._wp_loaded:
                 self._wploader.clear()
                 self._wploader.expected_count = msg.count
                 self._master.waypoint_request_send(0)
 
-        @self.message_listener(['WAYPOINT', 'MISSION_ITEM'])
+        @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
                 if msg.seq > self._wploader.count():
@@ -762,10 +778,10 @@ class Vehicle(HasObservers):
                         self._master.waypoint_request_send(msg.seq + 1)
                     else:
                         self._wp_loaded = True
-                        self._notify_attribute_listeners('commands')
+                        self.notify_attribute_listeners('commands', self.commands)
 
         # Waypoint send to master
-        @self.message_listener(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
+        @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
         def listener(self, name, msg):
             if self._wp_uploaded != None:
                 wp = self._wploader.wp(msg.seq)
@@ -789,13 +805,13 @@ class Vehicle(HasObservers):
         self._params_duration = start_duration
         self._parameters = Parameters(self)
 
-        @handler.loop_listener
+        @handler.forward_loop
         def listener(_):
             # Check the time duration for last "new" params exceeds watchdog.
             if self._params_start:
                 if None not in self._params_set and not self._params_loaded:
                     self._params_loaded = True
-                    self._notify_attribute_listeners('parameters')
+                    self.notify_attribute_listeners('parameters', self.parameters)
 
                 if not self._params_loaded and time.time() - self._params_last > self._params_duration:
                     c = 0
@@ -808,7 +824,7 @@ class Vehicle(HasObservers):
                     self._params_duration = repeat_duration
                     self._params_last = time.time()
 
-        @self.message_listener(['PARAM_VALUE'])
+        @self.on_message(['PARAM_VALUE'])
         def listener(self, name, msg):
             # If we discover a new param count, assume we
             # are receiving a new param set.
@@ -842,7 +858,7 @@ class Vehicle(HasObservers):
         self._heartbeat_warning = 5
         self._heartbeat_error = 30
 
-        @handler.loop_listener
+        @handler.forward_loop
         def listener(_):
             # Send 1 heartbeat per second
             if time.time() - self._heartbeat_lastsent > 1:
@@ -858,46 +874,78 @@ class Vehicle(HasObservers):
                         errprinter('>>> Link timeout, no heartbeat in last %s seconds' % self._heartbeat_warning)
                         self._heartbeat_timeout = True
 
-        @self.message_listener(['HEARTBEAT'])
+        @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
             self._heartbeat_lastreceived = time.time()
             if self._heartbeat_timeout:
                 errprinter('>>> ...link restored.')
             self._heartbeat_timeout = False
 
-    def message_listener(self, name):
+    def on_message(self, name):
         """
-        Decorator for message listeners.
+        Decorator for message listener callback functions.
         
-        A decorated message listener is called with three arguments every time the 
+        .. tip::
+        
+            This is the most elegant way to define message listener callback functions. 
+            Use :py:func:`add_message_listener` only if you need to be able to
+            :py:func:`remove the listener <remove_message_listener>` later.
+        
+        A decorated message listener function is called with three arguments every time the 
         specified message is received: 
         
         * ``self`` - the current vehicle.
         * ``name`` - the name of the message that was intercepted.
-        * ``message`` - the actual message, a `pymavlink <http://www.qgroundcontrol.org/mavlink/pymavlink>`_
-          `class <https://www.samba.org/tridge/UAV/pymavlink/apidocs/classIndex.html>`_.        
+        * ``message`` - the actual message (a `pymavlink <http://www.qgroundcontrol.org/mavlink/pymavlink>`_
+          `class <https://www.samba.org/tridge/UAV/pymavlink/apidocs/classIndex.html>`_).        
 
         For example, in the fragment below ``my_method`` will be called for every heartbeat message:
         
         .. code:: python
 
-            @vehicle.message_listener('HEARTBEAT')
+            @vehicle.on_message('HEARTBEAT')
             def my_method(self, name, msg):
                 pass
                 
-        :param String name: The name of the message to be intercepted by the decorated listener function.
+        :param String name: The name of the message to be intercepted by the decorated listener function (or '*' to get all messages).
         """
         def decorator(fn):
             if isinstance(name, list):
                 for n in name:
-                    self.on_message(n, fn)
+                    self.add_message_listener(n, fn)
             else:
-                self.on_message(name, fn)
+                self.add_message_listener(name, fn)
         return decorator
 
-    def on_message(self, name, fn):
+    def add_message_listener(self, name, fn):
         """
-        Adds a message listener.
+        Adds a message listener function that will be called every time the specified message is received.
+        
+        .. tip::
+        
+            We recommend you use :py:func:`on_message` instead of this method as it has a more elegant syntax.
+            This method is only preferred if you need to be able to 
+            :py:func:`remove the listener <remove_message_listener>`.
+        
+        The callback function must have three arguments:
+        
+        * ``self`` - the current vehicle.
+        * ``name`` - the name of the message that was intercepted.
+        * ``message`` - the actual message (a `pymavlink <http://www.qgroundcontrol.org/mavlink/pymavlink>`_
+          `class <https://www.samba.org/tridge/UAV/pymavlink/apidocs/classIndex.html>`_).        
+
+        For example, in the fragment below ``my_method`` will be called for every heartbeat message:
+        
+        .. code:: python
+
+            #Callback method for new messages
+            def my_method(self, name, msg):
+                pass
+
+            vehicle.add_message_listener('HEARTBEAT',my_method)
+        
+        :param String name: The name of the message to be intercepted by the listener function (or '*' to get all messages).
+        :param fn: The listener function that will be called if a message is received.        
         """
         name = str(name)
         if name not in self._message_listeners:
@@ -907,7 +955,11 @@ class Vehicle(HasObservers):
 
     def remove_message_listener(self, name, fn):
         """
-        Removes a message listener (that was added using :py:func:`message_listener`)
+        Removes a message listener (that was previously added using :py:func:`add_message_listener`).
+        
+        :param String name: The name of the message for which the listener is to be removed (or '*' to remove an 'all messages' observer).
+        :param fn: The listener callback function to remove.            
+        
         """
         name = str(name)
         if name in self._message_listeners:
@@ -915,7 +967,7 @@ class Vehicle(HasObservers):
             if len(self._message_listeners[name]) == 0:
                 del self._message_listeners[name]
 
-    def _notify_message_listeners(self, name, msg):
+    def notify_message_listeners(self, name, msg):
         for fn in self._message_listeners.get(name, []):
             fn(self, name, msg)
         for fn in self._message_listeners.get('*', []):
@@ -1000,10 +1052,29 @@ class Vehicle(HasObservers):
 
     @property
     def system_status(self):
+        """
+        System status flag according to the MAVLink 
+        `MAV_STATE <http://mavlink.org/messages/common#MAV_STATE_UNINIT>`_ enum.
+        
+        States include:
+        
+        * ``MAV_STATE_UNINIT`` (0): Uninitialized system, state is unknown.
+        * ``MAV_STATE_BOOT`` (1): System is booting up.
+        * ``MAV_STATE_CALIBRATING`` (2): System is calibrating and not flight-ready.
+        * ``MAV_STATE_STANDBY`` (3): System is grounded and on standby. It can be launched any time.
+        * ``MAV_STATE_ACTIVE`` (4): System is active and might be already airborne. Motors are engaged.
+        * ``MAV_STATE_CRITICAL`` (5): System is in a non-normal flight mode. It can however still navigate.
+        * ``MAV_STATE_EMERGENCY`` (6): System is in a non-normal flight mode. It lost control over parts 
+          or over the whole airframe. It is in mayday and going down.
+        * ``MAV_STATE_POWEROFF`` (7): System just initialized its power-down sequence, will shut down now.
+        """
         return self._system_status
 
     @property
     def heading(self):
+        """
+        Current heading in degrees (0..360, where North = 0).
+        """
         return self._heading
 
     @property

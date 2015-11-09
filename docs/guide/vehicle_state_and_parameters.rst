@@ -31,6 +31,8 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
+:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
+:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
 :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
 :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
@@ -51,8 +53,8 @@ from the other attributes, and is :ref:`discussed in its own section below <vehi
 Getting attributes
 ------------------
 
-The code fragment below shows how to read and print almost the attributes. The values are retrieved from the remote device 
-(not cached).
+The code fragment below shows how to read and print almost all the attributes (values are
+regularly updated from MAVLink messages sent by the vehicle).
 
 .. code:: python
     
@@ -69,6 +71,8 @@ The code fragment below shows how to read and print almost the attributes. The v
     print "Rangefinder: %s" % vehicle.rangefinder
     print "Rangefinder distance: %s" % vehicle.rangefinder.distance
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
+    print "Heading: %s" % vehicle.heading
+    print "System status: %s" % vehicle.system_status
     print "Mode: %s" % vehicle.mode.name    # settable
     print "Armed: %s" % vehicle.armed    # settable
 
@@ -139,31 +143,36 @@ You can observe any of the attributes (except for :py:attr:`Vehicle.home_locatio
 :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`) and will receive notification every time a value is received 
 from the connected vehicle.  This allows you to monitor changes to velocity and other vehicle state without the need for polling.
 
-Observers are added using :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>`, 
-specifying the name of the attribute to observe and a callback function. 
-Observers are removed using :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`.
+Observers are added using :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` or the
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator method. The main difference between these methods
+is that only attribute callbacks added with :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` 
+can be removed (see :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`). 
 
-The ``observer`` callback function is invoked with the ``self`` and ``attr_name`` arguments:
+The ``observer`` callback function is invoked with the following arguments:
         
-* The ``attr_name`` (attribute name) is needed if the same callback is used for watching several attributes.
-* The ``self`` attribute is the associated :py:class:`Vehicle`. It is needed if you want to 
-  implement vehicle-specific callback handling (by comparing it to a global vehicle handle).
+* ``self`` - the associated :py:class:`Vehicle`. This may be compared to a global vehicle handle 
+  to implement vehicle-specific callback handling (if needed).
+* ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
+  if the same callback is used for watching several attributes.
+* ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
 
-The code snippet below shows how to add (and remove) a callback function to observe location changes
-(:py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>`). 
+The code snippet below shows how to add (and remove) a callback function to observe changes
+in :py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>` using 
+:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`. 
 The two second ``sleep()`` is required because otherwise the observer might be removed before the the 
 callback is first run.
 
 
-.. code:: python
+.. code-block:: python
+   :emphasize-lines: 7
      
-    #Callback to print the location in global and local frames
-    def location_callback(self, attr_name):
-        print "Location (Global): ", self.location.global_frame
-        print "Location (Local): ", self.location.local_frame
+    #Callback to print the location in global frames. 'value' is the updated value
+    def location_callback(self, attr_name, value):
+        print "Location (Global): ", value 
+
         
-    # Add a callback. The first parameter the name of the observed attribute (a string).
-    vehicle.on_attribute('location', location_callback)
+    # Add a callback `location_callback` for the `global_frame` attribute.
+    vehicle.add_attribute_listener('global_frame', location_callback)
 
     # Wait 2s so callback can be notified before the observer is removed
     time.sleep(2)
@@ -171,16 +180,22 @@ callback is first run.
     # Remove observer - specifying the attribute and previously registered callback function
     vehicle.remove_message_listener('location', location_callback)
 
-
-The callback is triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
+    
+Callbacks are triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
 Callback code may therefore choose to cache the result and only report changes. 
-For example, the following code can be used in the callback to only print output when the value of 
-:py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` changes.
 
-.. code:: python
+The example below shows how you can declare an attribute callback using the 
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator function. This stores the result of the 
+previous callback and only prints the output when there is a signficant change in :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`.
+
+
+.. code-block:: python
+   :emphasize-lines: 3,4
+
 
     last_rangefinder_distance=0
 
+    @vehicle.on_attribute('rangefinder')
     def rangefinder_callback(self,attr_name):
         #attr_name not used here.
         global last_rangefinder_distance
@@ -189,7 +204,26 @@ For example, the following code can be used in the callback to only print output
         last_rangefinder_distance = round(self.rangefinder.distance, 1)
         print " Rangefinder (metres): %s" % last_rangefinder_distance
 
-    vehicle.on_attribute('rangefinder', rangefinder_callback)
+        
+The examples above show how you can monitor a single attribute. You can pass the special name ('``*``') to specify a 
+callback that will be called for any/all attribute changes:
+
+.. code-block:: python
+
+    # Demonstrate getting callback on any attribute change
+    def wildcard_callback(self, attr_name, value):
+        print " CALLBACK: (%s): %s" % (attr_name,value)
+
+    print "\nAdd attribute calback detecting any attribute change"     
+    vehicle.add_attribute_listener('*', wildcard_callback)
+
+
+    print " Wait 1s so callback invoked before observer removed"
+    time.sleep(1)
+
+    print " Remove Vehicle attribute observer"    
+    # Remove observer added with `add_attribute_listener()`
+    vehicle.remove_attribute_listener('*', wildcard_callback) 
 
 
 
@@ -277,7 +311,6 @@ throttle at which the motors will keep spinning.
     # Print the value of the THR_MIN parameter.
     print "Param: %s" % vehicle.parameters['THR_MIN']
 
-    
 
 
 Setting parameters

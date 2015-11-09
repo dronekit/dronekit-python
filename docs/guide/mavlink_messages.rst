@@ -8,8 +8,7 @@ Some useful MAVLink messages sent by the autopilot are not (yet) directly availa
 through the :ref:`observable attributes <vehicle_state_observe_attributes>` in :py:class:`Vehicle <dronekit.lib.Vehicle>`.
 
 This topic shows how you can intercept specific MAVLink messages by defining a listener callback function 
-using the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` 
-decorator.
+using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator.
 
 .. tip::
 
@@ -23,23 +22,25 @@ decorator.
 Creating a message listener
 ===========================
 
-The :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` decorator can be used to 
+The :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator can be used to 
 set a particular function as the callback handler for a particular message type. You can create listeners 
 for as many messages as you like, or even multiple listeners for the same message. 
 
-For example, code snippet below shows how to set a listener for the ``RANGEFINDER`` message:
+For example, the code snippet below shows how to set a listener for the ``RANGEFINDER`` message:
 
 .. code:: python
 
     #Create a message listener using the decorator.   
-    @vehicle.message_listener('RANGEFINDER')
+    @vehicle.on_message('RANGEFINDER')
     def listener(self, name, message):
         print message
 
 .. tip::
 
     Every single listener can have the same name/prototpye as above ("``listener``") because
-    Python does not notice these decorated functions as having the same name in the same scope.
+    Python does not notice the decorated functions are in the same scope.
+    
+    Unfortunately this also means that you can't unregister a callback created using this method.
     
 The messages are `classes <https://www.samba.org/tridge/UAV/pymavlink/apidocs/classIndex.html>`_ from the 
 `pymavlink <http://www.qgroundcontrol.org/mavlink/pymavlink>`_ library. 
@@ -56,17 +57,31 @@ function might look like this:
 .. code:: python
 
     #Create a message listener using the decorator.   
-    @vehicle.message_listener('RANGEFINDER')
+    @vehicle.on_message('RANGEFINDER')
     def listener(self, name, message):
         print 'distance: %s' % message.distance
         print 'voltage: %s' % message.voltage
 
 
-        
-        
-Clearing the observer
+Watching all messages
 =====================
 
-The observer is unset by calling :py:func:`Vehicle.remove_message_listener <dronekit.lib.Vehicle.remove_message_listener>`.
+You can register a callback for *all messages* by setting the message name as the wildcard string ('``*``'):
 
-The observer will also be removed when the thread exits.
+.. code:: python
+
+    #Create a message listener for all messages.   
+    @vehicle.on_message('*')
+    def listener(self, name, message):
+        print 'message: %s' % message
+        
+        
+Removing an observer
+====================
+
+Callbacks registered using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator *cannot be removed*. 
+This is generally not a problem, because in most cases you're interested in messages for the lifetime of a session.
+
+If you do need to be able to remove messages you can instead add the callback using 
+:py:func:`Vehicle.add_message_listener <dronekit.lib.Vehicle.add_message_listener>`, and then remove it by calling 
+:py:func:`Vehicle.remove_message_listener <dronekit.lib.Vehicle.remove_message_listener>`.

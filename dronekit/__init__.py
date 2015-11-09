@@ -146,13 +146,13 @@ class MAVHandler:
         if hasattr(message, 'target_component'):
             message.target_component = self.target_component
 
-    def loop_listener(self, fn):
+    def forward_loop(self, fn):
         """
         Decorator for event loop.
         """
         self.loop_listeners.append(fn)
 
-    def message_listener(self, fn):
+    def forward_message(self, fn):
         """
         Decorator for message inputs.
         """
@@ -174,7 +174,7 @@ def connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicl
     vehicle = vehicle_class(handler)
 
     if status_printer:
-        @vehicle.message_listener('STATUSTEXT')
+        @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
             status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
     
