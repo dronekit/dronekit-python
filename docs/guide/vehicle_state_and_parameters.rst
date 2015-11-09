@@ -238,7 +238,8 @@ waypoints is set relative to this position.
 
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` has the following behaviour:
 
-* In order to *get* the current value you must first download :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`, as shown:
+* In order to *get* the current value (in a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object) you must first download 
+  :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`, as shown:
 
   .. code:: python
     
@@ -247,9 +248,21 @@ waypoints is set relative to this position.
       cmds.wait_ready()
       print " Home Location: %s" % vehicle.home_location
 
-  The returned value is a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
-  (or ``None`` before you download the commands). If the location has not been set, then 
-  the returned value's attributes will all be set to zero.
+  The returned value is ``None`` before you download the commands or if the ``home_location`` has not yet been set by the autopilot.
+  For this reason our example code checks that the value exists (in a loop) before writing it.
+  
+  .. code:: python
+    
+      # Get Vehicle Home location - will be `None` until first set by autopilot
+      while not vehicle.home_location:
+          cmds = vehicle.commands
+          cmds.download()
+          cmds.wait_ready()
+          if not vehicle.home_location:
+              print " Waiting for home location ..."
+              
+      # We have a home location.     
+      print "\n Home location: %s" % vehicle.home_location
 
 * The attribute can be *set* to a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
   (the code fragment below sets it to the current location):
@@ -260,9 +273,11 @@ waypoints is set relative to this position.
         
   There are some caveats:
   
-  * You must download the commands again to read the changed ``home_location``.
-  * The autopilot must first set the value (on startup) before it can be changed by DroneKit-Python code.
+  * You must be able to read a non-``None`` value before you can write it
+    (the autopilot has to set the value initially before it can be written or read).
   * The new location must be within 50 km of the EKF origin or setting the value will silently fail.
+  * The value is cached in the ``home_location``. If the variable can potentially change on the vehicle
+    you will need to re-download the ``Vehicle.commands`` in order to confirm the value.
     
 * The attribute is not observable.
 
