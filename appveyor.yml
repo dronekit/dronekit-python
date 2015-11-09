@@ -1,7 +1,6 @@
 environment:
-  global:
-    SITL_SPEEDUP: 10
-    SITL_RATE: 200
+  SITL_SPEEDUP: 10
+  SITL_RATE: 200
 
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"
@@ -31,10 +30,3 @@ build_script:
 
 clone_depth: 10
 test: 'off'
-branches:
-  only:
-    - master
-    - major
-    - minor
-    - patch
-    - /^v\d+\.\d+\.\d+$/
