@@ -105,7 +105,7 @@ From this point vehicle.raw_imu can be used just like any other attribute.
 """
 
 #Callback to print the raw_imu
-def raw_imu_callback(self,rawimu,msg):
+def raw_imu_callback(self,attr_name,msg):
     #msg is the attribute/value that changed
     print msg
 
