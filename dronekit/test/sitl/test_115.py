@@ -15,7 +15,7 @@ def test_115(connpath):
     mavlink_callback.count = 0
 
     # Set the callback.
-    v.on_message('*', mavlink_callback)
+    v.add_message_listener('*', mavlink_callback)
 
     # Change the vehicle into STABILIZE mode
     v.mode = VehicleMode("STABILIZE")

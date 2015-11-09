@@ -7,10 +7,10 @@ Example: Create Attribute in App
 This example shows how you can create attributes for MAVLink messages within your DroneKit-Python script and 
 use them in *in the same way* as the built-in :py:class:`Vehicle <dronekit.lib.Vehicle>` attributes.
 
-It uses the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` decorator
+It uses the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator
 to set a function that is called to process a specific message, copy its values into an attribute, and notify
 observers. An observer is then set on the new attribute using 
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>`.
+:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`.
 
 Additional information is provided in the guide topic :ref:`mavlink_messages`.
 
@@ -111,7 +111,7 @@ representation for printing the object.
         :param zmag: Z Magnetic field (milli tesla)    
         """
 
-        def __init__(self, time_boot_us, xacc, yacc, zacc, xygro, ygyro, zgyro, xmag, ymag, zmag):
+        def __init__(self, time_boot_us=None, xacc=None, yacc=None, zacc=None, xygro=None, ygyro=None, zgyro=None, xmag=None, ymag=None, zmag=None):
             """
             RawIMU object constructor.
             """
@@ -140,10 +140,10 @@ All values in the new attribute should be set to ``None`` so that it is obvious 
     # Connect to the Vehicle passed in as args.connect
     vehicle = connect(args.connect, wait_ready=True)
 
-    #Create an Vehicle.raw_imu object and set all values to None.
-    vehicle.raw_imu=RawIMU(None,None,None,None,None,None,None,None,None,None)
+    #Create an Vehicle.raw_imu object with values set to `None`.
+    vehicle.raw_imu=RawIMU()
     
-We create a listener using the :py:func:`Vehicle.message_listener() <dronekit.lib.Vehicle.message_listener>` 
+We create a listener using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
 decorator as shown below. The listener is called for messages that contain the string "RAW_IMU", 
 with arguments for the vehicle, message name, and the message. It copies the message information into 
 the attribute and then notifies all observers.
@@ -151,7 +151,7 @@ the attribute and then notifies all observers.
 .. code:: python
 
     #Create a message listener using the decorator.   
-    @vehicle.message_listener('RAW_IMU')
+    @vehicle.on_message('RAW_IMU')
     def listener(self, name, message):
         #Copy the message contents into the raw_imu attribute
         self.raw_imu.time_boot_us=message.time_usec
@@ -165,8 +165,8 @@ the attribute and then notifies all observers.
         self.raw_imu.ymag=message.ymag
         self.raw_imu.zmag=message.zmag
         
-        # Notify all observers of new message.
-        self._notify_attribute_listeners('raw_imu') 
+        # Notify all observers of new message with new value
+        self.notify_attribute_listeners('raw_imu', self.raw_imu) 
 
 
 .. note:: 
@@ -182,12 +182,13 @@ You can query the attribute to get any of its members, and even add an observer 
 .. code:: python
 
     #Callback to print the raw_imu
-    def raw_imu_callback(self, attr_name):
-        print self.raw_imu
+    def raw_imu_callback(self, attr_name, msg):
+        #msg is the value/attribute that was updated.
+        print msg
 
 
     #Add observer for the vehicle's current location
-    vehicle.on_attribute('raw_imu', raw_imu_callback)
+    vehicle.add_attribute_listener('raw_imu', raw_imu_callback)
 
 
 Known issues
