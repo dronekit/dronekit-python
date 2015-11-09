@@ -31,6 +31,8 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
+:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
+:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
 :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
 :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
@@ -51,8 +53,8 @@ from the other attributes, and is :ref:`discussed in its own section below <vehi
 Getting attributes
 ------------------
 
-The code fragment below shows how to read and print almost the attributes. The values are retrieved from the remote device 
-(not cached).
+The code fragment below shows how to read and print almost all the attributes (values are
+regularly updated from MAVLink messages sent by the vehicle).
 
 .. code:: python
     
@@ -69,6 +71,8 @@ The code fragment below shows how to read and print almost the attributes. The v
     print "Rangefinder: %s" % vehicle.rangefinder
     print "Rangefinder distance: %s" % vehicle.rangefinder.distance
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
+    print "Heading: %s" % vehicle.heading
+    print "System status: %s" % vehicle.system_status
     print "Mode: %s" % vehicle.mode.name    # settable
     print "Armed: %s" % vehicle.armed    # settable
 
@@ -307,7 +311,6 @@ throttle at which the motors will keep spinning.
     # Print the value of the THR_MIN parameter.
     print "Param: %s" % vehicle.parameters['THR_MIN']
 
-    
 
 
 Setting parameters

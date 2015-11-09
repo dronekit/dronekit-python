@@ -67,6 +67,8 @@ On the command prompt you should see (something like):
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
+     System status: 3
+     Heading: 341
      Mode: STABILIZE
      Armed: False
      Home Location: LocationGlobal:lat=-35.3632392883,lon=149.165237427,alt=222.0,is_relative=False

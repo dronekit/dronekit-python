@@ -160,6 +160,8 @@ Instead, use normal Python methods for getting file system information:
     import os.path
     full_directory_path_of_current_script = os.path.dirname(os.path.abspath(__file__))
 
+    
+.. _migrating_dkpy2_0_heading:
 
 Home location
 -------------
@@ -217,6 +219,15 @@ decorator, which allows you to specify a callback function that will be invoked 
     able to *remove* an added listener.
 
 See :ref:`mavlink_messages` for more information.
+
+
+New attributes
+--------------
+
+In addition to the :ref:`home_location <migrating_dkpy2_0_heading>`, a few more attributes have been added, 
+including:
+:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>` and 
+:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`. 
 
 
 Debugging

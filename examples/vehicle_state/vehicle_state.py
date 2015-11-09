@@ -46,6 +46,8 @@ print " Battery: %s" % vehicle.battery
 print " Rangefinder: %s" % vehicle.rangefinder
 print " Rangefinder distance: %s" % vehicle.rangefinder.distance
 print " Rangefinder voltage: %s" % vehicle.rangefinder.voltage
+print " Heading: %s" % vehicle.heading
+print " System status: %s" % vehicle.system_status
 print " Mode: %s" % vehicle.mode.name    # settable
 print " Armed: %s" % vehicle.armed    # settable
 
