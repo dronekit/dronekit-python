@@ -1,6 +1,7 @@
 import time
 import math
 from dronekit import connect, VehicleMode, LocationGlobal, Command
+from pymavlink import mavutil
 from dronekit.test import with_sitl
 from nose.tools import assert_not_equals, assert_equals
 
@@ -112,3 +113,25 @@ def test_parameter(connpath):
     assert_equals(home.alt, vehicle.home_location.alt)
 
     vehicle.close()
+
+@with_sitl
+def test_227(connpath):
+    """
+    Tests race condition when downloading items
+    """
+
+    vehicle = connect(connpath, wait_ready=True)
+
+    def assert_commands(count):
+        vehicle.commands.download()
+        vehicle.commands.wait_ready()
+        assert_equals(len(vehicle.commands), count) 
+
+    assert_commands(0)
+
+    vehicle.commands.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, 
+                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 
+                    0, 0, 0, 0, 10, 10, 10))
+    vehicle.flush() # Send commands
+
+    assert_commands(1)
