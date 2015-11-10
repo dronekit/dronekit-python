@@ -292,7 +292,7 @@ class SystemStatus(object):
 class HasObservers(object):
     def __init__(self):
         # A mapping from attr_name to a list of observers
-        self.__observers = {}
+        self._attribute_listeners = {}
         self._attribute_cache = {}
 
     """
@@ -343,10 +343,10 @@ class HasObservers(object):
         :param observer: The callback to invoke when a change in the attribute is detected.
 
         """
-        l = self.__observers.get(attr_name)
+        l = self._attribute_listeners.get(attr_name)
         if l is None:
             l = []
-            self.__observers[attr_name] = l
+            self._attribute_listeners[attr_name] = l
         if not observer in l:
             l.append(observer)
 
@@ -367,11 +367,11 @@ class HasObservers(object):
         :param observer: The callback function to remove.
 
         """
-        l = self.__observers.get(attr_name)
+        l = self._attribute_listeners.get(attr_name)
         if l is not None:
             l.remove(observer)
             if len(l) == 0:
-                del self.__observers[attr_name]
+                del self._attribute_listeners[attr_name]
 
 
     def notify_attribute_listeners(self, attr_name, value, cache=False):
@@ -402,9 +402,9 @@ class HasObservers(object):
             self._attribute_cache[attr_name] = value
 
         # Notify observers.
-        for fn in self.__observers.get(attr_name, []):
+        for fn in self._attribute_listeners.get(attr_name, []):
             fn(self, attr_name, value)
-        for fn in self.__observers.get('*', []):
+        for fn in self._attribute_listeners.get('*', []):
             fn(self, attr_name, value)
 
     def on_attribute(self, name):
@@ -982,6 +982,7 @@ class Vehicle(HasObservers):
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
                 self._params_map[msg.param_id] = msg.param_value
+                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value)
             except:
                 import traceback
                 traceback.print_exc()
@@ -1513,6 +1514,7 @@ class Parameters(collections.MutableMapping, HasObservers):
     """
 
     def __init__(self, vehicle):
+        super(Parameters, self).__init__()
         self._vehicle = vehicle
 
     def __getitem__(self, name):
