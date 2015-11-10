@@ -4,9 +4,8 @@ my_vehicle.py:
 Custom Vehicle subclass to add IMU data.
 """
 
-from dronekit import connect, Vehicle, VehicleMode
-from pymavlink import mavutil
-import time
+from dronekit import Vehicle
+
 
 class RawIMU(object):
     """

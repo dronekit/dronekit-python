@@ -10,10 +10,10 @@ intercepted using the message_listener decorator.
 Full documentation is provided at http://python.dronekit.io/examples/create_attribute.html
 """
 
-from dronekit import connect, Vehicle, VehicleMode
-from pymavlink import mavutil
+from dronekit import connect, Vehicle
+from my_vehicle import MyVehicle #Our custom vehicle class
 import time
-from my_vehicle import MyVehicle
+
 
 
 #Set up option parsing to get connection string
