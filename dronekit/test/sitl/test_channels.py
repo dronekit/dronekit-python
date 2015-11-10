@@ -82,32 +82,29 @@ def test_timeout(connpath):
     except:
         pass
 
-    print "Channel overrides: %s" % vehicle.channels.overrides
-
     # Set Ch1 to 100 using braces syntax
     vehicle.channels.overrides = {'1': 1000}
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert_readback(vehicle, {'1': 1000})
 
     # Set Ch2 to 200 using bracket
     vehicle.channels.overrides['2'] = 200
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert_readback(vehicle, {'1': 200, '2': 200})
 
     # Set Ch2 to 1010
     vehicle.channels.overrides = {'2': 1010}
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert_readback(vehicle, {'1': 1500, '2': 1010})
 
     # Set Ch3,4,5,6,7 to 300,400-700 respectively
     vehicle.channels.overrides = {'3': 300, '4':400, '5':500,'6':600,'7':700}
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert_readback(vehicle, {'3': 300, '4':400, '5':500,'6':600,'7':700})
 
     # Set Ch8 to 800 using braces
     vehicle.channels.overrides = {'8': 800}
-    print "Channel overrides: %s" % vehicle.channels.overrides
-    print "succeed - can write channel 8 using braces"
+    assert_readback(vehicle, {'8':800})
 
     # Set Ch8 to 800 using brackets
-    vehicle.channels.overrides['8'] = 800
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    vehicle.channels.overrides['8'] = 810
+    assert_readback(vehicle, {'8':810})
 
     try:    
         # Try to write channel 9 override to a value with brackets
@@ -125,19 +122,19 @@ def test_timeout(connpath):
 
     # Clear channel 3 using brackets
     vehicle.channels.overrides['3'] = None
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert '3' not in vehicle.channels.overrides, 'overrides hould not contain None'
 
     # Clear channel 2 using braces
     vehicle.channels.overrides = {'2': None}
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert '2' not in vehicle.channels.overrides, 'overrides hould not contain None'
 
     # Clear all channels
     vehicle.channels.overrides = {}
-    print "Channel overrides: %s" % vehicle.channels.overrides
+    assert_equals(len(vehicle.channels.overrides.keys()), 0)
 
     # Set Ch2 to 33, clear channel 6
     vehicle.channels.overrides = {'2': 33, '6':None}
-    print "Channel overrides: %s" % vehicle.channels.overrides
-
+    assert_readback(vehicle, {'2':33, '6': 1500})
+    assert_equals(vehicle.channels.overrides.keys(), ['2'])
 
     vehicle.close()

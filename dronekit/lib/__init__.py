@@ -431,15 +431,19 @@ class ChannelsOverride(dict):
     def __init__(self, vehicle):
         self._vehicle = vehicle
         self._count = 8 # Fixed by MAVLink
+        self._active = True
 
     def __getitem__(self, key):
         return dict.__getitem__(self, str(key))
 
     def __setitem__(self, key, value):
-        if not (int(key) >= 0 and int(key) < self._count):
+        if not (int(key) > 0 and int(key) <= self._count):
             raise Exception('Invalid channel index %s' % key)
         if not value:
-            dict.__delitem__(self, str(key))
+            try:
+                dict.__delitem__(self, str(key))
+            except:
+                pass
         else:
             dict.__setitem__(self, str(key), value)
         self._send()
@@ -452,10 +456,11 @@ class ChannelsOverride(dict):
         return self._count
 
     def _send(self):
-        overrides = [0] * 8
-        for k, v in self.iteritems():
-            overrides[int(k)-1] = v
-        self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
+        if self._active:
+            overrides = [0] * 8
+            for k, v in self.iteritems():
+                overrides[int(k)-1] = v
+            self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
 
 
 class Channels(dict):
@@ -543,11 +548,17 @@ class Channels(dict):
 
     @overrides.setter
     def overrides(self, newch):
+        self._overrides._active = False
+        self._overrides.clear()
         for k, v in newch.iteritems():
             if v:
                 self._overrides[str(k)] = v
             else:
-                del self._overrides[str(k)]
+                try:
+                    del self._overrides[str(k)]
+                except:
+                    pass
+        self._overrides._active = True
         self._overrides._send()
 
 
