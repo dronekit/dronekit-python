@@ -74,7 +74,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
     print "Heading: %s" % vehicle.heading
     print "Is Armable?: %s" % vehicle.is_armable
-    print "System status: %s" % vehicle.system_status
+    print "System status: %s" % vehicle.system_status.state
     print "Mode: %s" % vehicle.mode.name    # settable
     print "Armed: %s" % vehicle.armed    # settable
 

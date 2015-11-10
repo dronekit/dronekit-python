@@ -266,6 +266,26 @@ class VehicleMode(object):
     def __ne__(self, other):
         return self.name != other
 
+class SystemStatus(object):
+    """
+    This object is used to get and set the current "system status".
+
+    .. py:attribute:: state
+
+        The system state, as a ``string``.
+    """
+    def __init__(self, state):
+        self.state = state
+
+    def __str__(self):
+        return "SystemStatus:%s" % self.state
+
+    def __eq__(self, other):
+        return self.state == other
+
+    def __ne__(self, other):
+        return self.state != other
+
 class HasObservers(object):
     def __init__(self):
         # A mapping from attr_name to a list of observers
@@ -744,8 +764,9 @@ class Vehicle(HasObservers):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed)
             self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
-            self._system_status = m.system_status
             self.notify_attribute_listeners('mode', self.mode)
+            self._system_status = m.system_status
+            self.notify_attribute_listeners('system_status', self.system_status)
 
         # Waypoints.
 
@@ -1071,22 +1092,28 @@ class Vehicle(HasObservers):
     @property
     def system_status(self):
         """
-        System status flag according to the MAVLink 
-        `MAV_STATE <http://mavlink.org/messages/common#MAV_STATE_UNINIT>`_ enum.
+        System status. Is a ``SystemStatus`` object with a ``state`` property of:
         
-        States include:
-        
-        * ``MAV_STATE_UNINIT`` (0): Uninitialized system, state is unknown.
-        * ``MAV_STATE_BOOT`` (1): System is booting up.
-        * ``MAV_STATE_CALIBRATING`` (2): System is calibrating and not flight-ready.
-        * ``MAV_STATE_STANDBY`` (3): System is grounded and on standby. It can be launched any time.
-        * ``MAV_STATE_ACTIVE`` (4): System is active and might be already airborne. Motors are engaged.
-        * ``MAV_STATE_CRITICAL`` (5): System is in a non-normal flight mode. It can however still navigate.
-        * ``MAV_STATE_EMERGENCY`` (6): System is in a non-normal flight mode. It lost control over parts 
+        * ``UNINIT``: Uninitialized system, state is unknown.
+        * ``BOOT``: System is booting up.
+        * ``CALIBRATING``: System is calibrating and not flight-ready.
+        * ``STANDBY``: System is grounded and on standby. It can be launched any time.
+        * ``ACTIVE``: System is active and might be already airborne. Motors are engaged.
+        * ``CRITICAL``: System is in a non-normal flight mode. It can however still navigate.
+        * ``EMERGENCY``: System is in a non-normal flight mode. It lost control over parts 
           or over the whole airframe. It is in mayday and going down.
-        * ``MAV_STATE_POWEROFF`` (7): System just initialized its power-down sequence, will shut down now.
+        * ``POWEROFF``: System just initialized its power-down sequence, will shut down now.
         """
-        return self._system_status
+        return {
+            0: SystemStatus('UNINIT'),
+            1: SystemStatus('BOOT'),
+            2: SystemStatus('CALIBRATING'),
+            3: SystemStatus('STANDBY'),
+            4: SystemStatus('ACTIVE'),
+            5: SystemStatus('CRITICAL'),
+            6: SystemStatus('EMERGENCY'),
+            7: SystemStatus('POWEROFF'),
+        }.get(self._system_status, None)
 
     @property
     def heading(self):
