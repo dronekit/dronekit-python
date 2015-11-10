@@ -67,6 +67,7 @@ On the command prompt you should see (something like):
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
+     Is Armable?: True
      System status: 3
      Heading: 341
      Mode: STABILIZE

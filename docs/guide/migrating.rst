@@ -226,8 +226,11 @@ New attributes
 
 In addition to the :ref:`home_location <migrating_dkpy2_0_heading>`, a few more attributes have been added, 
 including:
-:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>` and 
-:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`. 
+:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`, 
+:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`, 
+:py:func:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`, 
+:py:func:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`, 
+:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`.
 
 
 Debugging
