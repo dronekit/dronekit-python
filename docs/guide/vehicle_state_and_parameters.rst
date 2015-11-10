@@ -30,6 +30,7 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`,
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
+:py:attr:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`,
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
 :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
 :py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
@@ -69,6 +70,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Airspeed: %s" % vehicle.airspeed
     print "Mount status: %s" % vehicle.mount_status
     print "Battery: %s" % vehicle.battery
+    print "EKF OK?: %s" % vehicle.ekf_ok
     print "Rangefinder: %s" % vehicle.rangefinder
     print "Rangefinder distance: %s" % vehicle.rangefinder.distance
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage

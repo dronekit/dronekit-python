@@ -43,6 +43,7 @@ print " Groundspeed: %s" % vehicle.groundspeed
 print " Airspeed: %s" % vehicle.airspeed
 print " Mount status: %s" % vehicle.mount_status
 print " Battery: %s" % vehicle.battery
+print " EKF OK?: %s" % vehicle.ekf_ok
 print " Rangefinder: %s" % vehicle.rangefinder
 print " Rangefinder distance: %s" % vehicle.rangefinder.distance
 print " Rangefinder voltage: %s" % vehicle.rangefinder.voltage

@@ -1138,6 +1138,9 @@ class Vehicle(HasObservers):
 
     @property
     def ekf_ok(self):
+        """
+        ``True`` if the EKF status is considered acceptable, ``False`` otherwise.
+        """
         # legacy check for dronekit-python for solo
         # use same check that ArduCopter::system.pde::position_ok() is using
         if self.armed:

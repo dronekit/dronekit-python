@@ -64,6 +64,7 @@ On the command prompt you should see (something like):
      Airspeed: 0.0
      Mount status: [None, None, None]
      Battery: Battery:voltage=12.587,current=0.0,level=95
+     EKF OK?: True
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
