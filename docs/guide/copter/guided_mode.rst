@@ -253,7 +253,7 @@ The command allows you to specify that whether the heading is an absolute angle 
 
     * The yaw will return to the default (facing direction of travel) after you set the mode or change the command used for controlling movement. 
     * `At time of writing <https://github.com/diydrones/ardupilot/issues/2427>`_ there is no *safe way* to return to the default yaw "face direction of travel" behaviour.
-    * After taking off, yaw commands are ignored until the first "movement" command has been received. If you need to  
+    * After taking off, yaw commands are ignored until the first "movement" command has been received.  
       If you need to yaw immediately following takeoff then send a command to "move" to your current position.
     * :ref:`guided_mode_copter_set_roi` may work to get yaw to track a particular point (depending on the gimbal setup).
 

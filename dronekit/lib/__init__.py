@@ -1,3 +1,4 @@
+# DroneAPI module
 """
 This is the API Reference for the DroneKit-Python API.
 
@@ -38,11 +39,14 @@ A number of other useful classes and methods are listed below.
 
     :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
     :param Bool wait_ready: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
-    :param status_printer: NA    
-    :param Vehicle vehicle_class: NA     
-    :param int rate: NA
+    :param status_printer: Method of signature ``def status_printer(txt)`` that prints STATUS_TEXT messages from the Vehicle and other diagnostic information.
+        By default the status information is printed to the command prompt in which the script is running.
+    :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method. 
+        This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).    
+    :param int rate: Data sream refresh rate. The default is 4Hz (4 updates per second).
     :param int baud: The baud rate for the connection. The default is 115200.
-    
+
+
     :returns: A connected :py:class:`Vehicle` object.
 
 ----
@@ -53,8 +57,6 @@ A number of other useful classes and methods are listed below.
         Can we hide in API. Can we get method defined in this file or connect method file exported
         
 """
-
-# DroneAPI module
 
 import threading, time, math, copy
 import CloudClient
@@ -1136,6 +1138,9 @@ class Vehicle(HasObservers):
 
     @property
     def ekf_ok(self):
+        """
+        ``True`` if the EKF status is considered acceptable, ``False`` otherwise.
+        """
         # legacy check for dronekit-python for solo
         # use same check that ArduCopter::system.pde::position_ok() is using
         if self.armed:

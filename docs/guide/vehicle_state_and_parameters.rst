@@ -30,6 +30,7 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`,
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
+:py:attr:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`,
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
 :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
 :py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
@@ -69,6 +70,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Airspeed: %s" % vehicle.airspeed
     print "Mount status: %s" % vehicle.mount_status
     print "Battery: %s" % vehicle.battery
+    print "EKF OK?: %s" % vehicle.ekf_ok
     print "Rangefinder: %s" % vehicle.rangefinder
     print "Rangefinder distance: %s" % vehicle.rangefinder.distance
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
@@ -300,26 +302,29 @@ waypoints is set relative to this position.
 Parameters
 ==========
 
-Vehicle parameters provide the information used to configure the autopilot for the vehicle-specific hardware/capabilities. 
-These can be read and set using the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` 
+Vehicle parameters provide the information used to configure the autopilot for the vehicle-specific hardware/capabilities.
+The available parameters for each platform are documented in the ardupilot wiki here:  
+`Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, 
+`Plane Parameters <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, 
+`Rover Parameters <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_ 
+(the lists are automatically generated from the latest ArduPilot source code, and may contain or omit parameters
+in your vehicle).
+
+DroneKit downloads all parameters when you first connect to the UAV (forcing parameter reads to wait 
+until the download completes), and subsequently keeps the values updated by monitoring vehicle messages 
+for changes to individual parameters. This process ensures that it is always safe to read supported parameters, 
+and that their values will match the information on the vehicle.
+
+Parameters can be read and set using the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` 
 attribute (a :py:class:`Parameters <dronekit.lib.Parameters>` object).
-
-.. tip:: 
-
-    `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, 
-    `Plane Parameters <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, 
-    and `Rover Parameters <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_ list all the supported parameters for each platform. 
-    The lists are automatically generated from the latest ArduPilot source code, and may contain parameters 
-    that are not yet in the stable released versions of the code.
-
 
 
 Getting parameters
 ------------------
 
-The parameters are read using the parameter name as a key. Reads will generally succeed unless you attempt to read an unsupported parameter
-(which results in a Key error exception).
-
+The parameters are read using the parameter name as a key. Reads will always succeed unless you attempt to access an unsupported parameter
+(which will result in a ``KeyError`` exception).
+   
 The code example below shows how to set Minimum Throttle (THR_MIN) setting. On Copter and Rover (not Plane), this is the minimum PWM setting for the 
 throttle at which the motors will keep spinning.
 
