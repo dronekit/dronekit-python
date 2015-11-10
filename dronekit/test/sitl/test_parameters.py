@@ -24,3 +24,15 @@ def test_parameters(connpath):
     assert_equals(vehicle.parameters.get('xXx_extreme_garbage_value_xXx', wait_ready=True), None)
 
     vehicle.close()
+
+@with_sitl
+def test_parameters(connpath):
+    vehicle = connect(connpath, wait_ready=True)
+
+    # Iterate over parameters.
+    for k, v in vehicle.parameters.iteritems():
+        break
+    for value in vehicle.parameters:
+        break
+
+    vehicle.close()

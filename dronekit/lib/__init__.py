@@ -60,6 +60,7 @@ A number of other useful classes and methods are listed below.
 
 import threading, time, math, copy
 import CloudClient
+import collections
 from pymavlink.dialects.v10 import ardupilotmega
 from pymavlink import mavutil, mavwp
 from dronekit.util import errprinter
@@ -1484,7 +1485,7 @@ class Vehicle(HasObservers):
 
         return True
 
-class Parameters(HasObservers):
+class Parameters(collections.MutableMapping, HasObservers):
     """
     This object is used to get and set the values of named parameters for a vehicle. See the following links for information about
     the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
@@ -1521,6 +1522,15 @@ class Parameters(HasObservers):
     def __setitem__(self, name, value):
         self.wait_ready()
         self.set(name, value)
+
+    def __delitem__(self, name):
+        raise APIException('Cannot delete value from parameters list.')
+
+    def __len__(self):
+        return len(self._vehicle._params_map)
+
+    def __iter__(self):
+        return self._vehicle._params_map.__iter__()
 
     def get(self, name, wait_ready=True):
         if wait_ready:
