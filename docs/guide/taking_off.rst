@@ -19,6 +19,9 @@ and then call :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence
     Copter is always started in ``GUIDED`` mode. Copter will not take off ``AUTO`` mode even if you have a 
     `MAV_CMD_NAV_TAKEOFF <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#copter-2>`_ waypoint 
     in your mission (you can run a mission by switching to ``AUTO`` mode after you're in the air).
+    
+    By contrast, Plane apps take off using the ``MAV_CMD_NAV_TAKEOFF`` command in a mission. Plane should first arm and then change to
+    ``AUTO`` mode to start the mission. 
 
 The code below shows a function to arm a Copter, take off, and fly to a specified altitude. This is taken from :ref:`example_simple_goto`.
 
@@ -33,12 +36,9 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         """
 
         print "Basic pre-arm checks"
-        # Don't let the user try to fly autopilot is booting
-        if vehicle.mode.name == "INITIALISING":
-            print "Waiting for vehicle to initialise"
-            time.sleep(1)
-        while vehicle.gps_0.fix_type < 2:
-            print "Waiting for GPS...:", vehicle.gps_0.fix_type
+        # Don't let the user try to arm until autopilot is ready
+        while not vehicle.is_armable:
+            print " Waiting for vehicle to initialise..."
             time.sleep(1)
 
         print "Arming motors"
@@ -72,16 +72,32 @@ The function first performs some pre-arm checks.
     until the vehicle has passed a series of pre-arm checks to ensure that it is safe to fly.
 
 DroneKit-Python can't check every possible symptom that might prevent arming, but we can confirm that the 
-vehicle has booted and has a GPS lock:
+vehicle has booted, EKF is ready, and it has a GPS lock. These checks are encapsulated in the 
+:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>` attribute:
 
 .. code-block:: python
 
-    if v.mode.name == "INITIALISING":
-        print "Waiting for vehicle to initialise"
-        time.sleep(1)
-    while vehicle.gps_0.fix_type < 2:
-        print "Waiting for GPS...:", vehicle.gps_0.fix_type
-        time.sleep(1)
+        print "Basic pre-arm checks"
+        # Don't let the user try to arm until autopilot is ready
+        while not vehicle.is_armable:
+            print " Waiting for vehicle to initialise..."
+            time.sleep(1)
+            
+.. note::
+
+    If you need more status information you can perform the following sorts of checks:
+    
+    .. code-block:: python
+
+        if v.mode.name == "INITIALISING":
+            print "Waiting for vehicle to initialise"
+            time.sleep(1)
+        while vehicle.gps_0.fix_type < 2:
+            print "Waiting for GPS...:", vehicle.gps_0.fix_type
+            time.sleep(1)
+            
+    You should always do a final check on :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`!
+
 
 Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then wait until arming is confirmed 
 before sending the :py:func:`takeoff <dronekit.lib.CommandSequence.takeoff>` command.

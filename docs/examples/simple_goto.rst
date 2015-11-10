@@ -70,12 +70,19 @@ On the command prompt you should see (something like):
     >>> APM:Copter V3.4-dev (e0810c2e)
     >>> Frame: QUAD
     Basic pre-arm checks
-    Waiting for GPS...: None
-    ...
-    Waiting for GPS...: None
+     Waiting for vehicle to initialise...
+     Waiting for vehicle to initialise...
+     Waiting for vehicle to initialise...
+     Waiting for vehicle to initialise...
+     Waiting for vehicle to initialise...
     Arming motors
      Waiting for arming...
+     Waiting for arming...
+     Waiting for arming...
     >>> ARMING MOTORS
+    >>> GROUND START
+     Waiting for arming...
+     Waiting for arming...
     >>> Initialising APM...
     Taking off!
      Altitude:  0.0
@@ -93,14 +100,16 @@ On the command prompt you should see (something like):
 
 .. tip::
 
-    If you get stuck in ``Waiting for arming...`` it is very likely that the vehicle did not pass all pre-arm checks. 
-    On a real device you can view the controller LEDs to determine possible causes. On the Simulator console you 
-    can disable the checks if needed:
+    The code waits on :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`, so you shouldn't get stuck in ``Waiting for arming...``.
+    If you do, then:
+    
+    * On a real device you can view the controller LEDs to determine possible causes. 
+    * On the Simulator console you can disable the checks if needed:
 
-    .. code-block:: bash
+      .. code-block:: bash
 
-        STABILIZE>param load ../Tools/autotest/copter_params.parm
-        STABILIZE>param set ARMING_CHECK 0
+          STABILIZE>param load ../Tools/autotest/copter_params.parm
+          STABILIZE>param set ARMING_CHECK 0
 
 
 How does it work?
@@ -111,7 +120,8 @@ The code has three distinct sections: arming and takeoff, flight to two location
 Takeoff
 -------
 
-To launch *Copter* you need to set the mode to ``GUIDED``, arm the vehicle, and then call 
+To launch *Copter* you need to first check that the vehicle :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`. 
+Then set the mode to ``GUIDED``, arm the vehicle, and call 
 :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`. The takeoff code in this example
 is explained in the guide topic :ref:`taking-off`.
 

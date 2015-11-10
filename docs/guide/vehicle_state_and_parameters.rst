@@ -33,6 +33,7 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
 :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
 :py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
+:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`,
 :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
 :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
 
@@ -72,6 +73,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Rangefinder distance: %s" % vehicle.rangefinder.distance
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
     print "Heading: %s" % vehicle.heading
+    print "Is Armable?: %s" % vehicle.is_armable
     print "System status: %s" % vehicle.system_status
     print "Mode: %s" % vehicle.mode.name    # settable
     print "Armed: %s" % vehicle.armed    # settable
