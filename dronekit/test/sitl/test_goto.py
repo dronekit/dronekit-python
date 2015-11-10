@@ -27,43 +27,33 @@ def test_goto(connpath):
         Arms vehicle and fly to aTargetAltitude.
         """
 
-        # print "Basic pre-arm checks"
         # Don't let the user try to fly autopilot is booting
-        if vehicle.mode.name == "INITIALISING":
-            # print "Waiting for vehicle to initialise"
+        i = 60
+        while not vehicle.is_armable and i > 0:
             time.sleep(1)
-        while vehicle.gps_0.fix_type < 2:
-            # print "Waiting for GPS...:", vehicle.gps_0.fix_type
-            time.sleep(1)
-            
-        # print "Arming motors"
-        # Copter should arm in GUIDED mode
-        vehicle.mode    = VehicleMode("GUIDED")
+            i = i - 1
+        assert_equals(vehicle.is_armable, True)
 
+        # Copter should arm in GUIDED mode
+        vehicle.mode = VehicleMode("GUIDED")
         i = 60
         while vehicle.mode.name != 'GUIDED' and i > 0:
             # print " Waiting for guided %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
+        assert_equals(vehicle.mode.name, 'GUIDED')
 
-        # EKF warmup. Await that EKF's predicted horizontal position (absolute) estimate is good
-        while not vehicle._ekf_predposhorizabs:
-            time.sleep(1)
-
+        # Arm copter.
         vehicle.armed = True
-
         i = 60
         while not vehicle.armed and vehicle.mode.name == 'GUIDED' and i > 0:
             # print " Waiting for arming %s seconds..." % (i,)
             time.sleep(1)
             i = i - 1
+        assert_equals(vehicle.armed, True)
 
-        # Failure will result in arming but immediately landing
-        assert vehicle.armed
-        assert_equals(vehicle.mode.name, 'GUIDED')
-
-        # print "Taking off!"
-        vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+        # Take off to target altitude
+        vehicle.commands.takeoff(aTargetAltitude) 
 
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
