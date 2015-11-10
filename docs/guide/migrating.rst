@@ -14,12 +14,16 @@ The sections below outline the main migration areas.
 Installation
 ============
 
-DKPY 2.0 is installed from `pip` on all platforms - see :ref:`get-started` for more information.
+DKPY 2.0 is now installed from `pip` on all platforms - see :ref:`get-started` for more information.
+
+Installation is generally simpler than on DK 1.x because there are far fewer dependencies (both MAVProxy and numpy 
+are no longer needed).
 
 .. note::
 
-    The DroneKit-Python Windows installer is no longer needed. Installation is generally simpler 
-    than on DK 1.x because MAVProxy is not a dependency.
+    * The DroneKit-Python Windows installer cannot be used for DKPY2.x (and is no longer needed).
+    * One implication of the reduced dependencies is that it should now be easier to use other Python distributions 
+      (like ActivePython - although this has not been verified!)
 
 
 Launching scripts
