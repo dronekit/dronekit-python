@@ -14,9 +14,13 @@ def test_110(connpath):
     # exclusively for simulation. Take heed!!!
     vehicle.parameters['FS_GCS_ENABLE'] = 0
     vehicle.parameters['FS_EKF_THRESH'] = 100
+
+    # Await armability.
+    while not vehicle.is_armable:
+        time.sleep(.1)
     
     # Change the vehicle into STABILIZE mode
-    vehicle.mode = VehicleMode("STABILIZE")
+    vehicle.mode = VehicleMode("GUIDED")
 
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
@@ -34,8 +38,8 @@ def test_110(connpath):
     vehicle.add_attribute_listener('armed', armed_callback)
     vehicle.add_attribute_listener('armed', armed_callback)
 
-    # Disarm and see update.
-    vehicle.armed = False
+    # arm and see update.
+    vehicle.armed = True
     # Wait for ACK.
     time.sleep(3)
 
@@ -51,8 +55,8 @@ def test_110(connpath):
     vehicle.remove_attribute_listener('armed', armed_callback)
     callcount = armed_callback.called
 
-    # Re-arm and see update.
-    vehicle.armed = True
+    # Disarm and see update.
+    vehicle.armed = False
     # Wait for ack
     time.sleep(3)
 

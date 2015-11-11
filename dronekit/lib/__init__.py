@@ -292,6 +292,7 @@ class HasObservers(object):
     def __init__(self):
         # A mapping from attr_name to a list of observers
         self.__observers = {}
+        self._attribute_cache = {}
 
     """
     Provides callback based notification on attribute changes.
@@ -363,16 +364,27 @@ class HasObservers(object):
             if len(l) == 0:
                 del self.__observers[attr_name]
 
-    def notify_attribute_listeners(self, attr_name, value):
+
+    def notify_attribute_listeners(self, attr_name, value, cache=False):
         """
         This method calls attribute observers when the named attribute has changed.
         
         It should be called in message listeners after updating an attribute with new information
         from the vehicle. 
+
+        If ``cache`` is true, if the attribute's value has not changed since the last
+        invocation, its listeners are not invoked.
         
         :param String attr_name: The name of the attribute that has been updated.
         :param value: The current value of the attribute that has been updated.
         """
+        # Cached values are not re-sent if they are unchanged.
+        if cache:
+            if attr_name in self._attribute_cache and self._attribute_cache[attr_name] == value:
+                return
+            self._attribute_cache[attr_name] = value
+
+        # Notify observers.
         for fn in self.__observers.get(attr_name, []):
             fn(self, attr_name, value)
         for fn in self.__observers.get('*', []):
@@ -840,11 +852,11 @@ class Vehicle(HasObservers):
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-            self.notify_attribute_listeners('armed', self.armed)
+            self.notify_attribute_listeners('armed', self.armed, cache=True)
             self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
-            self.notify_attribute_listeners('mode', self.mode)
+            self.notify_attribute_listeners('mode', self.mode, cache=True)
             self._system_status = m.system_status
-            self.notify_attribute_listeners('system_status', self.system_status)
+            self.notify_attribute_listeners('system_status', self.system_status, cache=True)
 
         # Waypoints.
 
