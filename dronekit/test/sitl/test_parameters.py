@@ -24,3 +24,39 @@ def test_parameters(connpath):
     assert_equals(vehicle.parameters.get('xXx_extreme_garbage_value_xXx', wait_ready=True), None)
 
     vehicle.close()
+
+@with_sitl
+def test_iterating(connpath):
+    vehicle = connect(connpath, wait_ready=True)
+
+    # Iterate over parameters.
+    for k, v in vehicle.parameters.iteritems():
+        break
+    for key in vehicle.parameters:
+        break
+
+    vehicle.close()
+
+@with_sitl
+def test_setting(connpath):
+    vehicle = connect(connpath, wait_ready=True)
+
+    assert_not_equals(vehicle.parameters['THR_MIN'], None)
+
+    result = { 'success': False }
+
+    @vehicle.parameters.on_attribute('THR_MIN')
+    def listener(self, name, value):
+        result['success'] = name == 'THR_MIN' and value == 3.000
+
+    vehicle.parameters['THR_MIN'] = 3.000
+
+    # Wait a bit.
+    i = 5
+    while not result['success'] and i > 0:
+        time.sleep(1)
+        i = i - 1
+
+    assert_equals(result['success'], True)
+
+    vehicle.close()

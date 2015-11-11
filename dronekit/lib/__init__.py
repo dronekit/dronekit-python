@@ -60,6 +60,7 @@ A number of other useful classes and methods are listed below.
 
 import threading, time, math, copy
 import CloudClient
+import collections
 from pymavlink.dialects.v10 import ardupilotmega
 from pymavlink import mavutil, mavwp
 from dronekit.util import errprinter
@@ -291,7 +292,7 @@ class SystemStatus(object):
 class HasObservers(object):
     def __init__(self):
         # A mapping from attr_name to a list of observers
-        self.__observers = {}
+        self._attribute_listeners = {}
         self._attribute_cache = {}
 
     """
@@ -342,10 +343,10 @@ class HasObservers(object):
         :param observer: The callback to invoke when a change in the attribute is detected.
 
         """
-        l = self.__observers.get(attr_name)
+        l = self._attribute_listeners.get(attr_name)
         if l is None:
             l = []
-            self.__observers[attr_name] = l
+            self._attribute_listeners[attr_name] = l
         if not observer in l:
             l.append(observer)
 
@@ -366,11 +367,11 @@ class HasObservers(object):
         :param observer: The callback function to remove.
 
         """
-        l = self.__observers.get(attr_name)
+        l = self._attribute_listeners.get(attr_name)
         if l is not None:
             l.remove(observer)
             if len(l) == 0:
-                del self.__observers[attr_name]
+                del self._attribute_listeners[attr_name]
 
 
     def notify_attribute_listeners(self, attr_name, value, cache=False):
@@ -401,9 +402,9 @@ class HasObservers(object):
             self._attribute_cache[attr_name] = value
 
         # Notify observers.
-        for fn in self.__observers.get(attr_name, []):
+        for fn in self._attribute_listeners.get(attr_name, []):
             fn(self, attr_name, value)
-        for fn in self.__observers.get('*', []):
+        for fn in self._attribute_listeners.get('*', []):
             fn(self, attr_name, value)
 
     def on_attribute(self, name):
@@ -981,6 +982,7 @@ class Vehicle(HasObservers):
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
                 self._params_map[msg.param_id] = msg.param_value
+                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value, cache=True)
             except:
                 import traceback
                 traceback.print_exc()
@@ -1484,7 +1486,7 @@ class Vehicle(HasObservers):
 
         return True
 
-class Parameters(HasObservers):
+class Parameters(collections.MutableMapping, HasObservers):
     """
     This object is used to get and set the values of named parameters for a vehicle. See the following links for information about
     the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
@@ -1512,17 +1514,30 @@ class Parameters(HasObservers):
     """
 
     def __init__(self, vehicle):
+        super(Parameters, self).__init__()
         self._vehicle = vehicle
 
     def __getitem__(self, name):
+        name = name.upper()
         self.wait_ready()
         return self._vehicle._params_map[name]
 
     def __setitem__(self, name, value):
+        name = name.upper()
         self.wait_ready()
         self.set(name, value)
 
+    def __delitem__(self, name):
+        raise APIException('Cannot delete value from parameters list.')
+
+    def __len__(self):
+        return len(self._vehicle._params_map)
+
+    def __iter__(self):
+        return self._vehicle._params_map.__iter__()
+
     def get(self, name, wait_ready=True):
+        name = name.upper()
         if wait_ready:
             self.wait_ready()
         return self._vehicle._params_map.get(name, None)
@@ -1541,7 +1556,7 @@ class Parameters(HasObservers):
         success = False
         remaining = retries
         while True:
-            self._vehicle._master.param_set_send(name.upper(), value)
+            self._vehicle._master.param_set_send(name, value)
             tstart = time.time()
             if remaining == 0:
                 break
@@ -1560,6 +1575,22 @@ class Parameters(HasObservers):
         Block the calling thread until parameters have been downloaded
         """
         self._vehicle.wait_ready('parameters', **kwargs)
+
+    def add_attribute_listener(self, attr_name, *args, **kwargs):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).add_attribute_listener(attr_name, *args, **kwargs)
+
+    def remove_attribute_listener(self, attr_name, *args, **kwargs):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).remove_attribute_listener(attr_name, *args, **kwargs)
+
+    def notify_attribute_listeners(self, attr_name, *args, **kwargs):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).notify_attribute_listeners(attr_name, *args, **kwargs)
+
+    def on_attribute(self, attr_name, *args, **kwargs):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).on_attribute(attr_name, *args, **kwargs)
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
