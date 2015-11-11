@@ -137,4 +137,19 @@ def test_timeout(connpath):
     assert_readback(vehicle, {'2':33, '6': 1500})
     assert_equals(vehicle.channels.overrides.keys(), ['2'])
 
+    # Callbacks
+    result = {'success': False}
+    vehicle.channels.overrides = {}
+    def channels_callback(vehicle, name, channels):
+        print(channels['3'])
+        if channels['3'] == 55:
+            result['success'] = True
+    vehicle.add_attribute_listener('channels', channels_callback)
+    vehicle.channels.overrides = {'3': 55}
+
+    i = 5
+    while not result['success'] and i > 0:
+        time.sleep(.1)
+    assert result['success'], 'channels callback should be invoked.'
+
     vehicle.close()

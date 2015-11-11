@@ -783,6 +783,7 @@ class Vehicle(HasObservers):
             set_rc(6, m.chan6_raw)
             set_rc(7, m.chan7_raw)
             set_rc(8, m.chan8_raw)
+            self.notify_attribute_listeners('channels', self.channels)
 
         self._voltage = None
         self._current = None
