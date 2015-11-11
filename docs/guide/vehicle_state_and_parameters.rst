@@ -21,7 +21,8 @@ Attributes
 
 Vehicle state information is exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
 "standard" attributes: 
-:py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`, 
+:py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>`, 
+:py:attr:`Vehicle.location.local_frame <dronekit.lib.Vehicle.location.local_frame>`, 
 :py:attr:`Vehicle.attitude <dronekit.lib.Vehicle.attitude>`,
 :py:attr:`Vehicle.velocity <dronekit.lib.Vehicle.velocity>`,
 :py:attr:`Vehicle.airspeed <dronekit.lib.Vehicle.airspeed>`,
@@ -41,11 +42,13 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 Attributes are initially created with ``None`` values for their members. In most cases the members are populated 
 (and repopulated) as new MAVLink messages of the associated types are received from the vehicle. 
 
-All of the attributes can be :ref:`read <vehicle_state_read_attributes>` and :ref:`observed <vehicle_state_observe_attributes>`, 
+All of the attributes can be :ref:`read <vehicle_state_read_attributes>`, 
 but only the :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`, 
 :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and 
 :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
 status can be :ref:`written <vehicle_state_set_attributes>`.
+
+Almost all of the attributes can be :ref:`observed <vehicle_state_observe_attributes>`.
 
 The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is different 
 from the other attributes, and is :ref:`discussed in its own section below <vehicle_state_home_location>`.
@@ -106,7 +109,7 @@ Setting attributes
 ------------------
 
 Only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
-attributes can be written.
+attributes can be written (``Vehicle.home_location`` is a special case, as :ref:`discussed below <vehicle_state_home_location>`).
 
 The attributes are set by assigning a value:
 
@@ -143,11 +146,16 @@ to confirm they have changed before proceeding.
 Observing attribute changes
 ---------------------------
 
-You can observe any of the attributes (except for :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` and 
-:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`) and will receive notification every time a value is received 
-from the connected vehicle.  This allows you to monitor changes to velocity and other vehicle state without the need for polling.
+You can observe any of the vehicle attributes and monitor for changes without the need for polling.
 
-Observers are added using :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` or the
+Listeners ("observer callback functions") are invoked differently based on the *type of observed attribute*. Attributes that represent sensor values or other
+"streams of information" are updated whenever a message is received from the vehicle. Attributes which reflect vehicle
+"state" are only updated when their values change (for example 
+:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
+:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`, and
+:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`).
+
+Callbacks are added using :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` or the
 :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator method. The main difference between these methods
 is that only attribute callbacks added with :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` 
 can be removed (see :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`). 
@@ -185,17 +193,12 @@ callback is first run.
     vehicle.remove_message_listener('location', location_callback)
 
     
-Callbacks are triggered every time a message is received from the vehicle (whether or not the observed attribute changes). 
-Callback code may therefore choose to cache the result and only report changes. 
-
 The example below shows how you can declare an attribute callback using the 
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator function. This stores the result of the 
-previous callback and only prints the output when there is a signficant change in :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`.
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator function.
 
 
 .. code-block:: python
    :emphasize-lines: 3,4
-
 
     last_rangefinder_distance=0
 
@@ -208,6 +211,11 @@ previous callback and only prints the output when there is a signficant change i
         last_rangefinder_distance = round(self.rangefinder.distance, 1)
         print " Rangefinder (metres): %s" % last_rangefinder_distance
 
+.. note::
+
+    The fragment above stores the result of the previous callback and only prints the output when there is a 
+    signficant change in :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`. You might want to
+    perform caching like this to ignore updates that are not significant to your code.
         
 The examples above show how you can monitor a single attribute. You can pass the special name ('``*``') to specify a 
 callback that will be called for any/all attribute changes:

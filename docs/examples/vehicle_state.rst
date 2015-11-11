@@ -97,10 +97,13 @@ On the command prompt you should see (something like):
      CALLBACK: Mode changed to VehicleMode:STABILIZE
      Remove Vehicle.mode observer
 
-    Add attribute callback/observer `mode` attribute using decorator
-     Set mode=GUIDED (currently: STABILIZE)
+    Add attribute callback/observer on `attitude` attribute using decorator
      Wait 2s so callback invoked before observer removed
-     CALLBACK: Mode changed to VehicleMode:GUIDED
+     CALLBACK: Location changed to Attitude:pitch=0.0062674083747,yaw=-0.0318436846137,roll=-0.00923461187631
+     CALLBACK: Location changed to Attitude:pitch=0.00625518895686,yaw=-0.0317140743136,roll=-0.0091759338975
+     ...
+     CALLBACK: Location changed to Attitude:pitch=0.00629614247009,yaw=-0.0343224518001,roll=-0.0108289364725
+     CALLBACK: Location changed to Attitude:pitch=0.00636938679963,yaw=-0.0352342799306,roll=-0.01096534729
 
      Attempt to remove observer added with `on_attribute` decorator (should fail)
      Exception: Cannot add observer added using decorator
