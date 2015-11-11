@@ -6,6 +6,7 @@ import os
 import platform
 import re
 import dronekit.lib
+from dronekit.lib import APIException
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from Queue import Queue, Empty
@@ -60,6 +61,7 @@ class MAVHandler:
         # Debug flag.
         self._accept_input = True
         self._alive = True
+        self._death_error = None
 
         import atexit
         def onexit():
@@ -85,8 +87,7 @@ class MAVHandler:
                         except socket.error as error:
                             # If connection reset (closed), stop polling.
                             if error.errno == ECONNABORTED:
-                                errprinter('>>> connection aborted during read')
-                                return
+                                raise APIException('Connection aborting during read')
                             raise
                         except Empty:
                             break
@@ -100,8 +101,7 @@ class MAVHandler:
                         except socket.error as error:
                             # If connection reset (closed), stop polling.
                             if error.errno == ECONNABORTED:
-                                errprinter('>>> connection aborting during send')
-                                return
+                                raise APIException('Connection aborting during send')
                             raise
                         except Exception as e:
                             # TODO this should be more rigorous. How to avoid
@@ -116,6 +116,13 @@ class MAVHandler:
                         for fn in self.message_listeners:
                             fn(self, msg)
 
+            except APIException as e:
+                errprinter('>>> ' + str(e.message))
+                self._alive = False
+                self.master.close()
+                self._death_error = e
+                return
+
             except Exception as e:
                 # http://bugs.python.org/issue1856
                 if not self._alive:
@@ -123,7 +130,7 @@ class MAVHandler:
                 else:
                     self._alive = False
                     self.master.close()
-                    raise
+                    self._death_error = e
 
         t = Thread(target=mavlink_thread)
         t.daemon = True

@@ -70,11 +70,11 @@ class APIException(Exception):
     """
     Base class for DroneKit related exceptions.
 
-    :param String msg: Message string describing the exception
+    :param String message: Message string describing the exception
     """
 
-    def __init__(self, msg):
-        self.msg = msg
+    def __init__(self, message):
+        super(APIException, self).__init__(message)
 
 class Attitude(object):
     """
@@ -1005,7 +1005,7 @@ class Vehicle(HasObservers):
             # Timeouts.
             if self._heartbeat_started:
                 if self._heartbeat_error and self._heartbeat_error > 0 and time.time() - self._heartbeat_lastreceived > self._heartbeat_error:
-                    raise Exception('>>> No heartbeat in %s seconds, aborting.' % self._heartbeat_error)
+                    raise APIException('No heartbeat in %s seconds, aborting.' % self._heartbeat_error)
                 elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
                     if self._heartbeat_timeout == False:
                         errprinter('>>> Link timeout, no heartbeat in last %s seconds' % self._heartbeat_warning)
