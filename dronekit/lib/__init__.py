@@ -1073,10 +1073,11 @@ class Vehicle(HasObservers):
 
     @armed.setter
     def armed(self, value):
-        if value:
-            self._master.arducopter_arm()
-        else:
-            self._master.arducopter_disarm()
+        if bool(value) != self._armed:
+            if value:
+                self._master.arducopter_arm()
+            else:
+                self._master.arducopter_disarm()
 
     @property
     def is_armable(self):
