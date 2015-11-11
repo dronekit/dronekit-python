@@ -40,7 +40,7 @@ class MavWriter():
         os._exit(43)
 
 class MAVHandler:
-    def __init__(self, master, vehicle_class=Vehicle):
+    def __init__(self, master, vehicle_class=Vehicle, target_system=0):
         self.vehicle_class = vehicle_class
 
         self.master = master
@@ -51,8 +51,7 @@ class MAVHandler:
         self.master.mav = mavutil.mavlink.MAVLink(MavWriter(self.out_queue), srcSystem=self.master.source_system, use_native=False)
 
         # Targets
-        self.target_system = 0
-        self.target_component = 0
+        self.target_system = target_system
 
         # Listeners.
         self.loop_listeners = []
@@ -151,8 +150,6 @@ class MAVHandler:
         """Set correct target IDs for our vehicle"""
         if hasattr(message, 'target_system'):
             message.target_system = self.target_system
-        if hasattr(message, 'target_component'):
-            message.target_component = self.target_component
 
     def forward_loop(self, fn):
         """
@@ -177,8 +174,8 @@ class MAVHandler:
             time.sleep(0.1)
         self.master.close()
 
-def connect(ip, _initialize=True, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30):
-    handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud))
+def connect(ip, _initialize=True, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30, target_system=0):
+    handler = MAVHandler(mavutil.mavlink_connection(ip, baud=baud), target_system=target_system)
     vehicle = vehicle_class(handler)
 
     if status_printer:
