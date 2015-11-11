@@ -13,7 +13,7 @@ and we will try to find a better alternative: https://github.com/dronekit/dronek
 Full documentation is provided at http://python.dronekit.io/examples/channel_overrides.html
 """
 from dronekit import connect
-from pymavlink import mavutil
+
 
 #Set up option parsing to get connection string
 import argparse  
@@ -71,6 +71,10 @@ print " Channel overrides: %s" % vehicle.channels.overrides
 
 print "Clear Ch5, Ch6 override and set channel 3 to 500 (dictionary syntax)"
 vehicle.channels.overrides = {'5':None, '6':None,'3':500}
+print " Channel overrides: %s" % vehicle.channels.overrides 
+
+print "Clear all overrides"
+vehicle.channels.overrides = {}
 print " Channel overrides: %s" % vehicle.channels.overrides 
 
 #Close vehicle object before exiting script

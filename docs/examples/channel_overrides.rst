@@ -76,16 +76,18 @@ On the command prompt you should see (something like):
      Channel overrides: {'2': 200}
      Ch2 override: 200
     Set Ch3 override to 300 (dictionary syntax)
-     Channel overrides: {'3': 300, '2': 200}
+     Channel overrides: {'3': 300}
     Set Ch1-Ch8 overrides to 110-810 respectively
-     Channel overrides: {'1': 110, '3': 310, '2': 210, '5': 510, '4': 4100, '7': 710, '6': 610}
+     Channel overrides: {'1': 110, '3': 310, '2': 210, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
 
     Cancel Ch2 override (indexing syntax)
-     Channel overrides: {'1': 110, '3': 310, '5': 510, '4': 4100, '7': 710, '6': 610}
-    Cancel Ch3 override (del syntax)
-     Channel overrides: {'1': 110, '5': 510, '4': 4100, '7': 710, '6': 610}
-    Cancel Ch5, Ch6 override and set channel 3 to 500 (braces syntax)
-     Channel overrides: {'1': 110, '3': 500, '4': 4100, '7': 710}
+     Channel overrides: {'1': 110, '3': 310, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+    Clear Ch3 override (del syntax)
+     Channel overrides: {'1': 110, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+    Clear Ch5, Ch6 override and set channel 3 to 500 (dictionary syntax)
+     Channel overrides: {'3': 500}
+    Clear all overrides
+     Channel overrides: {}
 
     Close vehicle object
     Completed
@@ -131,7 +133,8 @@ You can override the values sent to the vehicle by the autopilot using :py:attr:
     # Set Ch3, Ch4 override to 300,400 using dictionary syntax"
     vehicle.channels.overrides = {'3':300, '4':400}
     
-To clear an override you can set its value to ``None`` as shown (or call ``del`` on it):
+To clear all overrides, set the attribute to an empty dictionary.
+To clear an individual override you can set its value to ``None`` (or call ``del`` on it):
 
 .. code:: python
 
@@ -144,6 +147,9 @@ To clear an override you can set its value to ``None`` as shown (or call ``del``
 
     # Clear using dictionary syntax (and set override at same time!)
     vehicle.channels.overrides = {'5':None, '6':None,'3':500}
+    
+    # Clear all overrides by setting an empty dictionary
+    vehicle.channels.overrides = {}   
 
 Read the channel overrides either as a dictionary or by index. 
 

@@ -531,8 +531,11 @@ class Channels(dict):
             vehicle.channels.overrides['2'] = 200
             vehicle.channels.overrides['2'] = None
             
-            # And clear using 'del'
+            # Clear using 'del'
             del vehicle.channels.overrides['3']
+            
+            # Clear all overrides by setting an empty dictionary
+            vehicle.channels.overrides = {}
 
         Read the channel overrides either as a dictionary or by index. Note that you'll get
         a ``KeyError`` exception if you read a channel override that has not been set. 
