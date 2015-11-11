@@ -1166,6 +1166,8 @@ class Vehicle(HasObservers):
 
     @property
     def battery(self):
+        if self._voltage == None or self._current == None or self._level == None:
+            return None
         return Battery(self._voltage, self._current, self._level)
 
     @property
@@ -1424,7 +1426,7 @@ class Vehicle(HasObservers):
         """
         return self._master.mav
 
-    def initialize(self, wait_ready=False, rate=None, heartbeat_timeout=30):
+    def initialize(self, rate=4, heartbeat_timeout=30):
         self._handler.start()
 
         # Start heartbeat polling.

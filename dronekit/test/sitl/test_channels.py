@@ -65,13 +65,13 @@ def test_timeout(connpath):
 
     #test 
     try:
-        print "Ch9: %s" % vehicle.channels['9']
+        vehicle.channels['9']
         assert False, "Can read over end of channels"
     except:
         pass
 
     try:
-        print "Ch0: %s" % vehicle.channels['0']
+        vehicle.channels['0']
         assert False, "Can read over start of channels"
     except:
         pass
@@ -141,7 +141,6 @@ def test_timeout(connpath):
     result = {'success': False}
     vehicle.channels.overrides = {}
     def channels_callback(vehicle, name, channels):
-        print(channels['3'])
         if channels['3'] == 55:
             result['success'] = True
     vehicle.add_attribute_listener('channels', channels_callback)
