@@ -1157,9 +1157,9 @@ class Vehicle(HasObservers):
     @property
     def location(self):
         # For backward compatibility, this is (itself) a LocationLocal object.
-        ret = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
+        ret = LocationGlobal(self._lat, self._lon, self._alt, is_relative=True)
         ret.local_frame = LocationLocal(self._north, self._east, self._down)
-        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
+        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt, is_relative=True)
         return ret
 
     @property
