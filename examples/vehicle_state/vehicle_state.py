@@ -133,9 +133,9 @@ def decorated_attitude_callback(self, attr_name, value):
     # `self` - the associated vehicle object (used if a callback is different for multiple vehicles)
     # `value` is the updated attribute value.
     global last_attitude_cache
-    # Only publish when mode changes
+    # Only publish when value changes
     if value!=last_attitude_cache:
-        print " CALLBACK: Location changed to", value
+        print " CALLBACK: Attitude changed to", value
         last_attitude_cache=value
 
 
@@ -144,9 +144,9 @@ time.sleep(2)
 
 print "\n Attempt to remove observer added with `on_attribute` decorator (should fail)" 
 try:
-    vehicle.remove_attribute_listener('mode', mode_decorated_callback)
+    vehicle.remove_attribute_listener('mode', decorated_attitude_callback)
 except:
-    print " Exception: Cannot add observer added using decorator"
+    print " Exception: Cannot remove observer added using decorator"
 
 
  
