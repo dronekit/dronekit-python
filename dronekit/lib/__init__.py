@@ -1518,10 +1518,12 @@ class Parameters(collections.MutableMapping, HasObservers):
         self._vehicle = vehicle
 
     def __getitem__(self, name):
+        name = name.upper()
         self.wait_ready()
         return self._vehicle._params_map[name]
 
     def __setitem__(self, name, value):
+        name = name.upper()
         self.wait_ready()
         self.set(name, value)
 
@@ -1535,6 +1537,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         return self._vehicle._params_map.__iter__()
 
     def get(self, name, wait_ready=True):
+        name = name.upper()
         if wait_ready:
             self.wait_ready()
         return self._vehicle._params_map.get(name, None)
@@ -1553,7 +1556,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         success = False
         remaining = retries
         while True:
-            self._vehicle._master.param_set_send(name.upper(), value)
+            self._vehicle._master.param_set_send(name, value)
             tstart = time.time()
             if remaining == 0:
                 break
@@ -1572,6 +1575,22 @@ class Parameters(collections.MutableMapping, HasObservers):
         Block the calling thread until parameters have been downloaded
         """
         self._vehicle.wait_ready('parameters', **kwargs)
+
+    def add_attribute_listener(self, attr_name, observer):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).add_attribute_listener(attr_name, observer)
+
+    def remove_attribute_listener(self, attr_name, observer):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).add_attribute_listener(attr_name, observer)
+
+    def notify_attribute_listeners(self, attr_name, value):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).add_attribute_listener(attr_name, value)
+
+    def on_attribute(self, name):
+        attr_name = attr_name.upper()
+        return super(Parameters, self).on_attribute(attr_name)
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
