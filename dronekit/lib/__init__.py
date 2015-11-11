@@ -982,7 +982,7 @@ class Vehicle(HasObservers):
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
                 self._params_map[msg.param_id] = msg.param_value
-                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value)
+                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value, cache=True)
             except:
                 import traceback
                 traceback.print_exc()
@@ -1576,21 +1576,21 @@ class Parameters(collections.MutableMapping, HasObservers):
         """
         self._vehicle.wait_ready('parameters', **kwargs)
 
-    def add_attribute_listener(self, attr_name, observer):
+    def add_attribute_listener(self, attr_name, *args, **kwargs):
         attr_name = attr_name.upper()
-        return super(Parameters, self).add_attribute_listener(attr_name, observer)
+        return super(Parameters, self).add_attribute_listener(attr_name, *args, **kwargs)
 
-    def remove_attribute_listener(self, attr_name, observer):
+    def remove_attribute_listener(self, attr_name, *args, **kwargs):
         attr_name = attr_name.upper()
-        return super(Parameters, self).add_attribute_listener(attr_name, observer)
+        return super(Parameters, self).remove_attribute_listener(attr_name, *args, **kwargs)
 
-    def notify_attribute_listeners(self, attr_name, value):
+    def notify_attribute_listeners(self, attr_name, *args, **kwargs):
         attr_name = attr_name.upper()
-        return super(Parameters, self).add_attribute_listener(attr_name, value)
+        return super(Parameters, self).notify_attribute_listeners(attr_name, *args, **kwargs)
 
-    def on_attribute(self, name):
+    def on_attribute(self, attr_name, *args, **kwargs):
         attr_name = attr_name.upper()
-        return super(Parameters, self).on_attribute(attr_name)
+        return super(Parameters, self).on_attribute(attr_name, *args, **kwargs)
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
