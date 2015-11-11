@@ -418,6 +418,153 @@ class HasObservers(object):
                 self.add_attribute_listener(name, fn)
         return decorator
 
+
+class ChannelsOverride(dict):
+    """
+    A dictionary class for managing Vehicle channel overrides.
+    
+    Channels can be read, written, or cleared by index or using a dictionary syntax.
+    To clear a value, set it to ``None`` or use ``del`` on the item.
+    
+    For more information and examples see :ref:`example_channel_overrides`.
+    """
+    def __init__(self, vehicle):
+        self._vehicle = vehicle
+        self._count = 8 # Fixed by MAVLink
+        self._active = True
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self, str(key))
+
+    def __setitem__(self, key, value):
+        if not (int(key) > 0 and int(key) <= self._count):
+            raise Exception('Invalid channel index %s' % key)
+        if not value:
+            try:
+                dict.__delitem__(self, str(key))
+            except:
+                pass
+        else:
+            dict.__setitem__(self, str(key), value)
+        self._send()
+
+    def __delitem__(self, key):
+        dict.__delitem__(self, str(key))
+        self._send()
+
+    def __len__(self):
+        return self._count
+
+    def _send(self):
+        if self._active:
+            overrides = [0] * 8
+            for k, v in self.iteritems():
+                overrides[int(k)-1] = v
+            self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
+
+
+class Channels(dict):
+    """
+    A dictionary class for managing RC channel information associated with a :py:class:`Vehicle`.
+    
+    An object of this type is accessed through :py:attr:`Vehicle.channels`. This object also stores 
+    the current vehicle channel overrides through its :py:attr:`overrides` attribute.
+    
+    For more information and examples see :ref:`example_channel_overrides`.
+    """
+
+    def __init__(self, vehicle, count):
+        self._vehicle = vehicle
+        self._count = count
+        self._overrides = ChannelsOverride(vehicle)
+
+        # populate readback
+        self._readonly = False
+        for k in range(0, count):
+            self[k + 1] = None
+        self._readonly = True
+
+    @property
+    def count(self):
+        """
+        The number of channels defined in the dictionary (currently 8).
+        """
+        return self._count
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self, str(key))
+
+    def __setitem__(self, key, value):
+        if self._readonly:
+            raise TypeError('__setitem__ is not supported on Channels object')
+        return dict.__setitem__(self, str(key), value)
+
+    def __len__(self):
+        return self._count
+
+    def _update_channel(self, channel, value):
+        # If we have channels on different ports, we expand the Channels
+        # object to support them.
+        channel = int(channel)
+        self._readonly = False
+        self[channel] = value
+        self._readonly = True
+        self._count = max(self._count, channel)
+
+    @property
+    def overrides(self):
+        """
+        Attribute to read, set and clear channel overrides (also known as "rc overrides")
+        associated with a :py:class:`Vehicle` (via :py:class:`Vehicle.channels`). This is an 
+        object of type :py:class:`ChannelsOverride`.
+        
+        For more information and examples see :ref:`example_channel_overrides`.
+        
+        To set channel overrides:
+        
+        .. code:: python
+        
+            # Set and clear overrids using dictionary syntax (clear by setting override to none)
+            vehicle.channels.overrides = {'5':None, '6':None,'3':500}
+
+            # You can also set and clear overrides using indexing syntax
+            vehicle.channels.overrides['2'] = 200
+            vehicle.channels.overrides['2'] = None
+            
+            # Clear using 'del'
+            del vehicle.channels.overrides['3']
+            
+            # Clear all overrides by setting an empty dictionary
+            vehicle.channels.overrides = {}
+
+        Read the channel overrides either as a dictionary or by index. Note that you'll get
+        a ``KeyError`` exception if you read a channel override that has not been set. 
+
+        .. code:: python
+
+            # Get all channel overrides
+            print " Channel overrides: %s" % vehicle.channels.overrides
+            # Print just one channel override
+            print " Ch2 override: %s" % vehicle.channels.overrides['2']   
+        """
+        return self._overrides
+
+    @overrides.setter
+    def overrides(self, newch):
+        self._overrides._active = False
+        self._overrides.clear()
+        for k, v in newch.iteritems():
+            if v:
+                self._overrides[str(k)] = v
+            else:
+                try:
+                    del self._overrides[str(k)]
+                except:
+                    pass
+        self._overrides._active = True
+        self._overrides._send()
+
+
 class Vehicle(HasObservers):
     """
     The main vehicle API
@@ -504,80 +651,7 @@ class Vehicle(HasObservers):
 
         :py:class:`Rangefinder` distance and voltage values.
 
-    .. py:attribute:: channel_override
 
-        .. warning::
-
-            RC override may be useful for simulating user input and when implementing certain types of joystick control.
-            It should not be used for direct control of vehicle channels unless there is no other choice!
-
-            Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally
-            set the desired position or direction/speed.
-
-        This attribute takes a dictionary argument defining the RC *output* channels to be overridden (specified by channel number), and their new values.
-        Channels that are not specified in the dictionary are not overridden. All multi-channel updates are atomic.
-
-        To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
-
-        The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters:
-        `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_,
-        `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/#rcmap__parameters>`_ ,
-        `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/#rcmap__parameters>`_).
-
-        The remaining channel values are configurable, and their purpose can be determined using the
-        `RCn_FUNCTION parameters <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/>`_.
-        In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the channel can be
-        `mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be
-        controlled by normal autopilot code).
-
-        An example of setting and clearing the override is given below:
-
-        .. code:: python
-
-            # Override channels 1 and 4 (only).
-            vehicle.channel_override = { "1" : 900, "4" : 1000 }
-
-            # Cancel override on channel 1 and 4 by sending 0
-            vehicle.channel_override = { "1" : 0, "4" : 0 }
-
-        .. versionchanged:: 1.0
-
-            This update replaces ``rc_override`` with ``channel_override``/``channel_readback`` documentation.
-
-        .. todo:: Add note to the examples/guide like warning above not to use this mechanism except as intended:
-
-            https://github.com/dronekit/dronekit-python/issues/72
-
-        .. todo::
-
-            channel_override/channel_readback documentation
-
-            In a future update strings will be defined per vehicle type ('pitch', 'yaw', 'roll' etc...)
-            and rather than setting channel 3 to 1400 (for instance), you will pass in a dict with
-            'throttle':1200.
-
-            This change will be useful in two ways:
-
-            * we can hide (eventually we can deprecate) any notion of rc channel numbers at all.
-            * vehicles can eventually define new 'channels' for overridden values.
-
-            FIXME: Remaining channel_override/channel_readback FIXMEs:
-
-            * how to address the units issue?  Merely with documentation or some other way?
-            * is there any benefit of using lists rather than tuples for these attributes
-
-    .. py:attribute:: channel_readback
-
-        This read-only attribute returns a dictionary containing the *original* vehicle RC channel values (ignoring any overrides set using
-        :py:attr:`channel_override <dronekit.lib.Vehicle.channel_override>`). Dictionary entries have the format ``channelName -> value``.
-
-        For example, the returned dictionary might look like this:
-
-        .. code:: python
-
-            RC readback: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800} ? Dictionary () (read only)
-
-    .. todo:: In V2, there may be ardupilot specific attributes & types (as in the introduction). If so, text below might be useful.
 
         **Autopilot specific attributes & types:**
 
@@ -694,14 +768,15 @@ class Vehicle(HasObservers):
             self._mount_yaw = m.pointing_c / 100
             self.notify_attribute_listeners('mount', self.mount_status)
 
-        self._rc_readback = {}
+        # All keys are strings.
+        self._channels = Channels(self, 8)
 
         @self.on_message('RC_CHANNELS_RAW')
         def listener(self, name, m):
             def set_rc(chnum, v):
                 '''Private utility for handling rc channel messages'''
                 # use port to allow ch nums greater than 8
-                self._rc_readback[str(m.port * 8 + chnum)] = v
+                self._channels._update_channel(str(m.port * 8 + chnum), v)
 
             set_rc(1, m.chan1_raw)
             set_rc(2, m.chan2_raw)
@@ -711,6 +786,7 @@ class Vehicle(HasObservers):
             set_rc(6, m.chan6_raw)
             set_rc(7, m.chan7_raw)
             set_rc(8, m.chan8_raw)
+            self.notify_attribute_listeners('channels', self.channels)
 
         self._voltage = None
         self._current = None
@@ -1150,21 +1226,28 @@ class Vehicle(HasObservers):
             return self._ekf_poshorizabs or self._ekf_predposhorizabs
 
     @property
-    def channel_override(self):
-        overrides = self.__rc.override
-        # Only return entries that have a non zero override
-        return dict((str(num + 1), overrides[num]) for num in range(8) if overrides[num] != 0)
+    def channels(self):
+        """
+        The RC channel values from the RC Transmitter, in a :py:class:`Channels` object.
+        The attribute can also be used to set and read RC Override (channel override) values
+        via :py:attr:`Vehicle.channels.override <dronekit.lib.Channels.overrides>`.
+        
+        For more information and examples see :ref:`example_channel_overrides`.
+        
+        To read the channels from the RC transmitter:
+        
+        .. code:: python
 
-    @channel_override.setter
-    def channel_override(self, newch):
-        overrides = self.__rc.override
-        for k, v in newch.iteritems():
-            overrides[int(k) - 1] = v
-        self.__rc.set_override(overrides)
+            # Get all channel values from RC transmitter
+            print "Channel values from RC Tx:", vehicle.channels
 
-    @property
-    def channel_readback(self):
-        return copy.copy(self._rc_readback)
+            # Access channels individually
+            print "Read channels individually:"
+            print " Ch1: %s" % vehicle.channels['1']
+            print " Ch2: %s" % vehicle.channels['2']
+            
+        """
+        return self._channels
 
     @property
     def home_location(self):

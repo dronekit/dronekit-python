@@ -237,6 +237,25 @@ including:
 :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`.
 
 
+Channel Overrides
+-----------------
+
+.. warning:: 
+
+    Channel overrides (a.k.a “RC overrides”) are highly discommended (they are primarily implemented for 
+    simulating user input and when implementing certain types of joystick control).
+
+DKPY v2 replaces the ``vehicle.channel_readback`` attribute with
+:py:attr:`Vehicle.channels <dronekit.lib.Vehicle.channels>` (and the :py:class:`Channels <dronekit.lib.Channels>`
+class) and the ``vehicle.channel_override`` attribute with 
+:py:attr:`Vehicle.channels.overrides <dronekit.lib.Channels.overrides>` 
+(and the :py:class:`ChannelsOverrides <dronekit.lib.ChannelsOverrides>` class). 
+
+Documentation and example code for how to use the new API are provided in :ref:`example_channel_overrides`.
+
+
+
+
 Debugging
 =========
 

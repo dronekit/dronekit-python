@@ -1,9 +1,9 @@
 .. _example_channel_overrides:
 .. _vehicle_state_channel_override:
 
-==========================
-Example: Channel Overrides
-==========================
+=======================================
+Example: Channels and Channel Overrides
+=======================================
 
 This example shows how to get channel information and to get/set channel-override information.
 
@@ -52,19 +52,52 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
-    Overriding RC channels for roll and yaw
-     Current overrides are: {'1': 900, '4': 1000}
-     Channel default values: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
-     Cancelling override
+    Connecting to vehicle on: 170.0.0.1:14550
+    >>> APM:Copter V3.3 (d6053245)
+    >>> Frame: QUAD
+    >>> Calibrating barometer
+    >>> Initialising APM...
+    >>> barometer calibration complete
+    >>> GROUND START
+    Channel values from RC Tx: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
+    Read channels individually:
+     Ch1: 1500
+     Ch2: 1500
+     Ch3: 1000
+     Ch4: 1500
+     Ch5: 1800
+     Ch6: 1000
+     Ch7: 1000
+     Ch8: 1800
+    Number of channels: 8
+
+    Channel overrides: {}
+    Set Ch2 override to 200 (indexing syntax)
+     Channel overrides: {'2': 200}
+     Ch2 override: 200
+    Set Ch3 override to 300 (dictionary syntax)
+     Channel overrides: {'3': 300}
+    Set Ch1-Ch8 overrides to 110-810 respectively
+     Channel overrides: {'1': 110, '3': 310, '2': 210, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+
+    Cancel Ch2 override (indexing syntax)
+     Channel overrides: {'1': 110, '3': 310, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+    Clear Ch3 override (del syntax)
+     Channel overrides: {'1': 110, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+    Clear Ch5, Ch6 override and set channel 3 to 500 (dictionary syntax)
+     Channel overrides: {'3': 500}
+    Clear all overrides
+     Channel overrides: {}
+
+    Close vehicle object
+    Completed
 
 
 
 How does it work?
 =================
 
-Get the default values of the channels using the :py:attr:`channel_readback <dronekit.lib.Vehicle.channel_readback>` attribute. 
-
-You can over-ride these values using the :py:attr:`channel_override <dronekit.lib.Vehicle.channel_override>` attribute. This takes a dictionary argument defining the RC *output* channels to be overridden (specified by channel number), and their new values.  Channels that are not specified in the dictionary are not overridden. All multi-channel updates are atomic. To cancel an override call ``channel_override`` again, setting zero for the overridden channels.
+The RC transmitter channels are connected to the autopilot and control the vehicle. 
 
 The values of the first four channels map to the main flight controls: 1=Roll, 2=Pitch, 3=Throttle, 4=Yaw (the mapping is defined in ``RCMAP_`` parameters in 
 `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/#rcmap__parameters>`_, 
@@ -77,7 +110,60 @@ In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the c
 `mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be 
 controlled by normal autopilot code).
 
+You can read the values of the channels using the :py:attr:`Vehicle.channels <dronekit.lib.Vehicle.channels>` attribute. The values are regularly updated,
+from the UAV, based on the RC inputs from the transmitter. These can be read either as a set or individually:
 
+.. code:: python
+
+    # Get all channel values from RC transmitter
+    print "Channel values from RC Tx:", vehicle.channels
+
+    # Access channels individually
+    print "Read channels individually:"
+    print " Ch1: %s" % vehicle.channels['1']
+    print " Ch2: %s" % vehicle.channels['2']
+
+You can override the values sent to the vehicle by the autopilot using :py:attr:`Vehicle.channels.overrides <dronekit.lib.Channels.overrides>`
+(although this is not recommended)!  The overrides can be written individually using an indexing syntax or as a set using a dictionary syntax.
+
+.. code:: python
+
+    # Set Ch2 override to 200 using indexing syntax
+    vehicle.channels.overrides['2'] = 200
+    # Set Ch3, Ch4 override to 300,400 using dictionary syntax"
+    vehicle.channels.overrides = {'3':300, '4':400}
+    
+To clear all overrides, set the attribute to an empty dictionary.
+To clear an individual override you can set its value to ``None`` (or call ``del`` on it):
+
+.. code:: python
+
+    # Clear override by setting channels to None
+    # Clear using index syntax
+    vehicle.channels.overrides['2'] = None
+    
+    # Clear using 'del' syntax
+    del vehicle.channels.overrides['3']
+
+    # Clear using dictionary syntax (and set override at same time!)
+    vehicle.channels.overrides = {'5':None, '6':None,'3':500}
+    
+    # Clear all overrides by setting an empty dictionary
+    vehicle.channels.overrides = {}   
+
+Read the channel overrides either as a dictionary or by index. 
+
+.. code:: python
+
+    # Get all channel overrides
+    print " Channel overrides: %s" % vehicle.channels.overrides
+    # Print just one channel override
+    print " Ch2 override: %s" % vehicle.channels.overrides['2']
+
+.. note::
+
+    You'll get a ``KeyError`` exception if you read a channel override that has 
+    not been set. 
 
 
 Source code
