@@ -303,9 +303,13 @@ class HasObservers(object):
         """
         Add an attribute listener callback.
 
-        The callback function (``observer``) is invoked every time the associated attribute is updated 
-        from the vehicle (the attribute value may not have *changed*). The callback can be removed 
-        using :py:func:`remove_attribute_listener`.
+        The callback function (``observer``) is invoked differently depending on the *type of attribute*. 
+        Attributes that represent sensor values or which are used to monitor connection status are updated 
+        whenever a message is received from the vehicle. Attributes which reflect vehicle "state" are 
+        only updated when their values change (for example :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
+        :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`, and :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`).
+
+        The callback can be removed using :py:func:`remove_attribute_listener`.
         
         .. note::
         
@@ -332,6 +336,8 @@ class HasObservers(object):
             #Add observer for the vehicle's current location
             vehicle.add_attribute_listener('global_frame', location_callback)     
         
+        See :ref:`vehicle_state_observe_attributes` for more information.
+        
         :param String attr_name: The name of the attribute to watch (or '*' to watch all attributes).
         :param observer: The callback to invoke when a change in the attribute is detected.
 
@@ -353,6 +359,8 @@ class HasObservers(object):
         .. code:: python
 
             vehicle.remove_attribute_listener('global_frame', location_callback)
+            
+        See :ref:`vehicle_state_observe_attributes` for more information.
 
         :param String attr_name: The attribute name that is to have an observer removed (or '*' to remove an 'all attribute' observer).
         :param observer: The callback function to remove.
@@ -367,16 +375,24 @@ class HasObservers(object):
 
     def notify_attribute_listeners(self, attr_name, value, cache=False):
         """
-        This method calls attribute observers when the named attribute has changed.
+        This method is used to update attribute observers when the named attribute is updated.
         
-        It should be called in message listeners after updating an attribute with new information
-        from the vehicle. 
+        You should call it in your message listeners after updating an attribute with 
+        information from a vehicle message.
 
-        If ``cache`` is true, if the attribute's value has not changed since the last
-        invocation, its listeners are not invoked.
+        By default the value of ``cache`` is ``False`` and every update from the vehicle is sent to listeners 
+        (whether or not the attribute has changed).  This is appropriate for attributes which represent sensor 
+        or heartbeat-type monitoring. 
+        
+        Set ``cache=True`` to update listeners only when the value actually changes (cache the previous 
+        attribute value). This should be used where clients will only ever need to know the value when it has
+        changed. For example, this setting has been used for notifying :py:attr:`mode` changes.
+        
+        See :ref:`example_create_attribute` for more information.
         
         :param String attr_name: The name of the attribute that has been updated.
         :param value: The current value of the attribute that has been updated.
+        :param Boolean cache: Set ``True`` to only notify observers when the attribute value changes.
         """
         # Cached values are not re-sent if they are unchanged.
         if cache:
@@ -394,8 +410,11 @@ class HasObservers(object):
         """
         Decorator for attribute listeners.
         
-        The decorated ``observer`` callback function is invoked every time the associated attribute is updated 
-        from the vehicle (the attribute value may not have *changed*). 
+        The decorated function (``observer``) is invoked differently depending on the *type of attribute*. 
+        Attributes that represent sensor values or which are used to monitor connection status are updated 
+        whenever a message is received from the vehicle. Attributes which reflect vehicle "state" are 
+        only updated when their values change (for example :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
+        :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`, and :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`).
         
         The callback arguments are:
         
@@ -418,6 +437,8 @@ class HasObservers(object):
             @vehicle.on_attribute('attitude')
             def attitude_listener(self, name, msg):
                 print '%s attribute is: %s' % (name, msg)
+                
+        See :ref:`vehicle_state_observe_attributes` for more information.
 
         :param String attr_name: The name of the attribute to watch (or '*' to watch all attributes).
         :param observer: The callback to invoke when a change in the attribute is detected.
@@ -1023,6 +1044,8 @@ class Vehicle(HasObservers):
             def my_method(self, name, msg):
                 pass
                 
+        See :ref:`mavlink_messages` for more information.
+                
         :param String name: The name of the message to be intercepted by the decorated listener function (or '*' to get all messages).
         """
         def decorator(fn):
@@ -1059,6 +1082,8 @@ class Vehicle(HasObservers):
                 pass
 
             vehicle.add_message_listener('HEARTBEAT',my_method)
+            
+        See :ref:`mavlink_messages` for more information.
         
         :param String name: The name of the message to be intercepted by the listener function (or '*' to get all messages).
         :param fn: The listener function that will be called if a message is received.        
@@ -1072,6 +1097,8 @@ class Vehicle(HasObservers):
     def remove_message_listener(self, name, fn):
         """
         Removes a message listener (that was previously added using :py:func:`add_message_listener`).
+        
+        See :ref:`mavlink_messages` for more information.
         
         :param String name: The name of the message for which the listener is to be removed (or '*' to remove an 'all messages' observer).
         :param fn: The listener callback function to remove.            

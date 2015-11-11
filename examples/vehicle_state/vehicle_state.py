@@ -124,23 +124,20 @@ vehicle.remove_attribute_listener('mode', mode_callback)
 
 
                 
-# Add mode attribute callback using decorator (callbacks added this way cannot be removed).
-print "\nAdd attribute callback/observer `mode` attribute using decorator" 
-last_published_mode=''
-@vehicle.on_attribute('mode')
-def mode_decorated_callback(self, attr_name, value):
+# Add attitude attribute callback using decorator (callbacks added this way cannot be removed).
+print "\nAdd attribute callback/observer on `attitude` attribute using decorator" 
+last_attitude_cache=None
+@vehicle.on_attribute('attitude')
+def decorated_attitude_callback(self, attr_name, value):
     # `attr_name` - the observed attribute (used if callback is used for multiple attributes)
     # `self` - the associated vehicle object (used if a callback is different for multiple vehicles)
     # `value` is the updated attribute value.
-    global last_published_mode
+    global last_attitude_cache
     # Only publish when mode changes
-    if value!=last_published_mode:
-        print " CALLBACK: Mode changed to", value
-        last_published_mode=value
+    if value!=last_attitude_cache:
+        print " CALLBACK: Location changed to", value
+        last_attitude_cache=value
 
-
-print " Set mode=GUIDED (currently: %s)" % vehicle.mode.name 
-vehicle.mode = VehicleMode("GUIDED")
 
 print " Wait 2s so callback invoked before observer removed"
 time.sleep(2)

@@ -155,9 +155,8 @@ decorator. The listener is called for messages that contain the string "RAW_IMU"
 with arguments for the vehicle, message name, and the message. It copies the message information into 
 the attribute and then notifies all observers.
 
-
 .. code-block:: python
-    :emphasize-lines: 6, 9-10, 30
+    :emphasize-lines: 6, 9-10, 32
                 
     class MyVehicle(Vehicle):
         def __init__(self, *args):
@@ -188,12 +187,28 @@ the attribute and then notifies all observers.
                 self._raw_imu.zmag=message.zmag
                 
                 # Notify all observers of new message (with new value)
+                #   Note that argument `cache=False` by default so listeners
+                #   are updaed with every new message
                 self.notify_attribute_listeners('raw_imu', self._raw_imu) 
 
         @property
         def raw_imu(self):
             return self._raw_imu            
-            
+
+
+.. note::
+
+    The notifier function (:py:func:`Vehicle.notify_attribute_listeners() <dronekit.lib.Vehicle.notify_attribute_listeners>`)
+    should be called every time there is an update from the vehicle. 
+    
+    You can set a third parameter (``cache=True``) so that it only invokes the listeners when the value *changes*. 
+    This is normally used for vehicle state information like ``Vehicle.mode``, where the value is updated 
+    regularly from the vehicle client code is only interested in attribute changes.
+    
+    You should not set ``cache=True`` for attributes that represent sensor information or other "live" information, including
+    the RAW_IMU attribute demonstrated here. Clients can then implement their own caching strategy if needed.
+
+
 At the end of the class we create the public properly ``raw_imu`` which client code may read and observe.
 
 .. note:: 

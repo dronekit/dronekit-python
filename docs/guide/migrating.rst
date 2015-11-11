@@ -196,8 +196,21 @@ the vehicle.
 
 The difference between :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` and 
 :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` is that attribute listeners added using
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` cannot be removed (but ``on_attribute()`` does have
-a more elegant syntax).
+:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` cannot be removed (while ``on_attribute()`` 
+has a more elegant syntax).
+
+A few attributes have been modified so that they only notify when the value changes: 
+:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
+:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`, and
+:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`. Users no longer need to add caching code 
+for these attributes in their listeners.
+Attributes that provide "streams" of information (i.e. sensor output) remain unchanged. 
+
+.. note::
+
+    If you're :ref:`creating your own attributes <example_create_attribute>` this caching is trivially 
+    provided using the ``cache=True`` argument to 
+    :py:func:`Vehicle.notify_attribute_listeners() <dronekit.lib.Vehicle.notify_attribute_listeners>`.
 
 See :ref:`vehicle_state_observe_attributes` for more information.
 
@@ -220,7 +233,7 @@ decorator, which allows you to specify a callback function that will be invoked 
     The API also adds :py:func:`Vehicle.add_message_listener() <dronekit.lib.Vehicle.add_message_listener>`
     and :py:func:`Vehicle.remove_message_listener() <dronekit.lib.Vehicle.remove_message_listener>`. 
     These can be used instead of :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` when you need to be
-    able to *remove* an added listener.
+    able to *remove* an added listener. Typically you won't need to!
 
 See :ref:`mavlink_messages` for more information.
 

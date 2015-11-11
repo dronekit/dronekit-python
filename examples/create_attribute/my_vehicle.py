@@ -76,6 +76,8 @@ class MyVehicle(Vehicle):
             self._raw_imu.zmag=message.zmag
             
             # Notify all observers of new message (with new value)
+            #   Note that argument `cache=False` by default so listeners
+            #   are updaed with every new message
             self.notify_attribute_listeners('raw_imu', self._raw_imu) 
 
     @property
