@@ -322,7 +322,7 @@ class HasObservers(object):
           to implement vehicle-specific callback handling (if needed).
         * ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
           if the same callback is used for watching several attributes.
-        * ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
+        * ``value`` - the attribute value (so you don't need to re-query the vehicle object).
 
         The example below shows how to get callbacks for (global) location changes:
 

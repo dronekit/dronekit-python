@@ -166,7 +166,7 @@ The ``observer`` callback function is invoked with the following arguments:
   to implement vehicle-specific callback handling (if needed).
 * ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
   if the same callback is used for watching several attributes.
-* ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
+* ``value`` - the attribute value (so you don't need to re-query the vehicle object).
 
 The code snippet below shows how to add (and remove) a callback function to observe changes
 in :py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>` using 
