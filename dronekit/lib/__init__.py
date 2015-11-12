@@ -30,15 +30,21 @@ A number of other useful classes and methods are listed below.
 
 ----
 
-.. todo:: Update this when have confirmed how to register for parameter notifications.
-
 .. py:function:: connect(ip, wait_ready=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200)
 
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
-    Connection string parameters for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
+    Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
 
     :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
-    :param Bool wait_ready: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
+    :param Bool/Array wait_ready: If ``True`` wait until all default attributes have downloaded before 
+        the method returns (default is ``False``). 
+        The default attributes to wait on are: :py:attr:`parameters`, :py:attr:`gps_0`, 
+        :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. 
+        
+        You can also specify a named set of parameters to wait on (e.g. ``wait_ready=['system_status','mode']``).
+        
+        For more information see :py:func:`Vehicle.wait_ready <dronekit.lib.Vehicle.wait_ready>`.
+
     :param status_printer: Method of signature ``def status_printer(txt)`` that prints STATUS_TEXT messages from the Vehicle and other diagnostic information.
         By default the status information is printed to the command prompt in which the script is running.
     :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method. 
@@ -47,15 +53,7 @@ A number of other useful classes and methods are listed below.
     :param int baud: The baud rate for the connection. The default is 115200.
 
 
-    :returns: A connected :py:class:`Vehicle` object.
-
-----
-
-    .. todo:: 
-    
-        Confirm what status_printer, vehicle_class and rate "mean" (https://github.com/dronekit/dronekit-python/issues/395#issuecomment-153527657)
-        Can we hide in API. Can we get method defined in this file or connect method file exported
-        
+    :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
 """
 
 import threading, time, math, copy
@@ -1465,6 +1463,37 @@ class Vehicle(HasObservers):
                 break
 
     def wait_ready(self, *types, **kwargs):
+        """
+        Waits for specified attributes to be populated from the vehicle (values are initially ``None``).
+        
+        This is typically called "behind the scenes" to ensure that :py:func:`connect` does not return until
+        attributes have populated (via the ``wait_ready`` parameter). You can also use it after connecting to 
+        wait on a specific value(s).
+        
+        There are two ways to call the method:
+        
+        .. code-block:: python
+ 
+            #Wait on default attributes to populate
+            vehicle.wait_ready(True)
+            
+            #Wait on specified attributes (or array of attributes) to populate
+            vehicle.wait_ready('mode','airspeed')
+
+        Using the ``wait_ready(True)`` waits on :py:attr:`parameters`, :py:attr:`gps_0`, 
+        :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. In practice this usually 
+        means that all supported attributes will be populated.
+        
+        By default, the method will timeout after 30 seconds and raise an exception if the
+        attributes were not populated.
+        
+        :param *types: ``True`` to wait on the default set of attributes, or a
+            comma-separated list of the specific attributes to wait on. 
+        :param int timeout: Timeout in seconds after which the method will raise an exception 
+            (the default) or return ``False``. The default timeout is 30 seconds.
+        :param Boolean raise_exception: If ``True`` the method will raise an exception on timeout,
+            otherwise the method will return ``False``. The default is ``True`` (raise exception).
+        """
         timeout = kwargs.get('timeout', 30)
         raise_exception = kwargs.get('raise_exception', True)
 
