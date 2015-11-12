@@ -1523,7 +1523,7 @@ class Parameters(collections.MutableMapping, HasObservers):
     the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
     `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
 
-    Attribute names are generated automatically based on parameter names.  The example below shows how to get and set the value of a parameter.
+    The code fragment below shows how to get and set the value of a parameter.
 
     .. code:: python
 
@@ -1533,15 +1533,9 @@ class Parameters(collections.MutableMapping, HasObservers):
         # Change the parameter value to something different.
         vehicle.parameters['THR_MIN']=100
 
-    .. note::
-
-        At time of writing ``Parameters`` does not implement the observer methods, and change notification for parameters
-        is not supported.
-
-    .. todo::
-
-        Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
-        https://github.com/dronekit/dronekit-python/issues/107
+    It is also possible to observe parameters and to iterate the :py:func:`Vehicle.parameters`.
+    
+    For more information see: :ref:`vehicle_state_parameters`.
     """
 
     def __init__(self, vehicle):
@@ -1608,10 +1602,62 @@ class Parameters(collections.MutableMapping, HasObservers):
         self._vehicle.wait_ready('parameters', **kwargs)
 
     def add_attribute_listener(self, attr_name, *args, **kwargs):
+        """
+        Add a listener callback on a particular parameter. 
+        
+        The callback can be removed using :py:func:`remove_attribute_listener`.
+        
+        .. note::
+        
+            The :py:func:`on_attribute` decorator performs the same operation as this method, but with 
+            a more elegant syntax. Use ``add_attribute_listener`` only if you will need to remove 
+            the observer.
+
+        The callback function is invoked only when the parameter changes.
+
+        The callback arguments are:
+        
+        * ``self`` - the associated :py:class:`Parameters`.
+        * ``attr_name`` - the parameter name. This can be used to infer which parameter has triggered
+          if the same callback is used for watching multiple parameters.
+        * ``msg`` - the new parameter value (so you don't need to re-query the vehicle object).
+
+        The example below shows how to get callbacks for the ``THR_MIN`` parameter:
+
+        .. code:: python
+
+            #Callback function for the THR_MIN parameter
+            def thr_min_callback(self, attr_name, value):
+                print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
+
+            #Add observer for the vehicle's THR_MIN parameter
+            vehicle.parameters.add_attribute_listener('THR_MIN', thr_min_callback)     
+        
+        See :ref:`vehicle_state_observing_parameters` for more information.
+        
+        :param String attr_name: The name of the parameter to watch (or '*' to watch all parameters).
+        :param *args: The callback to invoke when a change in the parameter is detected.
+
+        """
         attr_name = attr_name.upper()
         return super(Parameters, self).add_attribute_listener(attr_name, *args, **kwargs)
 
     def remove_attribute_listener(self, attr_name, *args, **kwargs):
+        """
+        Remove a paremeter listener that was previously added using :py:func:`add_attribute_listener`.
+
+        For example to remove the ``thr_min_callback()`` callback function:
+
+        .. code:: python
+
+            vehicle.parameters.remove_attribute_listener('thr_min', thr_min_callback)
+            
+        See :ref:`vehicle_state_observing_parameters` for more information.
+
+        :param String attr_name: The parameter name that is to have an observer removed (or '*' to remove an 'all attribute' observer).
+        :param *args: The callback function to remove.
+
+        """
         attr_name = attr_name.upper()
         return super(Parameters, self).remove_attribute_listener(attr_name, *args, **kwargs)
 
@@ -1620,8 +1666,41 @@ class Parameters(collections.MutableMapping, HasObservers):
         return super(Parameters, self).notify_attribute_listeners(attr_name, *args, **kwargs)
 
     def on_attribute(self, attr_name, *args, **kwargs):
+        """
+        Decorator for parameter listeners.
+        
+        .. note::
+        
+            There is no way to remove a listener added with this decorator. Use 
+            :py:func:`add_attribute_listener` if you need to be able to remove 
+            the :py:func:`listener <remove_attribute_listener>`.
+
+        The callback function is invoked only when the parameter changes.
+
+        The callback arguments are:
+        
+        * ``self`` - the associated :py:class:`Parameters`.
+        * ``attr_name`` - the parameter name. This can be used to infer which parameter has triggered
+          if the same callback is used for watching multiple parameters.
+        * ``msg`` - the new parameter value (so you don't need to re-query the vehicle object).
+
+        The code fragment below shows how to get callbacks for the ``THR_MIN`` parameter:
+
+        .. code:: python
+
+            @vehicle.parameters.on_attribute('THR_MIN')  
+            def decorated_thr_min_callback(self, attr_name, value):
+                print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)   
+        
+        See :ref:`vehicle_state_observing_parameters` for more information.
+        
+        :param String attr_name: The name of the parameter to watch (or '*' to watch all parameters).
+        :param args: The callback to invoke when a change in the parameter is detected.
+
+        """    
         attr_name = attr_name.upper()
         return super(Parameters, self).on_attribute(attr_name, *args, **kwargs)
+
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
