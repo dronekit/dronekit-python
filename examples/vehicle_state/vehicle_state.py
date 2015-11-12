@@ -201,7 +201,7 @@ for x in range(1,5):
     time.sleep(1)
 
 
-#Callback function for the any parameter
+#Callback function for "any" parameter
 print "\nCreate (removable) observer for any parameter using wildcard string"
 def any_parameter_callback(self, attr_name, value):
     print " ANY PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
