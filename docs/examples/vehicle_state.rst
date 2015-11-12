@@ -49,32 +49,36 @@ On the command prompt you should see (something like):
 
 .. code:: bash
 
+    Connecting to vehicle on: 170.0.0.1:14550
     >>> APM:Copter V3.3 (d6053245)
     >>> Frame: QUAD
-
-    Accumulating vehicle attribute messages
+    >>> Calibrating barometer
+    >>> Initialising APM...
+    >>> barometer calibration complete
+    >>> GROUND START
 
     Get all vehicle attribute values:
-     Global Location: LocationGlobal:lat=-35.3632361,lon=149.1652374,alt=361.989990234,is_relative=False
+     Global Location: LocationGlobal:lat=-35.363261,lon=149.1652299,alt=0.0,is_relative=False
      Local Location: LocationLocal:north=None,east=None,down=None
-     Attitude: Attitude:pitch=-0.0078572165221,yaw=-0.352846503258,roll=0.00523957656696
-     Velocity: [-0.02, 0.01, 0.0]
+     Attitude: Attitude:pitch=0.00294387154281,yaw=-0.11805768311,roll=0.00139428151306
+     Velocity: [-0.03, 0.02, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
      Groundspeed: 0.0
      Airspeed: 0.0
      Mount status: [None, None, None]
-     Battery: Battery:voltage=12.587,current=0.0,level=95
-     EKF OK?: True
+     Battery: Battery:voltage=12.587,current=0.0,level=100
+     EKF OK?: False
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None
-     Is Armable?: True
+     Heading: 353
+     Is Armable?: False
      System status: STANDBY
-     Heading: 341
      Mode: STABILIZE
      Armed: False
      Waiting for home location ...
      ...
+     Waiting for home location ...
      Waiting for home location ...
 
      Home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
@@ -88,56 +92,81 @@ On the command prompt you should see (something like):
 
     Set Vehicle.armed=True (currently: False)
      Waiting for arming...
+     Waiting for arming...
+     Waiting for arming...
     >>> ARMING MOTORS
+    >>> GROUND START
+     Waiting for arming...
+     Waiting for arming...
     >>> Initialising APM...
+     Vehicle is armed: True
 
-    Add attribute callback/observer on `vehicle` for `mode` attribute
-     Set mode=STABILIZE (currently: GUIDED)
+    Add `attitude` attribute callback/observer on `vehicle`
      Wait 2s so callback invoked before observer removed
-     CALLBACK: Mode changed to VehicleMode:STABILIZE
-     Remove Vehicle.mode observer
-
-    Add attribute callback/observer on `attitude` attribute using decorator
-     Wait 2s so callback invoked before observer removed
-     CALLBACK: Location changed to Attitude:pitch=0.0062674083747,yaw=-0.0318436846137,roll=-0.00923461187631
-     CALLBACK: Location changed to Attitude:pitch=0.00625518895686,yaw=-0.0317140743136,roll=-0.0091759338975
+     CALLBACK: Attitude changed to Attitude:pitch=-0.000483880605316,yaw=-0.0960851684213,roll=-0.00799709651619
+     CALLBACK: Attitude changed to Attitude:pitch=0.000153727291035,yaw=-0.0962921902537,roll=-0.00707155792043
      ...
-     CALLBACK: Location changed to Attitude:pitch=0.00629614247009,yaw=-0.0343224518001,roll=-0.0108289364725
-     CALLBACK: Location changed to Attitude:pitch=0.00636938679963,yaw=-0.0352342799306,roll=-0.01096534729
+     CALLBACK: Attitude changed to Attitude:pitch=0.00485319690779,yaw=-0.100129388273,roll=0.00181497994345
+      Remove Vehicle.attitude observer
+
+    Add `mode` attribute callback/observer using decorator
+     Set mode=STABILIZE (currently: GUIDED) and wait for callback
+     Wait 2s so callback invoked before moving to next example
+     CALLBACK: Mode changed to VehicleMode:STABILIZE
 
      Attempt to remove observer added with `on_attribute` decorator (should fail)
-     Exception: Cannot add observer added using decorator
+     Exception: Cannot remove observer added using decorator
 
-    Add attribute calback detecting any attribute change
+    Add attribute callback detecting ANY attribute change
      Wait 1s so callback invoked before observer removed
-     CALLBACK: (battery): Battery:voltage=12.538,current=3.48,level=95
-     CALLBACK: (gps_0): GPSInfo:fix=3,num_sat=10
-     CALLBACK: (location): LocationGlobal:lat=-35.3632361,lon=149.1652379,alt=361.989990234,is_relative=False
-     CALLBACK: (velocity): [-0.01, 0.03, 0.0]
-     CALLBACK: (local_position): LocationLocal:north=2.78085613251,east=0.730665147305,down=0.00156301062088
-     CALLBACK: (attitude): Attitude:pitch=-0.00780974514782,yaw=-0.361094027758,roll=0.00564418500289
-     CALLBACK: (heading): 339
-     CALLBACK: (location): LocationGlobal:lat=-35.3632361,lon=149.1652379,alt=361.989990234,is_relative=False
-     CALLBACK: (airspeed): 0.019999999553
-     CALLBACK: (groundspeed): 0.019999999553
+     CALLBACK: (attitude): Attitude:pitch=0.00716688157991,yaw=-0.0950401723385,roll=0.00759896961972
+     CALLBACK: (heading): 354
+     CALLBACK: (location): LocationGlobal:lat=-35.3632621,lon=149.1652291,alt=362.0,is_relative=False
+     CALLBACK: (airspeed): 0.0
+     CALLBACK: (groundspeed): 0.0
      CALLBACK: (ekf_ok): True
-     CALLBACK: (armed): True
-     CALLBACK: (mode): VehicleMode:GUIDED
+     CALLBACK: (battery): Battery:voltage=12.538,current=3.48,level=99
+     CALLBACK: (gps_0): GPSInfo:fix=3,num_sat=10
+     CALLBACK: (location): LocationGlobal:lat=-35.3632622,lon=149.1652295,alt=362.0,is_relative=False
+     CALLBACK: (velocity): [-0.14, 0.1, 0.0]
+     CALLBACK: (local_position): LocationLocal:north=-0.136136248708,east=-0.0430941730738,down=-0.00938374921679
+     CALLBACK: (channels): {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
      ...
      CALLBACK: (ekf_ok): True
      Remove Vehicle attribute observer
 
-    Read vehicle param 'THR_MIN': 130.0
-    Write vehicle param 'THR_MIN' : 10
-    Read new value of param 'THR_MIN': 10.0
+    Read and write parameters
+     Read vehicle param 'THR_MIN': 130.0
+     Write vehicle param 'THR_MIN' : 10
+     Read new value of param 'THR_MIN': 10.0
+
+    Print all parameters (iterate `vehicle.parameters`):
+     Key:RC7_REV Value:1.0
+     Key:GPS_INJECT_TO Value:127.0
+     Key:FLTMODE1 Value:7.0
+     ...
+     Key:SR2_POSITION Value:0.0
+     Key:SIM_FLOW_DELAY Value:0.0
+     Key:BATT_CURR_PIN Value:12.0
+
+    Create parameter observer using decorator
+    Write vehicle param 'THR_MIN' : 20 (and wait for callback)
+     PARAMETER CALLBACK: THR_MIN changed to: 20.0
+
+    Create (removable) observer for any parameter using wildcard string
+     Change THR_MID and THR_MIN parameters (and wait for callback)
+     ANY PARAMETER CALLBACK: THR_MID changed to: 400.0
+     PARAMETER CALLBACK: THR_MIN changed to: 30.0
+     ANY PARAMETER CALLBACK: THR_MIN changed to: 30.0
 
     Reset vehicle attributes/parameters and exit
     >>> DISARMING MOTORS
-     CALLBACK: Mode changed to VehicleMode:STABILIZE
+     PARAMETER CALLBACK: THR_MIN changed to: 130.0
+     ANY PARAMETER CALLBACK: THR_MIN changed to: 130.0
+     ANY PARAMETER CALLBACK: THR_MID changed to: 500.0
 
     Close vehicle object
     Completed
-
 
 
 

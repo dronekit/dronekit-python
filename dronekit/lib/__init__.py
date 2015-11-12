@@ -30,15 +30,21 @@ A number of other useful classes and methods are listed below.
 
 ----
 
-.. todo:: Update this when have confirmed how to register for parameter notifications.
-
 .. py:function:: connect(ip, wait_ready=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200)
 
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
-    Connection string parameters for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
+    Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
 
     :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
-    :param Bool wait_ready: Wait until all :py:func:`Vehicle.parameters` have downloaded before the method returns (default is false)
+    :param Bool/Array wait_ready: If ``True`` wait until all default attributes have downloaded before 
+        the method returns (default is ``False``). 
+        The default attributes to wait on are: :py:attr:`parameters`, :py:attr:`gps_0`, 
+        :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. 
+        
+        You can also specify a named set of parameters to wait on (e.g. ``wait_ready=['system_status','mode']``).
+        
+        For more information see :py:func:`Vehicle.wait_ready <dronekit.lib.Vehicle.wait_ready>`.
+
     :param status_printer: Method of signature ``def status_printer(txt)`` that prints STATUS_TEXT messages from the Vehicle and other diagnostic information.
         By default the status information is printed to the command prompt in which the script is running.
     :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method. 
@@ -47,15 +53,7 @@ A number of other useful classes and methods are listed below.
     :param int baud: The baud rate for the connection. The default is 115200.
 
 
-    :returns: A connected :py:class:`Vehicle` object.
-
-----
-
-    .. todo:: 
-    
-        Confirm what status_printer, vehicle_class and rate "mean" (https://github.com/dronekit/dronekit-python/issues/395#issuecomment-153527657)
-        Can we hide in API. Can we get method defined in this file or connect method file exported
-        
+    :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
 """
 
 import threading, time, math, copy
@@ -324,7 +322,7 @@ class HasObservers(object):
           to implement vehicle-specific callback handling (if needed).
         * ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
           if the same callback is used for watching several attributes.
-        * ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
+        * ``value`` - the attribute value (so you don't need to re-query the vehicle object).
 
         The example below shows how to get callbacks for (global) location changes:
 
@@ -1465,6 +1463,37 @@ class Vehicle(HasObservers):
                 break
 
     def wait_ready(self, *types, **kwargs):
+        """
+        Waits for specified attributes to be populated from the vehicle (values are initially ``None``).
+        
+        This is typically called "behind the scenes" to ensure that :py:func:`connect` does not return until
+        attributes have populated (via the ``wait_ready`` parameter). You can also use it after connecting to 
+        wait on a specific value(s).
+        
+        There are two ways to call the method:
+        
+        .. code-block:: python
+ 
+            #Wait on default attributes to populate
+            vehicle.wait_ready(True)
+            
+            #Wait on specified attributes (or array of attributes) to populate
+            vehicle.wait_ready('mode','airspeed')
+
+        Using the ``wait_ready(True)`` waits on :py:attr:`parameters`, :py:attr:`gps_0`, 
+        :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. In practice this usually 
+        means that all supported attributes will be populated.
+        
+        By default, the method will timeout after 30 seconds and raise an exception if the
+        attributes were not populated.
+        
+        :param *types: ``True`` to wait on the default set of attributes, or a
+            comma-separated list of the specific attributes to wait on. 
+        :param int timeout: Timeout in seconds after which the method will raise an exception 
+            (the default) or return ``False``. The default timeout is 30 seconds.
+        :param Boolean raise_exception: If ``True`` the method will raise an exception on timeout,
+            otherwise the method will return ``False``. The default is ``True`` (raise exception).
+        """
         timeout = kwargs.get('timeout', 30)
         raise_exception = kwargs.get('raise_exception', True)
 
@@ -1494,7 +1523,7 @@ class Parameters(collections.MutableMapping, HasObservers):
     the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
     `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
 
-    Attribute names are generated automatically based on parameter names.  The example below shows how to get and set the value of a parameter.
+    The code fragment below shows how to get and set the value of a parameter.
 
     .. code:: python
 
@@ -1504,15 +1533,9 @@ class Parameters(collections.MutableMapping, HasObservers):
         # Change the parameter value to something different.
         vehicle.parameters['THR_MIN']=100
 
-    .. note::
-
-        At time of writing ``Parameters`` does not implement the observer methods, and change notification for parameters
-        is not supported.
-
-    .. todo::
-
-        Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
-        https://github.com/dronekit/dronekit-python/issues/107
+    It is also possible to observe parameters and to iterate the :py:func:`Vehicle.parameters`.
+    
+    For more information see: :ref:`vehicle_state_parameters`.
     """
 
     def __init__(self, vehicle):
@@ -1579,10 +1602,62 @@ class Parameters(collections.MutableMapping, HasObservers):
         self._vehicle.wait_ready('parameters', **kwargs)
 
     def add_attribute_listener(self, attr_name, *args, **kwargs):
+        """
+        Add a listener callback on a particular parameter. 
+        
+        The callback can be removed using :py:func:`remove_attribute_listener`.
+        
+        .. note::
+        
+            The :py:func:`on_attribute` decorator performs the same operation as this method, but with 
+            a more elegant syntax. Use ``add_attribute_listener`` only if you will need to remove 
+            the observer.
+
+        The callback function is invoked only when the parameter changes.
+
+        The callback arguments are:
+        
+        * ``self`` - the associated :py:class:`Parameters`.
+        * ``attr_name`` - the parameter name. This can be used to infer which parameter has triggered
+          if the same callback is used for watching multiple parameters.
+        * ``msg`` - the new parameter value (so you don't need to re-query the vehicle object).
+
+        The example below shows how to get callbacks for the ``THR_MIN`` parameter:
+
+        .. code:: python
+
+            #Callback function for the THR_MIN parameter
+            def thr_min_callback(self, attr_name, value):
+                print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
+
+            #Add observer for the vehicle's THR_MIN parameter
+            vehicle.parameters.add_attribute_listener('THR_MIN', thr_min_callback)     
+        
+        See :ref:`vehicle_state_observing_parameters` for more information.
+        
+        :param String attr_name: The name of the parameter to watch (or '*' to watch all parameters).
+        :param *args: The callback to invoke when a change in the parameter is detected.
+
+        """
         attr_name = attr_name.upper()
         return super(Parameters, self).add_attribute_listener(attr_name, *args, **kwargs)
 
     def remove_attribute_listener(self, attr_name, *args, **kwargs):
+        """
+        Remove a paremeter listener that was previously added using :py:func:`add_attribute_listener`.
+
+        For example to remove the ``thr_min_callback()`` callback function:
+
+        .. code:: python
+
+            vehicle.parameters.remove_attribute_listener('thr_min', thr_min_callback)
+            
+        See :ref:`vehicle_state_observing_parameters` for more information.
+
+        :param String attr_name: The parameter name that is to have an observer removed (or '*' to remove an 'all attribute' observer).
+        :param *args: The callback function to remove.
+
+        """
         attr_name = attr_name.upper()
         return super(Parameters, self).remove_attribute_listener(attr_name, *args, **kwargs)
 
@@ -1591,8 +1666,41 @@ class Parameters(collections.MutableMapping, HasObservers):
         return super(Parameters, self).notify_attribute_listeners(attr_name, *args, **kwargs)
 
     def on_attribute(self, attr_name, *args, **kwargs):
+        """
+        Decorator for parameter listeners.
+        
+        .. note::
+        
+            There is no way to remove a listener added with this decorator. Use 
+            :py:func:`add_attribute_listener` if you need to be able to remove 
+            the :py:func:`listener <remove_attribute_listener>`.
+
+        The callback function is invoked only when the parameter changes.
+
+        The callback arguments are:
+        
+        * ``self`` - the associated :py:class:`Parameters`.
+        * ``attr_name`` - the parameter name. This can be used to infer which parameter has triggered
+          if the same callback is used for watching multiple parameters.
+        * ``msg`` - the new parameter value (so you don't need to re-query the vehicle object).
+
+        The code fragment below shows how to get callbacks for the ``THR_MIN`` parameter:
+
+        .. code:: python
+
+            @vehicle.parameters.on_attribute('THR_MIN')  
+            def decorated_thr_min_callback(self, attr_name, value):
+                print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)   
+        
+        See :ref:`vehicle_state_observing_parameters` for more information.
+        
+        :param String attr_name: The name of the parameter to watch (or '*' to watch all parameters).
+        :param args: The callback to invoke when a change in the parameter is detected.
+
+        """    
         attr_name = attr_name.upper()
         return super(Parameters, self).on_attribute(attr_name, *args, **kwargs)
+
 
 class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """

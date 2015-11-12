@@ -11,7 +11,11 @@ DroneKit-Python helps you create powerful apps for UAVs. These apps run on a UAV
 
 This documentation provides everything you need to :doc:`get started <guide/getting_started>` with DroneKit-Python, including an :doc:`overview <about/overview>` of the API, guide material, a number of demos and examples, and :doc:`API Reference <automodule>`. 
 
+.. tip::
 
+    If you're migrating from DroneKit-Python version 1, check out our comprehensive :ref:`Migration Guide <migrating_dkpy2_0>`.
+
+    
 Contents:
 
 .. toctree::

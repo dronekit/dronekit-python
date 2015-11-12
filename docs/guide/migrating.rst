@@ -65,13 +65,18 @@ values as were passed to *MAVProxy* when setting up a connection in DKPY 1.x (in
     # Connect to the Vehicle (in this case a UDP endpoint)
     vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
+.. note::
 
-The ``wait_ready=True`` parameter ensures that ``connect()`` won't return until 
-:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` has been populated. 
-This also allows *MAVLink* messages to arrive from the connected vehicle 
-and populate other ``Vehicle`` attributes. 
+    The ``wait_ready=True`` parameter ensures that ``connect()`` won't return until 
+    :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` and most other default attributes have been 
+    populated with values from the vehicle. Check out :py:func:`Vehicle.wait_ready() <dronekit.lib.Vehicle.wait_ready>` for more
+    information (this method is used by the ``connect()`` implementation).
 
-The vehicle can then be used in exactly the same way as in DKPY 1.x. 
+    :py:func:`connect() <dronekit.lib.connect>` also has arguments for setting the baud rate
+    and returning your own :ref:`custom vehicle classes <example_create_attribute>`.
+ 
+
+After connecting, the returned ``vehicle`` can be used in exactly the same way as in DKPY 1.x. 
 
 .. note::
 
@@ -165,7 +170,7 @@ Instead, use normal Python methods for getting file system information:
     full_directory_path_of_current_script = os.path.dirname(os.path.abspath(__file__))
 
     
-.. _migrating_dkpy2_0_heading:
+.. _migrating_dkpy2_0_home_location:
 
 Home location
 -------------
@@ -180,6 +185,21 @@ This code must be replaced with the DroneKit-Python 2.x :py:attr:`Vehicle.home_l
     :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`. 
 
 
+Missions and Waypoints
+----------------------
+
+The API for working with missions has been improved and made significantly more robust.
+
+One of the major changes is that the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` list no 
+longer includes the :ref:`home location <migrating_dkpy2_0_home_location>` waypoint in the 0th
+index. Another change is that we now wait for command download to complete using 
+:py:attr:`Vehicle.commands.wait_ready() <dronekit.lib.CommandSequence.wait_ready>`.
+
+All the known bugs have been fixed. It is now much easier to download, clear, and add items to the mission
+because there is no need to work around race conditions and other issues with the API.
+
+For more information see :ref:`auto_mode_vehicle_control`.
+    
 
 Observing attribute changes
 ---------------------------
@@ -194,10 +214,12 @@ rather than just the attribute name. This allows you to more easily write callba
 vehicle-specific handling and means that you can get the new value from the callback attribute rather than by re-querying
 the vehicle. 
 
-The difference between :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` and 
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` is that attribute listeners added using
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` cannot be removed (while ``on_attribute()`` 
-has a more elegant syntax).
+.. note::
+
+    The difference between :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` and 
+    :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` is that attribute listeners added using
+    :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` cannot be removed (while ``on_attribute()`` 
+    has a more elegant syntax).
 
 A few attributes have been modified so that they only notify when the value changes: 
 :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
@@ -213,6 +235,21 @@ Attributes that provide "streams" of information (i.e. sensor output) remain unc
     :py:func:`Vehicle.notify_attribute_listeners() <dronekit.lib.Vehicle.notify_attribute_listeners>`.
 
 See :ref:`vehicle_state_observe_attributes` for more information.
+
+
+Parameter changes
+-----------------
+
+In DKPY2 you can now :ref:`observe <vehicle_state_observing_parameters>` parameters in order to
+be notified of changes, and also :ref:`iterate <vehicle_state_iterating_parameters>` 
+:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` to get a list of off the supported
+values in the connected vehicle.
+
+In addition, the code to download parameters and keep information in sync with the vehicle 
+is now a lot more robust.
+
+
+
 
 
 Intercepting MAVLink Messages

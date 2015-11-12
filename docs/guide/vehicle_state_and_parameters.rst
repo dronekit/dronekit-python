@@ -166,7 +166,7 @@ The ``observer`` callback function is invoked with the following arguments:
   to implement vehicle-specific callback handling (if needed).
 * ``attr_name`` - the attribute name. This can be used to infer which attribute has triggered
   if the same callback is used for watching several attributes.
-* ``msg`` - the attribute value (so you don't need to re-query the vehicle object).
+* ``value`` - the attribute value (so you don't need to re-query the vehicle object).
 
 The code snippet below shows how to add (and remove) a callback function to observe changes
 in :py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>` using 
@@ -323,17 +323,17 @@ until the download completes), and subsequently keeps the values updated by moni
 for changes to individual parameters. This process ensures that it is always safe to read supported parameters, 
 and that their values will match the information on the vehicle.
 
-Parameters can be read and set using the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` 
+Parameters can be read, set, observed and iterated using the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` 
 attribute (a :py:class:`Parameters <dronekit.lib.Parameters>` object).
 
 
 Getting parameters
 ------------------
 
-The parameters are read using the parameter name as a key. Reads will always succeed unless you attempt to access an unsupported parameter
-(which will result in a ``KeyError`` exception).
+The parameters are read using the parameter name as a key (case-insensitive). Reads will always succeed unless you 
+attempt to access an unsupported parameter (which will result in a ``KeyError`` exception).
    
-The code example below shows how to set Minimum Throttle (THR_MIN) setting. On Copter and Rover (not Plane), this is the minimum PWM setting for the 
+The code snippet below shows how to get the Minimum Throttle (THR_MIN) setting. On Copter and Rover (not Plane), this is the minimum PWM setting for the 
 throttle at which the motors will keep spinning.
 
 .. code:: python
@@ -353,16 +353,67 @@ Vehicle parameters are set as shown in the code fragment below, using the parame
     # Change the parameter value (Copter, Rover)
     vehicle.parameters['THR_MIN']=100
 
+    
+.. _vehicle_state_iterating_parameters:
+    
+Listing all parameters
+----------------------
 
+:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` can be iterated to list all parameters and their values:
+
+.. code:: python
+
+    
+    print "\nPrint all parameters (iterate `vehicle.parameters`):"
+    for key, value in vehicle.parameters.iteritems():
+        print " Key:%s Value:%s" % (key,value)
+
+
+
+.. _vehicle_state_observing_parameters:
+    
 Observing parameter changes
 ---------------------------
 
-At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not support <https://github.com/dronekit/dronekit-python/issues/107>`_ observing parameter changes.
+You can observe any of the vehicle parameters and monitor for changes without the need for polling. 
+The parameters are cached, so that callback functions are only invoked when parameter values change. 
 
-.. todo:: 
+.. tip::
 
-    Check to see if observers have been implemented and if so, update the information here, in about, and in Vehicle class:
-    https://github.com/dronekit/dronekit-python/issues/107
+    Observing parameters is virtually identical to :ref:`observing attributes <vehicle_state_observe_attributes>`.
+
+
+The code snippet below shows how to add a callback function to observe changes in the "THR_MIN"
+parameter using a decorator. Note that the parameter name is case-insensitive, and that callbacks
+added using a decorator cannot be removed.
+
+.. code-block:: python
+     
+    @vehicle.parameters.on_attribute('THR_MIN')  
+    def decorated_thr_min_callback(self, attr_name, value):
+        print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
+
+The ``observer`` callback function is invoked with the following arguments:
+        
+* ``self`` - the associated :py:class:`Parameters`. 
+* ``attr_name`` - the parameter name 
+  (useful if the same callback is used for watching several parameters).
+* ``msg`` - the parameter value (so you don't need to re-query the ``Vehicle.parameters`` object).
+
+The code snippet below demonstrates how you can add and remove a listener (in this case
+for "any parameter") using the 
+:py:func:`Parameters.add_attribute_listener() <dronekit.lib.Parameters.add_attribute_listener>` and 
+:py:func:`Parameters.remove_attribute_listener() <dronekit.lib.Parameters.remove_attribute_listener>`.
+
+.. code-block:: python
+
+    #Callback function for "any" parameter
+    def any_parameter_callback(self, attr_name, value):
+        print " ANY PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
+
+    #Add observer for the vehicle's any/all parameters parameter (note wildcard string ``'*'``)
+    vehicle.parameters.add_attribute_listener('*', any_parameter_callback)    
+        
 
 
 
@@ -372,10 +423,4 @@ At time of writing :py:class:`Parameters <dronekit.lib.Parameters>` does `not su
 Known issues
 ============
 
-Below are a number of bugs and known issues related to vehicle state and settings:
-
-* `#107 Add implementation for observer methods in Parameter class <https://github.com/dronekit/dronekit-python/issues/107>`_ 
-* `#114 DroneKit has no method for detecting command failure <https://github.com/dronekit/dronekit-python/issues/114>`_
-
-
-Other API issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 
+Known issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 
