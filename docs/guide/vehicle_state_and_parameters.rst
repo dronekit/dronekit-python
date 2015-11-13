@@ -22,6 +22,7 @@ Attributes
 Vehicle state information is exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
 "standard" attributes: 
 :py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>`, 
+:py:attr:`Vehicle.location.global_relative_frame <dronekit.lib.Vehicle.location.global_relative_frame>`, 
 :py:attr:`Vehicle.location.local_frame <dronekit.lib.Vehicle.location.local_frame>`, 
 :py:attr:`Vehicle.attitude <dronekit.lib.Vehicle.attitude>`,
 :py:attr:`Vehicle.velocity <dronekit.lib.Vehicle.velocity>`,
@@ -65,6 +66,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     
     # vehicle is an instance of the Vehicle class
     print "Global Location: %s" % vehicle.location.global_frame
+    print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
     print "Local Location: %s" % vehicle.location.local_frame    #NED
     print "Attitude: %s" % vehicle.attitude
     print "Velocity: %s" % vehicle.velocity

@@ -103,20 +103,22 @@ class LocationGlobal(object):
     A global location object.
 
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
-    The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
+    The altitude is relative to mean sea-level (MSL).
 
-    For example, a global location object might be defined as:
+    For example, a global location object with altitude 30 metres above sea level might be defined as:
 
     .. code:: python
 
        LocationGlobal(-34.364114, 149.166022, 30)
 
     .. todo:: FIXME: Location class - possibly add a vector3 representation.
+    
+    An object of this type is owned by :py:attr:`Vehicle.location`. See that class for information on 
+    reading and observing location in the global frame.
 
     :param lat: Latitude.
     :param lon: Longitude.
-    :param alt: Altitude in meters (either relative or absolute).
-    :param is_relative: ``True`` if the specified altitude is relative to a 'home' location (this is usually desirable). ``False`` to set altitude relative to "mean sea-level".
+    :param alt: Altitude in meters relative to mean sea-level (MSL).
     """
     def __init__(self, lat, lon, alt=None):
         self.lat = lat
@@ -134,23 +136,25 @@ class LocationGlobal(object):
 
 class LocationGlobalRelative(object):
     """
-    A global location object relative to home location.
+    A global location object, with attitude relative to home location altitude.
 
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
-    The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
+    The altitude is relative to the *home position*.
 
-    For example, a global location object might be defined as:
+    For example, a ``LocationGlobalRelative`` object with an altitude of 30 metres above the home location might be defined as:
 
     .. code:: python
 
-       LocationGlobalRelative(-34.364114, 149.166022, 0)
+       LocationGlobalRelative(-34.364114, 149.166022, 30)
 
     .. todo:: FIXME: Location class - possibly add a vector3 representation.
+    
+    An object of this type is owned by :py:attr:`Vehicle.location`. See that class for information on 
+    reading and observing location in the global-relative frame.
 
     :param lat: Latitude.
     :param lon: Longitude.
-    :param alt: Altitude in meters (either relative or absolute).
-    :param is_relative: ``True`` if the specified altitude is relative to a 'home' location (this is usually desirable). ``False`` to set altitude relative to "mean sea-level".
+    :param alt: Altitude in meters (relative to the home location).
     """
     def __init__(self, lat, lon, alt=None):
         self.lat = lat
@@ -170,7 +174,10 @@ class LocationLocal(object):
     """
     A local location object.
 
-    The north, east and down are relative to the EKF origin.  This is most likely the location where the vehicle was turned on.  
+    The north, east and down are relative to the EKF origin.  This is most likely the location where the vehicle was turned on.
+    
+    An object of this type is owned by :py:attr:`Vehicle.location`. See that class for information on 
+    reading and observing location in the local frame.
 
     :param north: Position north of the EKF origin in meters.
     :param east: Position east of the EKF origin in meters.
@@ -629,7 +636,16 @@ class Channels(dict):
 
 class Locations(HasObservers):
     """
-    Locations.
+    An object for holding location information in global, global relative and local frames.
+    
+    The different frames are accessed through the members:
+        
+    * ``global_frame`` (a :py:class:`LocationGlobal`)
+    * ``global_frame_relative`` (a :py:class:`LocationGlobalRelative`)
+    * ``local_frame`` (a :py:class:`LocationLocal`)
+    
+    :py:class:`Vehicle` owns an object of this type. See :py:attr:`Vehicle.location` for information on 
+    reading and observing location in the different frames.
     """
     def __init__(self):
         super(Locations, self).__init__()
@@ -657,14 +673,6 @@ class Vehicle(HasObservers):
     * ``user_<name>`` - For user specific parameters
 
     **Standard attributes & types:**
-
-    .. py:attribute:: location.global_frame
-
-        Current :py:class:`LocationGlobal`.
-
-    .. py:attribute:: location.local_frame
-
-        Current :py:class:`LocationLocal`.
 
     .. py:attribute:: attitude
 
@@ -776,7 +784,7 @@ class Vehicle(HasObservers):
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            (self._alt, self._relative_alt) = (m.alt, m.relative_alt)
+            (self._alt, self._relative_alt) = (m.alt / 1000, m.relative_alt/1000)
             self._location.global_frame = LocationGlobal(self._lat, self._lon, self._alt)
             self._location.global_relative_frame = LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
             self.notify_attribute_listeners('location', self.location)
@@ -1205,6 +1213,55 @@ class Vehicle(HasObservers):
 
     @property
     def location(self):
+        """
+        A :py:class:`Locations` object containing vehicle location information in 
+        global, global relative and local frames. 
+        
+        The different frames are accessed through its members:
+        
+        * ``global_frame`` (a :py:class:`LocationGlobal`)
+        * ``global_frame_relative`` (a :py:class:`LocationGlobalRelative`)
+        * ``local_frame`` (a :py:class:`LocationLocal`)
+        
+        For example, to print the location in each frame for a ``vehicle``:
+        
+        .. code-block:: python
+
+            # Print location information for `vehicle` in all frames (default printer)
+            print "Global Location: %s" % vehicle.location.global_frame
+            print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
+            print "Local Location: %s" % vehicle.location.local_frame    #NED
+        
+            # Print altitudes in the different frames (see class definitions for other available information)
+            print "Altitude (global frame): %s" % vehicle.location.global_frame.alt
+            print "Altitude (global relative frame): %s" % vehicle.location.global_relative_frame.alt
+            print "Altitude (NED frame): %s" % vehicle.location.local_frame.down
+            
+        The attribute and its members are observable. To watch for changes in all frames using a listener
+        created using a decorator (you can also define a listener and explicitly add it).
+
+        .. code-block:: python
+        
+            @vehicle.on_attribute('location')   
+            def listener(self, attr_name, value):
+                # `self`: :py:class:`Vehicle` object that has been updated.
+                # `attr_name`: name of the observed attribute - 'location'
+                # `value` is the updated attribute value (a :py:class:`Locations`). This can be queried for the frame information
+                print " Global: %s" % value.global_frame
+                print " GlobalRelative: %s" % value.global_relative_frame
+                print " Local: %s" % value.local_frame
+
+        To watch for changes in just one attribute:
+
+        .. code-block:: python
+        
+            @vehicle.on_attribute('global_frame')   
+            def listener(self, attr_name, value):
+                # `self`: :py:class:`Locations` object that has been updated.
+                # `attr_name`: name of the observed attribute - 'global_frame'
+                # `value` is the updated attribute value.
+                print " Global: %s" % value
+        """
         return self._location
 
     @property
@@ -1532,7 +1589,7 @@ class Vehicle(HasObservers):
         By default, the method will timeout after 30 seconds and raise an exception if the
         attributes were not populated.
         
-        :param *types: ``True`` to wait on the default set of attributes, or a
+        :param types: ``True`` to wait on the default set of attributes, or a
             comma-separated list of the specific attributes to wait on. 
         :param int timeout: Timeout in seconds after which the method will raise an exception 
             (the default) or return ``False``. The default timeout is 30 seconds.
@@ -1681,7 +1738,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         See :ref:`vehicle_state_observing_parameters` for more information.
         
         :param String attr_name: The name of the parameter to watch (or '*' to watch all parameters).
-        :param *args: The callback to invoke when a change in the parameter is detected.
+        :param args: The callback to invoke when a change in the parameter is detected.
 
         """
         attr_name = attr_name.upper()
@@ -1700,7 +1757,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         See :ref:`vehicle_state_observing_parameters` for more information.
 
         :param String attr_name: The parameter name that is to have an observer removed (or '*' to remove an 'all attribute' observer).
-        :param *args: The callback function to remove.
+        :param args: The callback function to remove.
 
         """
         attr_name = attr_name.upper()
