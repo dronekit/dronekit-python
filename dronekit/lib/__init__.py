@@ -782,14 +782,20 @@ class Vehicle(HasObservers):
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            (self._alt, self._relative_alt) = (m.alt / 1000, m.relative_alt/1000)
-            self._location.global_frame = LocationGlobal(self._lat, self._lon, self._alt)
+            self._relative_alt = m.relative_alt/1000
             self._location.global_relative_frame = LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
+
             self.notify_attribute_listeners('location', self.location)
-            self.notify_attribute_listeners('location.global_frame', self.location.global_frame)
-            self.location.notify_attribute_listeners('global_frame', self.location.global_frame)
             self.notify_attribute_listeners('location.global_relative_frame', self.location.global_relative_frame)
             self.location.notify_attribute_listeners('global_relative_frame', self.location.global_relative_frame)
+
+            if self._alt != None or m.alt != 0:
+                # Require first alt value to be non-0
+                # TODO is this the proper check to do?
+                self._alt = m.alt/1000
+                self._location.global_frame = LocationGlobal(self._lat, self._lon, self._alt)
+                self.notify_attribute_listeners('location.global_frame', self.location.global_frame)
+                self.location.notify_attribute_listeners('global_frame', self.location.global_frame)
 
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self.notify_attribute_listeners('velocity', self.velocity)
