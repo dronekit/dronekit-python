@@ -109,7 +109,7 @@ class LocationGlobal(object):
 
     .. code:: python
 
-       LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
+       LocationGlobal(-34.364114, 149.166022, 30)
 
     .. todo:: FIXME: Location class - possibly add a vector3 representation.
 
@@ -118,21 +118,53 @@ class LocationGlobal(object):
     :param alt: Altitude in meters (either relative or absolute).
     :param is_relative: ``True`` if the specified altitude is relative to a 'home' location (this is usually desirable). ``False`` to set altitude relative to "mean sea-level".
     """
-    def __init__(self, lat, lon, alt=None, is_relative=True):
+    def __init__(self, lat, lon, alt=None):
         self.lat = lat
         self.lon = lon
         self.alt = alt
-        self.is_relative = is_relative
+        self.is_relative = False
 
         # This is for backward compatibility.
         self.local_frame = None
         self.global_frame = None
 
     def __str__(self):
-        return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
+        return "LocationGlobal:lat=%s,lon=%s,alt=%s" % (self.lat, self.lon, self.alt)
 
-# Back-compatibility for earlier clients.
-Location = LocationGlobal
+
+class LocationGlobalRelative(object):
+    """
+    A global location object relative to home location.
+
+    The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
+    The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
+
+    For example, a global location object might be defined as:
+
+    .. code:: python
+
+       LocationGlobalRelative(-34.364114, 149.166022, 0)
+
+    .. todo:: FIXME: Location class - possibly add a vector3 representation.
+
+    :param lat: Latitude.
+    :param lon: Longitude.
+    :param alt: Altitude in meters (either relative or absolute).
+    :param is_relative: ``True`` if the specified altitude is relative to a 'home' location (this is usually desirable). ``False`` to set altitude relative to "mean sea-level".
+    """
+    def __init__(self, lat, lon, alt=None):
+        self.lat = lat
+        self.lon = lon
+        self.alt = alt
+        self.is_relative = True
+
+        # This is for backward compatibility.
+        self.local_frame = None
+        self.global_frame = None
+
+    def __str__(self):
+        return "LocationGlobalRelative:lat=%s,lon=%s,alt=%s" % (self.lat, self.lon, self.alt)
+
 
 class LocationLocal(object):
     """
@@ -450,7 +482,6 @@ class HasObservers(object):
                 self.add_attribute_listener(name, fn)
         return decorator
 
-
 class ChannelsOverride(dict):
     """
     A dictionary class for managing Vehicle channel overrides.
@@ -596,6 +627,15 @@ class Channels(dict):
         self._overrides._active = True
         self._overrides._send()
 
+class Locations(HasObservers):
+    """
+    Locations.
+    """
+    def __init__(self):
+        super(Locations, self).__init__()
+        self.local_frame = None
+        self.global_frame = None
+        self.global_relative_frame = None
 
 class Vehicle(HasObservers):
     """
@@ -723,8 +763,12 @@ class Vehicle(HasObservers):
         def listener(_, msg):
             self.notify_message_listeners(msg.get_type(), msg)
 
+        self._location = Locations()
+
         self._lat = None
         self._lon = None
+        self._alt = None
+        self._relative_alt = None
         self._vx = None
         self._vy = None
         self._vz = None
@@ -732,7 +776,13 @@ class Vehicle(HasObservers):
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
             (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            (self._alt, self._relative_alt) = (m.alt, m.relative_alt)
+            self._location.global_frame = LocationGlobal(self._lat, self._lon, self._alt)
+            self._location.global_relative_frame = LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
             self.notify_attribute_listeners('location', self.location)
+            self.location.notify_attribute_listeners('global_frame', self.location.global_frame)
+            self.location.notify_attribute_listeners('global_relative_frame', self.location.global_relative_frame)
+
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self.notify_attribute_listeners('velocity', self.velocity)
 
@@ -745,7 +795,9 @@ class Vehicle(HasObservers):
             self._north = m.x
             self._east = m.y
             self._down = m.z
-            self.notify_attribute_listeners('local_position', self.location.local_frame)
+            self._location._local_frame = LocationLocal(self._north, self._east, self._down)
+            self.notify_attribute_listeners('location', self.location)
+            self.location.notify_attribute_listeners('local_frame', self.location.local_frame)
 
         self._pitch = None
         self._yaw = None
@@ -765,7 +817,6 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('attitude', self.attitude)
 
         self._heading = None
-        self._alt = None
         self._airspeed = None
         self._groundspeed = None
 
@@ -773,8 +824,6 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._heading = m.heading
             self.notify_attribute_listeners('heading', self.heading)
-            self._alt = m.alt
-            self.notify_attribute_listeners('location', self.location)
             self._airspeed = m.airspeed
             self.notify_attribute_listeners('airspeed', self.airspeed)
             self._groundspeed = m.groundspeed
@@ -899,7 +948,7 @@ class Vehicle(HasObservers):
             if not self._wp_loaded:
                 if msg.seq == 0:
                     if not (msg.x == 0 and msg.y == 0 and msg.z == 0):
-                        self._home_location = LocationGlobal(msg.x, msg.y, msg.z, is_relative=False)
+                        self._home_location = LocationGlobal(msg.x, msg.y, msg.z)
 
                 if msg.seq > self._wploader.count():
                     # Unexpected waypoint
@@ -1156,11 +1205,7 @@ class Vehicle(HasObservers):
 
     @property
     def location(self):
-        # For backward compatibility, this is (itself) a LocationLocal object.
-        ret = LocationGlobal(self._lat, self._lon, self._alt, is_relative=True)
-        ret.local_frame = LocationLocal(self._north, self._east, self._down)
-        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt, is_relative=True)
-        return ret
+        return self._location
 
     @property
     def battery(self):
@@ -1846,7 +1891,7 @@ class CommandSequence(object):
             vehicle.mode = VehicleMode("GUIDED")
 
             # Set the LocationGlobal to head towards
-            a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
+            a_location = LocationGlobal(-34.364114, 149.166022, 30)
             vehicle.commands.goto(a_location)
 
         :param LocationGlobal location: The target location.

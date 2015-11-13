@@ -63,14 +63,14 @@ arm_and_takeoff(20)
 
 
 print "Going to first point..."
-point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
+point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
 vehicle.commands.goto(point1)
 
 # sleep so we can see the change in map
 time.sleep(30)
 
 print "Going to second point..."
-point2 = LocationGlobal(-35.363244, 149.168801, 20, is_relative=True)
+point2 = LocationGlobalRelative(-35.363244, 149.168801, 20)
 vehicle.commands.goto(point2)
 
 # sleep so we can see the change in map

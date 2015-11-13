@@ -8,7 +8,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
-from dronekit import connect, VehicleMode, LocationGlobal
+from dronekit import connect, VehicleMode, LocationGlobalRelative
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
@@ -71,14 +71,14 @@ def test_goto(connpath):
     arm_and_takeoff(10)
 
     # print "Going to first point..."
-    point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
+    point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
     vehicle.commands.goto(point1)
 
     # sleep so we can see the change in map
     time.sleep(3)
 
     # print "Going to second point..."
-    point2 = LocationGlobal(-35.363244, 149.168801, 20, is_relative=True)
+    point2 = LocationGlobalRelative(-35.363244, 149.168801, 20)
     vehicle.commands.goto(point2)
 
     # sleep so we can see the change in map

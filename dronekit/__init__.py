@@ -24,6 +24,7 @@ Command = dronekit.lib.Command
 CommandSequence = dronekit.lib.CommandSequence
 VehicleMode = dronekit.lib.VehicleMode
 SystemStatus = dronekit.lib.SystemStatus
+LocationGlobalRelative = dronekit.lib.LocationGlobalRelative
 LocationGlobal = dronekit.lib.LocationGlobal
 LocationLocal = dronekit.lib.LocationLocal
 CloudClient = dronekit.lib.CloudClient

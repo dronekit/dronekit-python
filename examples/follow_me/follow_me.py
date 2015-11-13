@@ -86,7 +86,7 @@ try:
         # Once we have a valid location (see gpsd documentation) we can start moving our vehicle around
         if (gpsd.valid & gps.LATLON_SET) != 0:
             altitude = 30  # in meters
-            dest = LocationGlobal(gpsd.fix.latitude, gpsd.fix.longitude, altitude, is_relative=True)
+            dest = LocationGlobalRelative(gpsd.fix.latitude, gpsd.fix.longitude, altitude)
             print "Going to: %s" % dest
 
             # A better implementation would only send new waypoints if the position had changed significantly
