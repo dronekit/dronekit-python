@@ -786,7 +786,9 @@ class Vehicle(HasObservers):
             self._location.global_frame = LocationGlobal(self._lat, self._lon, self._alt)
             self._location.global_relative_frame = LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
             self.notify_attribute_listeners('location', self.location)
+            self.notify_attribute_listeners('location.global_frame', self.location.global_frame)
             self.location.notify_attribute_listeners('global_frame', self.location.global_frame)
+            self.notify_attribute_listeners('location.global_relative_frame', self.location.global_relative_frame)
             self.location.notify_attribute_listeners('global_relative_frame', self.location.global_relative_frame)
 
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
@@ -801,8 +803,9 @@ class Vehicle(HasObservers):
             self._north = m.x
             self._east = m.y
             self._down = m.z
-            self._location._local_frame = LocationLocal(self._north, self._east, self._down)
+            self._location.local_frame = LocationLocal(self._north, self._east, self._down)
             self.notify_attribute_listeners('location', self.location)
+            self.notify_attribute_listeners('location.local_frame', self.location.local_frame)
             self.location.notify_attribute_listeners('local_frame', self.location.local_frame)
 
         self._pitch = None
