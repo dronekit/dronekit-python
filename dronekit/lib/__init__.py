@@ -124,7 +124,6 @@ class LocationGlobal(object):
         self.lat = lat
         self.lon = lon
         self.alt = alt
-        self.is_relative = False
 
         # This is for backward compatibility.
         self.local_frame = None
@@ -160,7 +159,6 @@ class LocationGlobalRelative(object):
         self.lat = lat
         self.lon = lon
         self.alt = alt
-        self.is_relative = True
 
         # This is for backward compatibility.
         self.local_frame = None
@@ -1936,9 +1934,9 @@ class CommandSequence(object):
                                                         0, 0, 0, 0, 0, 0, 0,
                                                         altitude)
 
-    def goto(self, l):
+    def goto(self, location):
         '''
-        Go to a specified global location (:py:class:`LocationGlobal`).
+        Go to a specified global location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
 
         The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
 
@@ -1953,15 +1951,18 @@ class CommandSequence(object):
 
         :param LocationGlobal location: The target location.
         '''
-        if l.is_relative:
+        if isinstance(location, LocationGlobalRelative):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-        else:
+        elif isinstance(location, LocationGlobal):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+        else:
+            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+
         self._vehicle._master.mav.mission_item_send(0, 0, 0,
                                                     frame,
                                                     mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
                                                     2, 0, 0, 0, 0, 0,
-                                                    l.lat, l.lon, l.alt)
+                                                    location.lat, location.lon, location.alt)
 
     def clear(self):
         '''
