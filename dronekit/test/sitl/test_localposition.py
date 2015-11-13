@@ -60,7 +60,7 @@ def test_timeout(connpath):
             time.sleep(1)
 
     arm_and_takeoff(10)
-    vehicle.wait_ready('local_position', timeout=60)
+    vehicle.wait_ready('location.local_frame', timeout=60)
     
     # .north, .east, and .down are initialized to None.
     # Any other value suggests that a LOCAL_POSITION_NED was received and parsed.
