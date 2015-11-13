@@ -77,6 +77,7 @@ def test_location_notify(connpath):
     ret = {'success': False}
     @vehicle.location.on_attribute('global_frame')
     def callback(*args):
+        assert_not_equals(args[2].alt, 0)
         ret['success'] = True
 
     i = 15
