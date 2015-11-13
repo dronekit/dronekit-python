@@ -126,7 +126,7 @@ class LocationGlobal(object):
 
         # This is for backward compatibility.
         self.local_frame = None
-        self.global_fame = None
+        self.global_frame = None
 
     def __str__(self):
         return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
