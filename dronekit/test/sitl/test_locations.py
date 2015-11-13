@@ -69,3 +69,19 @@ def test_timeout(connpath):
     assert_not_equals(vehicle.location.local_frame.down, None)
 
     vehicle.close()
+
+@with_sitl
+def test_location_notify(connpath):
+    vehicle = connect(connpath)
+
+    ret = {'success': False}
+    @vehicle.location.on_attribute('global_frame')
+    def callback(*args):
+        ret['success'] = True
+
+    i = 15
+    while i > 0 and not ret['success']:
+        time.sleep(1)
+        i = i - 1
+
+    assert ret['success'], 'Expected location object to emit notifications.'
