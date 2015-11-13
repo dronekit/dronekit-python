@@ -112,7 +112,11 @@ class MAVConnection(object):
 
                         # Message listeners.
                         for fn in self.message_listeners:
-                            fn(self, msg)
+                            try:
+                                fn(self, msg)
+                            except Exception as e:
+                                errprinter('>>> Exception in message handler for %s' % msg.get_type())
+                                errprinter('>>> ' + str(e))
 
             except APIException as e:
                 errprinter('>>> ' + str(e.message))
