@@ -636,14 +636,32 @@ class Locations(HasObservers):
     """
     An object for holding location information in global, global relative and local frames.
     
-    The different frames are accessed through the members:
-        
-    * ``global_frame`` (a :py:class:`LocationGlobal`)
-    * ``global_frame_relative`` (a :py:class:`LocationGlobalRelative`)
-    * ``local_frame`` (a :py:class:`LocationLocal`)
-    
     :py:class:`Vehicle` owns an object of this type. See :py:attr:`Vehicle.location` for information on 
     reading and observing location in the different frames.
+    
+    The different frames are accessed through the members. These can be read, and are observable.
+    
+    .. py:attribute:: global_frame
+    
+        Location in global frame (a :py:class:`LocationGlobal`). 
+        
+        The altitude for global frame may take some time to populate.
+        
+    .. py:attribute:: global_frame_relative
+    
+        Location in global frame, with altitude relative to the home location 
+        (a :py:class:`LocationGlobalRelative`)
+        
+    .. py:attribute:: local_frame
+    
+        Location in local NED frame (a :py:class:`LocationGlobalRelative`).
+        
+        This location will not start to update until the vehicle is armed.
+
+    
+
+    
+    
     """
     def __init__(self):
         super(Locations, self).__init__()
@@ -1258,16 +1276,18 @@ class Vehicle(HasObservers):
                 print " GlobalRelative: %s" % value.global_relative_frame
                 print " Local: %s" % value.local_frame
 
-        To watch for changes in just one attribute:
+        To watch for changes in just one attribute (in this case ``global_frame``):
 
         .. code-block:: python
         
-            @vehicle.on_attribute('global_frame')   
+            @vehicle.on_attribute('location.global_frame')   
             def listener(self, attr_name, value):
                 # `self`: :py:class:`Locations` object that has been updated.
                 # `attr_name`: name of the observed attribute - 'global_frame'
                 # `value` is the updated attribute value.
                 print " Global: %s" % value
+            
+            #Or watch using decorator: ``@vehicle.location.on_attribute('global_frame')``.
         """
         return self._location
 
