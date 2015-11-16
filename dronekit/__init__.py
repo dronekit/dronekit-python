@@ -6,7 +6,6 @@ import os
 import platform
 import re
 import dronekit.lib
-from dronekit.lib import APIException
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from Queue import Queue, Empty
@@ -26,8 +25,10 @@ VehicleMode = dronekit.lib.VehicleMode
 SystemStatus = dronekit.lib.SystemStatus
 LocationGlobalRelative = dronekit.lib.LocationGlobalRelative
 LocationGlobal = dronekit.lib.LocationGlobal
+LocationGlobalRelative = dronekit.lib.LocationGlobalRelative
 LocationLocal = dronekit.lib.LocationLocal
 CloudClient = dronekit.lib.CloudClient
+APIException = dronekit.lib.APIException
 
 class MavWriter():
     def __init__(self, queue):

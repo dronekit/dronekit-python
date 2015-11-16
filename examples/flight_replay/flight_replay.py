@@ -7,8 +7,7 @@ the flight by sending waypoints to a vehicle.
 Full documentation is provided at http://python.dronekit.io/examples/flight_replay.html
 """
 
-from dronekit import connect
-from dronekit.lib import Command
+from dronekit import connect, Command
 from pymavlink import mavutil
 import json, urllib, math
 

@@ -7,8 +7,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 """
 
 import time
-from dronekit import connect
-from dronekit.lib import VehicleMode, LocationGlobal, LocationGlobalRelative
+from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil
 import time
 

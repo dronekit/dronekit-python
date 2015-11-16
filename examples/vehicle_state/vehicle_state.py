@@ -6,8 +6,7 @@ and how to observe vehicle attribute (state) changes.
 
 Full documentation is provided at http://python.dronekit.io/examples/vehicle_state.html
 """
-from dronekit import connect
-from dronekit.lib import VehicleMode
+from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 import time
 
