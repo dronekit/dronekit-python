@@ -68,6 +68,14 @@ def test_timeout(connpath):
     assert_not_equals(vehicle.location.local_frame.east, None)
     assert_not_equals(vehicle.location.local_frame.down, None)
 
+    # global_frame
+    assert_not_equals(vehicle.location.global_frame.lat, None)
+    assert_not_equals(vehicle.location.global_frame.lon, None)
+    assert_not_equals(vehicle.location.global_frame.alt, None)
+    assert_equals(type(vehicle.location.global_frame.lat), float)
+    assert_equals(type(vehicle.location.global_frame.lon), float)
+    assert_equals(type(vehicle.location.global_frame.alt), float)
+
     vehicle.close()
 
 @with_sitl
