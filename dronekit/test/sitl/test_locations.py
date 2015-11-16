@@ -60,7 +60,7 @@ def test_timeout(connpath):
             time.sleep(1)
 
     arm_and_takeoff(10)
-    vehicle.wait_ready('local_position', timeout=60)
+    vehicle.wait_ready('location.local_frame', timeout=60)
     
     # .north, .east, and .down are initialized to None.
     # Any other value suggests that a LOCAL_POSITION_NED was received and parsed.
@@ -68,4 +68,29 @@ def test_timeout(connpath):
     assert_not_equals(vehicle.location.local_frame.east, None)
     assert_not_equals(vehicle.location.local_frame.down, None)
 
+    # global_frame
+    assert_not_equals(vehicle.location.global_frame.lat, None)
+    assert_not_equals(vehicle.location.global_frame.lon, None)
+    assert_not_equals(vehicle.location.global_frame.alt, None)
+    assert_equals(type(vehicle.location.global_frame.lat), float)
+    assert_equals(type(vehicle.location.global_frame.lon), float)
+    assert_equals(type(vehicle.location.global_frame.alt), float)
+
     vehicle.close()
+
+@with_sitl
+def test_location_notify(connpath):
+    vehicle = connect(connpath)
+
+    ret = {'success': False}
+    @vehicle.location.on_attribute('global_frame')
+    def callback(*args):
+        assert_not_equals(args[2].alt, 0)
+        ret['success'] = True
+
+    i = 15
+    while i > 0 and not ret['success']:
+        time.sleep(1)
+        i = i - 1
+
+    assert ret['success'], 'Expected location object to emit notifications.'

@@ -1,5 +1,4 @@
-from dronekit import connect
-from dronekit.lib import VehicleMode
+from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 import time
 from dronekit import connect, VehicleMode, LocationGlobal

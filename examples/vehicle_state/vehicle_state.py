@@ -6,8 +6,7 @@ and how to observe vehicle attribute (state) changes.
 
 Full documentation is provided at http://python.dronekit.io/examples/vehicle_state.html
 """
-from dronekit import connect
-from dronekit.lib import VehicleMode
+from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 import time
 
@@ -28,6 +27,7 @@ vehicle = connect(args.connect, wait_ready=True)
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
 print " Global Location: %s" % vehicle.location.global_frame
+print " Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
 print " Local Location: %s" % vehicle.location.local_frame
 print " Attitude: %s" % vehicle.attitude
 print " Velocity: %s" % vehicle.velocity
