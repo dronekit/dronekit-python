@@ -657,17 +657,57 @@ class Locations(HasObservers):
         Location in local NED frame (a :py:class:`LocationGlobalRelative`).
         
         This location will not start to update until the vehicle is armed.
-
-    
-
-    
     
     """
-    def __init__(self):
+    def __init__(self, vehicle):
         super(Locations, self).__init__()
-        self.local_frame = None
-        self.global_frame = None
-        self.global_relative_frame = None
+
+        self._lat = None
+        self._lon = None
+        self._alt = None
+        self._relative_alt = None
+
+        @vehicle.on_message('GLOBAL_POSITION_INT')
+        def listener(vehicle, name, m):
+            (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            self._relative_alt = m.relative_alt/1000.0
+            self.notify_attribute_listeners('global_relative_frame', self.global_relative_frame)
+            vehicle.notify_attribute_listeners('location.global_relative_frame', vehicle.location.global_relative_frame)
+
+            if self._alt != None or m.alt != 0:
+                # Require first alt value to be non-0
+                # TODO is this the proper check to do?
+                self._alt = m.alt/1000.0
+                self.notify_attribute_listeners('global_frame', self.global_frame)
+                vehicle.notify_attribute_listeners('location.global_frame', vehicle.location.global_frame)
+
+            vehicle.notify_attribute_listeners('location', vehicle.location)
+
+        self._north = None
+        self._east = None
+        self._down = None
+
+        @vehicle.on_message('LOCAL_POSITION_NED')
+        def listener(vehicle, name, m):
+            self._north = m.x
+            self._east = m.y
+            self._down = m.z
+            self.notify_attribute_listeners('local_frame', self.local_frame)
+            vehicle.notify_attribute_listeners('location.local_frame', vehicle.location.local_frame)
+            vehicle.notify_attribute_listeners('location', vehicle.location)
+
+    @property
+    def local_frame(self):
+        return LocationLocal(self._north, self._east, self._down)
+
+    @property
+    def global_frame(self):
+        return LocationGlobal(self._lat, self._lon, self._alt)
+
+    @property
+    def global_relative_frame(self):
+        return LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
+
 
 class Vehicle(HasObservers):
     """
@@ -787,50 +827,15 @@ class Vehicle(HasObservers):
         def listener(_, msg):
             self.notify_message_listeners(msg.get_type(), msg)
 
-        self._location = Locations()
-
-        self._lat = None
-        self._lon = None
-        self._alt = None
-        self._relative_alt = None
+        self._location = Locations(self)
         self._vx = None
         self._vy = None
         self._vz = None
 
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
-            (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self._relative_alt = m.relative_alt/1000
-            self._location.global_relative_frame = LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
-
-            self.notify_attribute_listeners('location', self.location)
-            self.notify_attribute_listeners('location.global_relative_frame', self.location.global_relative_frame)
-            self.location.notify_attribute_listeners('global_relative_frame', self.location.global_relative_frame)
-
-            if self._alt != None or m.alt != 0:
-                # Require first alt value to be non-0
-                # TODO is this the proper check to do?
-                self._alt = m.alt/1000
-                self._location.global_frame = LocationGlobal(self._lat, self._lon, self._alt)
-                self.notify_attribute_listeners('location.global_frame', self.location.global_frame)
-                self.location.notify_attribute_listeners('global_frame', self.location.global_frame)
-
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self.notify_attribute_listeners('velocity', self.velocity)
-
-        self._north = None
-        self._east = None
-        self._down = None
-
-        @self.on_message('LOCAL_POSITION_NED')
-        def listener(self, name, m):
-            self._north = m.x
-            self._east = m.y
-            self._down = m.z
-            self._location.local_frame = LocationLocal(self._north, self._east, self._down)
-            self.notify_attribute_listeners('location', self.location)
-            self.notify_attribute_listeners('location.local_frame', self.location.local_frame)
-            self.location.notify_attribute_listeners('local_frame', self.location.local_frame)
 
         self._pitch = None
         self._yaw = None
