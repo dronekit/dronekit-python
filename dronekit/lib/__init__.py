@@ -1149,6 +1149,18 @@ class Vehicle(HasObservers):
                 errprinter('>>> ...link restored.')
             self._heartbeat_timeout = False
 
+        self._last_heartbeat = None
+
+        @handler.forward_loop
+        def listener(_):
+            if self._heartbeat_lastreceived:
+                self._last_heartbeat = time.time() - self._heartbeat_lastreceived
+                self.notify_attribute_listeners('last_heartbeat', self.last_heartbeat)
+
+    @property
+    def last_heartbeat(self):
+        return self._last_heartbeat
+
     def on_message(self, name):
         """
         Decorator for message listener callback functions.
