@@ -8,7 +8,7 @@ Full documentation is provided at http://python.dronekit.io/examples/simple_goto
 
 import time
 from dronekit import connect
-from dronekit.lib import VehicleMode, LocationGlobal
+from dronekit.lib import VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil
 import time
 
@@ -53,8 +53,8 @@ def arm_and_takeoff(aTargetAltitude):
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.commands.takeoff will execute immediately).
     while True:
-        print " Altitude: ", vehicle.location.global_frame.alt      
-        if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
+        print " Altitude: ", vehicle.location.global_relative_frame.alt      
+        if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
             print "Reached target altitude"
             break
         time.sleep(1)

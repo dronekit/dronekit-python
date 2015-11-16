@@ -21,9 +21,9 @@ Attributes
 
 Vehicle state information is exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
 "standard" attributes: 
-:py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>`, 
-:py:attr:`Vehicle.location.global_relative_frame <dronekit.lib.Vehicle.location.global_relative_frame>`, 
-:py:attr:`Vehicle.location.local_frame <dronekit.lib.Vehicle.location.local_frame>`, 
+:py:attr:`Vehicle.location.global_frame <dronekit.lib.Locations.global_frame>`, 
+:py:attr:`Vehicle.location.global_relative_frame <dronekit.lib.Locations.global_relative_frame>`, 
+:py:attr:`Vehicle.location.local_frame <dronekit.lib.Locations.local_frame>`, 
 :py:attr:`Vehicle.attitude <dronekit.lib.Vehicle.attitude>`,
 :py:attr:`Vehicle.velocity <dronekit.lib.Vehicle.velocity>`,
 :py:attr:`Vehicle.airspeed <dronekit.lib.Vehicle.airspeed>`,
@@ -171,7 +171,7 @@ The ``observer`` callback function is invoked with the following arguments:
 * ``value`` - the attribute value (so you don't need to re-query the vehicle object).
 
 The code snippet below shows how to add (and remove) a callback function to observe changes
-in :py:attr:`Vehicle.location.global_frame <dronekit.lib.Vehicle.location.global_frame>` using 
+in :py:attr:`Vehicle.location.global_frame <dronekit.lib.Locations.global_frame>` using 
 :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`. 
 The two second ``sleep()`` is required because otherwise the observer might be removed before the the 
 callback is first run.
@@ -186,13 +186,24 @@ callback is first run.
 
         
     # Add a callback `location_callback` for the `global_frame` attribute.
-    vehicle.add_attribute_listener('global_frame', location_callback)
+    vehicle.add_attribute_listener('location.global_frame', location_callback)
 
     # Wait 2s so callback can be notified before the observer is removed
     time.sleep(2)
 
     # Remove observer - specifying the attribute and previously registered callback function
-    vehicle.remove_message_listener('location', location_callback)
+    vehicle.remove_message_listener('location.global_frame', location_callback)
+    
+.. note::
+
+    The example above adds a listener on ``Vehicle`` to for attribute name ``'location.global_frame'``
+    You can alternatively add (and remove) a listener ``Vehicle.location`` for the attribute name ``'global_frame'``. 
+    Both alternatives are shown below:
+    
+    .. code-block:: python
+
+        vehicle.add_attribute_listener('location.global_frame', location_callback)
+        vehicle.location.add_attribute_listener('global_frame', location_callback)
 
     
 The example below shows how you can declare an attribute callback using the 
