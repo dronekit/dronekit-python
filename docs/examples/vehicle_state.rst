@@ -58,9 +58,9 @@ On the command prompt you should see (something like):
     >>> GROUND START
 
     Get all vehicle attribute values:
-     Global Location: None
-     Global Location (relative altitude): LocationGlobalRelative:lat=-35.363261,lon=149.1652299,alt=362
-     Local Location: None
+     Global Location: LocationGlobal:lat=-35.363261,lon=149.1652299,alt=None
+     Global Location (relative altitude): LocationGlobalRelative:lat=-35.363261,lon=149.1652299,alt=0.0
+     Local Location: LocationLocal:north=None,east=None,down=None
      Attitude: Attitude:pitch=0.00294387154281,yaw=-0.11805768311,roll=0.00139428151306
      Velocity: [-0.03, 0.02, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10

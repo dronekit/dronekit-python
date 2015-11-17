@@ -129,7 +129,7 @@ class Drone(object):
         return [self.current_location.lat, self.current_location.lon]
 
     def location_callback(self, vehicle, name, location):
-        if location.alt is not None:
+        if location.global_relative_frame.alt is not None:
             self.altitude = location.alt
 
         self.current_location = location

@@ -639,25 +639,8 @@ class Locations(HasObservers):
     :py:class:`Vehicle` owns an object of this type. See :py:attr:`Vehicle.location` for information on 
     reading and observing location in the different frames.
     
-    The different frames are accessed through the members. These can be read, and are observable.
-    
-    .. py:attribute:: global_frame
-    
-        Location in global frame (a :py:class:`LocationGlobal`). 
-        
-        The altitude for global frame may take some time to populate.
-        
-    .. py:attribute:: global_frame_relative
-    
-        Location in global frame, with altitude relative to the home location 
-        (a :py:class:`LocationGlobalRelative`)
-        
-    .. py:attribute:: local_frame
-    
-        Location in local NED frame (a :py:class:`LocationGlobalRelative`).
-        
-        This location will not start to update until the vehicle is armed.
-    
+    The different frames are accessed through the members, which are created with this object. 
+    They can be read, and are observable.
     """
     def __init__(self, vehicle):
         super(Locations, self).__init__()
@@ -698,14 +681,48 @@ class Locations(HasObservers):
 
     @property
     def local_frame(self):
+        """
+        Location in local NED frame (a :py:class:`LocationGlobalRelative`).
+        
+        This is accessed through the :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>` attribute:
+        
+        .. code-block:: python
+        
+            print "Local Location: %s" % vehicle.location.local_frame
+        
+        This location will not start to update until the vehicle is armed.
+        """
         return LocationLocal(self._north, self._east, self._down)
 
     @property
     def global_frame(self):
+        """
+        Location in global frame (a :py:class:`LocationGlobal`). 
+        
+        This is accessed through the :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>` attribute:
+        
+        .. code-block:: python
+        
+            print "Global Location: %s" % vehicle.location.global_frame
+        
+        Its ``lat`` and ``lon`` attributes are populated shortly after GPS becomes available. 
+        The ``alt`` can take several seconds longer to populate (from the barometer).
+        Listeners are not notified of changes to this attribute until it has fully populated.        
+        """
         return LocationGlobal(self._lat, self._lon, self._alt)
-
+        
     @property
     def global_relative_frame(self):
+        """
+        Location in global frame, with altitude relative to the home location 
+        (a :py:class:`LocationGlobalRelative`).
+        
+        This is accessed through the :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>` attribute:
+        
+        .. code-block:: python
+        
+            print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
+        """
         return LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
 
 
@@ -1249,9 +1266,9 @@ class Vehicle(HasObservers):
         
         The different frames are accessed through its members:
         
-        * ``global_frame`` (a :py:class:`LocationGlobal`)
-        * ``global_frame_relative`` (a :py:class:`LocationGlobalRelative`)
-        * ``local_frame`` (a :py:class:`LocationLocal`)
+        * :py:attr:`global_frame <dronekit.lib.Locations.global_frame>` (a :py:class:`LocationGlobal`)
+        * :py:attr:`global_relative_frame <dronekit.lib.Locations.global_relative_frame>` (a :py:class:`LocationGlobalRelative`)
+        * :py:attr:`local_frame <dronekit.lib.Locations.local_frame>` (a :py:class:`LocationLocal`)
         
         For example, to print the location in each frame for a ``vehicle``:
         
@@ -1266,6 +1283,14 @@ class Vehicle(HasObservers):
             print "Altitude (global frame): %s" % vehicle.location.global_frame.alt
             print "Altitude (global relative frame): %s" % vehicle.location.global_relative_frame.alt
             print "Altitude (NED frame): %s" % vehicle.location.local_frame.down
+        
+        .. note::
+        
+            All the location "values" (e.g. ``global_frame.lat``) are initially
+            created with value ``None``. The ``global_frame``, ``global_relative_frame``
+            latitude and longitude values are populated shortly after initialisation but
+            ``global_frame.alt`` may take a few seconds longer to be updated. 
+            The ``local_frame`` does not populate until the vehicle is armed.
             
         The attribute and its members are observable. To watch for changes in all frames using a listener
         created using a decorator (you can also define a listener and explicitly add it).

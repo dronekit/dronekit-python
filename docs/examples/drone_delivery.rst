@@ -105,7 +105,8 @@ How it works
 Using attribute observers
 -------------------------
 
-All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  For instance, `drone_delivery.py <https://github.com/dronekit/dronekit-python/blob/master/examples/drone_delivery/drone_delivery.py>`_ calls:
+All attributes in DroneKit can have observers - this is the primary mechanism you should use to be notified of changes in vehicle state.  
+For instance, `drone_delivery.py <https://github.com/dronekit/dronekit-python/blob/master/examples/drone_delivery/drone_delivery.py>`_ calls:
 
 .. code-block:: python
 
@@ -114,7 +115,7 @@ All attributes in DroneKit can have observers - this is the primary mechanism yo
     ...
 
     def location_callback(self, location):
-        location = self.vehicle.location.global_frame
+        location = location.global_frame
 
         if location.alt is not None:
             self.altitude = location.alt

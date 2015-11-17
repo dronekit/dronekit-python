@@ -55,8 +55,8 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
         #  after Vehicle.commands.takeoff will execute immediately).
         while True:
-            print " Altitude: ", vehicle.location.global_frame.alt
-            if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+            print " Altitude: ", vehicle.location.global_relative_frame.alt
+            if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
                 print "Reached target altitude"
                 break
             time.sleep(1)
@@ -127,8 +127,8 @@ concerned about reaching a particular height, a simpler implementation might jus
 .. code-block:: python
 
         while True:
-            print " Altitude: ", vehicle.location.global_frame.alt
-            if vehicle.location.global_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+            print " Altitude: ", vehicle.location.global_relative_frame.alt
+            if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
                 print "Reached target altitude"
                 break
             time.sleep(1)
