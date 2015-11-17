@@ -103,42 +103,79 @@ class LocationGlobal(object):
     A global location object.
 
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
-    The altitude is relative to either the *home position* or "mean sea-level", depending on the value of the ``is_relative``.
+    The altitude is relative to mean sea-level (MSL).
 
-    For example, a global location object might be defined as:
+    For example, a global location object with altitude 30 metres above sea level might be defined as:
 
     .. code:: python
 
-       LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
+       LocationGlobal(-34.364114, 149.166022, 30)
 
     .. todo:: FIXME: Location class - possibly add a vector3 representation.
+    
+    An object of this type is owned by :py:attr:`Vehicle.location`. See that class for information on 
+    reading and observing location in the global frame.
 
     :param lat: Latitude.
     :param lon: Longitude.
-    :param alt: Altitude in meters (either relative or absolute).
-    :param is_relative: ``True`` if the specified altitude is relative to a 'home' location (this is usually desirable). ``False`` to set altitude relative to "mean sea-level".
+    :param alt: Altitude in meters relative to mean sea-level (MSL).
     """
-    def __init__(self, lat, lon, alt=None, is_relative=True):
+    def __init__(self, lat, lon, alt=None):
         self.lat = lat
         self.lon = lon
         self.alt = alt
-        self.is_relative = is_relative
 
         # This is for backward compatibility.
         self.local_frame = None
-        self.global_fame = None
+        self.global_frame = None
 
     def __str__(self):
-        return "LocationGlobal:lat=%s,lon=%s,alt=%s,is_relative=%s" % (self.lat, self.lon, self.alt, self.is_relative)
+        return "LocationGlobal:lat=%s,lon=%s,alt=%s" % (self.lat, self.lon, self.alt)
 
-# Back-compatibility for earlier clients.
-Location = LocationGlobal
+
+class LocationGlobalRelative(object):
+    """
+    A global location object, with attitude relative to home location altitude.
+
+    The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
+    The altitude is relative to the *home position*.
+
+    For example, a ``LocationGlobalRelative`` object with an altitude of 30 metres above the home location might be defined as:
+
+    .. code:: python
+
+       LocationGlobalRelative(-34.364114, 149.166022, 30)
+
+    .. todo:: FIXME: Location class - possibly add a vector3 representation.
+    
+    An object of this type is owned by :py:attr:`Vehicle.location`. See that class for information on 
+    reading and observing location in the global-relative frame.
+
+    :param lat: Latitude.
+    :param lon: Longitude.
+    :param alt: Altitude in meters (relative to the home location).
+    """
+    def __init__(self, lat, lon, alt=None):
+        self.lat = lat
+        self.lon = lon
+        self.alt = alt
+
+        # This is for backward compatibility.
+        self.local_frame = None
+        self.global_frame = None
+
+    def __str__(self):
+        return "LocationGlobalRelative:lat=%s,lon=%s,alt=%s" % (self.lat, self.lon, self.alt)
+
 
 class LocationLocal(object):
     """
     A local location object.
 
-    The north, east and down are relative to the EKF origin.  This is most likely the location where the vehicle was turned on.  
+    The north, east and down are relative to the EKF origin.  This is most likely the location where the vehicle was turned on.
+    
+    An object of this type is owned by :py:attr:`Vehicle.location`. See that class for information on 
+    reading and observing location in the local frame.
 
     :param north: Position north of the EKF origin in meters.
     :param east: Position east of the EKF origin in meters.
@@ -450,7 +487,6 @@ class HasObservers(object):
                 self.add_attribute_listener(name, fn)
         return decorator
 
-
 class ChannelsOverride(dict):
     """
     A dictionary class for managing Vehicle channel overrides.
@@ -596,6 +632,99 @@ class Channels(dict):
         self._overrides._active = True
         self._overrides._send()
 
+class Locations(HasObservers):
+    """
+    An object for holding location information in global, global relative and local frames.
+    
+    :py:class:`Vehicle` owns an object of this type. See :py:attr:`Vehicle.location` for information on 
+    reading and observing location in the different frames.
+    
+    The different frames are accessed through the members, which are created with this object. 
+    They can be read, and are observable.
+    """
+    def __init__(self, vehicle):
+        super(Locations, self).__init__()
+
+        self._lat = None
+        self._lon = None
+        self._alt = None
+        self._relative_alt = None
+
+        @vehicle.on_message('GLOBAL_POSITION_INT')
+        def listener(vehicle, name, m):
+            (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
+            self._relative_alt = m.relative_alt/1000.0
+            self.notify_attribute_listeners('global_relative_frame', self.global_relative_frame)
+            vehicle.notify_attribute_listeners('location.global_relative_frame', vehicle.location.global_relative_frame)
+
+            if self._alt != None or m.alt != 0:
+                # Require first alt value to be non-0
+                # TODO is this the proper check to do?
+                self._alt = m.alt/1000.0
+                self.notify_attribute_listeners('global_frame', self.global_frame)
+                vehicle.notify_attribute_listeners('location.global_frame', vehicle.location.global_frame)
+
+            vehicle.notify_attribute_listeners('location', vehicle.location)
+
+        self._north = None
+        self._east = None
+        self._down = None
+
+        @vehicle.on_message('LOCAL_POSITION_NED')
+        def listener(vehicle, name, m):
+            self._north = m.x
+            self._east = m.y
+            self._down = m.z
+            self.notify_attribute_listeners('local_frame', self.local_frame)
+            vehicle.notify_attribute_listeners('location.local_frame', vehicle.location.local_frame)
+            vehicle.notify_attribute_listeners('location', vehicle.location)
+
+    @property
+    def local_frame(self):
+        """
+        Location in local NED frame (a :py:class:`LocationGlobalRelative`).
+        
+        This is accessed through the :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>` attribute:
+        
+        .. code-block:: python
+        
+            print "Local Location: %s" % vehicle.location.local_frame
+        
+        This location will not start to update until the vehicle is armed.
+        """
+        return LocationLocal(self._north, self._east, self._down)
+
+    @property
+    def global_frame(self):
+        """
+        Location in global frame (a :py:class:`LocationGlobal`). 
+        
+        This is accessed through the :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>` attribute:
+        
+        .. code-block:: python
+        
+            print "Global Location: %s" % vehicle.location.global_frame
+        
+        Its ``lat`` and ``lon`` attributes are populated shortly after GPS becomes available. 
+        The ``alt`` can take several seconds longer to populate (from the barometer).
+        Listeners are not notified of changes to this attribute until it has fully populated.        
+        """
+        return LocationGlobal(self._lat, self._lon, self._alt)
+        
+    @property
+    def global_relative_frame(self):
+        """
+        Location in global frame, with altitude relative to the home location 
+        (a :py:class:`LocationGlobalRelative`).
+        
+        This is accessed through the :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>` attribute:
+        
+        .. code-block:: python
+        
+            print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
+        """
+        return LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
+
 
 class Vehicle(HasObservers):
     """
@@ -617,14 +746,6 @@ class Vehicle(HasObservers):
     * ``user_<name>`` - For user specific parameters
 
     **Standard attributes & types:**
-
-    .. py:attribute:: location.global_frame
-
-        Current :py:class:`LocationGlobal`.
-
-    .. py:attribute:: location.local_frame
-
-        Current :py:class:`LocationLocal`.
 
     .. py:attribute:: attitude
 
@@ -723,29 +844,15 @@ class Vehicle(HasObservers):
         def listener(_, msg):
             self.notify_message_listeners(msg.get_type(), msg)
 
-        self._lat = None
-        self._lon = None
+        self._location = Locations(self)
         self._vx = None
         self._vy = None
         self._vz = None
 
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
-            (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self.notify_attribute_listeners('location', self.location)
             (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
             self.notify_attribute_listeners('velocity', self.velocity)
-
-        self._north = None
-        self._east = None
-        self._down = None
-
-        @self.on_message('LOCAL_POSITION_NED')
-        def listener(self, name, m):
-            self._north = m.x
-            self._east = m.y
-            self._down = m.z
-            self.notify_attribute_listeners('local_position', self.location.local_frame)
 
         self._pitch = None
         self._yaw = None
@@ -765,7 +872,6 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('attitude', self.attitude)
 
         self._heading = None
-        self._alt = None
         self._airspeed = None
         self._groundspeed = None
 
@@ -773,8 +879,6 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._heading = m.heading
             self.notify_attribute_listeners('heading', self.heading)
-            self._alt = m.alt
-            self.notify_attribute_listeners('location', self.location)
             self._airspeed = m.airspeed
             self.notify_attribute_listeners('airspeed', self.airspeed)
             self._groundspeed = m.groundspeed
@@ -899,7 +1003,7 @@ class Vehicle(HasObservers):
             if not self._wp_loaded:
                 if msg.seq == 0:
                     if not (msg.x == 0 and msg.y == 0 and msg.z == 0):
-                        self._home_location = LocationGlobal(msg.x, msg.y, msg.z, is_relative=False)
+                        self._home_location = LocationGlobal(msg.x, msg.y, msg.z)
 
                 if msg.seq > self._wploader.count():
                     # Unexpected waypoint
@@ -1156,11 +1260,66 @@ class Vehicle(HasObservers):
 
     @property
     def location(self):
-        # For backward compatibility, this is (itself) a LocationLocal object.
-        ret = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
-        ret.local_frame = LocationLocal(self._north, self._east, self._down)
-        ret.global_frame = LocationGlobal(self._lat, self._lon, self._alt, is_relative=False)
-        return ret
+        """
+        A :py:class:`Locations` object containing vehicle location information in 
+        global, global relative and local frames. 
+        
+        The different frames are accessed through its members:
+        
+        * :py:attr:`global_frame <dronekit.lib.Locations.global_frame>` (a :py:class:`LocationGlobal`)
+        * :py:attr:`global_relative_frame <dronekit.lib.Locations.global_relative_frame>` (a :py:class:`LocationGlobalRelative`)
+        * :py:attr:`local_frame <dronekit.lib.Locations.local_frame>` (a :py:class:`LocationLocal`)
+        
+        For example, to print the location in each frame for a ``vehicle``:
+        
+        .. code-block:: python
+
+            # Print location information for `vehicle` in all frames (default printer)
+            print "Global Location: %s" % vehicle.location.global_frame
+            print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
+            print "Local Location: %s" % vehicle.location.local_frame    #NED
+        
+            # Print altitudes in the different frames (see class definitions for other available information)
+            print "Altitude (global frame): %s" % vehicle.location.global_frame.alt
+            print "Altitude (global relative frame): %s" % vehicle.location.global_relative_frame.alt
+            print "Altitude (NED frame): %s" % vehicle.location.local_frame.down
+        
+        .. note::
+        
+            All the location "values" (e.g. ``global_frame.lat``) are initially
+            created with value ``None``. The ``global_frame``, ``global_relative_frame``
+            latitude and longitude values are populated shortly after initialisation but
+            ``global_frame.alt`` may take a few seconds longer to be updated. 
+            The ``local_frame`` does not populate until the vehicle is armed.
+            
+        The attribute and its members are observable. To watch for changes in all frames using a listener
+        created using a decorator (you can also define a listener and explicitly add it).
+
+        .. code-block:: python
+        
+            @vehicle.on_attribute('location')   
+            def listener(self, attr_name, value):
+                # `self`: :py:class:`Vehicle` object that has been updated.
+                # `attr_name`: name of the observed attribute - 'location'
+                # `value` is the updated attribute value (a :py:class:`Locations`). This can be queried for the frame information
+                print " Global: %s" % value.global_frame
+                print " GlobalRelative: %s" % value.global_relative_frame
+                print " Local: %s" % value.local_frame
+
+        To watch for changes in just one attribute (in this case ``global_frame``):
+
+        .. code-block:: python
+        
+            @vehicle.on_attribute('location.global_frame')   
+            def listener(self, attr_name, value):
+                # `self`: :py:class:`Locations` object that has been updated.
+                # `attr_name`: name of the observed attribute - 'global_frame'
+                # `value` is the updated attribute value.
+                print " Global: %s" % value
+            
+            #Or watch using decorator: ``@vehicle.location.on_attribute('global_frame')``.
+        """
+        return self._location
 
     @property
     def battery(self):
@@ -1487,7 +1646,7 @@ class Vehicle(HasObservers):
         By default, the method will timeout after 30 seconds and raise an exception if the
         attributes were not populated.
         
-        :param *types: ``True`` to wait on the default set of attributes, or a
+        :param types: ``True`` to wait on the default set of attributes, or a
             comma-separated list of the specific attributes to wait on. 
         :param int timeout: Timeout in seconds after which the method will raise an exception 
             (the default) or return ``False``. The default timeout is 30 seconds.
@@ -1636,7 +1795,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         See :ref:`vehicle_state_observing_parameters` for more information.
         
         :param String attr_name: The name of the parameter to watch (or '*' to watch all parameters).
-        :param *args: The callback to invoke when a change in the parameter is detected.
+        :param args: The callback to invoke when a change in the parameter is detected.
 
         """
         attr_name = attr_name.upper()
@@ -1655,7 +1814,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         See :ref:`vehicle_state_observing_parameters` for more information.
 
         :param String attr_name: The parameter name that is to have an observer removed (or '*' to remove an 'all attribute' observer).
-        :param *args: The callback function to remove.
+        :param args: The callback function to remove.
 
         """
         attr_name = attr_name.upper()
@@ -1834,9 +1993,9 @@ class CommandSequence(object):
                                                         0, 0, 0, 0, 0, 0, 0,
                                                         altitude)
 
-    def goto(self, l):
+    def goto(self, location):
         '''
-        Go to a specified global location (:py:class:`LocationGlobal`).
+        Go to a specified global location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
 
         The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
 
@@ -1846,20 +2005,23 @@ class CommandSequence(object):
             vehicle.mode = VehicleMode("GUIDED")
 
             # Set the LocationGlobal to head towards
-            a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
+            a_location = LocationGlobal(-34.364114, 149.166022, 30)
             vehicle.commands.goto(a_location)
 
         :param LocationGlobal location: The target location.
         '''
-        if l.is_relative:
+        if isinstance(location, LocationGlobalRelative):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-        else:
+        elif isinstance(location, LocationGlobal):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+        else:
+            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+
         self._vehicle._master.mav.mission_item_send(0, 0, 0,
                                                     frame,
                                                     mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
                                                     2, 0, 0, 0, 0, 0,
-                                                    l.lat, l.lon, l.alt)
+                                                    location.lat, location.lon, location.alt)
 
     def clear(self):
         '''

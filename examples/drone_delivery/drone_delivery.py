@@ -109,20 +109,27 @@ class Drone(object):
     def goto(self, location, relative=None):
         self._log("Goto: {0}, {1}".format(location, self.altitude))
 
-        self.commands.goto(
-            LocationGlobal(
-                float(location[0]), float(location[1]),
-                float(self.altitude),
-                is_relative=relative
+        if relative:
+            self.commands.goto(
+                LocationGlobalRelative(
+                    float(location[0]), float(location[1]),
+                    float(self.altitude)
+                )
             )
-        )
+        else:
+            self.commands.goto(
+                LocationGlobal(
+                    float(location[0]), float(location[1]),
+                    float(self.altitude)
+                )
+            )
         self.vehicle.flush()
 
     def get_location(self):
         return [self.current_location.lat, self.current_location.lon]
 
     def location_callback(self, vehicle, name, location):
-        if location.alt is not None:
+        if location.global_relative_frame.alt is not None:
             self.altitude = location.alt
 
         self.current_location = location

@@ -170,6 +170,27 @@ Instead, use normal Python methods for getting file system information:
     full_directory_path_of_current_script = os.path.dirname(os.path.abspath(__file__))
 
     
+Vehicle.location
+----------------
+
+DroneKit-Python v1.x had a ``Vehicle.location`` attribute which provided latitude and longitude information in the
+global frame, and altitude either relative to sea-level or the home location (depending on the value of its ``is_relative`` member).
+
+DKPY2.0 uses and attribute with the same name to provide location in 
+global, global-relative and local (NED) frames:
+
+.. code-block:: python
+
+    print "Global Location: %s" % vehicle.location.global_frame
+    print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
+    print "Local Location: %s" % vehicle.location.local_frame
+
+For more information see: :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`, 
+:py:attr:`Vehicle.location.global_frame <dronekit.lib.Locations.global_frame>`, 
+:py:attr:`Vehicle.location.global_relative_frame <dronekit.lib.Locations.global_relative_frame>`, 
+:py:attr:`Vehicle.location.local_frame <dronekit.lib.Locations.local_frame>`,  and :ref:`vehicle-information`.
+   
+    
 .. _migrating_dkpy2_0_home_location:
 
 Home location
@@ -278,8 +299,8 @@ See :ref:`mavlink_messages` for more information.
 New attributes
 --------------
 
-In addition to the :ref:`home_location <migrating_dkpy2_0_heading>`, a few more attributes have been added, 
-including:
+In addition to the :ref:`home_location <migrating_dkpy2_0_home_location>`, 
+a few more attributes have been added, including:
 :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`, 
 :py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`, 
 :py:func:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`, 

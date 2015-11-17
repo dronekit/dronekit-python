@@ -58,7 +58,8 @@ On the command prompt you should see (something like):
     >>> GROUND START
 
     Get all vehicle attribute values:
-     Global Location: LocationGlobal:lat=-35.363261,lon=149.1652299,alt=0.0,is_relative=False
+     Global Location: LocationGlobal:lat=-35.363261,lon=149.1652299,alt=None
+     Global Location (relative altitude): LocationGlobalRelative:lat=-35.363261,lon=149.1652299,alt=0.0
      Local Location: LocationLocal:north=None,east=None,down=None
      Attitude: Attitude:pitch=0.00294387154281,yaw=-0.11805768311,roll=0.00139428151306
      Velocity: [-0.03, 0.02, 0.0]
@@ -81,11 +82,11 @@ On the command prompt you should see (something like):
      Waiting for home location ...
      Waiting for home location ...
 
-     Home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234,is_relative=False
+     Home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234
 
     Set new home location
-     New Home Location (from attribute - altitude should be 222): LocationGlobal:lat=-35.363261,lon=149.1652299,alt=222,is_relative=False
-     New Home Location (from vehicle - altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0,is_relative=False
+     New Home Location (from attribute - altitude should be 222): LocationGlobal:lat=-35.363261,lon=149.1652299,alt=222
+     New Home Location (from vehicle - altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0
 
     Set Vehicle.mode=GUIDED (currently: STABILIZE)
      Waiting for mode change ...
@@ -121,13 +122,13 @@ On the command prompt you should see (something like):
      Wait 1s so callback invoked before observer removed
      CALLBACK: (attitude): Attitude:pitch=0.00716688157991,yaw=-0.0950401723385,roll=0.00759896961972
      CALLBACK: (heading): 354
-     CALLBACK: (location): LocationGlobal:lat=-35.3632621,lon=149.1652291,alt=362.0,is_relative=False
+     CALLBACK: (location): <dronekit.lib.Locations object at 0x000000000767F2B0>
      CALLBACK: (airspeed): 0.0
      CALLBACK: (groundspeed): 0.0
      CALLBACK: (ekf_ok): True
      CALLBACK: (battery): Battery:voltage=12.538,current=3.48,level=99
      CALLBACK: (gps_0): GPSInfo:fix=3,num_sat=10
-     CALLBACK: (location): LocationGlobal:lat=-35.3632622,lon=149.1652295,alt=362.0,is_relative=False
+     CALLBACK: (location): <dronekit.lib.Locations object at 0x000000000767F2B0>
      CALLBACK: (velocity): [-0.14, 0.1, 0.0]
      CALLBACK: (local_position): LocationLocal:north=-0.136136248708,east=-0.0430941730738,down=-0.00938374921679
      CALLBACK: (channels): {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
@@ -191,7 +192,8 @@ This example has no known issues.
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
+The full source code at documentation build-time is listed below 
+(`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/vehicle_state/vehicle_state.py>`_):
 
 .. literalinclude:: ../../examples/vehicle_state/vehicle_state.py
    :language: python
