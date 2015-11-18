@@ -64,7 +64,7 @@ A number of other useful classes and methods are listed below.
     :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
     :param int baud: The baud rate for the connection. The default is 115200.
     :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
-        If a heartbeat is not detected up within this time an exception will be raised.    
+        If a heartbeat is not detected within this time an exception will be raised.    
     :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
 
         .. note::
