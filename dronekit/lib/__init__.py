@@ -30,14 +30,25 @@ A number of other useful classes and methods are listed below.
 
 ----
 
-.. py:function:: connect(ip, wait_ready=False, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200)
+.. py:function:: connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30, source_system=255)
 
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
     Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
+    
+    The method is usually called with ``wait_ready=True`` to ensure that vehicle parameters and (most) attributes are
+    available when ``connect()`` returns.
+    
+    .. code:: python
 
-    :param String ip: Connection string for target address - e.g. 127.0.0.1:14550.
+        from dronekit import connect
+
+        # Connect to the Vehicle using "connection string" (in this case an address on network)
+        vehicle = connect('127.0.0.1:14550', wait_ready=True)
+
+    :param String ip: :ref:`Connection string <get_started_connecting>` for target address - e.g. 127.0.0.1:14550.
+    
     :param Bool/Array wait_ready: If ``True`` wait until all default attributes have downloaded before 
-        the method returns (default is ``False``). 
+        the method returns (default is ``None``). 
         The default attributes to wait on are: :py:attr:`parameters`, :py:attr:`gps_0`, 
         :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. 
         
@@ -45,16 +56,26 @@ A number of other useful classes and methods are listed below.
         
         For more information see :py:func:`Vehicle.wait_ready <dronekit.lib.Vehicle.wait_ready>`.
 
-    :param status_printer: Method of signature ``def status_printer(txt)`` that prints STATUS_TEXT messages from the Vehicle and other diagnostic information.
+    :param status_printer: Method of signature ``def status_printer(txt)`` that prints 
+        STATUS_TEXT messages from the Vehicle and other diagnostic information.
         By default the status information is printed to the command prompt in which the script is running.
     :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method. 
         This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).    
-    :param int rate: Data sream refresh rate. The default is 4Hz (4 updates per second).
+    :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
     :param int baud: The baud rate for the connection. The default is 115200.
-    :param int target_system: The MAVLink target_system for the connected vehicle.  The default value is 0 (MAVLink broadcast id).
-        This setting overrides any value for the target system obtained from the vehicle, 
-        and is used in place of any value set by the user in :py:class:`Commands` or when sending messages 
-        (see :py:func:`Vehicle.send_mavlink() <dronekit.lib.Vehicle.send_mavlink>`).
+    :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
+        If a link is not set up within this time, an exception will be raised.    
+    :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
+
+        .. note::
+
+            The returned :py:class:`Vehicle` object is acting as like a ground control station from the 
+            perspective of the connected "real" vehicle. It will process/receive messages from the real vehicle
+            if they are addressed to this ``source_system`` id. Messages sent to the real vehicle are
+            automatically updated to use the vehicle's ``target_system`` id.
+            
+            It is *good practice* to assign a unique id for every system on the MAVLink network.  
+            It is possible to configure the autopilot to only respond to guided-mode commands from a specified GCS ID.
 
 
     :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
@@ -199,10 +220,10 @@ class GPSInfo(object):
 
     If there is no GPS lock the parameters are set to ``None``.
 
-    :param IntType eph: GPS horizontal dilution of position (HDOP).
-    :param IntType epv: GPS horizontal dilution of position (VDOP).
-    :param IntType fix_type: 0-1: no fix, 2: 2D fix, 3: 3D fix
-    :param IntType satellites_visible: Number of satellites visible.
+    :param Int eph: GPS horizontal dilution of position (HDOP).
+    :param Int epv: GPS horizontal dilution of position (VDOP).
+    :param Int fix_type: 0-1: no fix, 2: 2D fix, 3: 3D fix
+    :param Int satellites_visible: Number of satellites visible.
 
     .. todo:: FIXME: GPSInfo class - possibly normalize eph/epv?  report fix type as string?
     """
@@ -1588,8 +1609,9 @@ class Vehicle(HasObservers):
             msg = vehicle.message_factory.image_trigger_control_encode(True)
             vehicle.send_mavlink(msg)
 
-        There is no need to specify the ``target_system`` id in messages (just set to zero) as DroneKit will automatically 
-        update messages with the vehicle's internal ``target_system`` (see :py:func:`connect() <dronekit.lib.connect>`) before sending. 
+        Some message types include "addressing information". If present, there is no need to specify the ``target_system`` 
+        id (just set to zero) as DroneKit will automatically update messages with the correct ID for the connected 
+        vehicle before sending. 
         The ``target_component`` should be set to 0 (broadcast) unless the message is to specific component. 
         CRC fields and sequence numbers (if defined in the message type) are automatically set by DroneKit and can also 
         be ignored/set to zero.
@@ -1893,11 +1915,9 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
         cmd = Command(0,0,0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0,-34.364114, 149.166022, 30)
 
-    :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network.
-        This can be set to any value (nominally 0) because it will be overridden by the 
-        vehicle's internal ``target_system`` (as set :py:func:`connect() <dronekit.lib.connect>`). By 
-        default this is the broadcast id.
-    :param target_component: The id of a component the message should be routed to within the target system
+    :param target_system: This can be set to any value 
+        (DroneKit changes the value to the MAVLink ID of the connected vehicle before the command is sent).
+    :param target_component: The component id if the message is intended for a particular component within the target system
         (for example, the camera). Set to zero (broadcast) in most cases.
     :param seq: The sequence number within the mission (the autopilot will reject messages sent out of sequence).
         This should be set to zero as the API will automatically set the correct value when uploading a mission.

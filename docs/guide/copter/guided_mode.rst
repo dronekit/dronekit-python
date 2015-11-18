@@ -199,11 +199,12 @@ message fields as arguments:
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
-There is no need to specify the ``target_system`` id in messages (just set to zero) as DroneKit will automatically 
-update messages with the vehicle's internal ``target_system`` (see :py:func:`connect() <dronekit.lib.connect>`) before sending. 
-The ``target_component`` should be set to 0 (broadcast) unless the message is to specific component. 
-CRC fields and sequence numbers (if defined in the message type) are automatically set by DroneKit and can also 
-be ignored/set to zero.
+If a message includes ``target_system`` id you can set it to zero (DroneKit will automatically 
+update the value with the correct ID for the connected vehicle). Similarly CRC fields and sequence numbers 
+(if defined in the message type) can be set to zero as they are automatically updated by DroneKit.
+The ``target_component`` is not updated by DroneKit, but should be set to 0 (broadcast) unless the message is 
+really intended for a specific component. 
+
 
 .. _guided_mode_how_to_send_commands_command_long:
 
