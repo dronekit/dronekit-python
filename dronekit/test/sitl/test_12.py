@@ -5,8 +5,10 @@ from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 def current_milli_time():
     return int(round(time.time() * 1000))
+
 
 @with_sitl
 def test_timeout(connpath):
@@ -25,6 +27,6 @@ def test_timeout(connpath):
 
     # Checks that time to set parameter was <1s
     # see https://github.com/dronekit/dronekit-python/issues/12
-    assert end - start < 1000, 'time to set parameter was %s, over 1s' % (end - start,)
+    assert end - start < 1000, 'time to set parameter was %s, over 1s' % (end - start, )
 
     v.close()

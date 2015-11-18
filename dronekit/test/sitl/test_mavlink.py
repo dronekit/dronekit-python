@@ -5,6 +5,7 @@ from dronekit.mavlink import MAVConnection
 from dronekit.test import with_sitl
 from nose.tools import assert_not_equals, assert_equals
 
+
 @with_sitl
 def test_mavlink(connpath):
     vehicle = connect(connpath)
@@ -15,9 +16,10 @@ def test_mavlink(connpath):
     vehicle2 = connect('udpout:localhost:15668')
 
     result = {'success': False}
+
     @vehicle2.on_attribute('location')
     def callback(*args):
-    	result['success'] = True
+        result['success'] = True
 
     i = 20
     while not result['success'] and i > 0:

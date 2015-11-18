@@ -6,6 +6,7 @@ from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 @with_sitl
 def test_timeout(connpath):
     # Connect with timeout of 10s.
@@ -21,6 +22,7 @@ def test_timeout(connpath):
     assert_equals(vehicle._handler._alive, False)
 
     vehicle.close()
+
 
 def test_timeout_empty():
     # Create a dummy server.

@@ -1,8 +1,7 @@
 #
 # This is a small example of the python drone API
 #
-from dronekit import connect
-from dronekit.lib import VehicleMode
+from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 import time
 from datetime import datetime

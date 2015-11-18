@@ -10,6 +10,7 @@ from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 # This test runs first!
 @with_sitl
 def test_parameter(connpath):
@@ -19,6 +20,7 @@ def test_parameter(connpath):
     assert_equals(type(v.parameters['THR_MIN']), float)
 
     v.close()
+
 
 # This test runs second. Add as many tests as you like
 @with_sitl

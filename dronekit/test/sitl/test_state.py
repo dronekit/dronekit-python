@@ -6,6 +6,7 @@ from dronekit import connect, VehicleMode, SystemStatus
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 @with_sitl
 def test_state(connpath):
     vehicle = connect(connpath, wait_ready=['system_status'])

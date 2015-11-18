@@ -5,6 +5,7 @@ from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 @with_sitl
 def test_115(connpath):
     v = connect(connpath, wait_ready=True)
@@ -12,6 +13,7 @@ def test_115(connpath):
     # Dummy callback
     def mavlink_callback(*args):
         mavlink_callback.count += 1
+
     mavlink_callback.count = 0
 
     # Set the callback.

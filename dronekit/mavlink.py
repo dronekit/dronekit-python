@@ -6,8 +6,8 @@ import os
 import platform
 import re
 import copy
-import dronekit.lib
-from dronekit.lib import APIException
+import dronekit
+from dronekit import APIException
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from Queue import Queue, Empty
@@ -33,10 +33,7 @@ class MAVWriter(object):
 
 
 class MAVConnection(object):
-    def __init__(self, ip,
-                 baud=115200,
-                 target_system=0,
-                 source_system=255):
+    def __init__(self, ip, baud=115200, target_system=0, source_system=255):
         self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
 
         # TODO get rid of "master" object as exposed,
@@ -49,9 +46,11 @@ class MAVConnection(object):
 
         # Monkey-patch MAVLink object for fix_targets.
         sendfn = self.master.mav.send
+
         def newsendfn(mavmsg):
             self.fix_targets(mavmsg)
             return sendfn(mavmsg)
+
         self.master.mav.send = newsendfn
 
         # Targets
@@ -91,8 +90,7 @@ class MAVConnection(object):
                         except socket.error as error:
                             # If connection reset (closed), stop polling.
                             if error.errno == ECONNABORTED:
-                                raise APIException(
-                                    'Connection aborting during read')
+                                raise APIException('Connection aborting during read')
                             raise
                         except Empty:
                             break
@@ -106,8 +104,7 @@ class MAVConnection(object):
                         except socket.error as error:
                             # If connection reset (closed), stop polling.
                             if error.errno == ECONNABORTED:
-                                raise APIException(
-                                    'Connection aborting during send')
+                                raise APIException('Connection aborting during send')
                             raise
                         except Exception as e:
                             # TODO this should be more rigorous. How to avoid
@@ -123,7 +120,8 @@ class MAVConnection(object):
                             try:
                                 fn(self, msg)
                             except Exception as e:
-                                errprinter('>>> Exception in message handler for %s' % msg.get_type())
+                                errprinter('>>> Exception in message handler for %s' %
+                                           msg.get_type())
                                 errprinter('>>> ' + str(e))
 
             except APIException as e:
@@ -201,4 +199,3 @@ class MAVConnection(object):
             self.out_queue.put(msg.pack(self.master.mav))
 
         return target
-

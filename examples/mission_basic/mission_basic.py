@@ -4,10 +4,9 @@ mission_basic.py: Example demonstrating basic mission operations including creat
 Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
 """
 
-from dronekit import connect
+from dronekit import connect, VehicleMode, LocationGlobal, Command
 import time
 import math
-from dronekit.lib import VehicleMode, LocationGlobal, Command
 from pymavlink import mavutil
 
 

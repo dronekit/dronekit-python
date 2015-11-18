@@ -5,14 +5,14 @@ MAVLink Messages
 ================
 
 Some useful MAVLink messages sent by the autopilot are not (yet) directly available to DroneKit-Python scripts
-through the :ref:`observable attributes <vehicle_state_observe_attributes>` in :py:class:`Vehicle <dronekit.lib.Vehicle>`.
+through the :ref:`observable attributes <vehicle_state_observe_attributes>` in :py:class:`Vehicle <dronekit.Vehicle>`.
 
 This topic shows how you can intercept specific MAVLink messages by defining a listener callback function 
-using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator.
+using the :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` decorator.
 
 .. tip::
 
-    :ref:`example_create_attribute` shows how you can extend this approach to create a new :py:class:`Vehicle <dronekit.lib.Vehicle>`
+    :ref:`example_create_attribute` shows how you can extend this approach to create a new :py:class:`Vehicle <dronekit.Vehicle>`
     attribute in your client code.
 
 
@@ -22,7 +22,7 @@ using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` deco
 Creating a message listener
 ===========================
 
-The :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator can be used to 
+The :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` decorator can be used to 
 set a particular function as the callback handler for a particular message type. You can create listeners 
 for as many messages as you like, or even multiple listeners for the same message. 
 
@@ -79,9 +79,9 @@ You can register a callback for *all messages* by setting the message name as th
 Removing an observer
 ====================
 
-Callbacks registered using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator *cannot be removed*. 
+Callbacks registered using the :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` decorator *cannot be removed*. 
 This is generally not a problem, because in most cases you're interested in messages for the lifetime of a session.
 
 If you do need to be able to remove messages you can instead add the callback using 
-:py:func:`Vehicle.add_message_listener <dronekit.lib.Vehicle.add_message_listener>`, and then remove it by calling 
-:py:func:`Vehicle.remove_message_listener <dronekit.lib.Vehicle.remove_message_listener>`.
+:py:func:`Vehicle.add_message_listener <dronekit.Vehicle.add_message_listener>`, and then remove it by calling 
+:py:func:`Vehicle.remove_message_listener <dronekit.Vehicle.remove_message_listener>`.

@@ -26,7 +26,7 @@ install the CherryPy dependencies and view the behaviour in a web browser.
     
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run. You can also `add a virtual rangefinder <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
-(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
+(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance
 and voltage). 
 
 In summary, after cloning the repository:

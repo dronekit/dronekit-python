@@ -54,8 +54,8 @@ Connecting to a vehicle
 
 You must specify the target vehicle address in your script (in DKPY 1.x this was done when you launched MAVProxy).
 
-The code fragment below shows how you import the :py:func:`connect() <dronekit.lib.connect>` method and use it to return a 
-connected :py:class:`Vehicle <dronekit.lib.Vehicle>` object. The address string passed to ``connect()`` takes the same 
+The code fragment below shows how you import the :py:func:`connect() <dronekit.connect>` method and use it to return a 
+connected :py:class:`Vehicle <dronekit.Vehicle>` object. The address string passed to ``connect()`` takes the same 
 values as were passed to *MAVProxy* when setting up a connection in DKPY 1.x (in this case, a SITL instance running on the same computer). 
 
 .. code:: python
@@ -68,11 +68,11 @@ values as were passed to *MAVProxy* when setting up a connection in DKPY 1.x (in
 .. note::
 
     The ``wait_ready=True`` parameter ensures that ``connect()`` won't return until 
-    :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` and most other default attributes have been 
-    populated with values from the vehicle. Check out :py:func:`Vehicle.wait_ready() <dronekit.lib.Vehicle.wait_ready>` for more
+    :py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>` and most other default attributes have been 
+    populated with values from the vehicle. Check out :py:func:`Vehicle.wait_ready() <dronekit.Vehicle.wait_ready>` for more
     information (this method is used by the ``connect()`` implementation).
 
-    :py:func:`connect() <dronekit.lib.connect>` also has arguments for setting the baud rate,
+    :py:func:`connect() <dronekit.connect>` also has arguments for setting the baud rate,
     returning your own :ref:`custom vehicle classes <example_create_attribute>` and setting the length of the connection timeout.
  
 
@@ -117,7 +117,7 @@ Remove code that checks the ``api.exit`` status (note that the ``api.exit`` call
 Script completion checks
 ------------------------
 
-Examples that might possibly have outstanding messages should call :py:func:`Vehicle.close() <dronekit.lib.Vehicle.close>` 
+Examples that might possibly have outstanding messages should call :py:func:`Vehicle.close() <dronekit.Vehicle.close>` 
 before exiting to ensure that all messages have flushed before the script completes:
 
 .. code:: python
@@ -184,10 +184,10 @@ global, global-relative and local (NED) frames:
     print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
     print "Local Location: %s" % vehicle.location.local_frame
 
-For more information see: :py:attr:`Vehicle.location <dronekit.lib.Vehicle.location>`, 
-:py:attr:`Vehicle.location.global_frame <dronekit.lib.Locations.global_frame>`, 
-:py:attr:`Vehicle.location.global_relative_frame <dronekit.lib.Locations.global_relative_frame>`, 
-:py:attr:`Vehicle.location.local_frame <dronekit.lib.Locations.local_frame>`,  and :ref:`vehicle-information`.
+For more information see: :py:attr:`Vehicle.location <dronekit.Vehicle.location>`, 
+:py:attr:`Vehicle.location.global_frame <dronekit.Locations.global_frame>`, 
+:py:attr:`Vehicle.location.global_relative_frame <dronekit.Locations.global_relative_frame>`, 
+:py:attr:`Vehicle.location.local_frame <dronekit.Locations.local_frame>`,  and :ref:`vehicle-information`.
    
     
 .. _migrating_dkpy2_0_home_location:
@@ -195,14 +195,14 @@ For more information see: :py:attr:`Vehicle.location <dronekit.lib.Vehicle.locat
 Home location
 -------------
 
-DroneKit-Python 1.x code retrieved the home location from the first element in :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`.
-This code must be replaced with the DroneKit-Python 2.x :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` attribute.
+DroneKit-Python 1.x code retrieved the home location from the first element in :py:attr:`Vehicle.commands <dronekit.Vehicle.commands>`.
+This code must be replaced with the DroneKit-Python 2.x :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` attribute.
 
 .. tip::
 
-    Even though the home location is no longer returned as the first waypoint in :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`,
+    Even though the home location is no longer returned as the first waypoint in :py:attr:`Vehicle.commands <dronekit.Vehicle.commands>`,
     you will still need to download the commands in order to populate the value of 
-    :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`. 
+    :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>`. 
 
 
 Missions and Waypoints
@@ -210,10 +210,10 @@ Missions and Waypoints
 
 The API for working with missions has been improved and made significantly more robust.
 
-One of the major changes is that the :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>` list no 
+One of the major changes is that the :py:attr:`Vehicle.commands <dronekit.Vehicle.commands>` list no 
 longer includes the :ref:`home location <migrating_dkpy2_0_home_location>` waypoint in the 0th
 index. Another change is that we now wait for command download to complete using 
-:py:attr:`Vehicle.commands.wait_ready() <dronekit.lib.CommandSequence.wait_ready>`.
+:py:attr:`Vehicle.commands.wait_ready() <dronekit.CommandSequence.wait_ready>`.
 
 All the known bugs have been fixed. It is now much easier to download, clear, and add items to the mission
 because there is no need to work around race conditions and other issues with the API.
@@ -225,9 +225,9 @@ Observing attribute changes
 ---------------------------
 
 The DroneKit-Python 1.x observer function ``vehicle.add_attribute_observer`` has been replaced by 
-:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` or 
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` in DKYP2.x,  and ``Vehicle.remove_attribute_observer`` 
-has been repaced by :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`.
+:py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>` or 
+:py:func:`Vehicle.on_attribute() <dronekit.Vehicle.on_attribute>` in DKYP2.x,  and ``Vehicle.remove_attribute_observer`` 
+has been repaced by :py:func:`remove_attribute_listener() <dronekit.Vehicle.remove_attribute_listener>`.
 
 The main difference is that the callback function now takes three arguments (the vehicle object, attribute name, attribute value)
 rather than just the attribute name. This allows you to more easily write callbacks that support attribute-specific and 
@@ -236,15 +236,15 @@ the vehicle.
 
 .. note::
 
-    The difference between :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` and 
-    :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` is that attribute listeners added using
-    :py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` cannot be removed (while ``on_attribute()`` 
+    The difference between :py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>` and 
+    :py:func:`Vehicle.on_attribute() <dronekit.Vehicle.on_attribute>` is that attribute listeners added using
+    :py:func:`Vehicle.on_attribute() <dronekit.Vehicle.on_attribute>` cannot be removed (while ``on_attribute()`` 
     has a more elegant syntax).
 
 A few attributes have been modified so that they only notify when the value changes: 
-:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
-:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`, and
-:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`. Users no longer need to add caching code 
+:py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`,
+:py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`, and
+:py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`. Users no longer need to add caching code 
 for these attributes in their listeners.
 Attributes that provide "streams" of information (i.e. sensor output) remain unchanged. 
 
@@ -252,7 +252,7 @@ Attributes that provide "streams" of information (i.e. sensor output) remain unc
 
     If you're :ref:`creating your own attributes <example_create_attribute>` this caching is trivially 
     provided using the ``cache=True`` argument to 
-    :py:func:`Vehicle.notify_attribute_listeners() <dronekit.lib.Vehicle.notify_attribute_listeners>`.
+    :py:func:`Vehicle.notify_attribute_listeners() <dronekit.Vehicle.notify_attribute_listeners>`.
 
 See :ref:`vehicle_state_observe_attributes` for more information.
 
@@ -262,7 +262,7 @@ Parameter changes
 
 In DKPY2 you can now :ref:`observe <vehicle_state_observing_parameters>` parameters in order to
 be notified of changes, and also :ref:`iterate <vehicle_state_iterating_parameters>` 
-:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` to get a list of off the supported
+:py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>` to get a list of off the supported
 values in the connected vehicle.
 
 In addition, the code to download parameters and keep information in sync with the vehicle 
@@ -278,18 +278,18 @@ Intercepting MAVLink Messages
 DroneKit-Python 1.x used ``Vehicle.set_mavlink_callback()`` and ``Vehicle.unset_mavlink_callback``
 to set/unset a callback function that was invoked for every single mavlink message.
 
-In DKPY2 this has been replaced by the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
+In DKPY2 this has been replaced by the :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` 
 decorator, which allows you to specify a callback function that will be invoked for a single message 
 (or all messages, by specifying the message name as the wildcard string '``*``').
 
 .. tip::
 
-    :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` is used in core DroneKit code for 
+    :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` is used in core DroneKit code for 
     message capture and to create ``Vehicle`` attributes.
 
-    The API also adds :py:func:`Vehicle.add_message_listener() <dronekit.lib.Vehicle.add_message_listener>`
-    and :py:func:`Vehicle.remove_message_listener() <dronekit.lib.Vehicle.remove_message_listener>`. 
-    These can be used instead of :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` when you need to be
+    The API also adds :py:func:`Vehicle.add_message_listener() <dronekit.Vehicle.add_message_listener>`
+    and :py:func:`Vehicle.remove_message_listener() <dronekit.Vehicle.remove_message_listener>`. 
+    These can be used instead of :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` when you need to be
     able to *remove* an added listener. Typically you won't need to!
 
 See :ref:`mavlink_messages` for more information.
@@ -300,12 +300,12 @@ New attributes
 
 In addition to the :ref:`home_location <migrating_dkpy2_0_home_location>`, 
 a few more attributes have been added, including:
-:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`, 
-:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`, 
-:py:func:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`, 
-:py:func:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`, 
-:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`,
-:py:func:`Vehicle.last_heartbeat <dronekit.lib.Vehicle.last_heartbeat>`.
+:py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`, 
+:py:func:`Vehicle.heading <dronekit.Vehicle.heading>`, 
+:py:func:`Vehicle.mount_status <dronekit.Vehicle.mount_status>`, 
+:py:func:`Vehicle.ekf_ok <dronekit.Vehicle.ekf_ok>`, 
+:py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`,
+:py:func:`Vehicle.last_heartbeat <dronekit.Vehicle.last_heartbeat>`.
 
 
 Channel Overrides
@@ -317,10 +317,10 @@ Channel Overrides
     simulating user input and when implementing certain types of joystick control).
 
 DKPY v2 replaces the ``vehicle.channel_readback`` attribute with
-:py:attr:`Vehicle.channels <dronekit.lib.Vehicle.channels>` (and the :py:class:`Channels <dronekit.lib.Channels>`
+:py:attr:`Vehicle.channels <dronekit.Vehicle.channels>` (and the :py:class:`Channels <dronekit.Channels>`
 class) and the ``vehicle.channel_override`` attribute with 
-:py:attr:`Vehicle.channels.overrides <dronekit.lib.Channels.overrides>` 
-(and the :py:class:`ChannelsOverrides <dronekit.lib.ChannelsOverrides>` class). 
+:py:attr:`Vehicle.channels.overrides <dronekit.Channels.overrides>` 
+(and the :py:class:`ChannelsOverrides <dronekit.ChannelsOverrides>` class). 
 
 Documentation and example code for how to use the new API are provided in :ref:`example_channel_overrides`.
 

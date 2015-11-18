@@ -1,10 +1,9 @@
-from dronekit import connect
-from dronekit.lib import VehicleMode
 from pymavlink import mavutil
 import time
 from dronekit import connect, VehicleMode, LocationGlobal
 from dronekit.test import with_sitl
 from nose.tools import assert_equals, assert_not_equals
+
 
 def assert_readback(vehicle, values):
     i = 10
@@ -17,6 +16,7 @@ def assert_readback(vehicle, values):
         break
     if i <= 0:
         raise Exception('Did not match in channels readback %s' % values)
+
 
 @with_sitl
 def test_timeout(connpath):
@@ -44,7 +44,7 @@ def test_timeout(connpath):
     assert_equals(type(vehicle.channels[6]), int)
     assert_equals(type(vehicle.channels[7]), int)
     assert_equals(type(vehicle.channels[8]), int)
-    
+
     vehicle.channels.overrides = {'1': 1010}
     assert_readback(vehicle, {'1': 1010})
 
@@ -63,7 +63,7 @@ def test_timeout(connpath):
     vehicle.channels.overrides['1'] = None
     assert_readback(vehicle, {'1': 1500, '2': 1500})
 
-    #test 
+    #test
     try:
         vehicle.channels['9']
         assert False, "Can read over end of channels"
@@ -95,27 +95,27 @@ def test_timeout(connpath):
     assert_readback(vehicle, {'1': 1500, '2': 1010})
 
     # Set Ch3,4,5,6,7 to 300,400-700 respectively
-    vehicle.channels.overrides = {'3': 300, '4':400, '5':500,'6':600,'7':700}
-    assert_readback(vehicle, {'3': 300, '4':400, '5':500,'6':600,'7':700})
+    vehicle.channels.overrides = {'3': 300, '4': 400, '5': 500, '6': 600, '7': 700}
+    assert_readback(vehicle, {'3': 300, '4': 400, '5': 500, '6': 600, '7': 700})
 
     # Set Ch8 to 800 using braces
     vehicle.channels.overrides = {'8': 800}
-    assert_readback(vehicle, {'8':800})
+    assert_readback(vehicle, {'8': 800})
 
     # Set Ch8 to 800 using brackets
     vehicle.channels.overrides['8'] = 810
-    assert_readback(vehicle, {'8':810})
+    assert_readback(vehicle, {'8': 810})
 
-    try:    
+    try:
         # Try to write channel 9 override to a value with brackets
-        vehicle.channels.overrides['9']=900
+        vehicle.channels.overrides['9'] = 900
         assert False, "can write channels.overrides 9"
     except:
         pass
 
-    try:    
+    try:
         # Try to write channel 9 override to a value with braces
-        vehicle.channels.overrides={'9': 900}
+        vehicle.channels.overrides = {'9': 900}
         assert False, "can write channels.overrides 9 with braces"
     except:
         pass
@@ -133,16 +133,18 @@ def test_timeout(connpath):
     assert_equals(len(vehicle.channels.overrides.keys()), 0)
 
     # Set Ch2 to 33, clear channel 6
-    vehicle.channels.overrides = {'2': 33, '6':None}
-    assert_readback(vehicle, {'2':33, '6': 1500})
+    vehicle.channels.overrides = {'2': 33, '6': None}
+    assert_readback(vehicle, {'2': 33, '6': 1500})
     assert_equals(vehicle.channels.overrides.keys(), ['2'])
 
     # Callbacks
     result = {'success': False}
     vehicle.channels.overrides = {}
+
     def channels_callback(vehicle, name, channels):
         if channels['3'] == 55:
             result['success'] = True
+
     vehicle.add_attribute_listener('channels', channels_callback)
     vehicle.channels.overrides = {'3': 55}
 

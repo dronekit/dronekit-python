@@ -6,6 +6,7 @@ from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl
 from nose.tools import assert_equals, assert_not_equals
 
+
 @with_sitl
 def test_battery_none(connpath):
     vehicle = connect(connpath, _initialize=False)

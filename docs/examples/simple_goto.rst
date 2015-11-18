@@ -5,8 +5,8 @@ Example: Simple Go To (Copter)
 ==============================
 
 This example demonstrates how to arm and launch a Copter in GUIDED mode, travel towards a number of target points, and then return 
-to the home location. It uses :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`, 
-:py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` and :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
+to the home location. It uses :py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>`, 
+:py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>` and :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`.
 
 The target locations are centred around the home location when the :ref:`Simulated Vehicle <vagrant-sitl-from-full-image>` is booted; 
 you can edit the latitude and longitude to use more appropriate positions for your own vehicle. 
@@ -100,7 +100,7 @@ On the command prompt you should see (something like):
 
 .. tip::
 
-    The code waits on :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`, so you shouldn't get stuck in ``Waiting for arming...``.
+    The code waits on :py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`, so you shouldn't get stuck in ``Waiting for arming...``.
     If you do, then:
     
     * On a real device you can view the controller LEDs to determine possible causes. 
@@ -120,9 +120,9 @@ The code has three distinct sections: arming and takeoff, flight to two location
 Takeoff
 -------
 
-To launch *Copter* you need to first check that the vehicle :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`. 
+To launch *Copter* you need to first check that the vehicle :py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`. 
 Then set the mode to ``GUIDED``, arm the vehicle, and call 
-:py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`. The takeoff code in this example
+:py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>`. The takeoff code in this example
 is explained in the guide topic :ref:`taking-off`.
 
 
@@ -130,7 +130,7 @@ Flying to a point - Goto
 ------------------------
 
 The vehicle is already in ``GUIDED`` mode, so to send it to a certain point we just need to 
-call :py:func:`Vehicle.commands.goto() <dronekit.lib.CommandSequence.goto>` with the target ``LocationGlobal``:
+call :py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>` with the target ``LocationGlobal``:
 
 .. code-block:: python
 

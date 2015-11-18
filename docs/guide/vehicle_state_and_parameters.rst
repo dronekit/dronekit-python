@@ -4,9 +4,9 @@
 Vehicle State and Settings
 ===========================
 
-The :py:class:`Vehicle <dronekit.lib.Vehicle>` class exposes *most* state information (position, speed, etc.) through python 
+The :py:class:`Vehicle <dronekit.Vehicle>` class exposes *most* state information (position, speed, etc.) through python 
 :ref:`attributes <vehicle_state_attributes>`, while vehicle :ref:`parameters <vehicle_state_parameters>` (settings) 
-are accessed though named elements of :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>`. 
+are accessed though named elements of :py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>`. 
 
 This topic explains how to get, set and observe vehicle state and parameter information (including getting the 
 :ref:`Home location <vehicle_state_home_location>`).
@@ -21,38 +21,38 @@ Attributes
 
 Vehicle state information is exposed through vehicle *attributes*. DroneKit-Python currently supports the following 
 "standard" attributes: 
-:py:attr:`Vehicle.location.global_frame <dronekit.lib.Locations.global_frame>`, 
-:py:attr:`Vehicle.location.global_relative_frame <dronekit.lib.Locations.global_relative_frame>`, 
-:py:attr:`Vehicle.location.local_frame <dronekit.lib.Locations.local_frame>`, 
-:py:attr:`Vehicle.attitude <dronekit.lib.Vehicle.attitude>`,
-:py:attr:`Vehicle.velocity <dronekit.lib.Vehicle.velocity>`,
-:py:attr:`Vehicle.airspeed <dronekit.lib.Vehicle.airspeed>`,
-:py:attr:`Vehicle.groundspeed <dronekit.lib.Vehicle.groundspeed>`,
-:py:attr:`Vehicle.gps_0 <dronekit.lib.Vehicle.gps_0>`,
-:py:attr:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`,
-:py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
-:py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
-:py:attr:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`,
-:py:attr:`Vehicle.last_heartbeat <dronekit.lib.Vehicle.last_heartbeat>`,
-:py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
-:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
-:py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
-:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`,
-:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`,
-:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`.
+:py:attr:`Vehicle.location.global_frame <dronekit.Locations.global_frame>`, 
+:py:attr:`Vehicle.location.global_relative_frame <dronekit.Locations.global_relative_frame>`, 
+:py:attr:`Vehicle.location.local_frame <dronekit.Locations.local_frame>`, 
+:py:attr:`Vehicle.attitude <dronekit.Vehicle.attitude>`,
+:py:attr:`Vehicle.velocity <dronekit.Vehicle.velocity>`,
+:py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`,
+:py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`,
+:py:attr:`Vehicle.gps_0 <dronekit.Vehicle.gps_0>`,
+:py:attr:`Vehicle.mount_status <dronekit.Vehicle.mount_status>`,
+:py:attr:`Vehicle.battery <dronekit.Vehicle.battery>`,
+:py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>`,
+:py:attr:`Vehicle.ekf_ok <dronekit.Vehicle.ekf_ok>`,
+:py:attr:`Vehicle.last_heartbeat <dronekit.Vehicle.last_heartbeat>`,
+:py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>`,
+:py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`,
+:py:func:`Vehicle.heading <dronekit.Vehicle.heading>`,
+:py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`,
+:py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`,
+:py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`.
 
 Attributes are initially created with ``None`` values for their members. In most cases the members are populated 
 (and repopulated) as new MAVLink messages of the associated types are received from the vehicle. 
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>`, 
-but only the :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`, 
-:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and 
-:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
+but only the :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>`, 
+:py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` and 
+:py:attr:`Vehicle.armed <dronekit.Vehicle.armed>` 
 status can be :ref:`written <vehicle_state_set_attributes>`.
 
 Almost all of the attributes can be :ref:`observed <vehicle_state_observe_attributes>`.
 
-The behaviour of :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` is different 
+The behaviour of :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` is different 
 from the other attributes, and is :ref:`discussed in its own section below <vehicle_state_home_location>`.
 
 .. _vehicle_state_read_attributes:
@@ -91,8 +91,8 @@ regularly updated from MAVLink messages sent by the vehicle).
 .. note::
 
     A value of ``None`` for an attribute member indicates that the value has not yet been populated from the vehicle.
-    For example, before GPS lock :py:attr:`Vehicle.gps_0 <dronekit.lib.Vehicle.gps_0>` will return a 
-    :py:class:`GPSInfo <dronekit.lib.GPSInfo>` with ``None`` values for ``eph``, ``satellites_visible`` etc.
+    For example, before GPS lock :py:attr:`Vehicle.gps_0 <dronekit.Vehicle.gps_0>` will return a 
+    :py:class:`GPSInfo <dronekit.GPSInfo>` with ``None`` values for ``eph``, ``satellites_visible`` etc.
     Attributes will also return  ``None`` if the associated hardware is not present on the connected device. 
 
 
@@ -112,7 +112,7 @@ regularly updated from MAVLink messages sent by the vehicle).
 Setting attributes
 ------------------
 
-Only the :py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>` 
+Only the :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>` 
 attributes can be written (``Vehicle.home_location`` is a special case, as :ref:`discussed below <vehicle_state_home_location>`).
 
 The attributes are set by assigning a value:
@@ -155,14 +155,14 @@ You can observe any of the vehicle attributes and monitor for changes without th
 Listeners ("observer callback functions") are invoked differently based on the *type of observed attribute*. Attributes that represent sensor values or other
 "streams of information" are updated whenever a message is received from the vehicle. Attributes which reflect vehicle
 "state" are only updated when their values change (for example 
-:py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
-:py:attr:`Vehicle.armed <dronekit.lib.Vehicle.armed>`, and
-:py:attr:`Vehicle.mode <dronekit.lib.Vehicle.mode>`).
+:py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`,
+:py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`, and
+:py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`).
 
-Callbacks are added using :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` or the
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator method. The main difference between these methods
-is that only attribute callbacks added with :py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>` 
-can be removed (see :py:func:`remove_attribute_listener() <dronekit.lib.Vehicle.remove_attribute_listener>`). 
+Callbacks are added using :py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>` or the
+:py:func:`Vehicle.on_attribute() <dronekit.Vehicle.on_attribute>` decorator method. The main difference between these methods
+is that only attribute callbacks added with :py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>` 
+can be removed (see :py:func:`remove_attribute_listener() <dronekit.Vehicle.remove_attribute_listener>`). 
 
 The ``observer`` callback function is invoked with the following arguments:
         
@@ -173,8 +173,8 @@ The ``observer`` callback function is invoked with the following arguments:
 * ``value`` - the attribute value (so you don't need to re-query the vehicle object).
 
 The code snippet below shows how to add (and remove) a callback function to observe changes
-in :py:attr:`Vehicle.location.global_frame <dronekit.lib.Locations.global_frame>` using 
-:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`. 
+in :py:attr:`Vehicle.location.global_frame <dronekit.Locations.global_frame>` using 
+:py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>`. 
 The two second ``sleep()`` is required because otherwise the observer might be removed before the the 
 callback is first run.
 
@@ -209,7 +209,7 @@ callback is first run.
 
     
 The example below shows how you can declare an attribute callback using the 
-:py:func:`Vehicle.on_attribute() <dronekit.lib.Vehicle.on_attribute>` decorator function.
+:py:func:`Vehicle.on_attribute() <dronekit.Vehicle.on_attribute>` decorator function.
 
 
 .. code-block:: python
@@ -229,7 +229,7 @@ The example below shows how you can declare an attribute callback using the
 .. note::
 
     The fragment above stores the result of the previous callback and only prints the output when there is a 
-    signficant change in :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`. You might want to
+    signficant change in :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>`. You might want to
     perform caching like this to ignore updates that are not significant to your code.
         
 The examples above show how you can monitor a single attribute. You can pass the special name ('``*``') to specify a 
@@ -263,10 +263,10 @@ The *Home location* is set when a vehicle first gets a good location fix from th
 as the target when the vehicle does a "return to launch". In Copter missions (and often Plane) missions, the altitude of 
 waypoints is set relative to this position.
 
-:py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` has the following behaviour:
+:py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` has the following behaviour:
 
-* In order to *get* the current value (in a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object) you must first download 
-  :py:attr:`Vehicle.commands <dronekit.lib.Vehicle.commands>`, as shown:
+* In order to *get* the current value (in a :py:class:`LocationGlobal <dronekit.LocationGlobal>` object) you must first download 
+  :py:attr:`Vehicle.commands <dronekit.Vehicle.commands>`, as shown:
 
   .. code:: python
     
@@ -291,7 +291,7 @@ waypoints is set relative to this position.
       # We have a home location.     
       print "\n Home location: %s" % vehicle.home_location
 
-* The attribute can be *set* to a :py:class:`LocationGlobal <dronekit.lib.LocationGlobal>` object 
+* The attribute can be *set* to a :py:class:`LocationGlobal <dronekit.LocationGlobal>` object 
   (the code fragment below sets it to the current location):
 
   .. code:: python
@@ -311,7 +311,7 @@ waypoints is set relative to this position.
  
 .. note::
 
-    :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>` behaves this way because
+    :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` behaves this way because
     ArduPilot implements/stores the home location as a waypoint rather than sending them as messages. 
     While DroneKit-Python hides this fact from you when working with commands, to access the value
     you still need to download the commands.
@@ -338,8 +338,8 @@ until the download completes), and subsequently keeps the values updated by moni
 for changes to individual parameters. This process ensures that it is always safe to read supported parameters, 
 and that their values will match the information on the vehicle.
 
-Parameters can be read, set, observed and iterated using the :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` 
-attribute (a :py:class:`Parameters <dronekit.lib.Parameters>` object).
+Parameters can be read, set, observed and iterated using the :py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>` 
+attribute (a :py:class:`Parameters <dronekit.Parameters>` object).
 
 
 Getting parameters
@@ -374,7 +374,7 @@ Vehicle parameters are set as shown in the code fragment below, using the parame
 Listing all parameters
 ----------------------
 
-:py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` can be iterated to list all parameters and their values:
+:py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>` can be iterated to list all parameters and their values:
 
 .. code:: python
 
@@ -417,8 +417,8 @@ The ``observer`` callback function is invoked with the following arguments:
 
 The code snippet below demonstrates how you can add and remove a listener (in this case
 for "any parameter") using the 
-:py:func:`Parameters.add_attribute_listener() <dronekit.lib.Parameters.add_attribute_listener>` and 
-:py:func:`Parameters.remove_attribute_listener() <dronekit.lib.Parameters.remove_attribute_listener>`.
+:py:func:`Parameters.add_attribute_listener() <dronekit.Parameters.add_attribute_listener>` and 
+:py:func:`Parameters.remove_attribute_listener() <dronekit.Parameters.remove_attribute_listener>`.
 
 .. code-block:: python
 
