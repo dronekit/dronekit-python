@@ -25,8 +25,8 @@ LocationGlobal = dronekit.lib.LocationGlobal
 LocationLocal = dronekit.lib.LocationLocal
 CloudClient = dronekit.lib.CloudClient
 
-def connect(ip, _initialize=True, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30, target_system=0):
-    handler = MAVConnection(ip, baud=baud, target_system=target_system)
+def connect(ip, _initialize=True, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30, source_system=255):
+    handler = MAVConnection(ip, baud=baud, source_system=source_system)
     vehicle = vehicle_class(handler)
 
     if status_printer:

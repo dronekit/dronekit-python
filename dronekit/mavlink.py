@@ -5,6 +5,7 @@ import sys
 import os
 import platform
 import re
+import copy
 import dronekit.lib
 from dronekit.lib import APIException
 from dronekit.util import errprinter
@@ -34,8 +35,9 @@ class MAVWriter(object):
 class MAVConnection(object):
     def __init__(self, ip,
                  baud=115200,
-                 target_system=0):
-        self.master = mavutil.mavlink_connection(ip, baud=baud)
+                 target_system=0,
+                 source_system=255):
+        self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
 
         # TODO get rid of "master" object as exposed,
         # keep it private, expose something smaller for dronekit
@@ -44,6 +46,13 @@ class MAVConnection(object):
             MAVWriter(self.out_queue),
             srcSystem=self.master.source_system,
             use_native=False)
+
+        # Monkey-patch MAVLink object for fix_targets.
+        sendfn = self.master.mav.send
+        def newsendfn(mavmsg):
+            self.fix_targets(mavmsg)
+            return sendfn(mavmsg)
+        self.master.mav.send = newsendfn
 
         # Targets
         self.target_system = target_system
@@ -78,7 +87,6 @@ class MAVConnection(object):
                     while True:
                         try:
                             msg = self.out_queue.get_nowait()
-                            self.fix_targets(msg)
                             self.master.write(msg)
                         except socket.error as error:
                             # If connection reset (closed), stop polling.
@@ -178,12 +186,18 @@ class MAVConnection(object):
         self.master.close()
 
     def pipe(self, target):
-        @self.forward_message
-        def callback(self, msg):
-            target.out_queue.put(msg.pack(self.master.mav))
+        target.target_system = self.target_system
 
+        # vehicle -> self -> target
+        @self.forward_message
+        def callback(_, msg):
+            target.out_queue.put(msg.pack(target.master.mav))
+
+        # target -> self -> vehicle
         @target.forward_message
-        def callback(self, msg):
+        def callback(_, msg):
+            msg = copy.copy(msg)
+            target.fix_targets(msg)
             self.out_queue.put(msg.pack(self.master.mav))
 
         return target

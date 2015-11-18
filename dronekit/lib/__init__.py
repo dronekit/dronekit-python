@@ -1102,6 +1102,7 @@ class Vehicle(HasObservers):
 
         self._heartbeat_warning = 5
         self._heartbeat_error = 30
+        self._heartbeat_system = None
 
         @handler.forward_loop
         def listener(_):
@@ -1121,6 +1122,7 @@ class Vehicle(HasObservers):
 
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
+            self._heartbeat_system = msg.get_srcSystem()
             self._heartbeat_lastreceived = time.time()
             if self._heartbeat_timeout:
                 errprinter('>>> ...link restored.')
@@ -1613,6 +1615,9 @@ class Vehicle(HasObservers):
                 break
         if not self._handler._alive:
             raise APIException('Timeout in initializing connection.')
+
+        # Register target_system now.
+        self._handler.target_system = self._heartbeat_system
 
         # Wait until board has booted.
         while True:
