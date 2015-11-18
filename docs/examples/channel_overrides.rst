@@ -110,7 +110,7 @@ In general a value of 0 set for a specific ``RCn_FUNCTION`` indicates that the c
 `mission controlled <http://plane.ardupilot.com/wiki/flight-features/channel-output-functions/#disabled>`_ (i.e. it will not directly be 
 controlled by normal autopilot code).
 
-You can read the values of the channels using the :py:attr:`Vehicle.channels <dronekit.lib.Vehicle.channels>` attribute. The values are regularly updated,
+You can read the values of the channels using the :py:attr:`Vehicle.channels <dronekit.Vehicle.channels>` attribute. The values are regularly updated,
 from the UAV, based on the RC inputs from the transmitter. These can be read either as a set or individually:
 
 .. code:: python
@@ -123,7 +123,7 @@ from the UAV, based on the RC inputs from the transmitter. These can be read eit
     print " Ch1: %s" % vehicle.channels['1']
     print " Ch2: %s" % vehicle.channels['2']
 
-You can override the values sent to the vehicle by the autopilot using :py:attr:`Vehicle.channels.overrides <dronekit.lib.Channels.overrides>`
+You can override the values sent to the vehicle by the autopilot using :py:attr:`Vehicle.channels.overrides <dronekit.Channels.overrides>`
 (although this is not recommended)!  The overrides can be written individually using an indexing syntax or as a set using a dictionary syntax.
 
 .. code:: python

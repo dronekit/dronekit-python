@@ -6,8 +6,8 @@ import os
 import platform
 import re
 import copy
-import dronekit.lib
-from dronekit.lib import APIException
+import dronekit
+from dronekit import APIException
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from Queue import Queue, Empty

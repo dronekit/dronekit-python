@@ -105,7 +105,7 @@ Connecting to a Vehicle
 =======================
 
 The connection to the vehicle is set up within the DroneKit script. Scripts import and call the :py:func:`connect()` method. 
-After connecting this returns a :py:class:`Vehicle <dronekit.lib.Vehicle>` object from which you can get/set parameters 
+After connecting this returns a :py:class:`Vehicle <dronekit.Vehicle>` object from which you can get/set parameters 
 and attributes, and control vehicle movement.
 
 .. code:: python
@@ -118,7 +118,7 @@ and attributes, and control vehicle movement.
 .. note:: 
 
     Calling ``connect()`` with ``wait_ready=True`` (as shown above) ensures that the method will not return until 
-    :py:attr:`Vehicle.parameters <dronekit.lib.Vehicle.parameters>` is fully populated with values from the vehicle. 
+    :py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>` is fully populated with values from the vehicle. 
     Vehicle *attributes* are populated in parallel but are not guaranteed to have values when ``connect()`` completes 
     (an attribute will have value ``None`` if a corresponding MAVLink message has not been received - for example, 
     if the attribute is not supported by the vehicle).

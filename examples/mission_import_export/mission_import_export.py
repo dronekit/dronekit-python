@@ -9,8 +9,7 @@ Documentation is provided at http://python.dronekit.io/examples/mission_import_e
 """
 
 
-from dronekit import connect
-from dronekit.lib import Command
+from dronekit import connect, Command
 
 
 #Set up option parsing to get connection string

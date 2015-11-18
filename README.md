@@ -25,8 +25,7 @@ The [Getting Started](http://python.dronekit.io/guide/getting_started.html) guid
 A basic script looks like this:
 
 ```python
-from dronekit import connect
-from dronekit.lib import VehicleMode
+from dronekit import connect, VehicleMode
 
 # Connect to UDP endpoint.
 vehicle = connect('127.0.0.1:14550', wait_ready=True)

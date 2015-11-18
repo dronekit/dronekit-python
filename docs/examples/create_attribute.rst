@@ -4,23 +4,23 @@
 Example: Create Attribute in App
 ================================
 
-This example shows how you can subclass :py:class:`Vehicle <dronekit.lib.Vehicle>` in order to support 
+This example shows how you can subclass :py:class:`Vehicle <dronekit.Vehicle>` in order to support 
 new attributes for MAVLink messages within your DroneKit-Python script. The new class is defined in a 
 separate file (making re-use easy) and is very similar to the code used to implement the in-built attributes. 
 The new attributes are used *in the same way* as the built-in 
-:py:class:`Vehicle <dronekit.lib.Vehicle>` attributes.
+:py:class:`Vehicle <dronekit.Vehicle>` attributes.
 
-The new class uses the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` decorator
+The new class uses the :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` decorator
 to set a function that is called to process a specific message, copy its values into an attribute, and notify
 observers. An observer is then set on the new attribute using 
-:py:func:`Vehicle.add_attribute_listener() <dronekit.lib.Vehicle.add_attribute_listener>`.
+:py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>`.
 
 Additional information is provided in the guide topic :ref:`mavlink_messages`.
 
 .. tip::
     
     This approach is useful when you urgently need to access messages that are not yet supported as 
-    :py:class:`Vehicle <dronekit.lib.Vehicle>` attributes.
+    :py:class:`Vehicle <dronekit.Vehicle>` attributes.
 
     Please :ref:`contribute your code to the API <contributing_api>` so that it is available to 
     (and can be tested by) the whole DroneKit-Python community. 
@@ -150,7 +150,7 @@ The example file **my_vehicle.py** defines a class for the new attribute (``RawI
 ``MyVehicle`` is a superclass of ``Vehicle`` (and hence inherits all its attributes). 
 This first creates a private instance of ``RawIMU``.
 
-We create a listener using the :py:func:`Vehicle.on_message() <dronekit.lib.Vehicle.on_message>` 
+We create a listener using the :py:func:`Vehicle.on_message() <dronekit.Vehicle.on_message>` 
 decorator. The listener is called for messages that contain the string "RAW_IMU", 
 with arguments for the vehicle, message name, and the message. It copies the message information into 
 the attribute and then notifies all observers.
@@ -198,7 +198,7 @@ the attribute and then notifies all observers.
 
 .. note::
 
-    The notifier function (:py:func:`Vehicle.notify_attribute_listeners() <dronekit.lib.Vehicle.notify_attribute_listeners>`)
+    The notifier function (:py:func:`Vehicle.notify_attribute_listeners() <dronekit.Vehicle.notify_attribute_listeners>`)
     should be called every time there is an update from the vehicle. 
     
     You can set a third parameter (``cache=True``) so that it only invokes the listeners when the value *changes*. 

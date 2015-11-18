@@ -5,7 +5,7 @@ DroneKit-Python API Reference
 =============================
 
 
-.. automodule:: dronekit.lib
+.. automodule:: dronekit
    :members:
    :inherited-members:
    

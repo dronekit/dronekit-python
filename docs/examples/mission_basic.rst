@@ -134,7 +134,7 @@ operations are explained in the guide topic :ref:`auto_mode_vehicle_control` .
 In overview, the example calls ``adds_square_mission(vehicle.location.global_frame,50)`` to first  
 clear the current mission and then define a new mission with a takeoff command and four waypoints arranged
 in a square around the central position (two waypoints are added in the last position - 
-we use :py:func:`next <dronekit.lib.CommandSequence.next>` to determine when we've reached the final point).  
+we use :py:func:`next <dronekit.CommandSequence.next>` to determine when we've reached the final point).  
 The clear command and new mission items are then uploaded to the vehicle.
 
 After taking off (in guided mode using the ``takeoff()`` function) the example starts the mission by setting the mode to AUTO:
@@ -148,11 +148,11 @@ After taking off (in guided mode using the ``takeoff()`` function) the example s
 The progress of the mission is monitored in a loop. The convenience function 
 :ref:`distance_to_current_waypoint() <auto_mode_mission_distance_to_waypoint>` 
 gets the distance to the next waypoint and 
-:py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` gets the value of
+:py:func:`Vehicle.commands.next <dronekit.CommandSequence.next>` gets the value of
 the next command.
 
 We also show how to move to a specified command using
-:py:func:`Vehicle.commands.next <dronekit.lib.CommandSequence.next>` (note how we skip the third command below):
+:py:func:`Vehicle.commands.next <dronekit.CommandSequence.next>` (note how we skip the third command below):
 
 .. code:: python
 
@@ -179,7 +179,7 @@ Known issues
 
 This example has the following issues:
 
-* :py:func:`next <dronekit.lib.CommandSequence.next>` does not appear to be writable, so the example does not skip steps as documented. 
+* :py:func:`next <dronekit.CommandSequence.next>` does not appear to be writable, so the example does not skip steps as documented. 
    This is tracked as `#390 <#https://github.com/dronekit/dronekit-python/issues/390>`_.
 
 

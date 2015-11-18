@@ -6,7 +6,7 @@ Taking Off
 
 This article explains how to get your *Copter* to take off. At high level, the steps are: check that the vehicle
 is able to arm (can pass pre-arm checks), set the mode to ``GUIDED``, arm the vehicle, 
-and then call :py:func:`Vehicle.commands.takeoff() <dronekit.lib.CommandSequence.takeoff>`.  
+and then call :py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>`.  
 
 .. todo:: 
 
@@ -73,7 +73,7 @@ The function first performs some pre-arm checks.
 
 DroneKit-Python can't check every possible symptom that might prevent arming, but we can confirm that the 
 vehicle has booted, EKF is ready, and it has a GPS lock. These checks are encapsulated in the 
-:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>` attribute:
+:py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>` attribute:
 
 .. code-block:: python
 
@@ -96,11 +96,11 @@ vehicle has booted, EKF is ready, and it has a GPS lock. These checks are encaps
             print "Waiting for GPS...:", vehicle.gps_0.fix_type
             time.sleep(1)
             
-    You should always do a final check on :py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`!
+    You should always do a final check on :py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`!
 
 
 Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then wait until arming is confirmed 
-before sending the :py:func:`takeoff <dronekit.lib.CommandSequence.takeoff>` command.
+before sending the :py:func:`takeoff <dronekit.CommandSequence.takeoff>` command.
 
 .. code-block:: python
 

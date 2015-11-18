@@ -20,7 +20,7 @@ the vehicle and DroneKit have been set up as described in :ref:`get-started`).
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run. You can also 
 `add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
-(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>` attribute may return 
+(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>` attribute may return 
 values of ``None`` for the distance and voltage). 
 
 In summary, after cloning the repository:
@@ -123,13 +123,13 @@ On the command prompt you should see (something like):
      Wait 1s so callback invoked before observer removed
      CALLBACK: (attitude): Attitude:pitch=0.00716688157991,yaw=-0.0950401723385,roll=0.00759896961972
      CALLBACK: (heading): 354
-     CALLBACK: (location): <dronekit.lib.Locations object at 0x000000000767F2B0>
+     CALLBACK: (location): <dronekit.Locations object at 0x000000000767F2B0>
      CALLBACK: (airspeed): 0.0
      CALLBACK: (groundspeed): 0.0
      CALLBACK: (ekf_ok): True
      CALLBACK: (battery): Battery:voltage=12.538,current=3.48,level=99
      CALLBACK: (gps_0): GPSInfo:fix=3,num_sat=10
-     CALLBACK: (location): <dronekit.lib.Locations object at 0x000000000767F2B0>
+     CALLBACK: (location): <dronekit.Locations object at 0x000000000767F2B0>
      CALLBACK: (velocity): [-0.14, 0.1, 0.0]
      CALLBACK: (local_position): LocationLocal:north=-0.136136248708,east=-0.0430941730738,down=-0.00938374921679
      CALLBACK: (channels): {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
