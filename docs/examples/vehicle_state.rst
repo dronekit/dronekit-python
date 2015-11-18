@@ -69,6 +69,7 @@ On the command prompt you should see (something like):
      Mount status: [None, None, None]
      Battery: Battery:voltage=12.587,current=0.0,level=100
      EKF OK?: False
+     Last Heartbeat: 0.769999980927
      Rangefinder: Rangefinder: distance=None, voltage=None
      Rangefinder distance: None
      Rangefinder voltage: None

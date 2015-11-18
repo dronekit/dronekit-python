@@ -38,6 +38,7 @@ print " Airspeed: %s" % vehicle.airspeed
 print " Mount status: %s" % vehicle.mount_status
 print " Battery: %s" % vehicle.battery
 print " EKF OK?: %s" % vehicle.ekf_ok
+print " Last Heartbeat: %s" % vehicle.last_heartbeat
 print " Rangefinder: %s" % vehicle.rangefinder
 print " Rangefinder distance: %s" % vehicle.rangefinder.distance
 print " Rangefinder voltage: %s" % vehicle.rangefinder.voltage
@@ -151,9 +152,6 @@ except:
  
 # Demonstrate getting callback on any attribute change
 def wildcard_callback(self, attr_name, value):
-    # `attr_name` - attribute name (useful if callback is used for multiple attributes)
-    # `self` - associated vehicle object (used if callback behaviour is different for multiple vehicles)
-    # `value` - updated attribute value.
     print " CALLBACK: (%s): %s" % (attr_name,value)
 
 print "\nAdd attribute callback detecting ANY attribute change"     
