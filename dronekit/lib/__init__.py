@@ -51,6 +51,10 @@ A number of other useful classes and methods are listed below.
         This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).    
     :param int rate: Data sream refresh rate. The default is 4Hz (4 updates per second).
     :param int baud: The baud rate for the connection. The default is 115200.
+    :param int target_system: The MAVLink target_system for the connected vehicle.  The default value is 0 (MAVLink broadcast id).
+        This setting overrides any value for the target system obtained from the vehicle, 
+        and is used in place of any value set by the user in :py:class:`Commands` or when sending messages 
+        (see :py:func:`Vehicle.send_mavlink() <dronekit.lib.Vehicle.send_mavlink>`).
 
 
     :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
@@ -1539,11 +1543,12 @@ class Vehicle(HasObservers):
         """
         This method is used to send raw MAVLink "custom messages" to the vehicle.
 
-        The function can send arbitrary messages/commands to a vehicle at any time and in any vehicle mode. It is particularly useful for
-        controlling vehicles outside of missions (for example, in GUIDED mode).
+        The function can send arbitrary messages/commands to the connected vehicle at any time and in any vehicle mode. 
+        It is particularly useful for controlling vehicles outside of missions (for example, in GUIDED mode).
 
         The :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` is used to create messages in the appropriate format.
-        Callers do not need to populate sysId/componentId/crc in the packet as the method will take care of that before sending.
+        
+        For more information see the guide topic: :ref:`guided_mode_how_to_send_commands`.
 
         :param message: A ``MAVLink_message`` instance, created using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>`.
             There is need to specify the system id, component id or sequence number of messages as the API will set these appropriately.
@@ -1555,8 +1560,15 @@ class Vehicle(HasObservers):
         """
         Returns an object that can be used to create 'raw' MAVLink messages that are appropriate for this vehicle.
         The message can then be sent using :py:func:`send_mavlink(message) <dronekit.lib.Vehicle.send_mavlink>`.
+        
+        .. note::
+        
+            Vehicles support a subset of the messages defined in the MAVLink standard. For more information
+            about the supported sets see wiki topics:
+            `Copter Commands in Guided Mode <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_ 
+            and `Plane Commands in Guided Mode <http://dev.ardupilot.com/wiki/plane-commands-in-guided-mode/>`_.
 
-        These message types are defined in the central MAVLink github repository.  For example, a Pixhawk understands
+        All message types are defined in the central MAVLink github repository.  For example, a Pixhawk understands
         the following messages (from `pixhawk.xml <https://github.com/mavlink/mavlink/blob/master/message_definitions/v1.0/pixhawk.xml>`_):
 
         .. code:: xml
@@ -1574,12 +1586,13 @@ class Vehicle(HasObservers):
             msg = vehicle.message_factory.image_trigger_control_encode(True)
             vehicle.send_mavlink(msg)
 
-        There is no need to specify the system id, component id or sequence number of messages (if defined in the message type) as the
-        API will set these appropriately when the message is sent.
-
-        .. todo:: When I have a custom message guide topic. Link from here to it.
-
-        .. todo:: Check if the standard MAV_CMD messages can be sent this way too, and if so add link.
+        There is no need to specify the ``target_system`` id in messages (just set to zero) as DroneKit will automatically 
+        update messages with the vehicle's internal ``target_system`` (see :py:func:`connect() <dronekit.lib.connect>`) before sending. 
+        The ``target_component`` should be set to 0 (broadcast) unless the message is to specific component. 
+        CRC fields and sequence numbers (if defined in the message type) are automatically set by DroneKit and can also 
+        be ignored/set to zero.
+        
+        For more information see the guide topic: :ref:`guided_mode_how_to_send_commands`.
         """
         return self._master.mav
 
@@ -1876,7 +1889,9 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0,-34.364114, 149.166022, 30)
 
     :param target_system: The id number of the message's target system (drone, GSC) within the MAVLink network.
-        Set this to zero (broadcast) when communicating with a companion computer.
+        This can be set to any value (nominally 0) because it will be overridden by the 
+        vehicle's internal ``target_system`` (as set :py:func:`connect() <dronekit.lib.connect>`). By 
+        default this is the broadcast id.
     :param target_component: The id of a component the message should be routed to within the target system
         (for example, the camera). Set to zero (broadcast) in most cases.
     :param seq: The sequence number within the mission (the autopilot will reject messages sent out of sequence).

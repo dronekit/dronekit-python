@@ -133,7 +133,10 @@ The command can be interrupted by a later movement command. When moving the vehi
 
 .. tip::
 
-    You can also control the velocity using the `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ MAVLink command in almost exactly the same way (there is no real benefit in sending one command over the other). For more information on this option see :ref:`example_guided_mode_send_global_velocity` in the example code.
+    You can also control the velocity using the 
+    `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ 
+    MAVLink command in almost exactly the same way (there is no real benefit in sending one command over the other). 
+    For more information on this option see :ref:`example_guided_mode_send_global_velocity` in the example code.
 
 
 
@@ -166,15 +169,27 @@ This section explains how to send MAVLink commands, what commands can be sent, a
 Sending messages/commands
 -------------------------
 
-MAVLink commands are sent by first using :py:func:`message_factory <dronekit.lib.Vehicle.message_factory>` to encode the message and then calling :py:func:`send_mavlink <dronekit.lib.Vehicle.send_mavlink>` to send them.
+MAVLink commands are sent by first using :py:func:`message_factory() <dronekit.lib.Vehicle.message_factory>` 
+to encode the message and then calling :py:func:`send_mavlink() <dronekit.lib.Vehicle.send_mavlink>` to send them.
 
-``message_factory()`` uses a factory method for the encoding. The name of this method will always be the lower case version of the message/command name with ``_encode`` appended. For example, to encode a `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ message we call ``message_factory.set_position_target_local_ned_encode()`` with values for all the message fields as arguments:
+.. note::
+    
+    Vehicles support a subset of the messages defined in the MAVLink standard. For more information
+    about the supported sets see wiki topics:
+    `Copter Commands in Guided Mode <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_ 
+    and `Plane Commands in Guided Mode <http://dev.ardupilot.com/wiki/plane-commands-in-guided-mode/>`_.
+
+``message_factory()`` uses a factory method for the encoding. The name of this method will always be the 
+lower case version of the message/command name with ``_encode`` appended. For example, to encode a 
+`SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ 
+message we call ``message_factory.set_position_target_local_ned_encode()`` with values for all the 
+message fields as arguments:
 
 .. code-block:: python
 
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
         0,       # time_boot_ms (not used)
-        0, 0,    # target system, target component
+        0, 0,    # target_system, target_component
         mavutil.mavlink.MAV_FRAME_BODY_NED, # frame
         0b0000111111000111, # type_mask (only speeds enabled)
         0, 0, 0, # x, y, z positions
@@ -184,16 +199,23 @@ MAVLink commands are sent by first using :py:func:`message_factory <dronekit.lib
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
-There is no need to specify the system id, component id or sequence number of messages (if defined in the message type) as the API will set these appropriately when the message is sent.
+There is no need to specify the ``target_system`` id in messages (just set to zero) as DroneKit will automatically 
+update messages with the vehicle's internal ``target_system`` (see :py:func:`connect() <dronekit.lib.connect>`) before sending. 
+The ``target_component`` should be set to 0 (broadcast) unless the message is to specific component. 
+CRC fields and sequence numbers (if defined in the message type) are automatically set by DroneKit and can also 
+be ignored/set to zero.
 
 .. _guided_mode_how_to_send_commands_command_long:
 
-In Copter, the `COMMAND_LONG message <https://pixhawk.ethz.ch/mavlink/#COMMAND_LONG>`_ can be used send/package *a number* of different `supported MAV_CMD commands <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_. The factory function is again the lower case message name with suffix ``_encode`` (``message_factory.command_long_encode``). The message parameters include the actual command to be sent (in the code fragment below ``MAV_CMD_CONDITION_YAW``) and its fields.
+In Copter, the `COMMAND_LONG message <https://pixhawk.ethz.ch/mavlink/#COMMAND_LONG>`_ can be used send/package 
+*a number* of different `supported MAV_CMD commands <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_. 
+The factory function is again the lower case message name with suffix ``_encode`` (``message_factory.command_long_encode``). 
+The message parameters include the actual command to be sent (in the code fragment below ``MAV_CMD_CONDITION_YAW``) and its fields.
 
 .. code-block:: python
 
     msg = vehicle.message_factory.command_long_encode(
-        0, 0,    # target system, target component
+        0, 0,    # target_system, target_component
         mavutil.mavlink.MAV_CMD_CONDITION_YAW, #command
         0, #confirmation
         heading,    # param 1, yaw in degrees
