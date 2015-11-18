@@ -3,6 +3,7 @@ from dronekit import connect, VehicleMode, LocationGlobal
 from dronekit.test import with_sitl
 from nose.tools import assert_equals, assert_not_equals
 
+
 @with_sitl
 def test_timeout(connpath):
     vehicle = connect(connpath, wait_ready=True)
@@ -44,7 +45,7 @@ def test_timeout(connpath):
         assert_equals(vehicle.armed, True)
 
         # Take off to target altitude
-        vehicle.commands.takeoff(aTargetAltitude) 
+        vehicle.commands.takeoff(aTargetAltitude)
 
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
@@ -52,7 +53,7 @@ def test_timeout(connpath):
         while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.
-            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95: 
+            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95:
                 # print "Reached target altitude"
                 break
 
@@ -61,7 +62,7 @@ def test_timeout(connpath):
 
     arm_and_takeoff(10)
     vehicle.wait_ready('location.local_frame', timeout=60)
-    
+
     # .north, .east, and .down are initialized to None.
     # Any other value suggests that a LOCAL_POSITION_NED was received and parsed.
     assert_not_equals(vehicle.location.local_frame.north, None)
@@ -78,11 +79,13 @@ def test_timeout(connpath):
 
     vehicle.close()
 
+
 @with_sitl
 def test_location_notify(connpath):
     vehicle = connect(connpath)
 
     ret = {'success': False}
+
     @vehicle.location.on_attribute('global_frame')
     def callback(*args):
         assert_not_equals(args[2].alt, 0)

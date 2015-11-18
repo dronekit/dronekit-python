@@ -5,6 +5,7 @@ from pymavlink import mavutil
 from dronekit.test import with_sitl
 from nose.tools import assert_not_equals, assert_equals
 
+
 @with_sitl
 def test_empty_clear(connpath):
     vehicle = connect(connpath)
@@ -16,6 +17,7 @@ def test_empty_clear(connpath):
     assert_equals(len(vehicle.commands), 0)
 
     vehicle.close()
+
 
 @with_sitl
 def test_set_home(connpath):
@@ -39,13 +41,14 @@ def test_set_home(connpath):
     assert_equals(vehicle.home_location.lon, 149)
     assert_equals(vehicle.home_location.alt, 600)
 
+
 @with_sitl
 def test_parameter(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     # Home should be None at first.
     assert_equals(vehicle.home_location, None)
-    
+
     # Wait for home position to be real and not 0, 0, 0
     # once we request it via cmds.download()
     time.sleep(10)
@@ -114,6 +117,7 @@ def test_parameter(connpath):
 
     vehicle.close()
 
+
 @with_sitl
 def test_227(connpath):
     """
@@ -125,13 +129,13 @@ def test_227(connpath):
     def assert_commands(count):
         vehicle.commands.download()
         vehicle.commands.wait_ready()
-        assert_equals(len(vehicle.commands), count) 
+        assert_equals(len(vehicle.commands), count)
 
     assert_commands(0)
 
-    vehicle.commands.add(Command( 0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, 
-                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 
-                    0, 0, 0, 0, 10, 10, 10))
-    vehicle.flush() # Send commands
+    vehicle.commands.add(Command(0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                                 mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0, 0, 10, 10,
+                                 10))
+    vehicle.flush()  # Send commands
 
     assert_commands(1)

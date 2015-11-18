@@ -1,5 +1,6 @@
 import requests
 
+
 class CloudError(Exception):
     def __init__(self, type, message, response):
         self.type = type
@@ -11,6 +12,7 @@ class CloudError(Exception):
 
     def __repr__(self):
         return "%s(type=%s)" % (self.__class__.__name__, self.type)
+
 
 class CloudClient(object):
     BASE_URL = 'http://api.droneshare.com/api/v1/'
@@ -40,6 +42,7 @@ class CloudClient(object):
                 else:
                     action_url += "/%s/%s" % (str(args[0]), find_action[1])
             return self._request(action_url, args[1:])
+
         return method
 
     def _request(self, url, data):

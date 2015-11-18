@@ -12,6 +12,7 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 @with_sitl
 def test_goto(connpath):
     vehicle = connect(connpath, wait_ready=True)
@@ -53,7 +54,7 @@ def test_goto(connpath):
         assert_equals(vehicle.armed, True)
 
         # Take off to target altitude
-        vehicle.commands.takeoff(aTargetAltitude) 
+        vehicle.commands.takeoff(aTargetAltitude)
 
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
@@ -61,7 +62,7 @@ def test_goto(connpath):
         while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.
-            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95: 
+            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95:
                 # print "Reached target altitude"
                 break
 

@@ -5,6 +5,7 @@ from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
+
 @with_sitl
 def test_110(connpath):
     vehicle = connect(connpath, wait_ready=True)
@@ -18,7 +19,7 @@ def test_110(connpath):
     # Await armability.
     while not vehicle.is_armable:
         time.sleep(.1)
-    
+
     # Change the vehicle into STABILIZE mode
     vehicle.mode = VehicleMode("GUIDED")
 
@@ -28,6 +29,7 @@ def test_110(connpath):
     # Define example callback for mode
     def armed_callback(vehicle, attribute, value):
         armed_callback.called += 1
+
     armed_callback.called = 0
 
     # When the same (event, callback) pair is passed to add_attribute_listener,
@@ -61,6 +63,7 @@ def test_110(connpath):
     time.sleep(3)
 
     # Ensure the callback was called zero times.
-    assert_equals(armed_callback.called, callcount, "Callback should not have been called once removed.")
+    assert_equals(armed_callback.called, callcount,
+                  "Callback should not have been called once removed.")
 
     vehicle.close()
