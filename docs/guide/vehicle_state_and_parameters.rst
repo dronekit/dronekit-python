@@ -33,6 +33,7 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.battery <dronekit.lib.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.lib.Vehicle.rangefinder>`,
 :py:attr:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`,
+:py:attr:`Vehicle.last_heartbeat <dronekit.lib.Vehicle.last_heartbeat>`,
 :py:attr:`Vehicle.home_location <dronekit.lib.Vehicle.home_location>`,
 :py:func:`Vehicle.system_status <dronekit.lib.Vehicle.system_status>`,
 :py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`,
@@ -76,6 +77,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Mount status: %s" % vehicle.mount_status
     print "Battery: %s" % vehicle.battery
     print "EKF OK?: %s" % vehicle.ekf_ok
+    print "Last Heartbeat: %s" % vehicle.last_heartbeat
     print "Rangefinder: %s" % vehicle.rangefinder
     print "Rangefinder distance: %s" % vehicle.rangefinder.distance
     print "Rangefinder voltage: %s" % vehicle.rangefinder.voltage
@@ -239,7 +241,7 @@ callback that will be called for any/all attribute changes:
     def wildcard_callback(self, attr_name, value):
         print " CALLBACK: (%s): %s" % (attr_name,value)
 
-    print "\nAdd attribute calback detecting any attribute change"     
+    print "\nAdd attribute callback detecting any attribute change"     
     vehicle.add_attribute_listener('*', wildcard_callback)
 
 
@@ -324,7 +326,7 @@ Parameters
 ==========
 
 Vehicle parameters provide the information used to configure the autopilot for the vehicle-specific hardware/capabilities.
-The available parameters for each platform are documented in the ardupilot wiki here:  
+The available parameters for each platform are documented in the ArduPilot wiki here:  
 `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_, 
 `Plane Parameters <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, 
 `Rover Parameters <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_ 
@@ -436,4 +438,4 @@ for "any parameter") using the
 Known issues
 ============
 
-Known issues and improvement suggestions can viewed on `github here <https://github.com/dronekit/dronekit-python/issues>`_. 
+Known issues and improvement suggestions can viewed on `Github here <https://github.com/dronekit/dronekit-python/issues>`_. 

@@ -1149,6 +1149,51 @@ class Vehicle(HasObservers):
                 errprinter('>>> ...link restored.')
             self._heartbeat_timeout = False
 
+        self._last_heartbeat = None
+
+        @handler.forward_loop
+        def listener(_):
+            if self._heartbeat_lastreceived:
+                self._last_heartbeat = time.time() - self._heartbeat_lastreceived
+                self.notify_attribute_listeners('last_heartbeat', self.last_heartbeat)
+
+    @property
+    def last_heartbeat(self):
+        """
+        Time since last MAVLink heartbeat was received (in seconds).
+        
+        The attribute can be used to monitor link activity and implement script-specific timeout handling.
+                
+        For example, to pause the script if no heartbeat is received for more than 1 second you might implement
+        the following observer, and use ``pause_script`` in a program loop to wait until the link is recovered:
+        
+        .. code-block:: python
+        
+            pause_script=False
+        
+            @vehicle.on_attribute('last_heartbeat')   
+            def listener(self, attr_name, value):
+                global pause_script
+                if value > 1 and not pause_script:
+                    print "Pausing script due to bad link"
+                    pause_script=True;
+                if value < 1 and pause_script:
+                    pause_script=False;
+                    print "Un-pausing script"    
+
+        The observer will be called at the period of the messaging loop (about every 0.01 seconds). Testing
+        on SITL indicates that ``last_heartbeat`` averages about .5 seconds, but will rarely exceed 1.5 seconds 
+        when connected. Whether heartbeat monitoring can be useful will very much depend on the application.
+        
+                    
+        .. note:: 
+        
+            If you just want to change the heartbeat timeout you can modify the ``heartbeat_timeout`` 
+            parameter passed to the :py:func:`connect() <dronekit.lib.connect>` function.
+        
+        """
+        return self._last_heartbeat
+
     def on_message(self, name):
         """
         Decorator for message listener callback functions.

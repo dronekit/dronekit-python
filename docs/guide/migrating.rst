@@ -72,8 +72,8 @@ values as were passed to *MAVProxy* when setting up a connection in DKPY 1.x (in
     populated with values from the vehicle. Check out :py:func:`Vehicle.wait_ready() <dronekit.lib.Vehicle.wait_ready>` for more
     information (this method is used by the ``connect()`` implementation).
 
-    :py:func:`connect() <dronekit.lib.connect>` also has arguments for setting the baud rate
-    and returning your own :ref:`custom vehicle classes <example_create_attribute>`.
+    :py:func:`connect() <dronekit.lib.connect>` also has arguments for setting the baud rate,
+    returning your own :ref:`custom vehicle classes <example_create_attribute>` and setting the length of the connection timeout.
  
 
 After connecting, the returned ``vehicle`` can be used in exactly the same way as in DKPY 1.x. 
@@ -112,7 +112,6 @@ Remove code that checks the ``api.exit`` status (note that the ``api.exit`` call
     In fact you should delete all references to ``APIConnection`` class and its methods (``get_vehicles()``, ``exit()`` and ``stop()``). 
 
 
-.. todo:: Find out how to check the connection status is still valid. That would go in separate section.
 
 
 Script completion checks
@@ -305,7 +304,8 @@ a few more attributes have been added, including:
 :py:func:`Vehicle.heading <dronekit.lib.Vehicle.heading>`, 
 :py:func:`Vehicle.mount_status <dronekit.lib.Vehicle.mount_status>`, 
 :py:func:`Vehicle.ekf_ok <dronekit.lib.Vehicle.ekf_ok>`, 
-:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`.
+:py:func:`Vehicle.is_armable <dronekit.lib.Vehicle.is_armable>`,
+:py:func:`Vehicle.last_heartbeat <dronekit.lib.Vehicle.last_heartbeat>`.
 
 
 Channel Overrides
