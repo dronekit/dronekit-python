@@ -2110,15 +2110,24 @@ class CommandSequence(object):
         '''
         if isinstance(location, LocationGlobalRelative):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+            alt = location.alt
         elif isinstance(location, LocationGlobal):
-            frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+            # This should be the proper code:
+            # frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+            # However, APM discards information about the relative frame
+            # and treats any alt value as relative. So we compensate here.
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+            if not self._vehicle.home_location:
+                self.download()
+                self.wait_ready()
+            alt = location.alt - self._vehicle.home_location.alt
         else:
             raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
         self._vehicle._master.mav.mission_item_send(0, 0, 0, frame,
                                                     mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
                                                     0, 0, 0, location.lat, location.lon,
-                                                    location.alt)
+                                                    alt)
 
     def clear(self):
         '''
