@@ -38,9 +38,8 @@ Position control
 Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
 
 The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>`. 
-This takes a :py:class:`LocationGlobal <dronekit.LocationGlobal>` argument for the target position in the 
-global `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_, but with altitude 
-relative to the home location (home altitude = 0).
+This takes a :py:class:`LocationGlobal <dronekit.LocationGlobal>` or 
+:py:class:`LocationGlobalRelative <dronekit.LocationGlobalRelative>` argument.
 
 The method is used as shown below:
 
@@ -49,8 +48,8 @@ The method is used as shown below:
     # Set mode to guided - this is optional as the goto method will change the mode if needed.
     vehicle.mode = VehicleMode("GUIDED")
 
-    # Set the target location in global frame
-    a_location = LocationGlobal(-34.364114, 149.166022, 30, is_relative=True)
+    # Set the target location in global-relative frame
+    a_location = LocationGlobalRelative(-34.364114, 149.166022, 30)
     vehicle.commands.goto(a_location)
 
 
@@ -69,7 +68,7 @@ When moving the vehicle you can send a separate command to :ref:`control the spe
     a ``type_mask`` bitmask that enables the position parameters. The main difference between these commands is 
     that the former allows you to specify the location relative to the "global" frames (like 
     ``Vehicle.commands.goto()``), while the later lets you specify the location in NED co-ordinates relative 
-    to the home location. For more information on these options see the example code: 
+    to the home location or the vehicle itself. For more information on these options see the example code: 
     :ref:`example_guided_mode_goto_position_target_global_int` and :ref:`example_guided_mode_goto_position_target_local_ned`.
 
 
@@ -79,38 +78,60 @@ When moving the vehicle you can send a separate command to :ref:`control the spe
 Velocity control
 ----------------
 
-Controlling vehicle movement using velocity is much smoother than using position when there are likely to be many updates (for example when tracking moving objects).
+Controlling vehicle movement using velocity is much smoother than using position when there are likely 
+to be many updates (for example when tracking moving objects).
 
 The function ``send_ned_velocity()`` below generates a ``SET_POSITION_TARGET_LOCAL_NED`` MAVLink message 
-which is used to directly specify the speed components of the vehicle. 
+which is used to directly specify the speed components of the vehicle in the ``MAV_FRAME_LOCAL_NED`` 
+frame (relative to home location). The message is re-sent every second for the specified duration. 
+
+.. note::
+
+    From Copter 3.3 the vehicle will stop moving if a new message is not received in approximately 3 seconds. 
+    Prior to Copter 3.3 the message only needs to be sent once, and the velocity remains active until the next 
+    movement command is received. The example code works for both cases!
+
 
 .. code-block:: python
 
-    def send_ned_velocity(velocity_x, velocity_y, velocity_z):
+    def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
         """
         Move vehicle in direction based on specified velocity vectors. 
         """
         msg = vehicle.message_factory.set_position_target_local_ned_encode(
             0,       # time_boot_ms (not used)
             0, 0,    # target system, target component
-            mavutil.mavlink.MAV_FRAME_BODY_NED, # frame
+            mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
             0b0000111111000111, # type_mask (only speeds enabled)
             0, 0, 0, # x, y, z positions (not used)
             velocity_x, velocity_y, velocity_z, # x, y, z velocity in m/s
             0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
-            0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
-        # send command to vehicle
-        vehicle.send_mavlink(msg)
-
-
+            0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+            
+            
+        # send command to vehicle on 1 Hz cycle
+        for x in range(0,duration):
+            vehicle.send_mavlink(msg)
+            time.sleep(1)
+            
+    
 The ``type_mask`` parameter is a bitmask that indicates which of the other parameters in the message are used/ignored by the vehicle 
 (0 means that the dimension is enabled, 1 means ignored). In the example the value 0b0000111111000111 
 is used to enable the velocity components.
 
-The speed components ``velocity_x`` and ``velocity_y`` are parallel to the North and East directions (not to the front and side of the vehicle). 
+In the ``MAV_FRAME_LOCAL_NED`` the speed components ``velocity_x`` and ``velocity_y`` are parallel to the North and East 
+directions (not to the front and side of the vehicle). 
 The ``velocity_z`` component is perpendicular to the plane of ``velocity_x`` and ``velocity_y``, with a positive value **towards the ground**, following 
-the right-hand convention. For more information about the ``mavutil.mavlink.MAV_FRAME_BODY_NED`` frame of reference, see this wikipedia article 
+the right-hand convention. For more information about the ``MAV_FRAME_LOCAL_NED`` frame of reference, see this wikipedia article 
 on `NED <http://en.wikipedia.org/wiki/North_east_down>`_.
+
+.. tip::
+
+    From Copter 3.3 you can `specify other frames <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/#set_position_target_local_ned>`_,
+    for example ``MAV_FRAME_BODY_OFFSET_NED`` makes the velocity components relative to the current vehicle heading.
+    In Copter 3.2.1 (and earlier) the frame setting is ignored (``MAV_FRAME_LOCAL_NED`` is always used).
+
+
 
 The code fragment below shows how to call this method: 
 
@@ -127,16 +148,15 @@ The code fragment below shows how to call this method:
     UP=-0.5   #NOTE: up is negative!
 
     #Fly south and up.
-    send_ned_velocity(SOUTH,0,UP)
+    send_ned_velocity(SOUTH,0,UP,DURATION)
 
-The command can be interrupted by a later movement command. When moving the vehicle you can send separate commands to control the yaw (and other behaviour).
+When moving the vehicle you can send separate commands to control the yaw (and other behaviour).
 
 .. tip::
 
     You can also control the velocity using the 
     `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ 
-    MAVLink command in almost exactly the same way (there is no real benefit in sending one command over the other). 
-    For more information on this option see :ref:`example_guided_mode_send_global_velocity` in the example code.
+    MAVLink command, as described in :ref:`example_guided_mode_send_global_velocity`. 
 
 
 
@@ -350,9 +370,13 @@ The ROI (and yaw) is also reset when the mode, or the command used to control mo
 Command acknowledgements and response values
 --------------------------------------------
 
-ArduPilot typically sends a command acknowledgement indicating whether a command was received, and whether it was accepted or rejected. At time of writing there is no way to intercept this acknowledgement in the API (`#168 <https://github.com/dronekit/dronekit-python/pull/168>`_).
+ArduPilot typically sends a command acknowledgement indicating whether a command was received, and whether 
+it was accepted or rejected. At time of writing there is no way to intercept this acknowledgement 
+in the API (`#168 <https://github.com/dronekit/dronekit-python/pull/168>`_).
 
-Some MAVLink messages request information from the autopilot, and expect the result to be returned in another message. At time of writing you can send the request (provided the message is handled by the AutoPilot in GUIDED mode) but there is no way to intercept the response in DroneKit-Python (`#169 <https://github.com/dronekit/dronekit-python/issues/169>`_).
+Some MAVLink messages request information from the autopilot, and expect the result to be returned 
+in another message. Provided the message is handled by the AutoPilot in GUIDED mode you can send the request
+and process the response by creating a :ref:`message listener <mavlink_messages_message_listener>`.
 
 
 .. _guided_mode_copter_useful_conversion_functions:
@@ -372,7 +396,7 @@ to the Earth's poles.
     def get_location_metres(original_location, dNorth, dEast):
         """
         Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-        specified `original_location`. The returned LocationGlobal has the same `alt and `is_relative` values 
+        specified `original_location`. The returned LocationGlobal has the same `alt` value
         as `original_location`.
 
         The function is useful when you want to move the vehicle around specifying locations relative to 
@@ -391,14 +415,14 @@ to the Earth's poles.
         #New position in decimal degrees
         newlat = original_location.lat + (dLat * 180/math.pi)
         newlon = original_location.lon + (dLon * 180/math.pi)
-        return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
+        return LocationGlobal(newlat, newlon,original_location.alt)
 
 
 .. code-block:: python
 
     def get_distance_metres(aLocation1, aLocation2):
         """
-        Returns the ground distance in metres between two LocationGlobal objects.
+        Returns the ground distance in metres between two `LocationGlobal` or `LocationGlobalRelative` objects.
 
         This method is an approximation, and will not be accurate over large distances and close to the 
         earth's poles. It comes from the ArduPilot test code: 
@@ -428,7 +452,8 @@ to the Earth's poles.
 
 .. tip:: 
 
-    The `common.py <https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py>`_ file in the ArduPilot test code may have other functions that you will find useful.
+    The `common.py <https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py>`_ file 
+    in the ArduPilot test code may have other functions that you will find useful.
         
 
 

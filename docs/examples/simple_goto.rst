@@ -130,11 +130,12 @@ Flying to a point - Goto
 ------------------------
 
 The vehicle is already in ``GUIDED`` mode, so to send it to a certain point we just need to 
-call :py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>` with the target ``LocationGlobal``:
+call :py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>` with the target 
+:py:class:`dronekit.LocationGlobalRelative`:
 
 .. code-block:: python
 
-    point1 = LocationGlobal(-35.361354, 149.165218, 20, is_relative=True)
+    point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
     vehicle.commands.goto(point1)
 
     # sleep so we can see the change in map
@@ -161,7 +162,8 @@ To return to the home position and land, we set the mode to ``RTL``:
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
+The full source code at documentation build-time is listed below 
+(`current version on Github <https://github.com/dronekit/dronekit-python/blob/master/examples/simple_goto/simple_goto.py>`_):
 
 .. literalinclude:: ../../examples/simple_goto/simple_goto.py
     :language: python
