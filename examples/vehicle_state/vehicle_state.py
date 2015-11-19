@@ -65,7 +65,7 @@ print "\nSet new home location"
 # Home location must be within 50km of EKF home location (or setting will fail silently)
 # In this case, just set value to current location with an easily recognisable altitude (222)
 my_location_alt=vehicle.location.global_frame
-my_location_alt.alt=222
+my_location_alt.alt=222.0
 vehicle.home_location=my_location_alt
 print " New Home Location (from attribute - altitude should be 222): %s" % vehicle.home_location
 
