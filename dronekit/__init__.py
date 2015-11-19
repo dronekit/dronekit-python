@@ -2,8 +2,8 @@
 """
 This is the API Reference for the DroneKit-Python API.
 
-The main API is the :py:class:`Vehicle <dronekit.Vehicle>` class.
-The code snippet below shows how to use :py:func:`connect` to obtain an instance a connected vehicle:
+The main API is the :py:class:`Vehicle` class.
+The code snippet below shows how to use :py:func:`connect` to obtain an instance of a connected vehicle:
 
 .. code:: python
 
@@ -12,73 +12,22 @@ The code snippet below shows how to use :py:func:`connect` to obtain an instance
     # Connect to the Vehicle using "connection string" (in this case an address on network)
     vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
-:py:class:`Vehicle <dronekit.Vehicle>` provides access to vehicle *state* through python attributes
-(e.g. :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`)
-and to settings/parameters though the :py:attr:`Vehicle.parameters <dronekit.Vehicle.parameters>` attribute.
-Asynchronous notification on vehicle attribute changes is available by registering observers.
+:py:class:`Vehicle` provides access to vehicle *state* through python attributes
+(e.g. :py:attr:`Vehicle.mode`)
+and to settings/parameters though the :py:attr:`Vehicle.parameters` attribute.
+Asynchronous notification on vehicle attribute changes is available by registering listeners/observers.
 
-:py:class:`Vehicle <dronekit.Vehicle>` provides two main ways to control vehicle movement and other operations:
+Vehicle movement is primarily controlled using the :py:attr:`Vehicle.armed` attribute and
+:py:func:`Vehicle.commands.takeoff() <CommandSequence.takeoff>` and 
+:py:attr:`Vehicle.commands.goto() <CommandSequence.goto>` in GUIDED mode.
+Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
+(:py:func:`Vehicle.send_mavlink`, :py:func:`Vehicle.message_factory`).
 
-* Direct control of movement outside of missions is also supported. To set a target position you can use
-  :py:func:`CommandSequence.goto <dronekit.CommandSequence.goto>`.
-  Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
-  (:py:func:`Vehicle.send_mavlink <dronekit.Vehicle.send_mavlink>`, :py:func:`Vehicle.message_factory <dronekit.Vehicle.message_factory>`).
-* Missions are downloaded and uploaded through the :py:attr:`Vehicle.commands <dronekit.Vehicle.commands>` attribute
-  (see :py:class:`CommandSequence <dronekit.CommandSequence>` for more information).
+It is also possible to work with vehicle "missions" using the :py:attr:`Vehicle.commands` attribute, and run them in AUTO mode.    
 
 A number of other useful classes and methods are listed below.
 
 ----
-
-.. py:function:: connect(ip, wait_ready=None, status_printer=errprinter, vehicle_class=Vehicle, rate=4, baud=115200, heartbeat_timeout=30, source_system=255)
-
-    Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
-    Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
-    
-    The method is usually called with ``wait_ready=True`` to ensure that vehicle parameters and (most) attributes are
-    available when ``connect()`` returns.
-    
-    .. code:: python
-
-        from dronekit import connect
-
-        # Connect to the Vehicle using "connection string" (in this case an address on network)
-        vehicle = connect('127.0.0.1:14550', wait_ready=True)
-
-    :param String ip: :ref:`Connection string <get_started_connecting>` for target address - e.g. 127.0.0.1:14550.
-    
-    :param Bool/Array wait_ready: If ``True`` wait until all default attributes have downloaded before 
-        the method returns (default is ``None``). 
-        The default attributes to wait on are: :py:attr:`parameters`, :py:attr:`gps_0`, 
-        :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. 
-        
-        You can also specify a named set of parameters to wait on (e.g. ``wait_ready=['system_status','mode']``).
-        
-        For more information see :py:func:`Vehicle.wait_ready <dronekit.Vehicle.wait_ready>`.
-
-    :param status_printer: Method of signature ``def status_printer(txt)`` that prints 
-        STATUS_TEXT messages from the Vehicle and other diagnostic information.
-        By default the status information is printed to the command prompt in which the script is running.
-    :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method. 
-        This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).    
-    :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
-    :param int baud: The baud rate for the connection. The default is 115200.
-    :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
-        If a heartbeat is not detected within this time an exception will be raised.    
-    :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
-
-        .. note::
-
-            The returned :py:class:`Vehicle` object is acting as like a ground control station from the 
-            perspective of the connected "real" vehicle. It will process/receive messages from the real vehicle
-            if they are addressed to this ``source_system`` id. Messages sent to the real vehicle are
-            automatically updated to use the vehicle's ``target_system`` id.
-            
-            It is *good practice* to assign a unique id for every system on the MAVLink network.  
-            It is possible to configure the autopilot to only respond to guided-mode commands from a specified GCS ID.
-
-
-    :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
 """
 
 from __future__ import print_function
@@ -116,6 +65,8 @@ class APIException(Exception):
 class Attitude(object):
     """
     Attitude information.
+    
+    An object of this type is returned by :py:attr:`Vehicle.attitude`.
 
     .. figure:: http://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yaw_Axis_Corrected.svg/500px-Yaw_Axis_Corrected.svg.png
         :width: 400px
@@ -260,6 +211,8 @@ class GPSInfo(object):
 class Battery(object):
     """
     System battery information.
+    
+    An object of this type is returned by :py:attr:`Vehicle.battery`.
 
     :param voltage: Battery voltage in millivolts.
     :param current: Battery current, in 10 * milliamperes. ``None`` if the autopilot does not support current measurement.
@@ -285,6 +238,8 @@ class Battery(object):
 class Rangefinder(object):
     """
     Rangefinder readings.
+    
+    An object of this type is returned by :py:attr:`Vehicle.rangefinder`.
 
     :param distance: Distance (metres). ``None`` if the vehicle doesn't have a rangefinder.
     :param voltage: Voltage (volts). ``None`` if the vehicle doesn't have a rangefinder.
@@ -312,12 +267,12 @@ class VehicleMode(object):
       when using manual modes as these may require remote control input from the user.
 
     The available set of supported flight modes is vehicle-specific (see
-    `Copter <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/>`_,
-    `Plane <http://plane.ardupilot.com/wiki/flying/flight-modes/>`_,
-    `Rover <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_). If an unsupported mode is set the script
+    `Copter Modes <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/>`_,
+    `Plane Modes <http://plane.ardupilot.com/wiki/flying/flight-modes/>`_,
+    `Rover Modes <http://rover.ardupilot.com/wiki/configuration-2/#mode_meanings>`_). If an unsupported mode is set the script
     will raise a ``KeyError`` exception.
 
-    The :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` attribute can be queried for the current mode. 
+    The :py:attr:`Vehicle.mode` attribute can be queried for the current mode. 
     The code snippet below shows how to observe changes to the mode and then read the value:
 
     .. code:: python
@@ -336,7 +291,7 @@ class VehicleMode(object):
         # Set the vehicle into auto mode
         vehicle.mode = VehicleMode("AUTO")
 
-    For more information on getting/setting/observing the :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` 
+    For more information on getting/setting/observing the :py:attr:`Vehicle.mode` 
     (and other attributes) see the :ref:`attributes guide <vehicle_state_attributes>`.
 
     .. py:attribute:: name
@@ -360,6 +315,8 @@ class VehicleMode(object):
 class SystemStatus(object):
     """
     This object is used to get and set the current "system status".
+    
+    An object of this type is returned by :py:attr:`Vehicle.system_status`.
 
     .. py:attribute:: state
 
@@ -385,11 +342,7 @@ class HasObservers(object):
         self._attribute_listeners = {}
         self._attribute_cache = {}
 
-    """
-    Provides callback based notification on attribute changes.
 
-    The argument list for observer is ``observer(object, attr_name, attribute_value)``.
-    """
 
     def add_attribute_listener(self, attr_name, observer):
         """
@@ -398,8 +351,8 @@ class HasObservers(object):
         The callback function (``observer``) is invoked differently depending on the *type of attribute*. 
         Attributes that represent sensor values or which are used to monitor connection status are updated 
         whenever a message is received from the vehicle. Attributes which reflect vehicle "state" are 
-        only updated when their values change (for example :py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`,
-        :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`, and :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`).
+        only updated when their values change (for example :py:attr:`Vehicle.system_status`,
+        :py:attr:`Vehicle.armed`, and :py:attr:`Vehicle.mode`).
 
         The callback can be removed using :py:func:`remove_attribute_listener`.
         
@@ -409,7 +362,7 @@ class HasObservers(object):
             a more elegant syntax. Use ``add_attribute_listener`` by preference if you will need to remove 
             the observer.
 
-        The callback arguments are:
+        The argument list for the callback is ``observer(object, attr_name, attribute_value)``:
         
         * ``self`` - the associated :py:class:`Vehicle`. This may be compared to a global vehicle handle 
           to implement vehicle-specific callback handling (if needed).
@@ -504,10 +457,10 @@ class HasObservers(object):
         The decorated function (``observer``) is invoked differently depending on the *type of attribute*. 
         Attributes that represent sensor values or which are used to monitor connection status are updated 
         whenever a message is received from the vehicle. Attributes which reflect vehicle "state" are 
-        only updated when their values change (for example :py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`,
-        :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`, and :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`).
+        only updated when their values change (for example :py:func:`Vehicle.system_status`,
+        :py:attr:`Vehicle.armed`, and :py:attr:`Vehicle.mode`).
         
-        The callback arguments are:
+        The argument list for the callback is ``observer(object, attr_name, attribute_value)``
         
         * ``self`` - the associated :py:class:`Vehicle`. This may be compared to a global vehicle handle 
           to implement vehicle-specific callback handling (if needed).
@@ -551,6 +504,8 @@ class ChannelsOverride(dict):
     
     Channels can be read, written, or cleared by index or using a dictionary syntax.
     To clear a value, set it to ``None`` or use ``del`` on the item.
+    
+    An object of this type is returned by :py:attr:`Vehicle.channels.overrides <Channels.overrides>`.
     
     For more information and examples see :ref:`example_channel_overrides`.
     """
@@ -747,7 +702,7 @@ class Locations(HasObservers):
         """
         Location in local NED frame (a :py:class:`LocationGlobalRelative`).
         
-        This is accessed through the :py:attr:`Vehicle.location <dronekit.Vehicle.location>` attribute:
+        This is accessed through the :py:attr:`Vehicle.location` attribute:
         
         .. code-block:: python
         
@@ -760,17 +715,33 @@ class Locations(HasObservers):
     @property
     def global_frame(self):
         """
-        Location in global frame (a :py:class:`LocationGlobal`). 
+        Location in global frame (a :py:class:`LocationGlobal`).
         
-        This is accessed through the :py:attr:`Vehicle.location <dronekit.Vehicle.location>` attribute:
+        The latitude and longitude are relative to the 
+        `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_. 
+        The altitude is relative to mean sea-level (MSL).
+        
+        This is accessed through the :py:attr:`Vehicle.location` attribute:
         
         .. code-block:: python
         
             print "Global Location: %s" % vehicle.location.global_frame
+            print "Sea level altitude is: %s" % vehicle.location.global_frame.alt
         
         Its ``lat`` and ``lon`` attributes are populated shortly after GPS becomes available. 
         The ``alt`` can take several seconds longer to populate (from the barometer).
-        Listeners are not notified of changes to this attribute until it has fully populated.        
+        Listeners are not notified of changes to this attribute until it has fully populated.
+
+        To watch for changes you can use :py:func:`Vehicle.on_attribute` decorator or
+        :py:func:`add_attribute_listener` (decorator approach shown below):
+
+        .. code-block:: python
+        
+            @vehicle.on_attribute('location.global_frame')   
+            def listener(self, attr_name, value):
+                print " Global: %s" % value
+            
+            #Alternatively, use decorator: ``@vehicle.location.on_attribute('global_frame')``.        
         """
         return LocationGlobal(self._lat, self._lon, self._alt)
 
@@ -780,107 +751,57 @@ class Locations(HasObservers):
         Location in global frame, with altitude relative to the home location 
         (a :py:class:`LocationGlobalRelative`).
         
-        This is accessed through the :py:attr:`Vehicle.location <dronekit.Vehicle.location>` attribute:
+        The latitude and longitude are relative to the 
+        `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_. 
+        The altitude is relative to :py:attr:`home location <Vehicle.home_location>`.
+        
+        This is accessed through the :py:attr:`Vehicle.location` attribute:
         
         .. code-block:: python
         
             print "Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
+            print "Altitude relative to home_location: %s" % vehicle.location.global_relative_frame.alt
         """
         return LocationGlobalRelative(self._lat, self._lon, self._relative_alt)
 
 
 class Vehicle(HasObservers):
     """
-    The main vehicle API
+    The main vehicle API.
+    
+    Vehicle state is exposed through 'attributes' (e.g. :py:attr:`heading`). All attributes can be
+    read, and some are also settable 
+    (:py:attr:`mode`, :py:attr:`armed` and :py:attr:`home_location`).
+    
+    Attributes can also be asynchronously monitored for changes by registering listener callback
+    functions.    
 
-    Asynchronous notification on change of vehicle state is available by registering observers (callbacks) for attribute changes.
+    Vehicle "settings" (parameters) are read/set using the :py:attr:`parameters` attribute. 
+    Parameters can be iterated and are also individually observable.
+       
+    Vehicle movement is primarily controlled using the :py:attr:`armed` attribute and
+    :py:func:`Vehicle.commands.takeoff() <CommandSequence.takeoff>` and 
+    :py:func:`Vehicle.commands.goto() <CommandSequence.goto>` in GUIDED mode.
 
-    Most vehicle state is exposed through python attributes (e.g. ``vehicle.location``). Most of these attributes are
-    auto-populated based on the capabilities of the connected autopilot/vehicle.
+    It is also possible to work with vehicle "missions" using the :py:attr:`commands` attribute,
+    and run them in AUTO mode.    
+    
+    The guide contains more detailed information on the different ways you can use 
+    the ``Vehicle`` class:
+    
+    - :doc:`guide/vehicle_state_and_parameters`
+    - :doc:`guide/copter/guided_mode`
+    - :doc:`guide/auto_mode`
 
-    Particular autopilots/vehicles may define different attributes from this standard list (extra batteries, GPIOs, etc.)
-    However if a standard attribute is defined it must follow the rules specified below.
-
-    **Autopilot specific attributes & types:**
-
-    To prevent name clashes the following naming convention should be used:
-
-    * ``ap_<name>`` - For autopilot specific parameters (apm 2.5, pixhawk etc.). For example "ap_pin5_mode" and "ap_pin5_value".
-    * ``user_<name>`` - For user specific parameters
-
-    **Standard attributes & types:**
-
-    .. py:attribute:: attitude
-
-        Current vehicle :py:class:`Attitude` (pitch, yaw, roll).
-
-    .. py:attribute:: velocity
-
-        Current velocity as a three element list ``[ vx, vy, vz ]`` (in meter/sec).
-
-    .. py:attribute:: mode
-
-        This attribute is used to get and set the current flight mode (:py:class:`VehicleMode`).
-
-    .. py:attribute:: airspeed
-
-        Current airspeed in metres/second (``double``).
-
-        .. todo:: FIXME: Should airspeed value move somewhere else from "Standard attributes & types" table?
-
-    .. py:attribute:: groundspeed
-
-        Groundspeed in metres/second (``double``).
-
-    .. py:attribute:: gps_0
-
-        GPS position information (:py:class:`GPSInfo`).
-
-    .. py:attribute:: armed
-
-        This attribute can be used to get and set the ``armed`` state of the vehicle (``boolean``).
-
-        The code below shows how to read the state, and to arm/disam the vehicle:
-
-        .. code:: python
-
-            # Print the armed state for the vehicle
-            print "Armed: %s" % vehicle.armed
-
-            # Disarm the vehicle
-            vehicle.armed = False
-
-            # Arm the vehicle
-            vehicle.armed = True
-
-    .. py:attribute:: mount_status
-
-        Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``.
-
-        The values in the list are set to ``None`` if no mount is configured.
-
-    .. py:attribute:: battery
-
-        Current system :py:class:`Battery` status.
-
-    .. py:attribute:: rangefinder
-
-        :py:class:`Rangefinder` distance and voltage values.
-
-
-
-        **Autopilot specific attributes & types:**
-
-        .. py:attribute:: ap_pin5_mode
-
-            string (adc, dout, din)
-
-        .. py:attribute:: ap_pin5_value
-
-            ? double (0, 1, 2.3 etc...)
-
-    .. todo:: Add waypoint_home attribute IF this is added: https://github.com/dronekit/dronekit-python/issues/105
-
+    
+    .. note::
+    
+        This class currently exposes just the attributes that are most commonly used by all 
+        vehicle types. if you need to add additional attributes then subclass ``Vehicle`` 
+        as demonstrated in :doc:`examples/create_attribute`.
+        
+        Please then :doc:`contribute <contributing/contributions_api>` your additions back
+        to the project!
     """
 
     def __init__(self, handler):
@@ -1351,7 +1272,8 @@ class Vehicle(HasObservers):
 
         .. warning:: 
 
-            This has been replaced by :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
+            This method is deprecated. It has been replaced by 
+            :py:func:`Vehicle.commands.upload() <Vehicle.commands.upload>`.
         """
         return self.commands.upload()
 
@@ -1369,6 +1291,9 @@ class Vehicle(HasObservers):
 
     @property
     def mode(self):
+        """
+        This attribute is used to get and set the current flight mode (:py:class:`VehicleMode`).
+        """
         if not self._flightmode:
             return None
         return VehicleMode(self._flightmode)
@@ -1380,14 +1305,13 @@ class Vehicle(HasObservers):
     @property
     def location(self):
         """
-        A :py:class:`Locations` object containing vehicle location information in 
-        global, global relative and local frames. 
+        The vehicle location in global, global relative and local frames (:py:class:`Locations`). 
         
         The different frames are accessed through its members:
         
-        * :py:attr:`global_frame <dronekit.Locations.global_frame>` (a :py:class:`LocationGlobal`)
-        * :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (a :py:class:`LocationGlobalRelative`)
-        * :py:attr:`local_frame <dronekit.Locations.local_frame>` (a :py:class:`LocationLocal`)
+        * :py:attr:`global_frame <dronekit.Locations.global_frame>` (:py:class:`LocationGlobal`)
+        * :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`)
+        * :py:attr:`local_frame <dronekit.Locations.local_frame>` (:py:class:`LocationLocal`)
         
         For example, to print the location in each frame for a ``vehicle``:
         
@@ -1442,28 +1366,59 @@ class Vehicle(HasObservers):
 
     @property
     def battery(self):
+        """
+        Current system batter status (:py:class:`Battery`).
+        """
         if self._voltage == None or self._current == None or self._level == None:
             return None
         return Battery(self._voltage, self._current, self._level)
 
     @property
     def rangefinder(self):
+        """
+        Rangefinder distance and voltage values (:py:class:`Rangefinder`).
+        """
         return Rangefinder(self._rngfnd_distance, self._rngfnd_voltage)
 
     @property
     def velocity(self):
+        """
+        Current velocity as a three element list ``[ vx, vy, vz ]`` (in meter/sec).
+        """
         return [self._vx, self._vy, self._vz]
 
     @property
     def attitude(self):
+        """
+        Current vehicle attitude - pitch, yaw, roll (:py:class:`Attitude`).
+        """
         return Attitude(self._pitch, self._yaw, self._roll)
 
     @property
     def gps_0(self):
+        """
+        GPS position information (:py:class:`GPSInfo`).
+        """
         return GPSInfo(self._eph, self._epv, self._fix_type, self._satellites_visible)
 
     @property
     def armed(self):
+        """
+        This attribute can be used to get and set the ``armed`` state of the vehicle (``boolean``).
+
+        The code below shows how to read the state, and to arm/disam the vehicle:
+
+        .. code:: python
+
+            # Print the armed state for the vehicle
+            print "Armed: %s" % vehicle.armed
+
+            # Disarm the vehicle
+            vehicle.armed = False
+
+            # Arm the vehicle
+            vehicle.armed = True
+        """
         return self._armed
 
     @armed.setter
@@ -1477,7 +1432,7 @@ class Vehicle(HasObservers):
     @property
     def is_armable(self):
         """
-        Returns ``True`` if the vehicle is ready to arm, false otherwise.
+        Returns ``True`` if the vehicle is ready to arm, false otherwise (``Boolean``).
         
         This attribute wraps a number of pre-arm checks, ensuring that the vehicle has booted,
         has a good GPS fix, and that the EKF pre-arm is complete.
@@ -1490,7 +1445,9 @@ class Vehicle(HasObservers):
     @property
     def system_status(self):
         """
-        System status. Is a ``SystemStatus`` object with a ``state`` property of:
+        System status (:py:class:`SystemStatus`).
+
+        The status has a ``state`` property with one of the following values:
         
         * ``UNINIT``: Uninitialized system, state is unknown.
         * ``BOOT``: System is booting up.
@@ -1516,26 +1473,37 @@ class Vehicle(HasObservers):
     @property
     def heading(self):
         """
-        Current heading in degrees (0..360, where North = 0).
+        Current heading in degrees - 0..360, where North = 0 (``int``).
         """
         return self._heading
 
     @property
     def groundspeed(self):
+        """
+        Groundspeed in metres/second (``double``).
+        """
         return self._groundspeed
 
     @property
     def airspeed(self):
+        """
+        Current airspeed in metres/second (``double``).
+        """
         return self._airspeed
 
     @property
     def mount_status(self):
+        """
+        Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``.
+
+        The values in the list are set to ``None`` if no mount is configured.
+        """
         return [self._mount_pitch, self._mount_yaw, self._mount_roll]
 
     @property
     def ekf_ok(self):
         """
-        ``True`` if the EKF status is considered acceptable, ``False`` otherwise.
+        ``True`` if the EKF status is considered acceptable, ``False`` otherwise (``boolean``).
         """
         # legacy check for dronekit-python for solo
         # use same check that ArduCopter::system.pde::position_ok() is using
@@ -1547,7 +1515,8 @@ class Vehicle(HasObservers):
     @property
     def channels(self):
         """
-        The RC channel values from the RC Transmitter, in a :py:class:`Channels` object.
+        The RC channel values from the RC Transmitter (:py:class:`Channels`).
+        
         The attribute can also be used to set and read RC Override (channel override) values
         via :py:attr:`Vehicle.channels.override <dronekit.Channels.overrides>`.
         
@@ -1571,7 +1540,7 @@ class Vehicle(HasObservers):
     @property
     def home_location(self):
         """
-        The current home location in a :py:class:`LocationGlobal`.
+        The current home location (:py:class:`LocationGlobal`).
 
         To get the attribute you must first download the :py:func:`Vehicle.commands`. 
         The attribute has a value of ``None`` until :py:func:`Vehicle.commands` has been downloaded
@@ -1607,7 +1576,7 @@ class Vehicle(HasObservers):
     @home_location.setter
     def home_location(self, pos):
         """
-        Sets the home location to that of a ``LocationGlobal`` object.
+        Sets the home location (``LocationGlobal``).
         
         The value cannot be set until it has successfully been read from the vehicle. After being
         set the value is cached in the home_location attribute and does not have to be re-read.
@@ -1635,7 +1604,7 @@ class Vehicle(HasObservers):
     @property
     def commands(self):
         """
-        Gets the editable waypoints for this vehicle (the current "mission").
+        Gets the editable waypoints/current mission for this vehicle (:py:class:`CommandSequence`).
 
         This can be used to get, create, and modify a mission. It can also be used for direct control of vehicle position
         (outside missions) using the :py:func:`goto <dronekit.CommandSequence.goto>` method.
@@ -1647,7 +1616,7 @@ class Vehicle(HasObservers):
     @property
     def parameters(self):
         """
-        The (editable) parameters for this vehicle (:py:class:`Parameters <dronekit.Parameters>`).
+        The (editable) parameters for this vehicle (:py:class:`Parameters`).
         """
         return self._parameters
 
@@ -1810,8 +1779,8 @@ class Vehicle(HasObservers):
 class Parameters(collections.MutableMapping, HasObservers):
     """
     This object is used to get and set the values of named parameters for a vehicle. See the following links for information about
-    the supported parameters for each platform: `Copter <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
-    `Plane <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
+    the supported parameters for each platform: `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
+    `Plane Parameters <http://plane.ardupilot.com/wiki/arduplane-parameters/>`_, `Rover Parameters <http://rover.ardupilot.com/wiki/apmrover2-parameters/>`_.
 
     The code fragment below shows how to get and set the value of a parameter.
 
@@ -1823,9 +1792,9 @@ class Parameters(collections.MutableMapping, HasObservers):
         # Change the parameter value to something different.
         vehicle.parameters['THR_MIN']=100
 
-    It is also possible to observe parameters and to iterate the :py:func:`Vehicle.parameters`.
+    It is also possible to observe parameters and to iterate the :py:attr:`Vehicle.parameters`.
     
-    For more information see: :ref:`vehicle_state_parameters`.
+    For more information see :ref:`the guide <vehicle_state_parameters>`.
     """
 
     def __init__(self, vehicle):
@@ -1996,8 +1965,9 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
     """
     A waypoint object.
 
-    This object encodes a single mission item command. The set of commands that are supported by ArduPilot in Copter, Plane and Rover (along with their parameters)
-    are listed in the wiki article `MAVLink Mission Command Messages (MAV_CMD) <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/>`_.
+    This object encodes a single mission item command. The set of commands that are supported 
+    by ArduPilot in Copter, Plane and Rover (along with their parameters) are listed in the wiki article 
+    `MAVLink Mission Command Messages (MAV_CMD) <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/>`_.
 
     For example, to create a `NAV_WAYPOINT <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_nav_waypoint>`_ command:
 
@@ -2028,8 +1998,6 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
     :param y: (param6) Command specific parameter used for longitude (if relevant to command).
     :param z: (param7) Command specific parameter used for altitude (if relevant). The reference frame for altitude depends on the ``frame``.
 
-    .. todo:: Confirm if target_sytem, target_component, seq, frame are all handled for you or not. If not, check that these are correct.
-    .. todo:: FIXME: Command class - for now we just inherit the standard MAVLink mission item contents.
     """
     pass
 
@@ -2040,7 +2008,7 @@ class CommandSequence(object):
 
     Operations include 'array style' indexed access to the various contained waypoints.
 
-    The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands <dronekit.Vehicle.commands>` attribute.
+    The current commands/mission for a vehicle are accessed using the :py:attr:`Vehicle.commands` attribute.
     Waypoints are not downloaded from vehicle until :py:func:`download()` is called.  The download is asynchronous;
     use :py:func:`wait_ready()` to block your thread until the download is complete.
     The code to download the commands from a vehicle is shown below:
@@ -2156,7 +2124,7 @@ class CommandSequence(object):
         '''
         Clear the command list. 
 
-        This command will be sent to the vehicleonly after you call :py:func:`upload() <Vehicle.commands.upload>`.
+        This command will be sent to the vehicle only after you call :py:func:`upload() <Vehicle.commands.upload>`.
         '''
 
         # Add home point again.
@@ -2258,9 +2226,58 @@ def connect(ip,
             baud=115200,
             heartbeat_timeout=30,
             source_system=255):
+    """
+    Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
+    Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
+    
+    The method is usually called with ``wait_ready=True`` to ensure that vehicle parameters and (most) attributes are
+    available when ``connect()`` returns.
+    
+    .. code:: python
+
+        from dronekit import connect
+
+        # Connect to the Vehicle using "connection string" (in this case an address on network)
+        vehicle = connect('127.0.0.1:14550', wait_ready=True)
+
+    :param String ip: :ref:`Connection string <get_started_connecting>` for target address - e.g. 127.0.0.1:14550.
+    
+    :param Bool/Array wait_ready: If ``True`` wait until all default attributes have downloaded before 
+        the method returns (default is ``None``). 
+        The default attributes to wait on are: :py:attr:`parameters`, :py:attr:`gps_0`, 
+        :py:attr:`armed`, :py:attr:`mode`, and :py:attr:`attitude`. 
+        
+        You can also specify a named set of parameters to wait on (e.g. ``wait_ready=['system_status','mode']``).
+        
+        For more information see :py:func:`Vehicle.wait_ready <Vehicle.wait_ready>`.
+
+    :param status_printer: Method of signature ``def status_printer(txt)`` that prints 
+        STATUS_TEXT messages from the Vehicle and other diagnostic information.
+        By default the status information is printed to the command prompt in which the script is running.
+    :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method. 
+        This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).    
+    :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
+    :param int baud: The baud rate for the connection. The default is 115200.
+    :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
+        If a heartbeat is not detected within this time an exception will be raised.    
+    :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
+
+        .. note::
+
+            The returned :py:class:`Vehicle` object acts as a ground control station from the 
+            perspective of the connected "real" vehicle. It will process/receive messages from the real vehicle
+            if they are addressed to this ``source_system`` id. Messages sent to the real vehicle are
+            automatically updated to use the vehicle's ``target_system`` id.
+            
+            It is *good practice* to assign a unique id for every system on the MAVLink network.  
+            It is possible to configure the autopilot to only respond to guided-mode commands from a specified GCS ID.
+
+
+    :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
+    """
     handler = MAVConnection(ip, baud=baud, source_system=source_system)
     vehicle = vehicle_class(handler)
-
+    
     if status_printer:
 
         @vehicle.on_message('STATUSTEXT')
