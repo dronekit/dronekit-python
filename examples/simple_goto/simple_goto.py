@@ -6,9 +6,7 @@ Demonstrates how to arm and takeoff in Copter and how to navigate to points usin
 Full documentation is provided at http://python.dronekit.io/examples/simple_goto.html
 """
 
-import time
-from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
-from pymavlink import mavutil
+from dronekit import connect, VehicleMode, LocationGlobalRelative
 import time
 
 

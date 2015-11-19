@@ -26,7 +26,7 @@ vehicle = connect(args.connect, wait_ready=True)
 def get_location_metres(original_location, dNorth, dEast):
     """
     Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-    specified `original_location`. The returned Location has the same `alt and `is_relative` values 
+    specified `original_location`. The returned Location has the same `alt` value
     as `original_location`.
 
     The function is useful when you want to move the vehicle around specifying locations relative to 
@@ -43,7 +43,7 @@ def get_location_metres(original_location, dNorth, dEast):
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
-    return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
+    return LocationGlobal(newlat, newlon,original_location.alt)
 
 
 def get_distance_metres(aLocation1, aLocation2):

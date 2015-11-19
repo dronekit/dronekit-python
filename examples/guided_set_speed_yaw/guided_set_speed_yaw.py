@@ -7,7 +7,7 @@ Example documentation: http://python.dronekit.io/examples/guided-set-speed-yaw-d
 """
 
 from dronekit import connect, VehicleMode, LocationGlobal
-from pymavlink import mavutil
+from pymavlink import mavutil # Needed for command message definitions
 import time
 import math
 
@@ -178,7 +178,7 @@ Specifically, it provides:
 def get_location_metres(original_location, dNorth, dEast):
     """
     Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the 
-    specified `original_location`. The returned LocationGlobal has the same `alt and `is_relative` values 
+    specified `original_location`. The returned LocationGlobal has the same `alt` value
     as `original_location`.
 
     The function is useful when you want to move the vehicle around specifying locations relative to 
@@ -197,7 +197,7 @@ def get_location_metres(original_location, dNorth, dEast):
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
-    return LocationGlobal(newlat, newlon,original_location.alt,original_location.is_relative)
+    return LocationGlobal(newlat, newlon,original_location.alt)
 
 
 def get_distance_metres(aLocation1, aLocation2):
@@ -253,11 +253,10 @@ def goto_position_target_global_int(aLocation):
     See the above link for information on the type_mask (0=enable, 1=ignore). 
     At time of writing, acceleration and yaw bits are ignored.
     """
-    print 'goto_target_globalint_position'
     msg = vehicle.message_factory.set_position_target_global_int_encode(
         0,       # time_boot_ms (not used)
         0, 0,    # target system, target component
-        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame		
+        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame
         0b0000111111111000, # type_mask (only speeds enabled)
         aLocation.lat*1e7, # lat_int - X Position in WGS84 frame in 1e7 * meters
         aLocation.lon*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
@@ -280,12 +279,9 @@ def goto_position_target_local_ned(north, east, down):
     It is important to remember that in this frame, positive altitudes are entered as negative 
     "Down" values. So if down is "10", this will be 10 metres below the home altitude.
 
-    At time of writing the method ignores the frame value and the NED frame is relative to the 
-    HOME Location. If you want to specify the frame in terms of the vehicle (i.e. really use 
-    MAV_FRAME_BODY_NED) then you can translate values relative to the home position (or move 
-    the home position if this is sensible in your context).
-
-    For more information see: https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED
+    Starting from AC3.3 the method respects the frame setting. Prior to that the frame was
+    ignored. For more information see: 
+    http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/#set_position_target_local_ned
 
     See the above link for information on the type_mask (0=enable, 1=ignore). 
     At time of writing, acceleration and yaw bits are ignored.
@@ -294,7 +290,7 @@ def goto_position_target_local_ned(north, east, down):
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
         0,       # time_boot_ms (not used)
         0, 0,    # target system, target component
-        mavutil.mavlink.MAV_FRAME_BODY_NED, # frame
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
         0b0000111111111000, # type_mask (only positions enabled)
         north, east, down, # x, y, z positions (or North, East, Down in the MAV_FRAME_BODY_NED frame
         0, 0, 0, # x, y, z velocity in m/s  (not used)
@@ -315,14 +311,16 @@ def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
 
     The method reports the distance to target every two seconds.
     """
-    currentLocation=vehicle.location.global_frame
+    currentLocation=vehicle.location.global_relative_frame
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
     targetDistance=get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
+    
+    
 
 
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
-        remainingDistance=get_distance_metres(vehicle.location.global_frame, targetLocation)
+        remainingDistance=get_distance_metres(vehicle.location.global_relative_frame, targetLocation)
         print "Distance to target: ", remainingDistance
         if remainingDistance<=targetDistance*0.01: #Just below target, in case of undershoot.
             print "Reached target"
@@ -333,19 +331,28 @@ def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
 
 """
 Functions that move the vehicle by specifying the velocity components in each direction.
-The two functions use different MAVLink commands, but effectively implement the same behaviour.
+The two functions use different MAVLink commands. The main difference is
+that depending on the frame used, the NED velocity can be relative to the vehicle
+orientation.
 
 The methods include:
 * send_ned_velocity - Sets velocity components using SET_POSITION_TARGET_LOCAL_NED command
 * send_global_velocity - Sets velocity components using SET_POSITION_TARGET_GLOBAL_INT command
 """
 
-def send_ned_velocity(velocity_x, velocity_y, velocity_z):
+def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
     """
-    Move vehicle in direction based on specified velocity vectors. 
+    Move vehicle in direction based on specified velocity vectors and
+    for the specified duration.
 
     This uses the SET_POSITION_TARGET_LOCAL_NED command with a type mask enabling only 
-    velocity components (https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED).
+    velocity components 
+    (http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/#set_position_target_local_ned).
+    
+    Note that from AC3.3 the message should be re-sent every second (after about 3 seconds
+    with no message the velocity will drop back to zero). In AC3.2.1 and earlier the specified
+    velocity persists until it is canceled. The code below should work on either version 
+    (sending the message multiple times does not cause problems).
     
     See the above link for information on the type_mask (0=enable, 1=ignore). 
     At time of writing, acceleration and yaw bits are ignored.
@@ -353,23 +360,33 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z):
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
         0,       # time_boot_ms (not used)
         0, 0,    # target system, target component
-        mavutil.mavlink.MAV_FRAME_BODY_NED, # frame
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
         0b0000111111000111, # type_mask (only speeds enabled)
         0, 0, 0, # x, y, z positions (not used)
         velocity_x, velocity_y, velocity_z, # x, y, z velocity in m/s
         0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
-    # send command to vehicle
-    vehicle.send_mavlink(msg)
+
+    # send command to vehicle on 1 Hz cycle
+    for x in range(0,duration):
+        vehicle.send_mavlink(msg)
+        time.sleep(1)
+    
+    
 
 
-
-def send_global_velocity(velocity_x, velocity_y, velocity_z):
+def send_global_velocity(velocity_x, velocity_y, velocity_z, duration):
     """
     Move vehicle in direction based on specified velocity vectors.
 
     This uses the SET_POSITION_TARGET_GLOBAL_INT command with type mask enabling only 
-    velocity components (https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT).
+    velocity components 
+    (http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/#set_position_target_global_int).
+    
+    Note that from AC3.3 the message should be re-sent every second (after about 3 seconds
+    with no message the velocity will drop back to zero). In AC3.2.1 and earlier the specified
+    velocity persists until it is canceled. The code below should work on either version 
+    (sending the message multiple times does not cause problems).
     
     See the above link for information on the type_mask (0=enable, 1=ignore). 
     At time of writing, acceleration and yaw bits are ignored.
@@ -388,9 +405,11 @@ def send_global_velocity(velocity_x, velocity_y, velocity_z):
         velocity_z, # Z velocity in NED frame in m/s
         0, 0, 0, # afx, afy, afz acceleration (not supported yet, ignored in GCS_Mavlink)
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink) 
-    # send command to vehicle
-    vehicle.send_mavlink(msg)
 
+    # send command to vehicle on 1 Hz cycle
+    for x in range(0,duration):
+        vehicle.send_mavlink(msg)
+        time.sleep(1)    
 
 
 """
@@ -401,6 +420,8 @@ specified as a distance in metres (North/East) from the current position, and wh
 the distance-to-target.
 """	
 print("TRIANGLE path using standard Vehicle.commands.goto()")
+print("Set speed to 5m/s.")
+set_speed(5)
 print("Position North 80 West 50")
 goto(80, -50)
 
@@ -409,7 +430,6 @@ goto(0, 100)
 
 print("Position North -80 West 50")
 goto(-80, -50)
-
 
 
 
@@ -499,7 +519,8 @@ The thread sleeps for a time (DURATION) which defines the distance that will be 
 
 The code also sets the yaw (MAV_CMD_CONDITION_YAW) using the `set_yaw()` method in each segment
 so that the front of the vehicle points in the direction of travel
-"""	
+"""
+
 
 #Set up velocity vector to map to each direction.
 # vx > 0 => fly North
@@ -522,33 +543,37 @@ DOWN=0.5
 
 # Square path using velocity
 print("SQUARE path using SET_POSITION_TARGET_LOCAL_NED and velocity parameters")
-print("Velocity South & up")
-send_ned_velocity(SOUTH,0,UP)
+
 print("Yaw 180 absolute (South)")
 condition_yaw(180)
-time.sleep(DURATION)
-send_ned_velocity(0,0,0)
 
-print("Velocity West & down")
-send_ned_velocity(0,WEST,DOWN)
+print("Velocity South & up")
+send_ned_velocity(SOUTH,0,UP,DURATION)
+send_ned_velocity(0,0,0,1)
+
+
 print("Yaw 270 absolute (West)")
 condition_yaw(270)
-time.sleep(DURATION)
-send_ned_velocity(0,0,0)
 
-print("Velocity North")
-send_ned_velocity(NORTH,0,0)
+print("Velocity West & down")
+send_ned_velocity(0,WEST,DOWN,DURATION)
+send_ned_velocity(0,0,0,1)
+
+
 print("Yaw 0 absolute (North)")
 condition_yaw(0)
-time.sleep(DURATION)
-send_ned_velocity(0,0,0)
+
+print("Velocity North")
+send_ned_velocity(NORTH,0,0,DURATION)
+send_ned_velocity(0,0,0,1)
+
+
+print("Yaw 90 absolute (East)")
+condition_yaw(90)
 
 print("Velocity East")
-condition_yaw(90)
-send_ned_velocity(0,EAST,0)
-time.sleep(DURATION)
-send_ned_velocity(0,0,0)
-
+send_ned_velocity(0,EAST,0,DURATION)
+send_ned_velocity(0,0,0,1)
 
 
 """
@@ -565,19 +590,21 @@ At the end of the second segment the code sets a new home location to the curren
 
 print("DIAMOND path using SET_POSITION_TARGET_GLOBAL_INT and velocity parameters")
 # vx, vy are parallel to North and East (independent of the vehicle orientation)
-print("Velocity North, East and up")
-send_global_velocity(SOUTH,WEST,UP)
+
 print("Yaw 225 absolute")
 condition_yaw(225)
-time.sleep(DURATION)
-send_global_velocity(0,0,0)
 
-print("Velocity South, East and down")
-send_global_velocity(NORTH,WEST,DOWN)
+print("Velocity South, West and Up")
+send_global_velocity(SOUTH,WEST,UP,DURATION)
+send_global_velocity(0,0,0,1)
+
+
 print("Yaw 90 relative (to previous yaw heading)")
 condition_yaw(90,relative=True)
-time.sleep(DURATION)
-send_global_velocity(0,0,0)
+
+print("Velocity North, West and Down")
+send_global_velocity(NORTH,WEST,DOWN,DURATION)
+send_global_velocity(0,0,0,1)
 
 print("Set new home location to current location")
 vehicle.home_location=vehicle.location.global_frame
@@ -588,19 +615,21 @@ cmds.download()
 cmds.wait_ready()
 print " Home Location: %s" % vehicle.home_location
 
-print("Velocity South and West")
-send_global_velocity(NORTH,EAST,0)
-print("Yaw 90 relative (to previous yaw heading)")
-condition_yaw(90,relative=True)
-time.sleep(DURATION)
-send_global_velocity(0,0,0)
 
-print("Velocity North and West")
-send_global_velocity(SOUTH,EAST,0)
 print("Yaw 90 relative (to previous yaw heading)")
 condition_yaw(90,relative=True)
-time.sleep(DURATION)
-send_global_velocity(0,0,0)
+
+print("Velocity North and East")
+send_global_velocity(NORTH,EAST,0,DURATION)
+send_global_velocity(0,0,0,1)
+
+
+print("Yaw 90 relative (to previous yaw heading)")
+condition_yaw(90,relative=True)
+
+print("Velocity South and East")
+send_global_velocity(SOUTH,EAST,0,DURATION)
+send_global_velocity(0,0,0,1)
 
 
 """

@@ -177,10 +177,7 @@ When the vehicle starts the 5th command (a dummy waypoint) the loop breaks and t
 Known issues
 ============
 
-This example has the following issues:
-
-* :py:func:`next <dronekit.CommandSequence.next>` does not appear to be writable, so the example does not skip steps as documented. 
-   This is tracked as `#390 <#https://github.com/dronekit/dronekit-python/issues/390>`_.
+This example has no known issues.
 
 
 .. _example_mission_basic_source_code:
