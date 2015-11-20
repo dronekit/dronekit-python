@@ -1,7 +1,7 @@
 """
 simple_goto.py: GUIDED mode "simple goto" example (Copter Only)
 
-Demonstrates how to arm and takeoff in Copter and how to navigate to points using Vehicle.commands.goto.
+Demonstrates how to arm and takeoff in Copter and how to navigate to points using Vehicle.simple_goto.
 
 Full documentation is provided at http://python.dronekit.io/examples/simple_goto.html
 """
@@ -45,10 +45,10 @@ def arm_and_takeoff(aTargetAltitude):
         time.sleep(1)
 
     print "Taking off!"
-    vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
-    #  after Vehicle.commands.takeoff will execute immediately).
+    #  after Vehicle.simple_takeoff will execute immediately).
     while True:
         print " Altitude: ", vehicle.location.global_relative_frame.alt      
         if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
@@ -61,14 +61,14 @@ arm_and_takeoff(20)
 
 print "Going to first point..."
 point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
-vehicle.commands.goto(point1)
+vehicle.simple_goto(point1)
 
 # sleep so we can see the change in map
 time.sleep(30)
 
 print "Going to second point..."
 point2 = LocationGlobalRelative(-35.363244, 149.168801, 20)
-vehicle.commands.goto(point2)
+vehicle.simple_goto(point2)
 
 # sleep so we can see the change in map
 time.sleep(30)

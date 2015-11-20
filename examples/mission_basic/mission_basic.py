@@ -145,10 +145,10 @@ def arm_and_takeoff(aTargetAltitude):
         time.sleep(1)
 
     print "Taking off!"
-    vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
-    #  after Vehicle.commands.takeoff will execute immediately).
+    #  after Vehicle.simple_takeoff will execute immediately).
     while True:
         print " Altitude: ", vehicle.location.global_relative_frame.alt      
         if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.

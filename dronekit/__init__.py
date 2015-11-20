@@ -18,8 +18,8 @@ and to settings/parameters though the :py:attr:`Vehicle.parameters` attribute.
 Asynchronous notification on vehicle attribute changes is available by registering listeners/observers.
 
 Vehicle movement is primarily controlled using the :py:attr:`Vehicle.armed` attribute and
-:py:func:`Vehicle.commands.takeoff() <CommandSequence.takeoff>` and 
-:py:attr:`Vehicle.commands.goto() <CommandSequence.goto>` in GUIDED mode.
+:py:func:`Vehicle.simple_takeoff() <CommandSequence.takeoff>` and 
+:py:attr:`Vehicle.simple_goto() <CommandSequence.goto>` in GUIDED mode.
 Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
 (:py:func:`Vehicle.send_mavlink`, :py:func:`Vehicle.message_factory`).
 
@@ -780,8 +780,8 @@ class Vehicle(HasObservers):
     Parameters can be iterated and are also individually observable.
        
     Vehicle movement is primarily controlled using the :py:attr:`armed` attribute and
-    :py:func:`Vehicle.commands.takeoff() <CommandSequence.takeoff>` and 
-    :py:func:`Vehicle.commands.goto() <CommandSequence.goto>` in GUIDED mode.
+    :py:func:`Vehicle.simple_takeoff() <CommandSequence.takeoff>` and 
+    :py:func:`Vehicle.simple_goto() <CommandSequence.goto>` in GUIDED mode.
 
     It is also possible to work with vehicle "missions" using the :py:attr:`commands` attribute,
     and run them in AUTO mode.    
@@ -1650,6 +1650,57 @@ class Vehicle(HasObservers):
         """
         return self._parameters
 
+    def simple_takeoff(self, alt=None):
+        if alt is not None:
+            altitude = float(alt)
+            if math.isnan(alt) or math.isinf(alt):
+                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
+            self._master.mav.command_long_send(0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                                                  0, 0, 0, 0, 0, 0, 0, altitude)
+
+    def simple_goto(self, location, airspeed=None, groundspeed=None):
+        '''
+        Go to a specified global location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
+
+        The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
+
+        .. code:: python
+
+            # Set mode to guided - this is optional as the goto method will change the mode if needed.
+            vehicle.mode = VehicleMode("GUIDED")
+
+            # Set the LocationGlobal to head towards
+            a_location = LocationGlobal(-34.364114, 149.166022, 30)
+            vehicle.simple_goto(a_location)
+
+        :param LocationGlobal location: The target location.
+        '''
+        if isinstance(location, LocationGlobalRelative):
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+            alt = location.alt
+        elif isinstance(location, LocationGlobal):
+            # This should be the proper code:
+            # frame = mavutil.mavlink.MAV_FRAME_GLOBAL
+            # However, APM discards information about the relative frame
+            # and treats any alt value as relative. So we compensate here.
+            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+            if not self.home_location:
+                self.commands.download()
+                self.commands.wait_ready()
+            alt = location.alt - self.home_location.alt
+        else:
+            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+
+        self._master.mav.mission_item_send(0, 0, 0, frame,
+                                           mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
+                                           0, 0, 0, location.lat, location.lon,
+                                           alt)
+
+        if airspeed != None:
+            self.airspeed = airspeed
+        if groundspeed != None:
+            self.groundspeed = groundspeed
+
     def send_mavlink(self, message):
         """
         This method is used to send raw MAVLink "custom messages" to the vehicle.
@@ -2112,57 +2163,6 @@ class CommandSequence(object):
         This can be called after :py:func:`download()` to block the thread until the asynchronous download is complete.
         """
         return self._vehicle.wait_ready('commands', **kwargs)
-
-    def takeoff(self, alt=None):
-        if alt is not None:
-            altitude = float(alt)
-            if math.isnan(alt) or math.isinf(alt):
-                raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
-            self._vehicle._master.mav.command_long_send(0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-                                                        0, 0, 0, 0, 0, 0, 0, altitude)
-
-    def goto(self, location, airspeed=None, groundspeed=None):
-        '''
-        Go to a specified global location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
-
-        The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
-
-        .. code:: python
-
-            # Set mode to guided - this is optional as the goto method will change the mode if needed.
-            vehicle.mode = VehicleMode("GUIDED")
-
-            # Set the LocationGlobal to head towards
-            a_location = LocationGlobal(-34.364114, 149.166022, 30)
-            vehicle.commands.goto(a_location)
-
-        :param LocationGlobal location: The target location.
-        '''
-        if isinstance(location, LocationGlobalRelative):
-            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-            alt = location.alt
-        elif isinstance(location, LocationGlobal):
-            # This should be the proper code:
-            # frame = mavutil.mavlink.MAV_FRAME_GLOBAL
-            # However, APM discards information about the relative frame
-            # and treats any alt value as relative. So we compensate here.
-            frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-            if not self._vehicle.home_location:
-                self.download()
-                self.wait_ready()
-            alt = location.alt - self._vehicle.home_location.alt
-        else:
-            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
-
-        self._vehicle._master.mav.mission_item_send(0, 0, 0, frame,
-                                                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
-                                                    0, 0, 0, location.lat, location.lon,
-                                                    alt)
-
-        if airspeed != None:
-            self._vehicle.airspeed = airspeed
-        if groundspeed != None:
-            self._vehicle.groundspeed = groundspeed
 
     def clear(self):
         '''

@@ -2,7 +2,7 @@
 followme - Tracks GPS position of your computer (Linux only).
 
 This example uses the python gps package to read positions from a GPS attached to your 
-laptop and sends a new vehicle.commands.goto command every two seconds to move the
+laptop and sends a new vehicle.simple_goto command every two seconds to move the
 vehicle to the current point.
 
 When you want to stop follow-me, either change vehicle modes or type Ctrl+C to exit the script.
@@ -52,10 +52,10 @@ def arm_and_takeoff(aTargetAltitude):
         time.sleep(1)
 
     print "Taking off!"
-    vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
-    #  after Vehicle.commands.takeoff will execute immediately).
+    #  after Vehicle.simple_takeoff will execute immediately).
     while True:
         print " Altitude: ", vehicle.location.global_relative_frame.alt      
         if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
@@ -88,7 +88,7 @@ try:
             print "Going to: %s" % dest
 
             # A better implementation would only send new waypoints if the position had changed significantly
-            vehicle.commands.goto(dest)
+            vehicle.simple_goto(dest)
 
             # Send a new target every two seconds
             # For a complete implementation of follow me you'd want adjust this delay
