@@ -10,7 +10,7 @@ import os
 import simplejson
 import time
 from pymavlink import mavutil
-from dronekit import connect, VehicleMode, LocationGlobal
+from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 import cherrypy
 from cherrypy.process import wspbus, plugins
 from jinja2 import Environment, FileSystemLoader
@@ -130,9 +130,9 @@ class Drone(object):
 
     def location_callback(self, vehicle, name, location):
         if location.global_relative_frame.alt is not None:
-            self.altitude = location.alt
+            self.altitude = location.global_relative_frame.alt
 
-        self.current_location = location
+        self.current_location = location.global_relative_frame
 
     def _log(self, message):
         print "[DEBUG]: {0}".format(message)
