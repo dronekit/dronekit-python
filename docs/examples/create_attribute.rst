@@ -202,8 +202,8 @@ the attribute and then notifies all observers.
     should be called every time there is an update from the vehicle. 
     
     You can set a third parameter (``cache=True``) so that it only invokes the listeners when the value *changes*. 
-    This is normally used for vehicle state information like ``Vehicle.mode``, where the value is updated 
-    regularly from the vehicle client code is only interested in attribute changes.
+    This is normally used for attributes like the vehicle mode, where the information is updated 
+    regularly from the vehicle, but client code is only interested when the attribute changes.
     
     You should not set ``cache=True`` for attributes that represent sensor information or other "live" information, including
     the RAW_IMU attribute demonstrated here. Clients can then implement their own caching strategy if needed.
