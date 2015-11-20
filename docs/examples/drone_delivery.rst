@@ -56,24 +56,30 @@ In summary, after cloning the repository:
        The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
        This is the default value for the parameter, and may be omitted. 
 
-#. After a short while you should be able to reach your new webserver at http://localhost:8080. 
+   On the command prompt you should see (something like):
 
+   .. code-block:: bash
 
-On the command prompt you should see (something like):
+       Connecting to vehicle on: 127.0.0.1:14550
+       >>> Frame: QUAD
+       [DEBUG]: Connected to vehicle.
+       [DEBUG]: DroneDelivery Start
+       [DEBUG]: Waiting for ability to arm...
+       [DEBUG]: Running initial boot sequence
+       [DEBUG]: Changing to mode: GUIDED
+       [DEBUG]: Waiting for arming...
+       [DEBUG]: Taking off
+       http://localhost:8080/
+    
+#. After a short while you should be able to reach your new webserver at http://localhost:8080.  
+   The command prompt will show something like  
+    
+   .. code-block:: bash
 
-.. code-block:: bash
-
-    Connecting to vehicle on: 127.0.0.1:14550
-    >>> Frame: QUAD
-    [DEBUG]: Connected to vehicle.
-    [DEBUG]: DroneDelivery Start
-    [DEBUG]: Waiting for ability to arm...
-    [DEBUG]: Running initial boot sequence
-    [DEBUG]: Changing to mode: GUIDED
-    [DEBUG]: Waiting for arming...
-    [DEBUG]: Taking off
-    http://localhost:8080/
-    [DEBUG]: Goto: [u'-35.4', u'149.2'], 29.98
+       [DEBUG]: Goto: [u'-35.4', u'149.2'], 29.98
+    
+   On the web server you can use the **Command** button to set a target location and 
+   the **Track** button to view the moving vehicle (see the screenshots below).
     
 
 Screenshots
