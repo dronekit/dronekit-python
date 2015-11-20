@@ -64,8 +64,6 @@ On the command prompt you should see (something like):
      Attitude: Attitude:pitch=0.00294387154281,yaw=-0.11805768311,roll=0.00139428151306
      Velocity: [-0.03, 0.02, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
-     Groundspeed: 0.0
-     Airspeed: 0.0
      Mount status: [None, None, None]
      Battery: Battery:voltage=12.587,current=0.0,level=100
      EKF OK?: False
@@ -76,6 +74,8 @@ On the command prompt you should see (something like):
      Heading: 353
      Is Armable?: False
      System status: STANDBY
+     Groundspeed: 0.0
+     Airspeed: 0.0
      Mode: STABILIZE
      Armed: False
      Waiting for home location ...

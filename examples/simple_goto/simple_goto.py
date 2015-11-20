@@ -56,8 +56,10 @@ def arm_and_takeoff(aTargetAltitude):
             break
         time.sleep(1)
 
-arm_and_takeoff(20)
+arm_and_takeoff(10)
 
+print "Set default/target airspeed to 3"
+vehicle.airspeed=3
 
 print "Going to first point..."
 point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
@@ -66,9 +68,9 @@ vehicle.simple_goto(point1)
 # sleep so we can see the change in map
 time.sleep(30)
 
-print "Going to second point..."
+print "Going to second point (groundspeed set to 10 m/s) ..."
 point2 = LocationGlobalRelative(-35.363244, 149.168801, 20)
-vehicle.simple_goto(point2)
+vehicle.simple_goto(point2, groundspeed=10)
 
 # sleep so we can see the change in map
 time.sleep(30)

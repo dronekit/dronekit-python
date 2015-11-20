@@ -18,9 +18,9 @@ and to settings/parameters though the :py:attr:`Vehicle.parameters` attribute.
 Asynchronous notification on vehicle attribute changes is available by registering listeners/observers.
 
 Vehicle movement is primarily controlled using the :py:attr:`Vehicle.armed` attribute and
-:py:func:`Vehicle.simple_takeoff() <CommandSequence.takeoff>` and 
-:py:attr:`Vehicle.simple_goto() <CommandSequence.goto>` in GUIDED mode.
-Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported using custom MAVLink messages
+:py:func:`Vehicle.simple_takeoff` and :py:attr:`Vehicle.simple_goto` in GUIDED mode.
+Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported 
+using custom MAVLink messages
 (:py:func:`Vehicle.send_mavlink`, :py:func:`Vehicle.message_factory`).
 
 It is also possible to work with vehicle "missions" using the :py:attr:`Vehicle.commands` attribute, and run them in AUTO mode.    
@@ -780,8 +780,7 @@ class Vehicle(HasObservers):
     Parameters can be iterated and are also individually observable.
        
     Vehicle movement is primarily controlled using the :py:attr:`armed` attribute and
-    :py:func:`Vehicle.simple_takeoff() <CommandSequence.takeoff>` and 
-    :py:func:`Vehicle.simple_goto() <CommandSequence.goto>` in GUIDED mode.
+    :py:func:`simple_takeoff` and :py:func:`simple_goto` in GUIDED mode.
 
     It is also possible to work with vehicle "missions" using the :py:attr:`commands` attribute,
     and run them in AUTO mode.    
@@ -1480,7 +1479,11 @@ class Vehicle(HasObservers):
     @property
     def groundspeed(self):
         """
-        Groundspeed in metres/second (``double``).
+        Current groundspeed in metres/second (``double``).
+        
+        This attribute is settable. The set value is the default target groundspeed 
+        when moving the vehicle using :py:func:`simple_goto` (or other position-based 
+        movement commands).
         """
         return self._groundspeed
 
@@ -1499,10 +1502,15 @@ class Vehicle(HasObservers):
         # send command to vehicle
         self.send_mavlink(msg)
 
+
     @property
     def airspeed(self):
         """
         Current airspeed in metres/second (``double``).
+        
+        This attribute is settable. The set value is the default target airspeed 
+        when moving the vehicle using :py:func:`simple_goto` (or other position-based 
+        movement commands).
         """
         return self._airspeed
 
@@ -1636,8 +1644,7 @@ class Vehicle(HasObservers):
         """
         Gets the editable waypoints/current mission for this vehicle (:py:class:`CommandSequence`).
 
-        This can be used to get, create, and modify a mission. It can also be used for direct control of vehicle position
-        (outside missions) using the :py:func:`goto <dronekit.CommandSequence.goto>` method.
+        This can be used to get, create, and modify a mission.
 
         :returns: A :py:class:`CommandSequence` containing the waypoints for this vehicle.
         """
@@ -1650,7 +1657,28 @@ class Vehicle(HasObservers):
         """
         return self._parameters
 
+        
     def simple_takeoff(self, alt=None):
+        """
+        Take off and fly the vehicle to the specified altitude (in metres) and then wait for another command.
+
+        .. note::
+        
+            This function should only be used on Copter vehicles.
+
+
+        The vehicle must be in GUIDED mode and armed before this is called.
+
+        There is no mechanism for notification when the correct altitude is reached, 
+        and if another command arrives before that point (e.g. :py:func:`simple_goto`) it will be run instead.
+
+        .. warning::
+        
+           Apps should code to ensure that the vehicle will reach a safe altitude before 
+           other commands are executed. A good example is provided in the guide topic :doc:`guide/taking_off`.
+        
+        :param alt: Target height, in metres. 
+        """
         if alt is not None:
             altitude = float(alt)
             if math.isnan(alt) or math.isinf(alt):
@@ -1661,19 +1689,28 @@ class Vehicle(HasObservers):
     def simple_goto(self, location, airspeed=None, groundspeed=None):
         '''
         Go to a specified global location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
+        
+        There is no mechanism for notification when the target location is reached, and if another command arrives 
+        before that point that will be executed immediately.
+        
+        You can optionally set the desired airspeed or groundspeed (this is identical to setting 
+        :py:attr:`airspeed` or :py:attr:`groundspeed`). The vehicle will determine what speed to
+        use if the values are not set or if they are both set. 
 
         The method will change the :py:class:`VehicleMode` to ``GUIDED`` if necessary.
 
         .. code:: python
 
-            # Set mode to guided - this is optional as the goto method will change the mode if needed.
+            # Set mode to guided - this is optional as the simple_goto method will change the mode if needed.
             vehicle.mode = VehicleMode("GUIDED")
 
             # Set the LocationGlobal to head towards
             a_location = LocationGlobal(-34.364114, 149.166022, 30)
             vehicle.simple_goto(a_location)
 
-        :param LocationGlobal location: The target location.
+        :param location: The target location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
+        :param airspeed: Target airspeed in m/s (optional).
+        :param groundspeed: Target groundspeed in m/s (optional).
         '''
         if isinstance(location, LocationGlobalRelative):
             frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
@@ -2130,7 +2167,7 @@ class CommandSequence(object):
         The vehicle must be in ``GUIDED`` mode and armed before this is called.
 
         There is no mechanism for notification when the correct altitude is reached, and if another command arrives
-        before that point (e.g. :py:func:`goto`) it will be run instead.
+        before that point (e.g. :py:func:`simple_goto`) it will be run instead.
 
         .. warning::
 

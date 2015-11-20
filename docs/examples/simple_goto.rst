@@ -5,8 +5,8 @@ Example: Simple Go To (Copter)
 ==============================
 
 This example demonstrates how to arm and launch a Copter in GUIDED mode, travel towards a number of target points, and then return 
-to the home location. It uses :py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>`, 
-:py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>` and :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`.
+to the home location. It uses :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>`, 
+:py:func:`Vehicle.simple_goto() <dronekit.Vehicle.simple_goto>` and :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`.
 
 The target locations are centred around the home location when the :ref:`Simulated Vehicle <vagrant-sitl-from-full-image>` is booted; 
 you can edit the latitude and longitude to use more appropriate positions for your own vehicle. 
@@ -93,6 +93,7 @@ On the command prompt you should see (something like):
      Altitude:  18.7299995422
      Altitude:  19.2700004578
     Reached target altitude
+    Set default/target airspeed to 3
     Going to first point...
     Going to second point...
     Returning to Launch
@@ -122,7 +123,7 @@ Takeoff
 
 To launch *Copter* you need to first check that the vehicle :py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`. 
 Then set the mode to ``GUIDED``, arm the vehicle, and call 
-:py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>`. The takeoff code in this example
+:py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>`. The takeoff code in this example
 is explained in the guide topic :ref:`taking-off`.
 
 
@@ -130,13 +131,13 @@ Flying to a point - Goto
 ------------------------
 
 The vehicle is already in ``GUIDED`` mode, so to send it to a certain point we just need to 
-call :py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>` with the target 
+call :py:func:`Vehicle.simple_goto() <dronekit.Vehicle.simple_goto>` with the target 
 :py:class:`dronekit.LocationGlobalRelative`:
 
 .. code-block:: python
 
     point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
-    vehicle.commands.goto(point1)
+    vehicle.simple_goto(point1)
 
     # sleep so we can see the change in map
     time.sleep(30)

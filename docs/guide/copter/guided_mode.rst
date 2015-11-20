@@ -37,7 +37,7 @@ Position control
 
 Controlling the vehicle by explicitly setting the target position is useful when the final position is known/fixed.
 
-The recommended method for position control is :py:func:`Vehicle.commands.goto() <dronekit.CommandSequence.goto>`. 
+The recommended method for position control is :py:func:`Vehicle.simple_goto() <dronekit.Vehicle.simple_goto>`. 
 This takes a :py:class:`LocationGlobal <dronekit.LocationGlobal>` or 
 :py:class:`LocationGlobalRelative <dronekit.LocationGlobalRelative>` argument.
 
@@ -50,10 +50,10 @@ The method is used as shown below:
 
     # Set the target location in global-relative frame
     a_location = LocationGlobalRelative(-34.364114, 149.166022, 30)
-    vehicle.commands.goto(a_location)
+    vehicle.simple_goto(a_location)
 
 
-``Vehicle.commands.goto()`` can be interrupted by a later command, and does not provide any functionality 
+``Vehicle.simple_goto()`` can be interrupted by a later command, and does not provide any functionality 
 to indicate when the vehicle has reached its destination. Developers can use either a time delay or 
 :ref:`measure proximity to the target <example_guided_mode_goto_convenience>` to give the vehicle an 
 opportunity to reach its destination. The :ref:`example-guided-mode-setting-speed-yaw` shows both approaches.
@@ -67,7 +67,7 @@ When moving the vehicle you can send a separate command to :ref:`control the spe
     `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_, specifying 
     a ``type_mask`` bitmask that enables the position parameters. The main difference between these commands is 
     that the former allows you to specify the location relative to the "global" frames (like 
-    ``Vehicle.commands.goto()``), while the later lets you specify the location in NED co-ordinates relative 
+    ``Vehicle.simple_goto()``), while the later lets you specify the location in NED co-ordinates relative 
     to the home location or the vehicle itself. For more information on these options see the example code: 
     :ref:`example_guided_mode_goto_position_target_global_int` and :ref:`example_guided_mode_goto_position_target_local_ned`.
 
@@ -255,9 +255,24 @@ Supported commands
 
 `Copter Commands in Guided Mode <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_ lists all the commands that *can* be sent to Copter in GUIDED mode (in fact most of the commands can be sent in any mode!)
 
-DroneKit-Python provides a friendly Python API that abstracts many of the commands. Where possible you should use the API rather than send messages directly. For example it is better to use :py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>` than to explicitly send the ``MAV_CMD_NAV_TAKEOFF`` command.
+DroneKit-Python provides a friendly Python API that abstracts many of the commands. 
+Where possible you should use the API rather than send messages directly. 
+For example it is better to use :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>` 
+than to explicitly send the ``MAV_CMD_NAV_TAKEOFF`` command.
 
-Some of the MAV_CMD commands that you might want to send include: :ref:`MAV_CMD_CONDITION_YAW <guided_mode_copter_set_yaw>`, :ref:`MAV_CMD_DO_CHANGE_SPEED <guided_mode_copter_set_speed>`, :ref:`MAV_CMD_DO_SET_ROI <guided_mode_copter_set_roi>`, ``MAV_CMD_DO_SET_SERVO``, ``MAV_CMD_DO_REPEAT_SERVO``, ``MAV_CMD_DO_SET_RELAY``, ``MAV_CMD_DO_REPEAT_RELAY``, ``MAV_CMD_DO_FENCE_ENABLE``, ``MAV_CMD_DO_PARACHUTE``, ``MAV_CMD_DO_GRIPPER``, ``MAV_CMD_MISSION_START``. These would be sent in a ``COMMAND_LONG`` message :ref:`as discussed above <guided_mode_how_to_send_commands_command_long>`.
+Some of the MAV_CMD commands that you might want to send include: 
+:ref:`MAV_CMD_CONDITION_YAW <guided_mode_copter_set_yaw>`, 
+:ref:`MAV_CMD_DO_CHANGE_SPEED <guided_mode_copter_set_speed>`, 
+:ref:`MAV_CMD_DO_SET_ROI <guided_mode_copter_set_roi>`, 
+``MAV_CMD_DO_SET_SERVO``, 
+``MAV_CMD_DO_REPEAT_SERVO``, 
+``MAV_CMD_DO_SET_RELAY``, 
+``MAV_CMD_DO_REPEAT_RELAY``, 
+``MAV_CMD_DO_FENCE_ENABLE``, 
+``MAV_CMD_DO_PARACHUTE``, 
+``MAV_CMD_DO_GRIPPER``, 
+``MAV_CMD_MISSION_START``. 
+These would be sent in a ``COMMAND_LONG`` message :ref:`as discussed above <guided_mode_how_to_send_commands_command_long>`.
 
 
 

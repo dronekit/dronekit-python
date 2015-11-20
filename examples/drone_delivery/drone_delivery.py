@@ -72,8 +72,8 @@ class Drone(object):
 
     def takeoff(self):
         self._log("Taking off")
-        self.simple_takeoff(30.0)
-        self.vehicle.flush()
+        self.vehicle.simple_takeoff(30.0)
+
         
     def arm(self, value=True):
         if value:

@@ -83,7 +83,7 @@ On the command prompt you should see (something like):
      Altitude:  4.82999992371
     Reached target altitude
 
-    TRIANGLE path using standard Vehicle.commands.goto()
+    TRIANGLE path using standard Vehicle.simple_goto()
     Position North 80 West 50
     Distance to target:  100.792762965
     Distance to target:  100.25918006
@@ -176,7 +176,7 @@ The example is :ref:`documented in source code <guided_example_source_code>`. Ad
 
 The functions for controlling vehicle movement are:
 
-* :ref:`Vehicle.commands.goto() <guided_mode_copter_position_control>` is the standard 
+* :ref:`Vehicle.simple_goto() <guided_mode_copter_position_control>` is the standard 
   DroneKit position controller method. It is called from :ref:`goto <example_guided_mode_goto_convenience>` to fly a triangular path.
 * :ref:`goto_position_target_global_int() <example_guided_mode_goto_position_target_global_int>` 
   is a position controller that uses the 
@@ -214,12 +214,12 @@ goto() - convenience function
 This is a convenience function for setting position targets in metres North and East of the current location. 
 It reports the distance to the target every two seconds and completes when the target is reached.
 
-This takes a function argument of either :ref:`Vehicle.commands.goto() <guided_mode_copter_position_control>` or 
+This takes a function argument of either :ref:`Vehicle.simple_goto() <guided_mode_copter_position_control>` or 
 :ref:`goto_position_target_global_int() <example_guided_mode_goto_position_target_global_int>`
 
 .. code-block:: python
 
-    def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
+    def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
         currentLocation=vehicle.location.global_relative_frame
         targetLocation=get_location_metres(currentLocation, dNorth, dEast)
         targetDistance=get_distance_metres(currentLocation, targetLocation)
@@ -305,7 +305,7 @@ The function ``goto_position_target_global_int()`` generates a
 `SET_POSITION_TARGET_GLOBAL_INT <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/#set_position_target_global_int>`_ 
 MAVLink message which is used to directly specify the target location of the vehicle. 
 When used with ``MAV_FRAME_GLOBAL_RELATIVE_ALT_INT`` as shown below, 
-this method is effectively the same as :ref:`Vehicle.commands.goto <guided_mode_copter_position_control>`.
+this method is effectively the same as :ref:`Vehicle.simple_goto <guided_mode_copter_position_control>`.
 
 .. code-block:: python
 

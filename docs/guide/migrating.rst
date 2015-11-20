@@ -5,7 +5,7 @@ Migrating to DKPY 2.0
 =====================
 
 DroneKit-Python 2.0 has undergone a significant *architectural* evolution when compared to version 1.x (the library changed from a MAVProxy extension
-to a standalone Python module). The API itself remains largely compatible, with the most important difference being that you
+to a standalone Python module). The API itself remains similar, with the most important difference being that you
 now need to specify the vehicle target address inside the script.
 
 The sections below outline the main migration areas.
@@ -188,7 +188,24 @@ For more information see: :py:attr:`Vehicle.location <dronekit.Vehicle.location>
 :py:attr:`Vehicle.location.global_frame <dronekit.Locations.global_frame>`, 
 :py:attr:`Vehicle.location.global_relative_frame <dronekit.Locations.global_relative_frame>`, 
 :py:attr:`Vehicle.location.local_frame <dronekit.Locations.local_frame>`,  and :ref:`vehicle-information`.
-   
+
+
+Takeoff and movement commands
+-----------------------------
+
+DroneKit-Python v1.x provided guided mode takeoff and movement methods ``Vehicle.commands.takeoff()``
+and ``Vehicle.commands.goto()``. 
+
+DKPY2.0 instead provides :py:func:`Vehicle.simple_takeoff <dronekit.Vehicle.simple_takeoff>` and 
+:py:func:`Vehicle.simple_goto <dronekit.Vehicle.simple_goto>`. These are the same as the old methods
+except that ``simple_goto`` allows you to optionally set the default target groundspeed and airspeed.
+
+
+:py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>` and 
+:py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>` are now settable values. Call these to
+set the default target speed used when moving with :py:func:`Vehicle.simple_goto <dronekit.Vehicle.simple_goto>`
+(or other position-based movement commands).
+ 
     
 .. _migrating_dkpy2_0_home_location:
 
