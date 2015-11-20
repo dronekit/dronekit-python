@@ -4,7 +4,7 @@ mission_basic.py: Example demonstrating basic mission operations including creat
 Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
 """
 
-from dronekit import connect, VehicleMode, LocationGlobal, Command
+from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Command
 import time
 import math
 from pymavlink import mavutil
@@ -156,8 +156,8 @@ def arm_and_takeoff(aTargetAltitude):
             break
         time.sleep(1)
 
-
-print 'Create a new mission'
+        
+print 'Create a new mission (for current location)'
 adds_square_mission(vehicle.location.global_frame,50)
 
 
@@ -165,6 +165,9 @@ adds_square_mission(vehicle.location.global_frame,50)
 arm_and_takeoff(10)
 
 print "Starting mission"
+# Reset mission set to first (0) waypoint
+vehicle.commands.next=0
+
 # Set mode to AUTO to start mission
 vehicle.mode = VehicleMode("AUTO")
 
@@ -173,6 +176,7 @@ vehicle.mode = VehicleMode("AUTO")
 # Demonstrates getting and setting the command number 
 # Uses distance_to_current_waypoint(), a convenience function for finding the 
 #   distance to the next waypoint.
+
 while True:
     nextwaypoint=vehicle.commands.next
     print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())

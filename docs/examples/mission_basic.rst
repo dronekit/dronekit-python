@@ -151,7 +151,7 @@ gets the distance to the next waypoint and
 :py:func:`Vehicle.commands.next <dronekit.CommandSequence.next>` gets the value of
 the next command.
 
-We also show how to move to a specified command using
+We also show how to jump to a specified command using
 :py:func:`Vehicle.commands.next <dronekit.CommandSequence.next>` (note how we skip the third command below):
 
 .. code:: python
@@ -185,7 +185,8 @@ This example has no known issues.
 Source code
 ===========
 
-The full source code at documentation build-time is listed below (`current version on github <https://github.com/dronekit/dronekit-python/blob/master/examples/mission_basic/mission_basic.py>`_):
+The full source code at documentation build-time is listed below 
+(`current version on Github <https://github.com/dronekit/dronekit-python/blob/master/examples/mission_basic/mission_basic.py>`_):
 
 .. literalinclude:: ../../examples/mission_basic/mission_basic.py
    :language: python
