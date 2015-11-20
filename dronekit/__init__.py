@@ -1484,12 +1484,42 @@ class Vehicle(HasObservers):
         """
         return self._groundspeed
 
+    @groundspeed.setter
+    def groundspeed(self, speed):
+        speed_type = 1 # ground speed
+        msg = vehicle.message_factory.command_long_encode(
+            0, 0,    # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
+            0, #confirmation
+            speed_type, #param 1
+            speed, # speed in metres/second
+            -1, 0, 0, 0, 0 #param 3 - 7
+            )
+
+        # send command to vehicle
+        vehicle.send_mavlink(msg)
+
     @property
     def airspeed(self):
         """
         Current airspeed in metres/second (``double``).
         """
         return self._airspeed
+
+    @groundspeed.setter
+    def airspeed(self, speed):
+        speed_type = 0 # air speed
+        msg = vehicle.message_factory.command_long_encode(
+            0, 0,    # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
+            0, #confirmation
+            speed_type, #param 1
+            speed, # speed in metres/second
+            -1, 0, 0, 0, 0 #param 3 - 7
+            )
+
+        # send command to vehicle
+        vehicle.send_mavlink(msg)
 
     @property
     def mount_status(self):
