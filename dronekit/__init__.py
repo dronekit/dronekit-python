@@ -2121,7 +2121,7 @@ class CommandSequence(object):
             self._vehicle._master.mav.command_long_send(0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
                                                         0, 0, 0, 0, 0, 0, 0, altitude)
 
-    def goto(self, location):
+    def goto(self, location, airspeed=None, groundspeed=None):
         '''
         Go to a specified global location (:py:class:`LocationGlobal` or :py:class:`LocationGlobalRelative`).
 
@@ -2158,6 +2158,11 @@ class CommandSequence(object):
                                                     mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
                                                     0, 0, 0, location.lat, location.lon,
                                                     alt)
+
+        if airspeed != None:
+            self._vehicle.airspeed = airspeed
+        if groundspeed != None:
+            self._vehicle.groundspeed = groundspeed
 
     def clear(self):
         '''
