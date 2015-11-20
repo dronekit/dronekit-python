@@ -72,8 +72,8 @@ class Drone(object):
 
     def takeoff(self):
         self._log("Taking off")
-        self.commands.takeoff(30.0)
-        self.vehicle.flush()
+        self.vehicle.simple_takeoff(30.0)
+
         
     def arm(self, value=True):
         if value:
@@ -110,14 +110,14 @@ class Drone(object):
         self._log("Goto: {0}, {1}".format(location, self.altitude))
 
         if relative:
-            self.commands.goto(
+            self.simple_goto(
                 LocationGlobalRelative(
                     float(location[0]), float(location[1]),
                     float(self.altitude)
                 )
             )
         else:
-            self.commands.goto(
+            self.simple_goto(
                 LocationGlobal(
                     float(location[0]), float(location[1]),
                     float(self.altitude)

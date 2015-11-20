@@ -6,7 +6,7 @@ Taking Off
 
 This article explains how to get your *Copter* to take off. At high level, the steps are: check that the vehicle
 is able to arm (can pass pre-arm checks), set the mode to ``GUIDED``, arm the vehicle, 
-and then call :py:func:`Vehicle.commands.takeoff() <dronekit.CommandSequence.takeoff>`.  
+and then call :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>`.  
 
 .. todo:: 
 
@@ -53,7 +53,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         print "Taking off!"
 
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
-        #  after Vehicle.commands.takeoff will execute immediately).
+        #  after Vehicle.simple_takeoff will execute immediately).
         while True:
             print " Altitude: ", vehicle.location.global_relative_frame.alt
             if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
@@ -100,7 +100,7 @@ vehicle has booted, EKF is ready, and it has a GPS lock. These checks are encaps
 
 
 Once the vehicle is ready we set the mode to ``GUIDED`` and arm it. We then wait until arming is confirmed 
-before sending the :py:func:`takeoff <dronekit.CommandSequence.takeoff>` command.
+before sending the :py:func:`takeoff <dronekit.Vehicle.simple_takeoff>` command.
 
 .. code-block:: python
 
@@ -114,7 +114,7 @@ before sending the :py:func:`takeoff <dronekit.CommandSequence.takeoff>` command
         time.sleep(1)
 
     print "Taking off!"
-    vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
 The ``takeoff`` command is asynchronous and can be interrupted if another command arrives before it reaches 
 the target altitude. This could have potentially serious consequences if the vehicle is commanded to move 

@@ -45,11 +45,11 @@ def test_timeout(connpath):
         assert_equals(vehicle.armed, True)
 
         # Take off to target altitude
-        vehicle.commands.takeoff(aTargetAltitude)
+        vehicle.simple_takeoff(aTargetAltitude)
 
         # Wait until the vehicle reaches a safe height before
         # processing the goto (otherwise the command after
-        # Vehicle.commands.takeoff will execute immediately).
+        # Vehicle.simple_takeoff will execute immediately).
         while True:
             # print " Altitude: ", vehicle.location.alt
             # Test for altitude just below target, in case of undershoot.

@@ -26,8 +26,6 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.location.local_frame <dronekit.Locations.local_frame>`, 
 :py:attr:`Vehicle.attitude <dronekit.Vehicle.attitude>`,
 :py:attr:`Vehicle.velocity <dronekit.Vehicle.velocity>`,
-:py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`,
-:py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`,
 :py:attr:`Vehicle.gps_0 <dronekit.Vehicle.gps_0>`,
 :py:attr:`Vehicle.mount_status <dronekit.Vehicle.mount_status>`,
 :py:attr:`Vehicle.battery <dronekit.Vehicle.battery>`,
@@ -38,6 +36,8 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:func:`Vehicle.system_status <dronekit.Vehicle.system_status>`,
 :py:func:`Vehicle.heading <dronekit.Vehicle.heading>`,
 :py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>`,
+:py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`,
+:py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`,
 :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`,
 :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`.
 
@@ -46,6 +46,8 @@ Attributes are initially created with ``None`` values for their members. In most
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>`, 
 but only the :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>`, 
+:py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`,
+:py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`,
 :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` and 
 :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>` 
 status can be :ref:`written <vehicle_state_set_attributes>`.
@@ -112,7 +114,8 @@ regularly updated from MAVLink messages sent by the vehicle).
 Setting attributes
 ------------------
 
-Only the :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` and :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>` 
+Only the :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`
+, :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>` and :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`, 
 attributes can be written (``Vehicle.home_location`` is a special case, as :ref:`discussed below <vehicle_state_home_location>`).
 
 The attributes are set by assigning a value:
@@ -121,12 +124,15 @@ The attributes are set by assigning a value:
 
     #disarm the vehicle
     vehicle.armed = False
-
+    
+    #set the default groundspeed to be used in movement commands
+    vehicle.groundspeed = 3.2
 
 .. warning::
 
     Changing a value is **not guaranteed to succeed**. 
-    For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks.
+    For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks,
+    and it is possible that the message will not even arrive at the vehicle.
 
     While the autopilot does send information about the success (or failure) of the request, 
     this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
@@ -142,7 +148,7 @@ to confirm they have changed before proceeding.
     while not vehicle.mode.name=='GUIDED' and not vehicle.armed and not api.exit:
         print " Getting ready to take off ..."
         time.sleep(1)
-    
+
 
 
 .. _vehicle_state_observe_attributes:

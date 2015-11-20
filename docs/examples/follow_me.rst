@@ -108,7 +108,7 @@ Most of the example should be fairly familiar as it uses the same code as other 
 :ref:`taking off <taking-off>`, and closing the vehicle object. 
 
 The example-specific code is shown below.  All this does is attempt to get a gps socket and read the location in a two second loop. If it is successful it 
-reports the value and uses :py:func:`Vehicle.commands.goto <dronekit.CommandSequence.goto>` to move to the new position. The loop exits when 
+reports the value and uses :py:func:`Vehicle.simple_goto <dronekit.Vehicle.simple_goto>` to move to the new position. The loop exits when 
 the mode is changed. 
 
 .. code-block:: python
@@ -141,7 +141,7 @@ the mode is changed.
                 print "Going to: %s" % dest
 
                 # A better implementation would only send new waypoints if the position had changed significantly
-                vehicle.commands.goto(dest)
+                vehicle.simple_goto(dest)
 
                 # Send a new target every two seconds
                 # For a complete implementation of follow me you'd want adjust this delay

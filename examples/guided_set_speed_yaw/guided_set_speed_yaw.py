@@ -47,10 +47,10 @@ def arm_and_takeoff(aTargetAltitude):
         time.sleep(1)
 
     print "Taking off!"
-    vehicle.commands.takeoff(aTargetAltitude) # Take off to target altitude
+    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
-    #  after Vehicle.commands.takeoff will execute immediately).
+    #  after Vehicle.simple_takeoff will execute immediately).
     while True:
         print " Altitude: ", vehicle.location.global_relative_frame.alt      
         if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
@@ -238,7 +238,7 @@ The methods include:
     MAV_FRAME_GLOBAL_RELATIVE_ALT_INT frame
 * goto_position_target_local_ned - Sets position using SET_POSITION_TARGET_LOCAL_NED command in 
     MAV_FRAME_BODY_NED frame
-* goto - A convenience function that can use Vehicle.commands.goto (default) or 
+* goto - A convenience function that can use Vehicle.simple_goto (default) or 
     goto_position_target_global_int to travel to a specific position in metres 
     North and East from the current location. 
     This method reports distance to the destination.
@@ -301,13 +301,13 @@ def goto_position_target_local_ned(north, east, down):
 
 
 
-def goto(dNorth, dEast, gotoFunction=vehicle.commands.goto):
+def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
     """
     Moves the vehicle to a position dNorth metres North and dEast metres East of the current position.
 
     The method takes a function pointer argument with a single `dronekit.lib.LocationGlobal` parameter for 
     the target position. This allows it to be called with different position-setting commands. 
-    By default it uses the standard method: dronekit.lib.Vehicle.commands.goto().
+    By default it uses the standard method: dronekit.lib.Vehicle.simple_goto().
 
     The method reports the distance to target every two seconds.
     """
@@ -413,13 +413,13 @@ def send_global_velocity(velocity_x, velocity_y, velocity_z, duration):
 
 
 """
-Fly a triangular path using the standard Vehicle.commands.goto() method.
+Fly a triangular path using the standard Vehicle.simple_goto() method.
 
 The method is called indirectly via a custom "goto" that allows the target position to be
 specified as a distance in metres (North/East) from the current position, and which reports
 the distance-to-target.
 """	
-print("TRIANGLE path using standard Vehicle.commands.goto()")
+print("TRIANGLE path using standard Vehicle.simple_goto()")
 print("Set speed to 5m/s.")
 set_speed(5)
 print("Position North 80 West 50")
