@@ -58,7 +58,27 @@ to indicate when the vehicle has reached its destination. Developers can use eit
 :ref:`measure proximity to the target <example_guided_mode_goto_convenience>` to give the vehicle an 
 opportunity to reach its destination. The :ref:`example-guided-mode-setting-speed-yaw` shows both approaches.
 
-When moving the vehicle you can send a separate command to :ref:`control the speed <guided_mode_copter_set_speed>` (and other vehicle behaviour).
+You can optionally set the target movement speed using the function's ``airspeed`` or ``groundspeed`` parameters 
+(this is equivalent to setting :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`
+or :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`). The speed setting will then be used
+for all positional movement commands until it is set to another value. 
+
+.. code-block:: python
+
+    # Set airspeed using attribute
+    vehicle.airspeed = 5 #m/s
+
+    # Set groundspeed using attribute
+    vehicle.groundspeed = 7.5 #m/s
+    
+    # Set groundspeed using `simple_goto()` parameter
+    vehicle.simple_goto(a_location, groundspeed=10)
+
+.. note::
+
+    ``Vehicle.simple_goto()`` will use the last speed value set. If both speed values are set at the
+    same time the resulting behaviour will be vehicle dependent.
+
 
 .. tip::
 
@@ -256,13 +276,14 @@ Supported commands
 `Copter Commands in Guided Mode <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_ lists all the commands that *can* be sent to Copter in GUIDED mode (in fact most of the commands can be sent in any mode!)
 
 DroneKit-Python provides a friendly Python API that abstracts many of the commands. 
-Where possible you should use the API rather than send messages directly. 
-For example it is better to use :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>` 
-than to explicitly send the ``MAV_CMD_NAV_TAKEOFF`` command.
+Where possible you should use the API rather than send messages directly> For example, use:
+
+* :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>` instead of the ``MAV_CMD_NAV_TAKEOFF`` command. 
+* :py:func:`Vehicle.simple_goto() <dronekit.Vehicle.simple_goto>`, :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`, 
+   or :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>` rather than ``MAV_CMD_DO_CHANGE_SPEED``.
 
 Some of the MAV_CMD commands that you might want to send include: 
 :ref:`MAV_CMD_CONDITION_YAW <guided_mode_copter_set_yaw>`, 
-:ref:`MAV_CMD_DO_CHANGE_SPEED <guided_mode_copter_set_speed>`, 
 :ref:`MAV_CMD_DO_SET_ROI <guided_mode_copter_set_roi>`, 
 ``MAV_CMD_DO_SET_SERVO``, 
 ``MAV_CMD_DO_REPEAT_SERVO``, 
@@ -315,36 +336,6 @@ The command allows you to specify that whether the heading is an absolute angle 
       If you need to yaw immediately following takeoff then send a command to "move" to your current position.
     * :ref:`guided_mode_copter_set_roi` may work to get yaw to track a particular point (depending on the gimbal setup).
 
-
-
-.. _guided_mode_copter_set_speed:
-
-Setting the speed
------------------
-
-Send `MAV_CMD_DO_CHANGE_SPEED <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_change_speed>`_ to change the current speed (metres/second) when travelling to a point. 
-
-.. code-block:: python
-
-    def set_speed(speed):
-        msg = vehicle.message_factory.command_long_encode(
-            0, 0,    # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
-            0, #confirmation
-            0, #param 1
-            speed, # speed in metres/second
-            0, 0, 0, 0, 0 #param 3 - 7
-            )
-
-        # send command to vehicle
-        vehicle.send_mavlink(msg)
-
-
-The command is useful when setting the vehicle position directly. It is not needed when controlling movement using velocity vectors.
-
-.. note:: 
-
-    In AC3.2.1 Copter will accelerate to the target speed across the journey and then decelerate as it reaches the target. In AC3.3 the speed changes immediately.
 
 
 
@@ -430,7 +421,14 @@ to the Earth's poles.
         #New position in decimal degrees
         newlat = original_location.lat + (dLat * 180/math.pi)
         newlon = original_location.lon + (dLon * 180/math.pi)
-        return LocationGlobal(newlat, newlon,original_location.alt)
+        if type(original_location) is LocationGlobal:
+            targetlocation=LocationGlobal(newlat, newlon,original_location.alt)
+        elif type(original_location) is LocationGlobalRelative:
+            targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt)
+        else:
+            raise Exception("Invalid Location object passed")
+            
+        return targetlocation;
 
 
 .. code-block:: python

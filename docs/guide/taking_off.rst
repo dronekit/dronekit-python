@@ -16,10 +16,16 @@ and then call :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeof
 
 .. tip::
 
-    Copter is always started in ``GUIDED`` mode. Copter will not take off ``AUTO`` mode even if you have a 
-    `MAV_CMD_NAV_TAKEOFF <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#copter-2>`_ waypoint 
-    in your mission (you can run a mission by switching to ``AUTO`` mode after you're in the air).
+    Copter is usually started in ``GUIDED`` mode. 
     
+    * For Copter 3.2.1 and earlier you cannot take off in ``AUTO`` mode (if you need to run a mission you take off
+      in ``GUIDED`` mode and then switch to ``AUTO`` mode once you're in the air).    
+    * Starting from Copter 3.3 you can takeoff in ``AUTO`` mode (provided the mission has a 
+      `MAV_CMD_NAV_TAKEOFF <http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#copter-2>`_ command)
+      but the mission will not start until you explicitly send the 
+      `MAV_CMD_MISSION_START <http://copter.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_mission_start>`_ 
+      message.
+      
     By contrast, Plane apps take off using the ``MAV_CMD_NAV_TAKEOFF`` command in a mission. Plane should first arm and then change to
     ``AUTO`` mode to start the mission. 
 
@@ -56,7 +62,8 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         #  after Vehicle.simple_takeoff will execute immediately).
         while True:
             print " Altitude: ", vehicle.location.global_relative_frame.alt
-            if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+            #Break and return from function just below target altitude. 
+            if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95:
                 print "Reached target altitude"
                 break
             time.sleep(1)
@@ -128,7 +135,8 @@ concerned about reaching a particular height, a simpler implementation might jus
 
         while True:
             print " Altitude: ", vehicle.location.global_relative_frame.alt
-            if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Just below target, in case of undershoot.
+            #Break and return from function just below target altitude. 
+            if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95:
                 print "Reached target altitude"
                 break
             time.sleep(1)

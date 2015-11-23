@@ -1,3 +1,4 @@
+
 """
 guided_set_speed_yaw.py: (Copter Only)
 
@@ -6,7 +7,7 @@ This example shows how to move/direct Copter and send commands in GUIDED mode us
 Example documentation: http://python.dronekit.io/examples/guided-set-speed-yaw-demo.html
 """
 
-from dronekit import connect, VehicleMode, LocationGlobal
+from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil # Needed for command message definitions
 import time
 import math
@@ -132,34 +133,6 @@ def set_roi(location):
     vehicle.send_mavlink(msg)
 
 
-def set_speed(speed):
-    """
-    Send MAV_CMD_DO_CHANGE_SPEED to change the current speed when travelling to a point.
-
-    In AC3.2.1 Copter will accelerate to this speed near the centre of its journey and then 
-    decelerate as it reaches the target. In AC3.3 the speed changes immediately.
-
-    This method is only useful when controlling the vehicle using position/goto commands. 
-    It is not needed when controlling vehicle movement using velocity components.
-
-    For more information see: 
-    http://copter.ardupilot.com/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_do_change_speed
-    """
-    # create the MAV_CMD_DO_CHANGE_SPEED command
-    msg = vehicle.message_factory.command_long_encode(
-        0, 0,    # target system, target component
-        mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
-        0, #confirmation
-        0, #param 1
-        speed, # speed
-        0, 0, 0, 0, 0 #param 3 - 7
-        )
-
-    # send command to vehicle
-    vehicle.send_mavlink(msg)
-
-
-
 
 """
 Functions to make it easy to convert between the different frames-of-reference. In particular these
@@ -197,7 +170,14 @@ def get_location_metres(original_location, dNorth, dEast):
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
     newlon = original_location.lon + (dLon * 180/math.pi)
-    return LocationGlobal(newlat, newlon,original_location.alt)
+    if type(original_location) is LocationGlobal:
+        targetlocation=LocationGlobal(newlat, newlon,original_location.alt)
+    elif type(original_location) is LocationGlobalRelative:
+        targetlocation=LocationGlobalRelative(newlat, newlon,original_location.alt)
+    else:
+        raise Exception("Invalid Location object passed")
+        
+    return targetlocation;
 
 
 def get_distance_metres(aLocation1, aLocation2):
@@ -315,9 +295,6 @@ def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
     targetLocation=get_location_metres(currentLocation, dNorth, dEast)
     targetDistance=get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
-    
-    
-
 
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
         remainingDistance=get_distance_metres(vehicle.location.global_relative_frame, targetLocation)
@@ -420,8 +397,10 @@ specified as a distance in metres (North/East) from the current position, and wh
 the distance-to-target.
 """	
 print("TRIANGLE path using standard Vehicle.simple_goto()")
-print("Set speed to 5m/s.")
-set_speed(5)
+
+print("Set groundspeed to 5m/s.")
+vehicle.groundspeed=5
+
 print("Position North 80 West 50")
 goto(80, -50)
 
@@ -450,17 +429,17 @@ In AC3.3 the speed changes immediately.
 print("TRIANGLE path using standard SET_POSITION_TARGET_GLOBAL_INT message and with varying speed.")
 print("Position South 100 West 130")
 
-print("Set speed to 5m/s.")
-set_speed(5)
+print("Set groundspeed to 5m/s.")
+vehicle.groundspeed=5
 goto(-100, -130, goto_position_target_global_int)
 
-print("Set speed to 15m/s (max).")
-set_speed(15)
+print("Set groundspeed to 15m/s (max).")
+vehicle.groundspeed=15
 print("Position South 0 East 200")
 goto(0, 260, goto_position_target_global_int)
 
-print("Set speed to 10m/s (max).")
-set_speed(10)
+print("Set airspeed to 10m/s (max).")
+vehicle.airspeed=10
 
 print("Position North 100 West 130")
 goto(100, -130, goto_position_target_global_int)
