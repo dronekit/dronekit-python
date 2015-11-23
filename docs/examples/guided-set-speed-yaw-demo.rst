@@ -200,7 +200,6 @@ The functions sending immediate commands are:
 
 * :ref:`condition_yaw() <guided_mode_copter_set_yaw>` 
 * :ref:`set_roi(location) <guided_mode_copter_set_roi>`
-* :ref:`set_speed(speed) <guided_mode_copter_set_speed>`
 
 The example uses a number functions to convert global locations co-ordinates (decimal degrees) into local 
 coordinates relative to the vehicle (in metres). These are :ref:`described in the guide <guided_mode_copter_useful_conversion_functions>`.
