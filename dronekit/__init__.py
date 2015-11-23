@@ -2283,7 +2283,7 @@ def connect(ip,
             _initialize=True,
             wait_ready=None,
             status_printer=errprinter,
-            vehicle_class=Vehicle,
+            vehicle_class=None,
             rate=4,
             baud=115200,
             heartbeat_timeout=30,
@@ -2337,6 +2337,10 @@ def connect(ip,
 
     :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
     """
+
+    if not vehicle_class:
+        vehicle_class = Vehicle
+
     handler = MAVConnection(ip, baud=baud, source_system=source_system)
     vehicle = vehicle_class(handler)
     
