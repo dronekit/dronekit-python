@@ -50,8 +50,9 @@ def arm_and_takeoff(aTargetAltitude):
     # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
     #  after Vehicle.simple_takeoff will execute immediately).
     while True:
-        print " Altitude: ", vehicle.location.global_relative_frame.alt      
-        if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: #Trigger just below target alt.
+        print " Altitude: ", vehicle.location.global_relative_frame.alt 
+        #Break and return from function just below target altitude.        
+        if vehicle.location.global_relative_frame.alt>=aTargetAltitude*0.95: 
             print "Reached target altitude"
             break
         time.sleep(1)
@@ -61,14 +62,14 @@ arm_and_takeoff(10)
 print "Set default/target airspeed to 3"
 vehicle.airspeed=3
 
-print "Going to first point..."
+print "Going towards first point for 30 seconds ..."
 point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
 vehicle.simple_goto(point1)
 
 # sleep so we can see the change in map
 time.sleep(30)
 
-print "Going to second point (groundspeed set to 10 m/s) ..."
+print "Going towards second point for 30 seconds (groundspeed set to 10 m/s) ..."
 point2 = LocationGlobalRelative(-35.363244, 149.168801, 20)
 vehicle.simple_goto(point2, groundspeed=10)
 

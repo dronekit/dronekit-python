@@ -20,7 +20,7 @@ you can edit the latitude and longitude to use more appropriate positions for yo
    
 
 .. figure:: simple_goto_example_copter_path.png
-   :width: 50 %
+   :width: 75 %
    :alt: Setting destination using position and changing speed and ROI
 
    Simple Goto Example: Flight path
@@ -67,35 +67,27 @@ On the command prompt you should see (something like):
 .. code-block:: bash
 
     Connecting to vehicle on: 127.0.0.1:14550
-    >>> APM:Copter V3.4-dev (e0810c2e)
+    >>> APM:Copter V3.4-dev (d52279af)
     >>> Frame: QUAD
     Basic pre-arm checks
-     Waiting for vehicle to initialise...
-     Waiting for vehicle to initialise...
-     Waiting for vehicle to initialise...
-     Waiting for vehicle to initialise...
-     Waiting for vehicle to initialise...
     Arming motors
      Waiting for arming...
-     Waiting for arming...
-     Waiting for arming...
     >>> ARMING MOTORS
-    >>> GROUND START
-     Waiting for arming...
-     Waiting for arming...
     >>> Initialising APM...
     Taking off!
      Altitude:  0.0
-     Altitude:  0.00999999977648
-     Altitude:  0.25
-     Altitude:  0.5
-    ...
-     Altitude:  18.7299995422
-     Altitude:  19.2700004578
+     Altitude:  0.0
+     Altitude:  0.1
+     Altitude:  1.25
+     Altitude:  3.08
+     Altitude:  5.14
+     Altitude:  7.28
+     Altitude:  9.2
+     Altitude:  9.71
     Reached target altitude
     Set default/target airspeed to 3
-    Going to first point...
-    Going to second point...
+    Going towards first point for 30 seconds ...
+    Going towards second point for 30 seconds (groundspeed set to 10 m/s) ...
     Returning to Launch
     Close vehicle object
 
@@ -136,16 +128,32 @@ call :py:func:`Vehicle.simple_goto() <dronekit.Vehicle.simple_goto>` with the ta
 
 .. code-block:: python
 
+    # set the default travel speed
+    vehicle.airspeed=3
+
     point1 = LocationGlobalRelative(-35.361354, 149.165218, 20)
     vehicle.simple_goto(point1)
 
     # sleep so we can see the change in map
     time.sleep(30)
 
-Without some sort of "wait" the next command would be executed immediately. In this example we just 
-sleep for 30 seconds, set a new destination and then sleep another 30 seconds (the vehicle doesn't reach
-its target destination in either 30 second wait). The script doesn't report anything during these sleep periods, 
-but you can observe the vehicle's movement on a ground station map.
+.. tip:: 
+
+    Without some sort of "wait" the next command would be executed immediately. In this example we just 
+    sleep for 30 seconds before executing the next command.
+
+When moving towards the first point we set the airspeed using the :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>` 
+attribute. For the second point the example specifies the target groundspeed when calling 
+:py:func:`Vehicle.simple_goto() <dronekit.Vehicle.simple_goto>`
+
+.. code-block:: python
+
+    vehicle.simple_goto(point2, groundspeed=10)
+
+.. tip::
+
+    The script doesn't report anything during the sleep periods, 
+    but you can observe the vehicle's movement on a ground station map.
 
 
 
@@ -153,7 +161,8 @@ but you can observe the vehicle's movement on a ground station map.
 RTL - Return to launch
 ------------------------
 
-To return to the home position and land, we set the mode to ``RTL``:
+To return to the home position and land, we set the mode to ``RTL``.
+The vehicle travels at the previously set default speed:
 
 .. code-block:: python
 

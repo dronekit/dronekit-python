@@ -2158,25 +2158,6 @@ class CommandSequence(object):
         cmds.add(cmd)
         cmds.upload()
 
-    .. py:function:: takeoff(altitude)
-
-        .. note:: This function should only be used on Copter vehicles.
-
-        Take off and fly the vehicle to the specified altitude (in metres) and then wait for another command.
-
-        The vehicle must be in ``GUIDED`` mode and armed before this is called.
-
-        There is no mechanism for notification when the correct altitude is reached, and if another command arrives
-        before that point (e.g. :py:func:`simple_goto`) it will be run instead.
-
-        .. warning::
-
-            Apps should code to ensure that the vehicle will reach a safe altitude before other commands are executed.
-            A good example is provided in the guide topic :ref:`taking-off`.
-
-        :param altitude: Target height, in metres.
-
-        .. todo:: This is a hack. The actual function should be defined here. See https://github.com/dronekit/dronekit-python/issues/64
     """
 
     def __init__(self, vehicle):
