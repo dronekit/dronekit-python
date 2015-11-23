@@ -56,35 +56,30 @@ In summary, after cloning the repository:
        The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
        This is the default value for the parameter, and may be omitted. 
 
-#. After a short while you should be able to reach your new webserver at http://localhost:8080. 
+   On the command prompt you should see (something like):
 
+   .. code-block:: bash
 
-On the command prompt you should see (something like):
+       Connecting to vehicle on: 127.0.0.1:14550
+       >>> Frame: QUAD
+       [DEBUG]: Connected to vehicle.
+       [DEBUG]: DroneDelivery Start
+       [DEBUG]: Waiting for ability to arm...
+       [DEBUG]: Running initial boot sequence
+       [DEBUG]: Changing to mode: GUIDED
+       [DEBUG]: Waiting for arming...
+       [DEBUG]: Taking off
+       http://localhost:8080/
+    
+#. After a short while you should be able to reach your new webserver at http://localhost:8080.  
+   The command prompt will show something like  
+    
+   .. code-block:: bash
 
-.. code-block:: bash
-
-    \dronekit-python\examples\drone_delivery>drone_delivery.py
-    local path: E:\deleteme\dronekit-python\examples\drone_delivery
-    Connecting to vehicle on: 127.0.0.1:14550
-    >>> ☺APM:Copter V3.4-dev (e0810c2e)
-    >>> ☺Frame: QUAD
-    connected ...
-    [DEBUG]: DroneDelivery Start
-    [DEBUG]: Waiting for GPS Lock
-    [DEBUG]: DroneDelivery Armed Callback
-    [DEBUG]: GPS: GPSInfo:fix=3,num_sat=10
-    [DEBUG]: Running initial boot sequence
-    [DEBUG]: Arming
-    [DEBUG]: Taking off
-    [DEBUG]: Mode: GUIDED
-    INFO:cherrypy.error:[21/Oct/2015:16:33:15] ENGINE Bus STARTING
-    INFO:cherrypy.error:[21/Oct/2015:16:33:15] ENGINE Started monitor thread 'Autoreloader'.
-    INFO:cherrypy.error:[21/Oct/2015:16:33:15] ENGINE Started monitor thread '_TimeoutMonitor'.
-    INFO:cherrypy.error:[21/Oct/2015:16:33:15] ENGINE Serving on http://0.0.0.0:8080
-    INFO:cherrypy.error:[21/Oct/2015:16:33:15] ENGINE Bus STARTED
-    >>> ☺ARMING MOTORS
-    >>> ☺Initialising APM...
-    ...
+       [DEBUG]: Goto: [u'-35.4', u'149.2'], 29.98
+    
+   On the web server you can use the **Command** button to set a target location and 
+   the **Track** button to view the moving vehicle (see the screenshots below).
     
 
 Screenshots
@@ -110,20 +105,23 @@ For instance, `drone_delivery.py <https://github.com/dronekit/dronekit-python/bl
 
 .. code-block:: python
 
-    self.vehicle.add_attribute_observer('location', self.location_callback)
+    self.vehicle.add_attribute_listener('location', self.location_callback)
 
     ...
 
-    def location_callback(self, location):
-        location = location.global_frame
+    def location_callback(self, vehicle, name, location):
+        if location.global_relative_frame.alt is not None:
+            self.altitude = location.global_relative_frame.alt
 
-        if location.alt is not None:
-            self.altitude = location.alt
-
-        self.current_location = location
+        self.current_location = location.global_relative_frame
 
 
 This results in DroneKit calling our ``location_callback`` method any time the location attribute gets changed.
+
+.. tip:: 
+
+    It is also possible (and often more elegant) to add listeners using a decorator 
+    - see :py:func:`Vehicle.on_attribute <dronekit.Vehicle.on_attribute>`.
 
 
 

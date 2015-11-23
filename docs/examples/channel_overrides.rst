@@ -9,14 +9,14 @@ This example shows how to get channel information and to get/set channel-overrid
 
 .. warning::
 
-    Channel overrides (a.k.a "RC overrides") are highly discommended (they are primarily implemented 
+    Channel overrides (a.k.a. "RC overrides") are highly dis-commended (they are primarily intended 
     for simulating user input and when implementing certain types of joystick control).
 
     Instead use the appropriate MAVLink commands like DO_SET_SERVO/DO_SET_RELAY, or more generally set 
     the desired position or direction/speed.
 
     If you have no choice but to use a channel-override please explain why in a 
-    `github issue <https://github.com/dronekit/dronekit-python/issues>`_ and we will attempt to find a 
+    `Github issue <https://github.com/dronekit/dronekit-python/issues>`_ and we will attempt to find a 
     better alternative.
     
 
@@ -123,8 +123,8 @@ from the UAV, based on the RC inputs from the transmitter. These can be read eit
     print " Ch1: %s" % vehicle.channels['1']
     print " Ch2: %s" % vehicle.channels['2']
 
-You can override the values sent to the vehicle by the autopilot using :py:attr:`Vehicle.channels.overrides <dronekit.Channels.overrides>`
-(although this is not recommended)!  The overrides can be written individually using an indexing syntax or as a set using a dictionary syntax.
+You can override the values sent to the vehicle by the autopilot using :py:attr:`Vehicle.channels.overrides <dronekit.Channels.overrides>`.  
+The overrides can be written individually using an indexing syntax or as a set using a dictionary syntax.
 
 .. code:: python
 

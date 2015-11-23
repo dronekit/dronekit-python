@@ -87,7 +87,7 @@ def download_mission():
     missionlist=[]
     cmds = vehicle.commands
     cmds.download()
-    cmds.wait_valid()
+    cmds.wait_ready()
     for cmd in cmds:
         missionlist.append(cmd)
     return missionlist

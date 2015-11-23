@@ -400,7 +400,7 @@ Get distance to waypoint
         lat=missionitem.x
         lon=missionitem.y
         alt=missionitem.z
-        targetWaypointLocation=LocationGlobal(lat,lon,alt)
+        targetWaypointLocation=LocationGlobalRelative(lat,lon,alt)
         distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
         return distancetopoint
 
@@ -423,12 +423,3 @@ Useful Links
 
 * `MAVLink mission command messages <http://planner.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd>`_ (all vehicle types - wiki).
 
-
-.. _auto_mode_mission_known_issues: 
-
-Known Issues
-============
-
-AUTO Mode/mission control has the following known issues (at time of writing):
-
-* `#390 Vehicle.commands.next is not writeable <#https://github.com/dronekit/dronekit-python/issues/390>`_.
