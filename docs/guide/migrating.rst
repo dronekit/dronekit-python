@@ -10,6 +10,11 @@ now need to specify the vehicle target address inside the script.
 
 The sections below outline the main migration areas.
 
+.. note::
+
+    *DroneKit-Python version 1.5* has now been superseded (see these links for legacy `documentation <http://python.dronekit.io/1.5.0/>`_ 
+    and `examples <https://github.com/dronekit/dronekit-python/tree/81bbd80076fb212c9305751333d9924e6b762434/examples>`_).
+
 
 Installation
 ============
