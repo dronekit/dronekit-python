@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '2.0.0rc13'
+version = '2.0.0'
 
 setup(name='dronekit',
       zip_safe=True,
@@ -16,7 +16,7 @@ setup(name='dronekit',
       ],
       author_email='tim@3drobotics.com, kevinh@geeksville.com',
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
           'Intended Audience :: Science/Research',
           'License :: OSI Approved :: Apache Software License',
