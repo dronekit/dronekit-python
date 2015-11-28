@@ -48,5 +48,5 @@ class CloudClient(object):
     def _request(self, url, data):
         self.response = requests.get("%s%s" % (self.BASE_URL, url), headers=self.headers)
         if self.response.status_code == 404:
-            raise CloudError(self.response.status_code, 'Unkown Endpoint', self.response)
+            raise CloudError(self.response.status_code, 'Unknown Endpoint', self.response)
         return self.response
