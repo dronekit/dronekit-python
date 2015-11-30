@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 2.0.1 (2015-11-30)
+
+### Bug Fixes:
+
+* Updates `requests` dependency to work >=2.5.0
+
+
 ## Version 2.0.0 (2015-11-23)
 
 ### New Features:
