@@ -137,18 +137,22 @@ the more common connection types:
    * - Linux computer connected to the vehicle via USB
      - ``/dev/ttyUSB0``
    * - Linux computer connected to the vehicle via Serial port (RaspberryPi example)
-     - ``/dev/ttyAMA0``
-     
-       .. note:: 
-           To connect on a serial port you may also need to reduce the baud rate to 57600 
-           - e.g. ``vehicle=connect('/dev/ttyAMA0', baud=57600)``
+     - ``/dev/ttyAMA0`` (also set ``baud=57600``)
    * - SITL connected to the vehicle via UDP
      - ``127.0.0.1:14550``
    * - OSX computer connected to the vehicle via USB
      - ``dev/cu.usbmodem1``
    * - Windows computer connected to the vehicle via USB (in this case on COM14)
      - ``com14``
-
+   * - Windows computer connected to the vehicle using a 3DR Telemetry Radio on COM14
+     - ``com14`` (also set ``baud=57600``)
+     
+.. note:: 
+    The default baud rate may not be appropriate for all connection types (check this 
+    if you can connect via a GCS but not DroneKit).
+    You can specify a different rate using the :py:func:`baud <dronekit.connect>` 
+    parameter when connecting. For example: ``vehicle=connect('com14', baud=57600)``.
+     
 .. tip::
 
     The strings above are the same as you would use if connecting with MAVProxy. For other options see the 
