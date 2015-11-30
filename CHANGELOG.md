@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 2.0.1 (2015-11-30)
+## Version 2.0.2 (2015-11-30)
 
 ### Bug Fixes:
 
