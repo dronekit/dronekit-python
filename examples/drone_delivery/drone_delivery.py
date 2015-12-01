@@ -110,14 +110,14 @@ class Drone(object):
         self._log("Goto: {0}, {1}".format(location, self.altitude))
 
         if relative:
-            self.simple_goto(
+            self.vehicle.simple_goto(
                 LocationGlobalRelative(
                     float(location[0]), float(location[1]),
                     float(self.altitude)
                 )
             )
         else:
-            self.simple_goto(
+            self.vehicle.simple_goto(
                 LocationGlobal(
                     float(location[0]), float(location[1]),
                     float(self.altitude)
