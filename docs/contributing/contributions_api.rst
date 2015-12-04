@@ -57,40 +57,58 @@ For several tests, you may be required to set an **environment variable**. In yo
 Unit tests
 ----------
 
-Unit tests use *nosetests*. On any OS, enter the following command on a terminal/prompt to run the unit tests (and display a summary of the results):
+All new features that are written should be created with accompanying unit tests. 
+
+A good unit tests should:
+
+#. Verify all code paths that code can take.
+#. Be concise and straightforward.
+#. Be documented.
+
+DroneKit-Python unit tests are based on the `nose <https://nose.readthedocs.org/en/latest/>`_ test framework,
+and use `mock <https://docs.python.org/dev/library/unittest.mock.html>`_ to simulate objects and APIs and 
+ensure correct results.
+
+To run the tests and display a summary of the results (on any OS), 
+navigate to the **dronekit-python** folder and enter the following 
+command on a terminal/prompt:
 
 .. code:: bash
 
-    cd dronekit-python
     nosetests tests/unit
+ 
 
-For unit tests, `mock <https://docs.python.org/dev/library/unittest.mock.html>`_ is used to simulate objects and APIs and ensure correct results.
 
 
 Writing a new unit test
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Good unit tests should:
+Create any file named :file:`test_XXX.py` in the :file:`tests/unit` folder to add it as a test. 
+Feel free to copy from existing tests to get started. When *nosetests* is run, it will add your new test to its summary.
 
-#. Accompany all new features that are written.
-#. Verify all code paths that code can take.
-#. Be concise and straightforward.
+Tests names should be named based on their associated Github issue (for example, 
+``test_12.py`` for `issue #12 <https://github.com/dronekit/dronekit-python/issues/12>`_) 
+or describe the functionality covered (for example, ``test_waypoints.py`` 
+for a unit test for the waypoints API).
+  
+Use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` and ``assert_not_equals`` 
+from the ``notestools`` module:
 
-Create any file named :file:`test_XXX.py` in the :file:`tests/unit` folder to add it as a test. Feel free to copy from existing tests to get started. When *nosetests* is run, it will add your new test to its summary.
+.. note::
 
-Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/dronekit/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
-
-Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` from the ``nose.tools`` module:
+    Avoiding printing any data from your test!
 
 .. code:: python
 
-    from nose.tools import assert_equals
+    from nose.tools import assert_equals, assert_not_equals
 
     def test_this(the_number_two):
         assert the_number_two > 0, '2 should be greater than zero!'
-        assert_equals(the_number_two, 2, '2 should equal two!'
-
+        assert_equals(the_number_two, 2, '2 should equal two!')
+        assert_not_equals(the_number_two, 1, '2 should equal one!')
+        
 Please add documentation to each test function describing what behavior it verifies.
+
 
 Integration tests
 -----------------
@@ -101,6 +119,15 @@ Integrated tests use a custom test runner that is similar to *nosetests*. On any
 
     cd dronekit-python
     python -um tests.sitl
+    
+You can choose to test specific files by passing them as arguments:
+
+.. code:: bash
+
+    python -um tests.sitl test_1.py test2_.py ...
+    
+Configuring the test environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Integrated tests use the SITL environment to run DroneKit tests against a simulated Copter. Because these tests emulate Copter in real-time, you can set several environment variables to tweak the environment that code is run in:
 
@@ -108,11 +135,7 @@ Integrated tests use the SITL environment to run DroneKit tests against a simula
 #. ``TEST_RATE`` - Sets framerate. Default is ``TEST_RATE=200`` for copter, 50 for rover, 50 for plane.
 #. ``TEST_RETRY`` - Retry failed tests. Default is ``TEST_RETRY=1``. This is useful if your testing environment generates inconsistent success rates because of timing.
 
-You can choose to test specific files by passing them as arguments:
 
-.. code:: bash
-
-    python -um tests.sitl test_1.py test2_.py ...
 
 Writing a new integration test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -123,23 +146,40 @@ Integration tests should be written or improved whenever:
 #. Example code or documentation has been added.
 #. A feature could not be tested by unit tests alone (e.g. timing issues, mode changing, etc.)
 
-You can write a new integrated test by adding a file with the naming scheme :file:`test_XXX.py` to the :file:`tests/sitl` directory. In this file, functions with the prefix ``test_`` will be called with the ``local_connect`` parameter. For example:
+You can write a new integrated test by adding (or copying) a file with the naming scheme :file:`test_XXX.py` to the :file:`tests/sitl` directory.
+
+Tests names should be named based on their associated Github issue (for example, 
+``test_12.py`` for `issue #12 <https://github.com/dronekit/dronekit-python/issues/12>`_) 
+or describe the functionality covered (for example, ``test_waypoints.py`` 
+for an integration test for the waypoints API).
+
+Tests should minimally use the imports shown below and decorate test functions with ``@with_sitl`` 
+(this sets up the test and passes in a connection string for SITL).
 
 .. code:: python
 
-    from testlib import assert_equals
+    from dronekit import connect
+    from dronekit.test import with_sitl
+    from nose.tools import assert_equals, assert_not_equals
 
-    def test_parameters(local_connect):
-        v = local_connect().get_vehicles()[0]
+    @with_sitl
+    def test_something(connpath):
+        vehicle = connect(connpath)
 
-        # Simple parameter checks
-        assert_equals(type(v.parameters['THR_MIN']), float)
+        # Test using assert, assert_equals and assert_not_equals
+        ...
 
-This checks to see that the parameter object is of type `float`.
+        vehicle.close()
 
-Tests names should refer directly to a Github issue (for example, ``test_12.py`` would refer to `issue #12 <https://github.com/dronekit/dronekit-python/issues/12>`_ or describe fully what functionality they encompass (for example, ``test_waypoints.py`` would describe a unit test for the waypoints API).
 
-Avoiding printing any data from your test. Instead, use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` from the ``testlib`` module:
+Use assertions to test your code is consistent. You can use the built-in Python ``assert`` macro as well as ``assert_equals`` and ``assert_not_equals`` 
+from the ``testlib`` module:
+
+.. note::
+
+    Avoiding printing any data from your test!
+    
+
 
 .. code:: python
 
