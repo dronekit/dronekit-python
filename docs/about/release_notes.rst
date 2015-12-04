@@ -6,7 +6,7 @@ This page contains the release notes for DroneKit-Python ``minor`` and ``major``
 
 .. note::
 
-    DroneKit-Python marks releases using the ``major.minor.patch`` release numbering convention, where ``patch`` is used to denote only bug fixes, ``minor`` is used for releases with new features, and ``major`` indicates the release contains significant API changes.  Patch releases are not separately documented here.
+    DroneKit-Python marks releases using the ``major.minor.patch`` release numbering convention, where ``patch`` is used to denote only bug fixes, ``minor`` is used for releases with new features, and ``major`` indicates the release contains significant API changes.
 
 
 
