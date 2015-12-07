@@ -30,21 +30,37 @@ repository and contribute changes back to the project master branch using pull r
 Test code
 =========
 
-Test code should be used to verify new and changed functionality. There are three test suites in DroneKit-Python:
+There are three test suites in DroneKit-Python:
 
 * **Unit tests** (:file:`tests/unit`) — verify all code paths of the API. 
 * **Integration tests** (:file:`tests/sitl`) — verify real-world code, examples, and documentation as they would perform in a real environment.
 * **Web client tests** (:file:`tests/web`) — specifically verify the Python library's capability to talk to `DroneKit Cloud <http://cloud.dronekit.io>`_.
 
+Test code should be used to verify new and changed functionality. New tests should:
+
+#. Verify all code paths that code can take.
+#. Be concise and straightforward.
+#. Be documented.
+
+
 Setting up local testing
 ------------------------
 
-The links below provide information on how to set up a development environment on your development computer. Changes to DroneKit can then be tested locally. 
+Follow the links below to set up a development environment on your Linux or Windows computer. 
 
 * :ref:`dronekit_development_linux`
 * :ref:`dronekit_development_windows`
 
-Several of the test suites use `nose <https://nose.readthedocs.org/en/latest/>`_, a Python library for writing test scripts and a command line tool for running these. When setting up your dev environment, all test dependencies will have been installed (via :file:`requirements.txt`).
+The tests require additional pip modules, including `nose <https://nose.readthedocs.org/en/latest/>`_, a 
+Python library and tool for writing and running test scripts. These can be installed separately using either of the commands below:
+
+.. code:: bash
+
+    # Install just the additional requirements for tests
+    pip install requests nose mock
+
+    # (or) Install all requirements for dronekit, tests, and building documentation   
+    pip install -r requirements.txt
 
 For several tests, you may be required to set an **environment variable**. In your command line, you can set the name of a variable to equal a value using the following invocation, depending on your OS:
 
@@ -57,13 +73,7 @@ For several tests, you may be required to set an **environment variable**. In yo
 Unit tests
 ----------
 
-All new features that are written should be created with accompanying unit tests. 
-
-A good unit tests should:
-
-#. Verify all code paths that code can take.
-#. Be concise and straightforward.
-#. Be documented.
+All new features should be created with accompanying unit tests. 
 
 DroneKit-Python unit tests are based on the `nose <https://nose.readthedocs.org/en/latest/>`_ test framework,
 and use `mock <https://docs.python.org/dev/library/unittest.mock.html>`_ to simulate objects and APIs and 
@@ -75,7 +85,7 @@ command on a terminal/prompt:
 
 .. code:: bash
 
-    nosetests tests/unit
+    nosetests dronekit.test.unit
  
 
 
@@ -118,14 +128,16 @@ Integrated tests use a custom test runner that is similar to *nosetests*. On any
 .. code:: bash
 
     cd dronekit-python
-    python -um tests.sitl
+    nosetests dronekit.test.sitl
     
-You can choose to test specific files by passing them as arguments:
+You can choose to run a specific tests. The example below shows how to run 
+**\dronekit-python\dronekit\test\sitl\test_12.py**.
 
 .. code:: bash
 
-    python -um tests.sitl test_1.py test2_.py ...
-    
+    nosetests dronekit.test.sitl.test_12
+
+
 Configuring the test environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
