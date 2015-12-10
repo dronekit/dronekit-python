@@ -1,0 +1,3 @@
+pymavlink >= 1.1.50
+MAVProxy >= 1.4.13
+protobuf >= 2.5.0

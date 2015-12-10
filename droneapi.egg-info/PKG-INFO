@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: droneapi
+Version: 1.2.0
+Summary: Python language bindings for the DroneApi
+Home-page: https://github.com/diydrones/droneapi-python
+Author: 3D Robotics
+Author-email: kevinh@geeksville.com
+License: apache
+Description: Python language bindings for the DroneApi (includes the droneapi MAVProxy module)
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Scientific/Engineering

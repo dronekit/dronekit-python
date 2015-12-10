@@ -1,0 +1,14 @@
+setup.py
+droneapi/__init__.py
+droneapi.egg-info/PKG-INFO
+droneapi.egg-info/SOURCES.txt
+droneapi.egg-info/dependency_links.txt
+droneapi.egg-info/requires.txt
+droneapi.egg-info/top_level.txt
+droneapi.egg-info/zip-safe
+droneapi/lib/CloudClient.py
+droneapi/lib/WebClient.py
+droneapi/lib/__init__.py
+droneapi/lib/webapi_pb2.py
+droneapi/module/__init__.py
+droneapi/module/api.py
