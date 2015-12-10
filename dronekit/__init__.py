@@ -887,6 +887,9 @@ class Vehicle(HasObservers):
             self._mount_yaw = m.pointing_c / 100
             self.notify_attribute_listeners('mount', self.mount_status)
 
+        # gimbal
+        self._gimbal = Gimbal(self)
+
         # All keys are strings.
         self._channels = Channels(self, 8)
 
@@ -1892,6 +1895,118 @@ class Vehicle(HasObservers):
                     return False
 
         return True
+
+
+
+class Gimbal(HasObservers):
+    """
+    Gimbal control and status.
+
+    An object of this type is returned by :py:attr:`Vehicle.gimbal`.
+    .. note::
+
+        All the orientation  "values" (e.g. ``gimbal.yaw``) are initially
+        created with value ``None``. The orientation values are populated
+        shortly after initialisation ONLY if a gimbal is present."""
+
+    def __init__(self, vehicle):
+        super(Gimbal, self).__init__()
+
+        self._pitch = None
+        self._roll = None
+        self._yaw = None
+        self._vehicle = vehicle
+
+        @vehicle.on_message('MOUNT_STATUS')
+        def listener(vehicle, name, m):
+            self._pitch = m.pointing_a / 100
+            self._roll = m.pointing_b / 100
+            self._yaw = m.pointing_c / 100
+            vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
+
+    @property
+    def pitch(self):
+        return self._pitch
+
+    @property
+    def roll(self):
+        return self._roll
+
+    @property
+    def yaw(self):
+        return self._yaw
+
+    def rotate(self, pitch, roll, yaw):
+        """
+        Rotate the gimbal to a specific vector.
+
+        :param pitch: gimbal pitch, degrees
+        :param roll: gimbal roll, degrees
+        :param yaw: gimbal yaw, degrees in global frame
+        """
+        msg = self._vehicle.message_factory.mount_configure_encode(
+                    0, 1,    # target system, target component
+                    mavutil.mavlink.MAV_MOUNT_MODE_MAVLINK_TARGETING,  #mount_mode
+                    1,  # stabilize roll
+                    1,  # stabilize pitch
+                    1,  # stabilize yaw
+                    )
+        self._vehicle.send_mavlink(msg)
+        msg = self._vehicle.message_factory.mount_control_encode(
+                    0, 1,    # target system, target component
+                    pitch * 100, # pitch is in centidegrees
+                    roll * 100, # roll
+                    yaw * 100, # yaw is in centidegrees
+                    0) # save position
+        self._vehicle.send_mavlink(msg)
+
+    def target_gps(self,roi):
+        """
+        Point the gimbal at a specific :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`) location.
+        This is commonly known as a Region of Interest(ROI)
+
+        This function can be called in AUTO or GUIDED mode
+
+        In order to clear an ROI you can send :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`) with all zeros. LocationGlobalRelative(0,0,0)
+
+        :param roi: Target location, :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`).
+        """
+        #set gimbal to targeting mode
+        msg = self._vehicle.message_factory.mount_configure_encode(
+                    0, 1,    # target system, target component
+                    mavutil.mavlink.MAV_MOUNT_MODE_GPS_POINT,  #mount_mode
+                    1,  # stabilize roll
+                    1,  # stabilize pitch
+                    1,  # stabilize yaw
+                    )
+        self._vehicle.send_mavlink(msg)
+        #set the ROI
+        msg = self._vehicle.message_factory.command_long_encode(
+                    0, 1,    # target system, target component
+                    mavutil.mavlink.MAV_CMD_DO_SET_ROI, #command
+                    0, #confirmation
+                    0, 0, 0, 0, #params 1-4
+                    roi.lat,
+                    roi.lon,
+                    roi.alt
+                    )
+        self._vehicle.send_mavlink(msg)
+
+    def release(self):
+        """
+        Release control of the gimbal to the user(RC Control)
+        """
+        msg = self._vehicle.message_factory.mount_configure_encode(
+                    0, 1,    # target system, target component
+                    mavutil.mavlink.MAV_MOUNT_MODE_RC_TARGETING,  #mount_mode
+                    1,  # stabilize roll
+                    1,  # stabilize pitch
+                    1,  # stabilize yaw
+                    )
+        self._vehicle.send_mavlink(msg)
+
+    def __str__(self):
+        return "Gimbal: pitch={0}, roll={1}, yaw={2}".format(self.pitch, self.roll, self.yaw)
 
 
 class Parameters(collections.MutableMapping, HasObservers):
