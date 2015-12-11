@@ -68,6 +68,8 @@ class Attitude(object):
     
     An object of this type is returned by :py:attr:`Vehicle.attitude`.
 
+    .. _figure_attitude:
+    
     .. figure:: http://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Yaw_Axis_Corrected.svg/500px-Yaw_Axis_Corrected.svg.png
         :width: 400px
         :alt: Diagram showing Pitch, Roll, Yaw
@@ -1913,20 +1915,24 @@ class Gimbal(object):
     """
     Gimbal status and control.
 
-    An object of this type is returned by :py:attr:`Vehicle.gimbal`. The current
-    gimbal orientation can be obtained from the :py:attr:`roll`, :py:attr:`pitch` and 
+    An object of this type is returned by :py:attr:`Vehicle.gimbal`. The 
+    gimbal orientation can be obtained from its :py:attr:`roll`, :py:attr:`pitch` and 
     :py:attr:`yaw` attributes.
     
-    The gimbal position can be orientation can be set explicitly using :py:func:`rotate`
-    or you can set the gimbal (and vehicle) to track a specific position using 
+    The gimbal orientation can be set explicitly using :py:func:`rotate`
+    or you can set the gimbal (and vehicle) to track a specific "region of interest" using 
     :py:func:`target_location`.
 
     .. note::
-
-        All the orientation attributes (e.g. :py:attr:`yaw`) are initially
-        created with value ``None``. The orientation values are populated
-        shortly after initialisation ONLY if a gimbal is present.
-
+    
+        * The orientation attributes are created with values of ``None``. If a gimbal is present, 
+          the attributes are populated shortly after initialisation by messages from the autopilot.
+        * The attribute values reflect the last gimbal setting-values rather than actual measured values.
+          This means that the values won't change if you manually move the gimbal, and that the value 
+          will change when you set it, even if the specified orientation is not supported.   
+        * A gimbal may not support all axes of rotation. For example, the Solo gimbal will set pitch 
+          values from 0 to -90 (straight ahead to straight down), it will rotate the vehicle to follow specified
+          yaw values, and will ignore roll commands (not supported).
     """
 
     def __init__(self, vehicle):
@@ -1947,31 +1953,52 @@ class Gimbal(object):
     @property
     def pitch(self):
         """
-        Gimbal pitch in degrees (0-360).
+        Gimbal pitch in degrees relative to the vehicle (see diagram for :ref:`attitude <figure_attitude>`). 
+        A value of 0 represents a camera pointed straight ahead relative to the front of the vehicle, 
+        while -90 points the camera straight down.
+        
+        .. note:: 
+        
+            This is the last pitch value sent to the gimbal (not the actual/measured pitch).
         """
         return self._pitch
 
     @property
     def roll(self):
         """
-        Gimbal roll in degrees (0-360).
+        Gimbal roll in degrees relative to the vehicle (see diagram for :ref:`attitude <figure_attitude>`).
+        
+        .. note::
+        
+            This is the last roll value sent to the gimbal (not the actual/measured roll).        
         """
         return self._roll
 
     @property
     def yaw(self):
         """
-        Gimbal yaw in degrees (0-360), relative to global frame - 0 is North.
+        Gimbal yaw in degrees relative to *global frame* (0 is North, 90 is West, 180 is South etc).
+        
+        .. note:: 
+        
+            This is the last yaw value sent to the gimbal (not the actual/measured yaw).
         """  
         return self._yaw
 
     def rotate(self, pitch, roll, yaw):
         """
         Rotate the gimbal to a specific vector.
+        
+        .. code-block:: python
+            
+            #Point the gimbal straight down
+            vehicle.gimbal.rotate(-90, 0, 0)
 
-        :param pitch: gimbal pitch, degrees
-        :param roll: gimbal roll, degrees
-        :param yaw: gimbal yaw, degrees in global frame
+        :param pitch: Gimbal pitch in degrees relative to the vehicle (see diagram for :ref:`attitude <figure_attitude>`). 
+            A value of 0 represents a camera pointed straight ahead relative to the front of the vehicle, 
+            while -90 points the camera straight down.
+        :param roll: Gimbal roll in degrees relative to the vehicle (see diagram for :ref:`attitude <figure_attitude>`).
+        :param yaw: Gimbal yaw in degrees relative to *global frame* (0 is North, 90 is West, 180 is South etc.)
         """
         msg = self._vehicle.message_factory.mount_configure_encode(
                     0, 1,    # target system, target component
@@ -1991,14 +2018,20 @@ class Gimbal(object):
 
     def target_location(self,roi):
         """
-        Point the gimbal at a specific :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`) location.
-        This is commonly known as a Region of Interest(ROI)
+        Point the gimbal at a specific region of interest (ROI).
+                
+        .. code-block:: python
 
-        This function can be called in AUTO or GUIDED mode
+            #Set the camera to track the current home location.
+            vehicle.gimbal.target_location(vehicle.home_location)
 
-        In order to clear an ROI you can send a :py:class:`LocationGlobalRelative` with all zeros (``LocationGlobalRelative(0,0,0)``).
+        The target position must be defined in a :py:class:`LocationGlobalRelative` or :py:class:`LocationGlobal`.
 
-        :param LocationGlobalRelative roi: Target location in global relative frame.
+        This function can be called in AUTO or GUIDED mode.
+
+        In order to clear an ROI you can send a location with all zeros (e.g. ``LocationGlobalRelative(0,0,0)``).
+
+        :param roi: Target location in global relative frame.
         """
         #set gimbal to targeting mode
         msg = self._vehicle.message_factory.mount_configure_encode(
@@ -2009,7 +2042,19 @@ class Gimbal(object):
                     1,  # stabilize yaw
                     )
         self._vehicle.send_mavlink(msg)
-        #set the ROI
+        
+        #Get altitude relative to home irrespective of Location object passed in.
+        if isinstance(roi, LocationGlobalRelative):
+            alt = roi.alt
+        elif isinstance(roi, LocationGlobal):
+            if not self.home_location:
+                self.commands.download()
+                self.commands.wait_ready()
+            alt = roi.alt - self.home_location.alt
+        else:
+            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+
+        #set the ROI             
         msg = self._vehicle.message_factory.command_long_encode(
                     0, 1,    # target system, target component
                     mavutil.mavlink.MAV_CMD_DO_SET_ROI, #command
@@ -2017,13 +2062,16 @@ class Gimbal(object):
                     0, 0, 0, 0, #params 1-4
                     roi.lat,
                     roi.lon,
-                    roi.alt
+                    alt
                     )
         self._vehicle.send_mavlink(msg)
 
     def release(self):
         """
-        Release control of the gimbal to the user(RC Control)
+        Release control of the gimbal to the user (RC Control). 
+        
+        This should be called once you've finished controlling the mount with either :py:func:`rotate`
+        or :py:func:`target_location`. Control will automatically be released if you change vehicle mode.
         """
         msg = self._vehicle.message_factory.mount_configure_encode(
                     0, 1,    # target system, target component
