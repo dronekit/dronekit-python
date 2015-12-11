@@ -19,8 +19,8 @@ Asynchronous notification on vehicle attribute changes is available by registeri
 
 Vehicle movement is primarily controlled using the :py:attr:`Vehicle.armed` attribute and
 :py:func:`Vehicle.simple_takeoff` and :py:attr:`Vehicle.simple_goto` in GUIDED mode.
-Control over speed, direction, altitude, camera trigger and any other aspect of the vehicle is supported 
-using custom MAVLink messages
+
+Velocity-based movement and control over other vehicle features can be achieved using custom MAVLink messages
 (:py:func:`Vehicle.send_mavlink`, :py:func:`Vehicle.message_factory`).
 
 It is also possible to work with vehicle "missions" using the :py:attr:`Vehicle.commands` attribute, and run them in AUTO mode.    
@@ -1531,10 +1531,22 @@ class Vehicle(HasObservers):
 
         # send command to vehicle
         self.send_mavlink(msg)
+        
+        
+    @property
+    def gimbal(self):
+        """
+        Gimbal object for controlling, viewing and observing gimbal status (:py:class:`Gimbal`).
+        
+        .. versionadded:: 2.1.0
+        """
+        return self._gimbal
 
     @property
     def mount_status(self):
         """
+        .. warning:: This method is deprecated. It has been replaced by :py:attr:`gimbal`.
+        
         Current status of the camera mount (gimbal) as a three element list: ``[ pitch, yaw, roll ]``.
 
         The values in the list are set to ``None`` if no mount is configured.
@@ -1897,17 +1909,25 @@ class Vehicle(HasObservers):
         return True
 
 
-
-class Gimbal(HasObservers):
+class Gimbal(object):
     """
-    Gimbal control and status.
+    Gimbal status and control.
 
-    An object of this type is returned by :py:attr:`Vehicle.gimbal`.
+    An object of this type is returned by :py:attr:`Vehicle.gimbal`. The current
+    gimbal orientation can be obtained from the :py:attr:`roll`, :py:attr:`pitch` and 
+    :py:attr:`yaw` attributes.
+    
+    The gimbal position can be orientation can be set explicitly using :py:func:`rotate`
+    or you can set the gimbal (and vehicle) to track a specific position using 
+    :py:func:`target_location`.
+
     .. note::
 
-        All the orientation  "values" (e.g. ``gimbal.yaw``) are initially
+        All the orientation attributes (e.g. :py:attr:`yaw`) are initially
         created with value ``None``. The orientation values are populated
-        shortly after initialisation ONLY if a gimbal is present."""
+        shortly after initialisation ONLY if a gimbal is present.
+
+    """
 
     def __init__(self, vehicle):
         super(Gimbal, self).__init__()
@@ -1926,14 +1946,23 @@ class Gimbal(HasObservers):
 
     @property
     def pitch(self):
+        """
+        Gimbal pitch in degrees (0-360).
+        """
         return self._pitch
 
     @property
     def roll(self):
+        """
+        Gimbal roll in degrees (0-360).
+        """
         return self._roll
 
     @property
     def yaw(self):
+        """
+        Gimbal yaw in degrees (0-360), relative to global frame - 0 is North.
+        """  
         return self._yaw
 
     def rotate(self, pitch, roll, yaw):
@@ -1960,16 +1989,16 @@ class Gimbal(HasObservers):
                     0) # save position
         self._vehicle.send_mavlink(msg)
 
-    def target_gps(self,roi):
+    def target_location(self,roi):
         """
         Point the gimbal at a specific :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`) location.
         This is commonly known as a Region of Interest(ROI)
 
         This function can be called in AUTO or GUIDED mode
 
-        In order to clear an ROI you can send :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`) with all zeros. LocationGlobalRelative(0,0,0)
+        In order to clear an ROI you can send a :py:class:`LocationGlobalRelative` with all zeros (``LocationGlobalRelative(0,0,0)``).
 
-        :param roi: Target location, :py:attr:`global_relative_frame <dronekit.Locations.global_relative_frame>` (:py:class:`LocationGlobalRelative`).
+        :param LocationGlobalRelative roi: Target location in global relative frame.
         """
         #set gimbal to targeting mode
         msg = self._vehicle.message_factory.mount_configure_encode(
