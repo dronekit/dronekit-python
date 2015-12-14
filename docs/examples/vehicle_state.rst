@@ -18,10 +18,12 @@ The example can be run as described in :doc:`running_examples` (which in turn as
 the vehicle and DroneKit have been set up as described in :ref:`get-started`).
 
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 
-that the example can run. You can also 
-`add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
-(otherwise the :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>` attribute may return 
-values of ``None`` for the distance and voltage). 
+that the example can run. You can also:
+
+* `add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
+  (otherwise the :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance and voltage).
+* `add a virtual gimbal <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_gimbal>`_
+  (otherwise the :py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>` attribute may return values of ``None`` for the yaw, pitch and roll). 
 
 In summary, after cloning the repository:
 
@@ -64,7 +66,7 @@ On the command prompt you should see (something like):
      Attitude: Attitude:pitch=0.00294387154281,yaw=-0.11805768311,roll=0.00139428151306
      Velocity: [-0.03, 0.02, 0.0]
      GPS: GPSInfo:fix=3,num_sat=10
-     Mount status: [None, None, None]
+     Gimbal status: Gimbal: pitch=None, roll=None, yaw=None
      Battery: Battery:voltage=12.587,current=0.0,level=100
      EKF OK?: False
      Last Heartbeat: 0.769999980927

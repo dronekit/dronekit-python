@@ -27,7 +27,7 @@ Vehicle state information is exposed through vehicle *attributes*. DroneKit-Pyth
 :py:attr:`Vehicle.attitude <dronekit.Vehicle.attitude>`,
 :py:attr:`Vehicle.velocity <dronekit.Vehicle.velocity>`,
 :py:attr:`Vehicle.gps_0 <dronekit.Vehicle.gps_0>`,
-:py:attr:`Vehicle.mount_status <dronekit.Vehicle.mount_status>`,
+:py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>`,
 :py:attr:`Vehicle.battery <dronekit.Vehicle.battery>`,
 :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>`,
 :py:attr:`Vehicle.ekf_ok <dronekit.Vehicle.ekf_ok>`,
@@ -46,11 +46,12 @@ Attributes are initially created with ``None`` values for their members. In most
 
 All of the attributes can be :ref:`read <vehicle_state_read_attributes>`, 
 but only the :py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>`, 
+:py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>`
 :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>`,
 :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`,
 :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` and 
 :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>` 
-status can be :ref:`written <vehicle_state_set_attributes>`.
+status can be :ref:`set <vehicle_state_set_attributes>`.
 
 Almost all of the attributes can be :ref:`observed <vehicle_state_observe_attributes>`.
 
@@ -76,7 +77,7 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "GPS: %s" % vehicle.gps_0
     print "Groundspeed: %s" % vehicle.groundspeed
     print "Airspeed: %s" % vehicle.airspeed
-    print "Mount status: %s" % vehicle.mount_status
+    print "Gimbal status: %s" % vehicle.gimbal
     print "Battery: %s" % vehicle.battery
     print "EKF OK?: %s" % vehicle.ekf_ok
     print "Last Heartbeat: %s" % vehicle.last_heartbeat
@@ -114,11 +115,12 @@ regularly updated from MAVLink messages sent by the vehicle).
 Setting attributes
 ------------------
 
-Only the :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>` :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`
+The :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`, :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`
 , :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>` and :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`, 
-attributes can be written (``Vehicle.home_location`` is a special case, as :ref:`discussed below <vehicle_state_home_location>`).
+attributes can all be "directly" written (:py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` can also be directly written, 
+but has special considerations that are :ref:`discussed below <vehicle_state_home_location>`).
 
-The attributes are set by assigning a value:
+These attributes are set by assigning a value:
 
 .. code:: python
 
@@ -128,18 +130,9 @@ The attributes are set by assigning a value:
     #set the default groundspeed to be used in movement commands
     vehicle.groundspeed = 3.2
 
-.. warning::
 
-    Changing a value is **not guaranteed to succeed**. 
-    For example, vehicle arming can fail if the vehicle doesn't pass pre-arming checks,
-    and it is possible that the message will not even arrive at the vehicle.
-
-    While the autopilot does send information about the success (or failure) of the request, 
-    this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
-
-
-Code should not assume that an attempt to set an attribute will succeed. The example code snippet below polls the attribute values
-to confirm they have changed before proceeding.
+Commands to change a value are **not guaranteed to succeed** (or even to be received) and code should be written with this in mind. 
+For example, the code snippet below polls the attribute values to confirm they have changed before proceeding.
 
 .. code:: python
     
@@ -149,6 +142,24 @@ to confirm they have changed before proceeding.
         print " Getting ready to take off ..."
         time.sleep(1)
 
+.. note::
+
+    While the autopilot does send information about the success (or failure) of the request, 
+    this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
+
+:py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>` can't be written directly, but the gimbal can be controlled using the 
+:py:func:`Vehicle.gimbal.rotate() <dronekit.Gimbal.rotate>` and :py:func:`Vehicle.gimbal.target_location() <dronekit.Gimbal.target_location>` 
+methods. The first method lets you set the precise orientation of the gimbal while the second makes the gimbal track a specific "region of interest".
+
+.. code:: python
+    
+    #Point the gimbal straight down
+    vehicle.gimbal.rotate(-90, 0, 0)
+    time.sleep(10)
+
+    #Set the camera to track the current home position.
+    vehicle.gimbal.target_location(vehicle.home_location)
+    time.sleep(10)    
 
 
 .. _vehicle_state_observe_attributes:
