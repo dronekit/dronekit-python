@@ -12,6 +12,7 @@ After reading, you will understand what the kit offers and the opportunities it 
 
    overview
    release_notes
+   migrating
    license
 
    

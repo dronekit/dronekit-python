@@ -11,7 +11,7 @@ Install DroneKit using WinPython command line
 =============================================
 
 
-First set up a command line DroneKit-Python installation using *WinPython*. This process is the same as described in :ref:`Getting Started <get_started_install_dk_windows>`.
+First set up a command line DroneKit-Python installation. We recommend *WinPython* or *ActivePython*, as discussed in :ref:`installing_dronekit`.
 
 
 

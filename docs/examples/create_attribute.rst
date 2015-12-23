@@ -31,7 +31,7 @@ Running the example
 ===================
 
 The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
-and DroneKit have been set up as described in :ref:`get-started`).
+and DroneKit have been set up as described in :ref:`installing_dronekit`).
 
 In summary, after cloning the repository:
 

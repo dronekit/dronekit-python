@@ -24,7 +24,7 @@ Running the example
 ===================
 
 The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
-and DroneKit have been set up as described in :ref:`get-started`). 
+and DroneKit have been set up as described in :ref:`installing_dronekit`). 
 
 If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run.

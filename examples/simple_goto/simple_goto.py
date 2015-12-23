@@ -29,7 +29,7 @@ def arm_and_takeoff(aTargetAltitude):
     """
 
     print "Basic pre-arm checks"
-    # Don't let the user try to arm until autopilot is ready
+    # Don't try to arm until autopilot is ready
     while not vehicle.is_armable:
         print " Waiting for vehicle to initialise..."
         time.sleep(1)
@@ -40,6 +40,7 @@ def arm_and_takeoff(aTargetAltitude):
     vehicle.mode    = VehicleMode("GUIDED")
     vehicle.armed   = True    
 
+    # Confirm vehicle armed before attempting to take off
     while not vehicle.armed:      
         print " Waiting for arming..."
         time.sleep(1)

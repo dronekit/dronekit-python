@@ -18,7 +18,7 @@ python language features and libraries (OpenCV, classes, lots of packages etc...
 Running the example
 ===================
 
-DroneKit (for Linux) and the vehicle should be set up as described in :ref:`get-started`.
+DroneKit (for Linux) and the vehicle should be set up as described in :ref:`installing_dronekit`.
 
 Once you've done that:
 
