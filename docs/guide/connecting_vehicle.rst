@@ -8,23 +8,33 @@ Connecting to a Vehicle
 The connection to the vehicle (or multiple vehicles) is set up within the 
 DroneKit script. Scripts import and call the :py:func:`connect() <dronekit.connect>` 
 method. After connecting this returns a :py:class:`Vehicle <dronekit.Vehicle>` 
-object from which you can get/set parameters and attributes, and control vehicle movement:
+object from which you can get/set parameters and attributes, and control vehicle movement. 
 
-.. code:: python
+The most common way to call :py:func:`connect() <dronekit.connect>` is shown below:
+
+.. code-block:: python
 
     from dronekit import connect
 
     # Connect to the Vehicle (in this case a UDP endpoint)
     vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
-The first parameter above specifies the target address (in this case the loopback 
+The first parameter specifies the target address (in this case the loopback 
 address for UDP port 14550). See :ref:`get_started_connect_string` for the strings to use for
-other common vehicles. 
+other common vehicles.
 
-:py:func:`connect() <dronekit.connect>` also has arguments for setting the baud rate, whether ``connect()`` returns immediately or waits until vehicle parameters and attributes are populated (:py:func:`wait_ready=True <dronekit.Vehicle.wait_ready>`),
-the length of the connection timeout, and/or to use a :ref:`custom vehicle class <example_create_attribute>`. 
+The second parameter (``wait_ready``) is used to determine whether ``connect()`` returns immediately
+on connection or if it waits until *some* vehicle parameters and attributes are populated. In most cases you
+should use ``wait_ready=True`` to wait on the default set of parameters.
+
+:py:func:`connect() <dronekit.connect>` also has arguments for setting the baud rate, 
+the length of the connection timeout, and/or to use 
+a :ref:`custom vehicle class <example_create_attribute>`. 
+
+There is more documentation on all of the parameters in the :py:func:`API Reference <dronekit.connect>`.
 
 
+.. _connection_string_options:
 .. _get_started_connect_string:
 
 Connection string options
@@ -60,4 +70,16 @@ The table below shows *connection strings* you can use for some of the more comm
 
     The default baud rate may not be appropriate for all connection types (this may be the cause
     if you can connect via a GCS but not DroneKit).
+
+    
+Connecting to multiple vehicles
+===============================
+  
+You can control multiple vehicles from within a single script by calling
+:py:func:`connect() <dronekit.connect>` for each vehicle 
+with the appropriate :ref:`connection strings <connection_string_options>`.
+
+The returned :py:class:`Vehicle <dronekit.Vehicle>` objects are independent of
+each other and can be separately used to control their respective
+vehicle.
 
