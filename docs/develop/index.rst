@@ -20,4 +20,5 @@ and coding standards.
     installation
     companion-computers
     Simulated Vehicle <sitl_setup>
+    best_practice
     coding_standards

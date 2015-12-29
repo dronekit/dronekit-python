@@ -16,7 +16,12 @@ It is installed from **pip** on all platforms:
 
 **Installation notes:**
 
-* Mac and Linux require you prefix the command with ``sudo``. 
+* Mac and Linux require you prefix the command with ``sudo``.
+    
+  .. code-block:: bash
+
+      sudo pip install dronekit
+      
 * On Linux you may need to first install **pip** and **python-dev**:
     
   .. code-block:: bash
