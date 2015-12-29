@@ -33,7 +33,7 @@ Running the example
 ===================
 
 The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
-and DroneKit have been set up as described in :ref:`get-started`).
+and DroneKit have been set up as described in :ref:`installing_dronekit`).
 
 If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
 that the example can run.
@@ -382,7 +382,7 @@ At time of writing, acceleration and yaw bits are ignored.
 Testbed settings
 ================
 
-This example has been tested on Windows against SITL running both natively and in a virtual machine (as described in :ref:`get-started`).
+This example has been tested on Windows against SITL running both natively and in a virtual machine (as described in :ref:`installing_dronekit`).
 
 * DroneKit version: 2.0.0rc12
 * ArduPilot version: 3.4.0.

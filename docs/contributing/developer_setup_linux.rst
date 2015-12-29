@@ -5,7 +5,8 @@ Building DroneKit-Python on Linux
 ===================================
 
 The setup for *developing* DroneKit-Python on Linux is almost the same as for *using* 
-DroneKit-Python. We therefore recommend that you start by following the instructions in :ref:`Getting Started <getting_started_installing_dronekit_linux>`. 
+DroneKit-Python. We therefore recommend that you start by following the instructions in 
+:ref:`installing_dronekit`. 
 
 When you've got DroneKit and a vehicle (simulated or real) communicating, you can 
 then build and install your own fork of DroneKit, as discussed below.

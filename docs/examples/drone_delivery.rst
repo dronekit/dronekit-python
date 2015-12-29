@@ -21,7 +21,7 @@ Running the example
 ===================
 
 The example can be run much as described in :doc:`running_examples` (which in turn assumes that the vehicle
-and DroneKit have been set up as described in :ref:`get-started`). The main exception is that you need to 
+and DroneKit have been set up as described in :ref:`installing_dronekit`). The main exception is that you need to 
 install the CherryPy dependencies and view the behaviour in a web browser.
     
 If you're using a simulated vehicle remember to :ref:`disable arming checks <disable-arming-checks>` so 

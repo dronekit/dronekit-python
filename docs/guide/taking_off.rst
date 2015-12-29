@@ -4,9 +4,10 @@
 Taking Off
 ==========
 
-This article explains how to get your *Copter* to take off. At high level, the steps are: check that the vehicle
-is able to arm (can pass pre-arm checks), set the mode to ``GUIDED``, arm the vehicle, 
-and then call :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeoff>`.  
+This article explains how to get your *Copter* to take off. 
+
+At high level, the steps are: check that the vehicle is *able* to arm, set the mode to ``GUIDED``, 
+command the vehicle to arm, takeoff and block until we reach the desired altitude.
 
 .. todo:: 
 
@@ -26,8 +27,8 @@ and then call :py:func:`Vehicle.simple_takeoff() <dronekit.Vehicle.simple_takeof
       `MAV_CMD_MISSION_START <http://copter.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_mission_start>`_ 
       message.
       
-    By contrast, Plane apps take off using the ``MAV_CMD_NAV_TAKEOFF`` command in a mission. Plane should first arm and then change to
-    ``AUTO`` mode to start the mission. 
+    By contrast, Plane apps take off using the ``MAV_CMD_NAV_TAKEOFF`` command in a mission. 
+    Plane should first arm and then change to ``AUTO`` mode to start the mission. 
 
 The code below shows a function to arm a Copter, take off, and fly to a specified altitude. This is taken from :ref:`example_simple_goto`.
 
@@ -42,7 +43,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         """
 
         print "Basic pre-arm checks"
-        # Don't let the user try to arm until autopilot is ready
+        # Don't try to arm until autopilot is ready
         while not vehicle.is_armable:
             print " Waiting for vehicle to initialise..."
             time.sleep(1)
@@ -52,6 +53,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
         vehicle.mode    = VehicleMode("GUIDED")
         vehicle.armed   = True
 
+        # Confirm vehicle armed before attempting to take off
         while not vehicle.armed:
             print " Waiting for arming..."
             time.sleep(1)
@@ -78,9 +80,8 @@ The function first performs some pre-arm checks.
     Arming turns on the vehicle's motors in preparation for flight. The flight controller will not arm
     until the vehicle has passed a series of pre-arm checks to ensure that it is safe to fly.
 
-DroneKit-Python can't check every possible symptom that might prevent arming, but we can confirm that the 
-vehicle has booted, EKF is ready, and it has a GPS lock. These checks are encapsulated in the 
-:py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>` attribute:
+These checks are encapsulated by the :py:func:`Vehicle.is_armable <dronekit.Vehicle.is_armable>` 
+attribute, which is ``true`` when the vehicle has booted, EKF is ready, and the vehicle has GPS lock. 
 
 .. code-block:: python
 

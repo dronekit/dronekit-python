@@ -19,7 +19,7 @@ The sections below outline the main migration areas.
 Installation
 ============
 
-DKPY 2.0 is now installed from `pip` on all platforms - see :ref:`get-started` for more information.
+DKPY 2.0 is now installed from `pip` on all platforms - see :ref:`installing_dronekit` for more information.
 
 Installation is generally simpler than on DK 1.x because there are far fewer dependencies (both MAVProxy and numpy 
 are no longer needed).
