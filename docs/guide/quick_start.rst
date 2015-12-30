@@ -28,7 +28,7 @@ On Linux you will first need to install **pip** and **python-dev**:
     sudo apt-get install python-pip python-dev
 
     
-See :doc:`installation` and `dronekit-sitl <https://github.com/dronekit/dronekit-sitl#dronekit-sitl>`_ 
+See :doc:`../develop/installation` and `dronekit-sitl <https://github.com/dronekit/dronekit-sitl#dronekit-sitl>`_ 
 for more detailed installation instructions.
 
 
