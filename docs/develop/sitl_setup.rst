@@ -4,103 +4,124 @@
 Setting up a Simulated Vehicle (SITL)
 =====================================
 
-The `SITL (software in the loop) <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/>`_ 
+The `SITL (Software In The Loop) <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/>`_ 
 simulator allows you to create and test DroneKit-Python apps without a real vehicle (and from the comfort of 
-your own developer desktop!)
+your own developer desktop!).
 
-SITL runs natively on Linux and Windows, or within a virtual machine on Mac OSX, Linux or Windows. It can be 
+SITL can run natively on Linux, Mac and Windows, or within a virtual machine. It can be 
 installed on the same computer as DroneKit, or on another computer on the same network.
 
-The sections below explain how set up SITL for the different operating systems, 
-and how you can set up SITL to connect to Mission Planner and DroneKit at the same time.
-
-Setting up SITL on Linux
-========================
-
-Build and install SITL on Linux using the instructions in: 
-`Setting up SITL on Linux <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_ (ArduPilot wiki)
+The sections below explain how install and run SITL, and how to connect to DroneKit-Python and Ground
+Stations at the same time.
 
 
-Setting up SITL on Windows
-==========================
+DroneKit-SITL
+=============
 
-Build and install SITL on Windows using the instructions in:  
-`Setting up SITL on Windows <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/sitl-native-on-windows/>`_ 
-(ArduPilot wiki)
+DroneKit-SITL is the simplest, fastest and easiest way to run SITL on Windows, Linux, or MAC OSX.
+It is installed from Python's *pip* tool on all platforms, and works by downloading and running pre-built 
+vehicle binaries that are appropriate for the host operating system.
+
+This section provides an overview of how to install and use DroneKit-SITL. For more information, see 
+the `project on Github <https://github.com/dronekit/dronekit-sitl>`_.
+
+.. note:: 
+
+    DroneKit-SITL is still relatively experimental. There are only a few pre-built vehicles and
+    they have not been as well tested as the native builds.  
+    Please report any issues on `Github here <https://github.com/dronekit/dronekit-sitl/issues>`_.
+
+Installation
+------------
+
+The tool is installed (or updated) on all platforms using the command: 
+
+.. code-block:: bash
+
+    pip install dronekit-sitl -UI
+
+Running SITL
+------------
+
+To run the latest version of Copter for which we have binaries (downloading the binaries if needed), you can simply call:
+
+.. code-block:: bash
+
+    dronekit-sitl copter
+    
+SITL will then start and wait for TCP connections on ``127.0.0.1:5760``.
+    
+You can specify a particular vehicle and version, and also parameters like the home location, 
+the vehicle model type (e.g. "quad"), etc. For example:
+
+.. code-block:: bash
+
+    dronekit-sitl plane-3.3.0 --home=-35.363261,149.165230,584,353
+    
+There are a number of other useful arguments:
+
+.. code-block:: bash  
+
+    dronekit-sitl -h            #List all parameters to dronekit-sitl.
+    dronekit-sitl copter -h     #List additional parameters for the specified vehicle (in this case "copter").
+    dronekit-sitl --list        #List all available vehicles.
+    dronekit-sitl --reset       #Delete all downloaded vehicle binaries.
+    dronekit-sitl ./path [args...]  #Start SITL instance at target file location.
 
 
-.. _vagrant-sitl-from-full-image:
+.. note:: 
 
-Set up SITL using Vagrant (MacOS)
-=================================
+    DroneKit-SITL also `exposes a Python API <https://github.com/dronekit/dronekit-sitl#api>`_, which you can use to start simulation from within your scripts. This is particularly useful for test code!
+        
 
-This section shows how to bring up a pre-built SITL instance hosted in a `Vagrant <https://www.vagrantup.com/>`_ 
-virtual machine. This approach should be used if you need to run SITL on MacOS. It can also be used for Windows 
-and Linux (though we recommend the native installations linked above).
+.. _connecting_dronekit_sitl:
 
-.. warning:: 
+Connecting to (DroneKit-) SITL
+------------------------------
 
-       The Vagrant virtual machine is "headless" (has no UI) and so SITL cannot display the MAVProxy map and console. 
-       You can still see and send messages in the SITL Command Prompt.
-     
+SITL waits for TCP connections on ``127.0.0.1:5760``. DroneKit-Python scripts running on the same
+computer can connect to the simulation using the connection string as shown:
 
-#. Get the software for hosting the Simulator onto your computer (Windows, OS-X and Linux are supported):
+.. code-block:: python
 
-   * `Download and install VirtualBox <https://www.virtualbox.org/wiki/Downloads>`_.
-   * `Download and install Vagrant <https://www.vagrantup.com/downloads.html>`_.
+    vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True)
 
-#. Install SSH (Windows only - SSH is present by default on Linux/Mac OSX)
+If you need to connect to DroneKit-Python and a ground station at the same time you will need to
+`install MAVProxy <http://dronecode.github.io/MAVProxy/html/getting_started/download_and_installation.html>`_ 
+for your system.
 
-   * Download and install `Git for Windows <https://git-scm.com/download/win>`_ (or another client that comes with SSH).
-     After installing you can locate the file using the command ``C:\where ssh`` (normally it is installed to **C:\Program Files (x86)\Git\bin\ssh.exe**
-   * Add the ssh.exe location to the *Path* (**System Properties | Advanced tab | Environment Variables | Path**)
+Then in a second terminal you spawn an instance of *MAVProxy* to forward messages from
+TCP ``127.0.0.1:5760`` to UDP ports ``127.0.0.1:14550`` and ``127.0.0.1:14551`` (this is what **sim_vehicle.sh** does
+if you build SITL from source):
 
-#. Create a new directory where you will run *Vagrant*, and open a command prompt/terminal in it: 
+.. code-block:: bash
 
-#. Enter the following commands to fetch a *Vagrantfile* for the pre-built SITL image:
+    mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550 --out 127.0.0.1:14551
 
-   .. code:: bash
+You can then connect to a ground station using one UDP address, and DroneKit-Python using the other. 
+For example:
 
-       vagrant init 3drobotics/ardupilot-sitl
+.. code-block:: python
 
-#. Launch the new image. This takes a long time the *first time* it is run while it downloads the image from the Internet.
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
-   .. code:: bash
 
-       vagrant up
 
-#. SSH into the vagrant instance, and start a vehicle:
+Building SITL from source
+=========================
 
-   .. code:: bash
+You can natively build SITL from source on Linux, Windows and Mac OS X, 
+or from within a Vagrant Linux virtual environment.
 
-       vagrant ssh
-       ./sitl.sh
-   
-   When prompted, enter your desired vehicle (e.g. "copter") to build/start SITL.
-   Once complete, you will see a MAVProxy prompt displaying periodic vehicle-status updates: 
+Building from source is useful if you want to need to test the latest changes (or any use 
+a version for which DroneKit-SITL does not have pre-built binaries). 
+It can also be useful if you have problems getting DroneKit-SITL to work.
 
-   .. code:: bash
+The following topics from the ArduPilot wiki explain how:
 
-       Ready to FLY  ublox Received 454 parameters
-       fence breach
-       APM: PreArm: RC not calibrated
-       ...
-
-.. _disable-arming-checks:
-
-#. Load a default set of parameters and disable the arming check:
-
-   .. code:: bash
-       
-       STABILIZE>param load ../Tools/autotest/copter_params.parm
-       STABILIZE>param set ARMING_CHECK 0
-
-   .. note:: 
-   
-       SITL simulates (by default) a vehicle that may not pass the arming check. This change makes the simulated
-       vehicle more forgiving, which allows the examples to arm and run. 
-	   
-       You should never disable the arming check in a script or on a real vehicle.
+* `Setting up SITL on Linux <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_
+* `Setting up SITL on Windows <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/sitl-native-on-windows/>`_ 
+* `Setting up SITL using Vagrant <http://dev.ardupilot.com/wiki/setting-up-sitl-using-vagrant/>`_
 
 
 .. _viewing_uav_on_map:
@@ -108,19 +129,25 @@ and Linux (though we recommend the native installations linked above).
 Connecting an additional Ground Station
 =======================================
 
-This section explains how you can connect multiple ground stations to a running SITL instance in addition to your DroneKit MAVProxy link.
+You can connect a ground station to an unused port to which messages 
+are being forwarded. You can forward messages to additional ports 
+when you start *MAVProxy* using the using ``-out`` 
+parameter (as shown :ref:`above <connecting_dronekit_sitl>`).
 
-To do this you first need to get SITL to output to an additional UDP port of your computer:
+Alternatively, once *MAVProxy* is started you can add new output ports in the *MAVProxy* console using: ``output add``:
 
-* Find the network IP address of your computer (On Windows you can get this by running *ipconfig* in the *Windows Command Prompt*). 
-* In the *SITL Command Prompt*, add the IP address of the GCS computer (e.g. 192.168.2.10) and an unused port (e.g. 145502) as an output:
-  
-  .. code:: bash
-   
-      output add 192.168.2.10:14552
+.. code:: bash
+
+    output add 127.0.0.1:14552
+
+.. note::
+
+    Instead of the loopback address you can also specify the network IP address of your computer
+    (On Windows you can get this by running *ipconfig* in the *Windows Command Prompt*).
+
 
 Then connect Mission Planner to this UDP port:  
-	  
+
 * `Download and install Mission Planner <http://ardupilot.com/downloads/?did=82>`_
 * Ensure the selection list at the top right of the Mission Planner screen says *UDP* and then select the **Connect** button next to it. 
   When prompted, enter the port number (in this case 14552).
