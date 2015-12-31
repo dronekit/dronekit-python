@@ -31,7 +31,8 @@ print " Local Location: %s" % vehicle.location.local_frame
 print " Attitude: %s" % vehicle.attitude
 print " Velocity: %s" % vehicle.velocity
 print " GPS: %s" % vehicle.gps_0
-print " Gimbal status: %s" % vehicle.gimbal
+if hasattr(vehicle, 'gimbal'): # not introduced till 2.1.0
+	print " Gimbal status: %s" % vehicle.gimbal
 print " Battery: %s" % vehicle.battery
 print " EKF OK?: %s" % vehicle.ekf_ok
 print " Last Heartbeat: %s" % vehicle.last_heartbeat
