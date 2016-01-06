@@ -25,6 +25,7 @@ vehicle = connect(args.connect, wait_ready=True)
 
 # Get all vehicle attributes (state)
 print "\nGet all vehicle attribute values:"
+print " Autopilot Firmware version: %s" % vehicle.version
 print " Global Location: %s" % vehicle.location.global_frame
 print " Global Location (relative altitude): %s" % vehicle.location.global_relative_frame
 print " Local Location: %s" % vehicle.location.local_frame
