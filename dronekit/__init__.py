@@ -252,6 +252,73 @@ class Rangefinder(object):
     def __str__(self):
         return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
 
+class Version(object):
+    """
+    The version number in a few different formats. To get it in a human-readable
+    format, just print `vehicle.version.number`. Or read the version in its four
+    parts: major, minor, patch, release_type, by calling `vehicle.version.number.major`, etc.
+
+    To check if the version is a stable release, check `vehicle.version.number.is_stable()`
+    """
+    def __init__(self, raw_version, autopilot_type, vehicle_type):
+        self.autopilot_type = autopilot_type
+        self.vehicle_type = vehicle_type
+        self.raw_version = raw_version
+        self.major   = raw_version >> 24 & 0xFF
+        self.minor   = raw_version >> 16 & 0xFF
+        self.patch   = raw_version >> 8  & 0xFF
+        self.release = raw_version & 0xFF
+
+    def is_stable(self):
+        return self.release == 255
+
+    def __str__(self):
+        prefix=""
+        if(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA):
+            prefix += "APM:"
+        elif(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4):
+            prefix += "PX4"
+        if(self.vehicle_type == mavutil.mavlink.MAV_TYPE_QUADROTOR):
+            prefix += "Copter"
+        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING):
+            prefix += "Plane"
+        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_ROVER):
+            prefix += "Rover"
+
+        release_type="-dev"
+        if(self.release == 255):
+            release_type = ""
+        if(self.release > 192-1):
+            release_type = "-rc" + str(self.release-(192-1))
+        if(self.release > 128-1):
+            release_type = "-beta" + str(self.release-(192-1))
+        if(self.release > 64-1):
+            release_type = "-alpha" + str(self.release-(192-1))
+        return prefix + "-%s.%s.%s" % (self.major, self.minor, self.patch) + release_type
+
+class Capabilities:
+    """
+    The capabilities tells us what messages the autopilot is capable of interpreting.
+    For example, to check if the autopilot supports parachutes, check if `version.capabilities.parachute is True`.
+    Note: This doesn't necessarily mean that a parachute is connected and configured. It only means that the
+    autopilot knows what a parachute is.
+    """
+    def __init__(self, capabilities):
+        self.mission_float                  = (((capabilities >> 0)  & 1) == 1)
+        self.param_float                    = (((capabilities >> 1)  & 1) == 1)
+        self.mission_int                    = (((capabilities >> 2)  & 1) == 1)
+        self.command_int                    = (((capabilities >> 3)  & 1) == 1)
+        self.param_union                    = (((capabilities >> 4)  & 1) == 1)
+        self.fix_type                       = (((capabilities >> 5)  & 1) == 1)
+        self.set_attitude_target            = (((capabilities >> 6)  & 1) == 1)
+        self.set_attitude_target_local_ned  = (((capabilities >> 7)  & 1) == 1)
+        self.set_altitude_target_global_int = (((capabilities >> 8)  & 1) == 1)
+        self.terrain                        = (((capabilities >> 9)  & 1) == 1)
+        self.actuator_target                = (((capabilities >> 10) & 1) == 1)
+        self.flight_termination             = (((capabilities >> 11) & 1) == 1)
+        self.compass_calibration            = (((capabilities >> 12) & 1) == 1)
+        self.parachute                      = (((capabilities >> 13) & 1) == 1)
+
 
 class VehicleMode(object):
     """
@@ -887,6 +954,14 @@ class Vehicle(HasObservers):
             self._mount_yaw = m.pointing_c / 100
             self.notify_attribute_listeners('mount', self.mount_status)
 
+        self._capabilities = 0
+        self._raw_version = 0
+
+        @self.on_message('AUTOPILOT_VERSION')
+        def listener(vehicle, name, m):
+            self._capabilities = m.capabilities
+            self._raw_version = m.flight_sw_version
+
         # gimbal
         self._gimbal = Gimbal(self)
 
@@ -958,6 +1033,8 @@ class Vehicle(HasObservers):
         self._flightmode = 'AUTO'
         self._armed = False
         self._system_status = None
+        self._autopilot_type = 0#PX4, ArduPilot, etc.
+        self._vehicle_type = 0#quadcopter, plane, etc.
 
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
@@ -967,6 +1044,8 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('mode', self.mode, cache=True)
             self._system_status = m.system_status
             self.notify_attribute_listeners('system_status', self.system_status, cache=True)
+            self._autopilot_type = m.autopilot
+            self._vehicle_type = m.type
 
         # Waypoints.
 
@@ -1388,6 +1467,20 @@ class Vehicle(HasObservers):
         Current velocity as a three element list ``[ vx, vy, vz ]`` (in meter/sec).
         """
         return [self._vx, self._vy, self._vz]
+
+    @property
+    def version(self):
+        """
+        The autopilot version in a Version object.
+        """
+        return Version(self._raw_version, self._autopilot_type, self._vehicle_type)
+
+    @property
+    def capabilities(self):
+        """
+        The capabilities of the autopilot in a Capabilities object.
+        """
+        return Capabilities(self._capabilities)
 
     @property
     def attitude(self):
