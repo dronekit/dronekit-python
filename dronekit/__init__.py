@@ -47,8 +47,6 @@ import math
 import copy
 import collections
 from pymavlink.dialects.v10 import ardupilotmega
-from pymavlink import mavutil, mavwp
-from dronekit.util import errprinter
 
 
 class APIException(Exception):
