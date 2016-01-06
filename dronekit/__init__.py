@@ -299,7 +299,7 @@ class Version(object):
             prefix += "Rover-"
 
         release_type="-dev"
-        if(release != None):
+        if(self.release != None):
             if(self.release == 255):
                 release_type = ""
             if(self.release > 192-1):
@@ -1953,6 +1953,10 @@ class Vehicle(HasObservers):
         if rate != None:
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
+
+        #Request an AUTOPILOT_VERSION packet
+        capability_msg = self.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
+        self.send_mavlink(capability_msg)
 
         # Ensure initial parameter download has started.
         while True:
