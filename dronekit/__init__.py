@@ -257,15 +257,24 @@ class Version(object):
     Version numbers.
 
     An object of this type is returned by :py:attr:`Vehicle.version`
-
     The version number can be read in a few different formats. To get it in a human-readable
     format, just print `vehicle.version`.  This might print somthing like "APM:Copter-3.3.2-rc4".
 
-    Or read the version in its four parts: major, minor, patch, release_type, by calling 
-    `vehicle.version.major`, `vehicle.version.minor`, `vehicle.version.patch` and `vehicle.version.release_type`.
-    Release_type is of the enum `FIRMWARE_VERSION_TYPE` which can be found in `mavutil.mavlink.FIRMWARE_VERSION_TYPE`
+    .. py:attribute:: major
 
-    To check if the version is a stable release, check `vehicle.version.number.is_stable()`
+    Major version number (integer).
+
+    .. py:attribute::minor
+
+    Minor version number (integer).
+
+    .. py:attribute:: patch
+
+    Patch version number (integer).
+
+    .. py:attribute:: release
+
+    Release type (integer). See the enum `FIRMWARE_VERSION_TYPE <http://mavlink.org/messages/common#MAV_AUTOPILOT_GENERIC>`_.
     """
     def __init__(self, raw_version, autopilot_type, vehicle_type):
         self.autopilot_type = autopilot_type
@@ -275,7 +284,7 @@ class Version(object):
             self.major = None
             self.minor = None
             self.patch = None
-            self.stable = None
+            self.release = None
         else:
             self.major   = raw_version >> 24 & 0xFF
             self.minor   = raw_version >> 16 & 0xFF
@@ -283,6 +292,10 @@ class Version(object):
             self.release = raw_version & 0xFF
 
     def is_stable(self):
+        """
+        Returns True if the autopilot reports that the current firmware is a stable
+        release, not a pre-release or development version.
+        """
         return self.release == 255
 
     def __str__(self):
@@ -314,13 +327,57 @@ class Capabilities:
     """
     The capabilities tells us what messages the autopilot is capable of interpreting.
 
-    To check if the autopilot support terrain handling, check if
-    `version.capabilities.terrain_handling is True`.
+    .. py:attribute:: mission_float
 
-    The other possible capabilities to check are `mission_float`, `param_float`,
-    `mission_int`, `command_int`, `param_union`, `fix_type`, ftp`, `set_attitude_target`,
-    `set_attitude_target_local_ned`, `set_altitude_target_global_int`, `actuator_target`,
-    `flight_termination`, `compass_calibration`.
+    Autopilot supports MISSION float message type. (Boolean)
+
+    .. py:attribute:: param_float
+
+    Autopilot supports the new param float message type. (Boolean)
+
+    .. py:attribute:: mission_int
+
+    Autopilot supports MISSION_INT scaled integer message type. (Boolean)
+
+    .. py:attribute:: command_int
+
+    Autopilot supports COMMAND_INT scaled integer message type. (Boolean)
+
+    .. py:attribute:: param_union 
+
+    Autopilot supports the new param union message type. (Boolean)
+
+    .. py:attribute:: ftp
+
+    Autopilot supports ftp for file transfers. (Boolean)
+
+    .. py:attribute:: set_attitude_target
+
+    Autopilot supports commanding attitude offboard. (Boolean)
+
+    .. py:attribute:: set_attitude_target_local_ned
+
+    Autopilot supports commanding position and velocity targets in local NED frame. (Boolean)
+
+    .. py:attribute:: set_attitude_target_global_int
+
+    Autopilot supports commanding position and velocity targets in global scaled integers. (Boolean)
+    
+    .. py:attribute:: terrain
+
+    Autopilot supports terrain protocol / data handling. (Boolean)
+
+    .. py:attribute:: set_actuator_target
+
+    Autopilot supports direct actuator control. (Boolean)
+
+    .. py:attribute:: flight_termination
+
+    Autopilot supports the flight termination command. (Boolean)
+
+    .. py:attribute:: compass_calibration
+
+    Autopilot supports onboard compass calibration. (Boolean)
     """
     def __init__(self, capabilities):
         self.mission_float                  = (((capabilities >> 0)  & 1) == 1)
@@ -333,7 +390,7 @@ class Capabilities:
         self.set_attitude_target_local_ned  = (((capabilities >> 7)  & 1) == 1)
         self.set_altitude_target_global_int = (((capabilities >> 8)  & 1) == 1)
         self.terrain                        = (((capabilities >> 9)  & 1) == 1)
-        self.actuator_target                = (((capabilities >> 10) & 1) == 1)
+        self.set_actuator_target            = (((capabilities >> 10) & 1) == 1)
         self.flight_termination             = (((capabilities >> 11) & 1) == 1)
         self.compass_calibration            = (((capabilities >> 12) & 1) == 1)
 
@@ -1489,14 +1546,14 @@ class Vehicle(HasObservers):
     @property
     def version(self):
         """
-        The autopilot version in a (:py:class:`Version object`).
+        The autopilot version in a :py:class:`Version object`.
         """
         return Version(self._raw_version, self._autopilot_type, self._vehicle_type)
 
     @property
     def capabilities(self):
         """
-        The capabilities of the autopilot in a (:py:class:`Capabilities`) object.
+        The capabilities of the autopilot in a :py:class:`Capabilities` object.
         """
         return Capabilities(self._capabilities)
 
