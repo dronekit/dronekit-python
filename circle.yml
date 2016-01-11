@@ -1,4 +1,6 @@
 machine:
+  python:
+    version: 3.5.0
   environment:
     SITL_SPEEDUP: 10
     SITL_RATE: 200
