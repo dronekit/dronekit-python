@@ -11,7 +11,7 @@ your own developer desktop!).
 SITL can run natively on Linux, Mac and Windows, or within a virtual machine. It can be 
 installed on the same computer as DroneKit, or on another computer on the same network.
 
-The sections below explain how install and run SITL, and how to connect to DroneKit-Python and Ground
+The sections below explain how to install and run SITL, and how to connect to DroneKit-Python and Ground
 Stations at the same time.
 
 
