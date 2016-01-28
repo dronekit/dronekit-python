@@ -52,7 +52,6 @@ we then use to query the attributes.
 
     # Import DroneKit-Python
     from dronekit import connect, VehicleMode
-    import time
 
     # Connect to the Vehicle. 
     print "Connecting to vehicle on: 'tcp:127.0.0.1:5760'"
