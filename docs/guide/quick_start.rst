@@ -110,7 +110,7 @@ That's it- you've run your first DroneKit-Python script.
 Next Steps
 ==========
 
-* Learn a more about :doc:`../develop/index`. 
+* Learn more about :doc:`../develop/index`. 
   This covers development best practices and coding standards,
   and has more information about installation, working with a simulator 
   and setting up a companion computer.
