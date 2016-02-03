@@ -55,6 +55,8 @@ The [DroneKit Forums](http://discuss.dronekit.io) are the best place to ask for 
 
 We'd love your [feedback and suggestions](https://github.com/dronekit/dronekit-python/issues) about this API and are eager to evolve it to meet your needs, please feel free to create an issue to report bugs or feature requests.
 
+If you've created some awesome software that uses this project, [let us know on the forums here](https://discuss.dronekit.io/t/notable-projects-using-dronekit/230)!
+
 If you want to contribute, see our [Contributing](http://python.dronekit.io/contributing/index.html) guidelines, we welcome all types of contributions but mostly contributions that would help us shrink our [issues list](https://github.com/dronekit/dronekit-python/issues).
 
 
