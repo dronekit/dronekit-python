@@ -15,12 +15,12 @@ This article provides a high level overview of how to contribute changes to the 
 Submitting changes
 ==================
 
-Contributors should fork the main `dronekit/dronekit-python/ <https://github.com/dronekit/dronekit-python>`_ 
-repository and contribute changes back to the project master branch using pull requests
+Contributors should create branches on the `dronekit/dronekit-python/ <https://github.com/dronekit/dronekit-python>`_ 
+repository and submit changes back to the master branch using pull requests.
 
 * Changes should be :ref:`tested locally <contributing-test-code>` before submission.
 * Changes to the public API should be :ref:`documented <contributing-to-documentation>` (we will provide subediting support!)
-* Pull requests should be as small and focussed as possible to make them easier to review.
+* Pull requests should be as small and focused as possible to make them easier to review.
 * Pull requests should be rebased against the main project before submission to make integration easier.
 
 
