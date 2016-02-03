@@ -1519,7 +1519,7 @@ class Vehicle(HasObservers):
         """
         return self._airspeed
 
-    @groundspeed.setter
+    @airspeed.setter
     def airspeed(self, speed):
         speed_type = 0 # air speed
         msg = self.message_factory.command_long_encode(
