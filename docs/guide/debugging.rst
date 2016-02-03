@@ -59,3 +59,27 @@ Other IDEs/debuggers
 ====================
 
 There is no reason you should not be able to straightforwardly use other popular Python IDEs including IDLE and Eclipse.
+
+If you prefer a IDE like debug you can use `pudb - A full-screen, console-based Python debugger <https://pypi.python.org/pypi/pudb>`_. 
+
+.. code-block:: python
+    :emphasize-lines: 4
+
+    pip install pudb
+
+
+To start debugging, simply insert:
+
+.. code-block:: python
+    :emphasize-lines: 4
+
+    from pudb import set_trace; set_trace()
+
+Insert either of these snippets into the piece of code you want to debug, or run the entire script with:
+
+.. code-block:: python
+    :emphasize-lines: 4
+
+    pudb my-script.py
+
+
