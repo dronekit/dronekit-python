@@ -54,6 +54,8 @@ The table below shows *connection strings* you can use for some of the more comm
      - ``/dev/ttyAMA0`` (also set ``baud=57600``)
    * - SITL connected to the vehicle via UDP
      - ``127.0.0.1:14550``
+   * - SITL connected to the vehicle via TCP
+     - ``tcp:127.0.0.1:5760``
    * - OSX computer connected to the vehicle via USB
      - ``dev/cu.usbmodem1``
    * - Windows computer connected to the vehicle via USB (in this case on COM14)
