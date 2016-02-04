@@ -22,8 +22,8 @@ Submitting changes
 The process and requirements for submitting changes to the documentation are **the same** as when 
 :ref:`contributing to the source code <contributing_api>`. 
 
-As when submitting source code you should fork the main project Github repository and 
-contribute changes back to the project using pull requests. The changes should be tested
+As when submitting source code you create a branch on the main project Github repository and 
+submit your changes using pull requests. The changes should be tested
 locally (by :ref:`building the docs <contributing_building_docs>`) before being submitted.
 
 See :ref:`contributing_api` for more information. 
