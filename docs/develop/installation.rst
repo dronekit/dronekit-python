@@ -28,6 +28,12 @@ It is installed from **pip** on all platforms:
 
       sudo apt-get install python-pip python-dev
       
+  Alternatively, the *easy_install* tool provides another way to install pip:
+  
+  .. code-block:: bash
+
+      sudo easy_install pip
+      
 * :doc:`companion-computers` are likely to run on stripped down versions of Linux. Ensure
   you use a variant that supports Python 2.7 and can install Python packages from the Internet.
 * Windows does not come with Python by default, but there are 
