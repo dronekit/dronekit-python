@@ -23,6 +23,7 @@ during missions and outside missions using custom commands.
    Drone Delivery <drone_delivery>
    Flight Replay <flight_replay>
    Channel Overrides <channel_overrides>
+   Performance Test <performance_test>
    
 
 
