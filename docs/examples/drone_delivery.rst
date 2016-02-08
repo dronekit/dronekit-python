@@ -80,8 +80,8 @@ In summary, after cloning the repository:
    .. code-block:: bash
 
        python drone_delivery.py --connect udpin:0.0.0.0:14550
-       
- 
+
+
 #. After a short while you should be able to reach your new webserver at http://localhost:8080.  
    Navigate to the **Command** screen, select a target on the map, then select **Go**. 
    The command prompt will show something like the message below. 
@@ -92,7 +92,7 @@ In summary, after cloning the repository:
     
    The web server will switch you to the **Track** screen. You can view the vehicle progress by pressing the 
    **Update** button.
-    
+
 
 Screenshots
 ===========
