@@ -17,12 +17,21 @@ from jinja2 import Environment, FileSystemLoader
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
-parser.add_argument('--connect', default='127.0.0.1:14550',
-                   help="vehicle connection target. Default '127.0.0.1:14550'")
+parser = argparse.ArgumentParser(description='Creates a CherryPy based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude. Will start and connect to SITL if no connection string specified.')
+parser.add_argument('--connect', 
+                   help="vehicle connection target string. If not specified, SITL is automatically started and used.")
 args = parser.parse_args()
 
+connection_string=args.connect
 
+if not args.connect:
+    print "Starting copter simulator (SITL)"
+    from dronekit_sitl import SITL
+    sitl = SITL()
+    sitl.download('copter', '3.3', verbose=True)
+    sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    sitl.launch(sitl_args, await_ready=True, restart=True)
+    connection_string='tcp:127.0.0.1:5760'
 
 local_path=os.path.dirname(os.path.abspath(__file__))
 print "local path: %s" % local_path
@@ -217,11 +226,15 @@ class DroneDelivery(object):
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % args.connect
-vehicle = connect(args.connect, wait_ready=True)
+print 'Connecting to vehicle on: %s' % connection_string
+vehicle = connect(connection_string, wait_ready=True)
 
 print 'Launching Drone...'
 Drone().launch()
 
 print 'Waiting for cherrypy engine...'
 cherrypy.engine.block()
+
+if not args.connect:
+    # Shut down simulator if it was started.
+    sitl.stop()
