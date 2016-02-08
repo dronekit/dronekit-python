@@ -41,7 +41,7 @@ cherrypy_conf = {
 
 
 class Drone(object):
-    def __init__(self, home_coords, server_enabled=True):
+    def __init__(self, server_enabled=True):
         self.gps_lock = False
         self.altitude = 30.0
 
@@ -50,7 +50,6 @@ class Drone(object):
         self.vehicle = vehicle
         self.commands = self.vehicle.commands
         self.current_coords = []
-        self.home_coords = home_coords
         self.webserver_enabled = server_enabled
         self._log("DroneDelivery Start")
 
@@ -58,6 +57,12 @@ class Drone(object):
         self.vehicle.add_attribute_listener('location', self.location_callback)
 
     def launch(self):
+        self._log("Waiting for location...")
+        while self.vehicle.location.global_frame.lat == 0:
+            time.sleep(0.1)
+        self.home_coords = [self.vehicle.location.global_frame.lat,
+                            self.vehicle.location.global_frame.lon]
+
         self._log("Waiting for ability to arm...")
         while not self.vehicle.is_armable:
             time.sleep(.1)
@@ -149,8 +154,8 @@ class Templates:
                 'height': 470,
                 'zoom': 13,
                 'format': 'png',
-                'access_token': 'pk.eyJ1IjoibXJwb2xsbyIsImEiOiJtUG0tRk9BIn0.AqAiefUV9fFYRo-w0jFR1Q',
-                'mapid': 'mrpollo.kfbnjbl0',
+                'access_token': 'pk.eyJ1Ijoia2V2aW4zZHIiLCJhIjoiY2lrOGoxN2s2MDJzYnR6a3drbTYwdGxmMiJ9.bv5u7QgmcJd6dZfLDGoykw',
+                'mapid': 'kevin3dr.n56ffjoo',
                 'home_coords': self.home_coords,
                 'menu': [
                     {'name': 'Home', 'location': '/'},
@@ -215,5 +220,8 @@ class DroneDelivery(object):
 print 'Connecting to vehicle on: %s' % args.connect
 vehicle = connect(args.connect, wait_ready=True)
 
-Drone([32.5738, -117.0068]).launch()
+print 'Launching Drone...'
+Drone().launch()
+
+print 'Waiting for cherrypy engine...'
 cherrypy.engine.block()
