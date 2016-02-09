@@ -300,16 +300,22 @@ class Version(object):
 
     def __str__(self):
         prefix=""
+
         if(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA):
             prefix += "APM:"
         elif(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4):
             prefix += "PX4"
+        else:
+            prefix += "UnknownAutoPilot"
+
         if(self.vehicle_type == mavutil.mavlink.MAV_TYPE_QUADROTOR):
             prefix += "Copter-"
         elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING):
             prefix += "Plane-"
         elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_ROVER):
             prefix += "Rover-"
+        else:
+            prefix += "UnknownVehicleType%d-" % (self.vehicle_type)
 
         release_type="-dev"
         if(self.release != None):
