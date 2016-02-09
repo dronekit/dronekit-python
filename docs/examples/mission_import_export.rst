@@ -33,72 +33,77 @@ In summary, after cloning the repository:
 
        cd dronekit-python/examples/mission_import_export/
 
+#. You can run the example against a simulator (DroneKit-SITL) by specifying the Python script without any arguments.
+   The example will download SITL binaries (if needed), start the simulator, and then connect to it:
 
-#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+   .. code-block:: bash
+
+       python mission_import_export.py
+
+   On the command prompt you should see (something like):
+   
+   .. code:: bash
+
+       Starting copter simulator (SITL)
+       SITL already Downloaded.
+       Connecting to vehicle on: tcp:127.0.0.1:5760
+       >>> APM:Copter V3.3 (d6053245)
+       >>> Frame: QUAD
+       >>> Calibrating barometer
+       >>> Initialising APM...
+       >>> barometer calibration complete
+       >>> GROUND START
+        Waiting for vehicle to initialise...
+        Waiting for vehicle to initialise...
+        Waiting for vehicle to initialise...
+        Waiting for vehicle to initialise...
+        Waiting for vehicle to initialise...
+        Reading mission from file: mpmission.txt
+        Upload mission from a file: mpmission.txt
+        Clear mission
+        Upload mission
+        Save mission from Vehicle to file: exportedmission.txt
+        Download mission from vehicle
+       >>> flight plan received
+        Write mission to file
+       Close vehicle object
+        Show original and uploaded/downloaded files:
+ 
+        Mission file: mpmission.txt
+        QGC WPL 110
+        0  1   0   16  0   0   0   0   -35.363262  149.165237  584.000000  1
+        1  0   0   22  0.000000    0.000000    0.000000    0.000000    -35.361988  149.163753  00.000000  1
+        2  0   0   16  0.000000    0.000000    0.000000    0.000000    -35.361992  149.163593  00.000000  1
+        3  0   0   16  0.000000    0.000000    0.000000    0.000000    -35.363812  149.163609  00.000000  1
+        4  0   0   16  0.000000    0.000000    0.000000    0.000000    -35.363768  149.166055  00.000000  1
+        5  0   0   16  0.000000    0.000000    0.000000    0.000000    -35.361835  149.166012  00.000000  1
+        6  0   0   16  0.000000    0.000000    0.000000    0.000000    -35.362150  149.165046  00.000000  1
+
+        Mission file: exportedmission.txt
+        QGC WPL 110
+        0    1     0     16    0     0     0     0     -35.3632621765  149.165237427   583.989990234   1
+        1    0     0     22    0.0   0.0   0.0   0.0   -35.3619880676  149.163757324   100.0   1
+        2    0     0     16    0.0   0.0   0.0   0.0   -35.3619918823  149.163589478   100.0   1
+        3    0     0     16    0.0   0.0   0.0   0.0   -35.3638114929  149.163604736   100.0   1
+        4    0     0     16    0.0   0.0   0.0   0.0   -35.3637695312  149.166061401   100.0   1
+        5    0     0     16    0.0   0.0   0.0   0.0   -35.3618354797  149.166015625   100.0   1
+        6    0     0     16    0.0   0.0   0.0   0.0   -35.3621482849  149.165039062   100.0   1
+
+
+   .. note:: 
+
+       The position values uploaded and then downloaded above do not match exactly. This rounding error can be ignored 
+       because the difference is much smaller than the precision provided by GPS. 
+    
+       The error occurs because all the params are encoded as 32-bit floats rather than 64-bit doubles (Python's native datatype).
+
+#. You can run the example against a specific connection (simulated or otherwise) by passing the :ref:`connection string <get_started_connect_string>` for your vehicle in the ``--connect`` parameter. 
+
+   For example, to connect to SITL running on UDP port 14550 on your local computer:
 
    .. code-block:: bash
 
        python mission_import_export.py --connect 127.0.0.1:14550
-
-  
-   .. note::
-   
-       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
-       This is the default value for the parameter, and may be omitted. 
-
-
-On the command prompt you should see (something like):
-
-
-.. code:: bash
-
-    Connecting to vehicle on: 127.0.0.1:14550
-    >>> APM:Copter V3.3 (d6053245)
-    >>> Frame: QUAD
-
-    Reading mission from file: mpmission.txt
-
-    Upload mission from a file: mpmission.txt
-     Clear mission
-     Upload mission
-
-    Save mission from Vehicle to file: exportedmission.txt
-     Download mission from vehicle
-    >>> flight plan received
-     Write mission to file
-    Close vehicle object
-
-    Show original and uploaded/downloaded files:
-
-    Mission file: mpmission.txt
-     QGC WPL 110
-     0      1       0       16      0       0       0       0       -35.363262      149.165237      584.000000      1
-     1      0       0       22      0.000000        0.000000        0.000000        0.000000        -35.361988      149.163753      100.000000      1
-     2      0       0       16      0.000000        0.000000        0.000000        0.000000        -35.361992      149.163593      100.000000      1
-     3      0       0       16      0.000000        0.000000        0.000000        0.000000        -35.363812      149.163609      100.000000      1
-     4      0       0       16      0.000000        0.000000        0.000000        0.000000        -35.363768      149.166055      100.000000      1
-     5      0       0       16      0.000000        0.000000        0.000000        0.000000        -35.361835      149.166012      100.000000      1
-     6      0       0       16      0.000000        0.000000        0.000000        0.000000        -35.362150      149.165046      100.000000      1
-
-    Mission file: exportedmission.txt
-     QGC WPL 110
-     0      1       0       16      0       0       0       0       0.0     0.0     0.0     1
-     1      0       0       22      0.0     0.0     0.0     0.0     -35.3619880676  149.163757324   100.0   1
-     2      0       0       16      0.0     0.0     0.0     0.0     -35.3619918823  149.163589478   100.0   1
-     3      0       0       16      0.0     0.0     0.0     0.0     -35.3638114929  149.163604736   100.0   1
-     4      0       0       16      0.0     0.0     0.0     0.0     -35.3637695312  149.166061401   100.0   1
-     5      0       0       16      0.0     0.0     0.0     0.0     -35.3618354797  149.166015625   100.0   1
-     6      0       0       16      0.0     0.0     0.0     0.0     -35.3621482849  149.165039062   100.0   1
-
-
-.. note:: 
-
-    The position values uploaded and then downloaded above do not match exactly. This rounding error can be ignored 
-    because the difference is much smaller than the precision provided by GPS. 
-    
-    The error occurs because all the params are encoded as 32-bit floats rather than 64-bit doubles (Python's native datatype).
-
-
      
 
 How does it work?
@@ -116,7 +121,7 @@ Known issues
 
 There are no known issues with this example.
   
-  
+
 
 .. _example_mission_import_export_source_code:
   
