@@ -304,20 +304,23 @@ class Version(object):
         """
         return self.release == 255
 
-        """
-        Returns the version (an integer) within the release type.  This method returns "23" for Copter-3.3rc23
-        """
+
     def release_version(self):
+        """
+        Returns the version within the release type (an integer).  
+        This method returns "23" for Copter-3.3rc23.
+        """
         if self.release is None:
             return None
         if(self.release == 255):
             return 0
         return self.release % 64
 
-        """
-        Returns text describing the release type e.g. "alpha", "stable" etc
-        """
+
     def release_type(self):
+        """
+        Returns text describing the release type e.g. "alpha", "stable" etc.
+        """
         if self.release is None:
             return None
         types = [ "dev", "alpha", "beta", "rc" ]

@@ -26,8 +26,8 @@ In summary, after cloning the repository:
        cd dronekit-python/examples/vehicle_state/
 
 
-#. You can run the example against the simulator by specifying the Python script without any arguments.
-   The example will download and start DroneKit-SITL, and then connect to it:
+#. You can run the example against a simulator (DroneKit-SITL) by specifying the Python script without any arguments.
+   The example will download SITL binaries (if needed), start the simulator, and then connect to it:
 
    .. code-block:: bash
 
@@ -50,7 +50,8 @@ In summary, after cloning the repository:
           Major version number: 3
           Minor version number: 3
           Patch version number: 0
-          Release type: 255
+          Release type: rc
+          Release version: 0
           Stable release?: True
         Autopilot capabilities
           Supports MISSION_FLOAT message type: True
@@ -180,6 +181,7 @@ In summary, after cloning the repository:
        Completed   
 
 #. You can run the example against a specific connection (simulated or otherwise) by passing the :ref:`connection string <get_started_connect_string>` for your vehicle in the ``--connect`` parameter. 
+
    For example, to connect to SITL running on UDP port 14550 on your local computer:
 
    .. code-block:: bash
@@ -189,14 +191,8 @@ In summary, after cloning the repository:
        
 .. note::
 
-    DroneKit-SITL automatically disables arming checks, but if you're using another simulated environment remember to :ref:`disable arming checks <disable-arming-checks>` so that the example can run. In that case you can also:
-
-    * `add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_
-      (otherwise the :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>` attribute may return values of ``None`` for the distance and voltage).
-    * `add a virtual gimbal <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_gimbal>`_
-      (otherwise the :py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>` attribute may return values of ``None`` for the yaw, pitch and roll).       
-
-
+    DroneKit-SITL does not automatically add a virtual gimbal and rangefinder, 
+    so these attributes will always report ``None``.
 
 
 
