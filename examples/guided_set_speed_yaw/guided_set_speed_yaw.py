@@ -15,15 +15,29 @@ import math
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
-parser.add_argument('--connect', default='127.0.0.1:14550',
-                   help="vehicle connection target. Default '127.0.0.1:14550'")
+parser = argparse.ArgumentParser(description='Control Copter and send commands in GUIDED mode ')
+parser.add_argument('--connect', 
+                   help="Vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
+
+connection_string = args.connect
+sitl = None
+
+
+#Start SITL if no connection string specified
+if not args.connect:
+    print "Starting copter simulator (SITL)"
+    from dronekit_sitl import SITL
+    sitl = SITL()
+    sitl.download('copter', '3.3', verbose=True)
+    sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    sitl.launch(sitl_args, await_ready=True, restart=True)
+    connection_string='tcp:127.0.0.1:5760'
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % args.connect
-vehicle = connect(args.connect, wait_ready=True)
+print 'Connecting to vehicle on: %s' % connection_string
+vehicle = connect(connection_string, wait_ready=True)
 
 
 def arm_and_takeoff(aTargetAltitude):
@@ -40,8 +54,8 @@ def arm_and_takeoff(aTargetAltitude):
         
     print "Arming motors"
     # Copter should arm in GUIDED mode
-    vehicle.mode    = VehicleMode("GUIDED")
-    vehicle.armed   = True    
+    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.armed = True
 
     while not vehicle.armed:      
         print " Waiting for arming..."
@@ -93,9 +107,9 @@ def condition_yaw(heading, relative=False):
     http://copter.ardupilot.com/wiki/common-mavlink-mission-command-messages-mav_cmd/#mav_cmd_condition_yaw
     """
     if relative:
-        is_relative=1 #yaw relative to direction of travel
+        is_relative = 1 #yaw relative to direction of travel
     else:
-        is_relative=0 #yaw is an absolute angle
+        is_relative = 0 #yaw is an absolute angle
     # create the CONDITION_YAW command using command_long_encode()
     msg = vehicle.message_factory.command_long_encode(
         0, 0,    # target system, target component
@@ -162,7 +176,7 @@ def get_location_metres(original_location, dNorth, dEast):
     For more information see:
     http://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
     """
-    earth_radius=6378137.0 #Radius of "spherical" earth
+    earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
     dLat = dNorth/earth_radius
     dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
@@ -291,12 +305,17 @@ def goto(dNorth, dEast, gotoFunction=vehicle.simple_goto):
 
     The method reports the distance to target every two seconds.
     """
-    currentLocation=vehicle.location.global_relative_frame
-    targetLocation=get_location_metres(currentLocation, dNorth, dEast)
-    targetDistance=get_distance_metres(currentLocation, targetLocation)
+    
+    currentLocation = vehicle.location.global_relative_frame
+    targetLocation = get_location_metres(currentLocation, dNorth, dEast)
+    targetDistance = get_distance_metres(currentLocation, targetLocation)
     gotoFunction(targetLocation)
+    
+    #print "DEBUG: targetLocation: %s" % targetLocation
+    #print "DEBUG: targetLocation: %s" % targetDistance
 
     while vehicle.mode.name=="GUIDED": #Stop action if we are no longer in guided mode.
+        #print "DEBUG: mode: %s" % vehicle.mode.name
         remainingDistance=get_distance_metres(vehicle.location.global_relative_frame, targetLocation)
         print "Distance to target: ", remainingDistance
         if remainingDistance<=targetDistance*0.01: #Just below target, in case of undershoot.
@@ -430,16 +449,16 @@ print("TRIANGLE path using standard SET_POSITION_TARGET_GLOBAL_INT message and w
 print("Position South 100 West 130")
 
 print("Set groundspeed to 5m/s.")
-vehicle.groundspeed=5
+vehicle.groundspeed = 5
 goto(-100, -130, goto_position_target_global_int)
 
 print("Set groundspeed to 15m/s (max).")
-vehicle.groundspeed=15
+vehicle.groundspeed = 15
 print("Position South 0 East 200")
 goto(0, 260, goto_position_target_global_int)
 
 print("Set airspeed to 10m/s (max).")
-vehicle.airspeed=10
+vehicle.airspeed = 10
 
 print("Position North 100 West 130")
 goto(100, -130, goto_position_target_global_int)
@@ -463,7 +482,7 @@ camera gimbal at the the selected location (in this case it aligns the whole veh
 """	
 
 print("SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters")
-DURATION=20 #Set duration for each segment.
+DURATION = 20 #Set duration for each segment.
 
 print("North 50m, East 0m, 10m altitude for %s seconds" % DURATION)
 goto_position_target_local_ned(50,0,-10)
@@ -504,20 +523,20 @@ so that the front of the vehicle points in the direction of travel
 #Set up velocity vector to map to each direction.
 # vx > 0 => fly North
 # vx < 0 => fly South
-NORTH=2
-SOUTH=-2
+NORTH = 2
+SOUTH = -2
 
 # Note for vy:
 # vy > 0 => fly East
 # vy < 0 => fly West
-EAST=2
-WEST=-2
+EAST = 2
+WEST = -2
 
 # Note for vz: 
 # vz < 0 => ascend
 # vz > 0 => descend
-UP=-0.5
-DOWN=0.5
+UP = -0.5
+DOWN = 0.5
 
 
 # Square path using velocity
@@ -622,5 +641,9 @@ vehicle.mode = VehicleMode("LAND")
 #Close vehicle object before exiting script
 print "Close vehicle object"
 vehicle.close()
+
+# Shut down simulator if it was started.
+if sitl is not None:
+    sitl.stop()
 
 print("Completed")

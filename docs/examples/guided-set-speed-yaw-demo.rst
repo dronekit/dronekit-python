@@ -35,9 +35,6 @@ Running the example
 The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
 and DroneKit have been set up as described in :ref:`installing_dronekit`).
 
-If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
-that the example can run.
-
 In summary, after cloning the repository:
 
 #. Navigate to the example folder as shown:
@@ -47,125 +44,137 @@ In summary, after cloning the repository:
        cd dronekit-python/examples/guided_set_speed_yaw/
 
 
-#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+#. You can run the example against a simulator (DroneKit-SITL) by specifying the Python script without any arguments.
+   The example will download SITL binaries if needed, start the simulator, and then connect to it:
 
    .. code-block:: bash
 
-       python guided_set_speed_yaw.py --connect 127.0.0.1:14550
+       python guided_set_speed_yaw.py
 
-   .. note::
+   On the command prompt you should see (something like):
    
-       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
-       This is the default value for the parameter, and may be omitted. 
+   .. code:: bash
 
+       Starting copter simulator (SITL)
+       SITL already Downloaded.
+       Connecting to vehicle on: tcp:127.0.0.1:5760
+       >>> APM:Copter V3.3 (d6053245)
+       >>> Frame: QUAD
+       >>> Calibrating barometer
+       >>> Initialising APM...
+       >>> barometer calibration complete
+       >>> GROUND START
+       Basic pre-arm checks
+        Waiting for vehicle to initialise...
+        ...
+        Waiting for vehicle to initialise...
+       Arming motors
+        Waiting for arming...
+        ...
+        Waiting for arming...
+       >>> ARMING MOTORS
+       >>> GROUND START
+        Waiting for arming...
+       >>> Link timeout, no heartbeat in last 5 seconds
+       >>> ...link restored.
+       >>> Initialising APM...
+       Taking off!
+        Altitude:  0.0
+        Altitude:  0.28
+        ...
+        Altitude:  4.76
+       Reached target altitude
+       TRIANGLE path using standard Vehicle.simple_goto()
+       Set groundspeed to 5m/s.
+       Position North 80 West 50
+       Distance to target:  100.792763565
+       Distance to target:  99.912599325
+       ...
+       Distance to target:  1.21731863826
+       Distance to target:  0.846001925791
+       Reached target
+       Position North 0 East 100
+       Distance to target:  122.623210813
+       ...
+       Distance to target:  4.75876224557
+       Distance to target:  0.244650555031
+       Reached target
+       Position North -80 West 50
+       Distance to target:  100.792430814
+       Distance to target:  100.592652053
+       ...
+       Distance to target:  2.48849019535
+       Distance to target:  0.73822537077
+       Reached target
+       TRIANGLE path using standard SET_POSITION_TARGET_GLOBAL_INT message and with varying speed.
+       Position South 100 West 130
+       Set groundspeed to 5m/s.
+       Distance to target:  188.180927131
+       Distance to target:  186.578341133
+       ...
+       Distance to target:  9.87090024758
+       Distance to target:  1.4668164732
+       Reached target
+       Set groundspeed to 15m/s (max).
+       Position South 0 East 200
+       Distance to target:  318.826732298
+       Distance to target:  320.787965033
+       ...
+       Distance to target:  11.5626483964
+       Distance to target:  0.335164775811
+       Reached target
+       Set airspeed to 10m/s (max).
+       Position North 100 West 130
+       Distance to target:  188.182420209
+       Distance to target:  189.860730713
+       ...
+       Distance to target:  10.4263414971
+       Distance to target:  1.29857175712
+       Reached target
+       SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters
+       North 50m, East 0m, 10m altitude for 20 seconds
+       Point ROI at current location (home position)
+       North 50m, East 50m, 10m altitude
+       Point ROI at current location
+       North 0m, East 50m, 10m altitude
+       North 0m, East 0m, 10m altitude
+       SQUARE path using SET_POSITION_TARGET_LOCAL_NED and velocity parameters
+       Yaw 180 absolute (South)
+       Velocity South & up
+       Yaw 270 absolute (West)
+       Velocity West & down
+       Yaw 0 absolute (North)
+       Velocity North
+       Yaw 90 absolute (East)
+       Velocity East
+       DIAMOND path using SET_POSITION_TARGET_GLOBAL_INT and velocity parameters
+       Yaw 225 absolute
+       Velocity South, West and Up
+       Yaw 90 relative (to previous yaw heading)
+       Velocity North, West and Down
+       Set new home location to current location
+       Get new home location
+        Home Location: LocationGlobal:lat=-35.363243103,lon=149.164337158,alt=593.890014648
+       Yaw 90 relative (to previous yaw heading)
+       Velocity North and East
+       Yaw 90 relative (to previous yaw heading)
+       Velocity South and East
+       Setting LAND mode...
+       Close vehicle object
+       Completed
+
+   .. tip::
+
+       It is more interesting to watch the example run on a map than the console. The topic :ref:`viewing_uav_on_map` 
+       explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
        
-.. tip::
+#. You can run the example against a specific connection (simulated or otherwise) by passing the :ref:`connection string <get_started_connect_string>` for your vehicle in the ``--connect`` parameter. 
 
-    It is more interesting to watch the example above on a map than the console. The topic :ref:`viewing_uav_on_map` 
-    explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
+   For example, to connect to SITL running on UDP port 14550 on your local computer:
 
-On the command prompt you should see (something like):
+   .. code-block:: bash
 
-
-.. code-block:: bash
-
-    Basic pre-arm checks
-    Arming motors
-     Waiting for arming...
-     Waiting for arming...
-    Taking off!
-     Altitude:  0.00999999977648
-     Altitude:  0.159999996424
-     Altitude:  0.920000016689
-     Altitude:  2.38000011444
-     Altitude:  3.93000006676
-     Altitude:  4.65000009537
-     Altitude:  4.82999992371
-    Reached target altitude
-
-    TRIANGLE path using standard Vehicle.simple_goto()
-    Position North 80 West 50
-    Distance to target:  100.792762965
-    Distance to target:  100.25918006
-    ...
-    Distance to target:  2.34237912414
-    Distance to target:  0.308823685384
-    Reached target
-    Position North 0 East 100
-    Distance to target:  122.62321461
-    ...
-    Distance to target:  5.39403923852
-    Distance to target:  1.00445126117
-    Reached target
-    Position North -80 West 50
-    goto_target_globalint_position
-    Distance to target:  100.792430952
-    Distance to target:  100.221083739
-    ...
-    Distance to target:  1.69678155659
-    Distance to target:  0.0798488767383
-    Reached target
-
-    TRIANGLE path using standard SET_POSITION_TARGET_GLOBAL_INT message and with varying speed.
-    Position South 100 West 130
-    Set speed to 5m/s.
-    Distance to target:  181.439594672
-    Distance to target:  132.170351744
-    ...
-    Distance to target:  2.67615248028
-    Distance to target:  0.382959594982
-    Reached target
-    Set speed to 15m/s (max).
-    Position South 0 East 200
-    Distance to target:  318.826739407
-    Distance to target:  317.613357051
-    ...
-    Distance to target:  3.5935761745
-    Distance to target:  0.114090613451
-    Reached target
-    Set speed to 10m/s (max).
-    Position North 100 West 130
-    goto_target_globalint_position
-    Distance to target:  188.182423388
-    Distance to target:  187.540272979
-    ...
-    Distance to target:  4.82317050152
-    Distance to target:  0.377390539948
-    Reached target
-
-    SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters
-    North 50m, East 0m, 10m altitude for 20 seconds
-    Point ROI at current location (home position)
-    North 50m, East 50m, 10m altitude
-    Point ROI at current location
-    North 0m, East 50m, 10m altitude
-    North 0m, East 0m, 10m altitude
-
-    SQUARE path using SET_POSITION_TARGET_LOCAL_NED and velocity parameters
-    Velocity South & up
-    Yaw 180 absolute (South)
-    Velocity West & down
-    Yaw 270 absolute (West)
-    Velocity North
-    Yaw 0 absolute (North)
-    Velocity East
-
-    DIAMOND path using SET_POSITION_TARGET_GLOBAL_INT and velocity parameters
-    Velocity North, East and up
-    Yaw 225 absolute   
-    Velocity South, East and down
-    Yaw 90 relative (to previous yaw heading)
-    Set new Home location to current location
-    Get new home location
-     Home Location: LocationGlobal:lat=-35.3639335632,lon=149.165328979,alt=628.679992676,is_relative=False
-    Velocity South and West
-    Yaw 90 relative (to previous yaw heading)
-    Velocity North and West
-    Yaw 90 relative (to previous yaw heading)
-
-    Setting LAND mode...
-    Close vehicle object
-    Completed
+       python guided_set_speed_yaw.py --connect 127.0.0.1:14550  
 
 
 
@@ -384,8 +393,8 @@ Testbed settings
 
 This example has been tested on Windows against SITL running both natively and in a virtual machine (as described in :ref:`installing_dronekit`).
 
-* DroneKit version: 2.0.0rc12
-* ArduPilot version: 3.4.0.
+* DroneKit version: 2.0.2
+* ArduPilot version: 3.3
 
 
 
