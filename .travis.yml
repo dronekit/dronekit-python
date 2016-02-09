@@ -11,9 +11,9 @@ install:
   - 'sudo pip install -r requirements.txt -UI'
 
 script:
-#  - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests dronekit.test.web'
-  - 'nosetests dronekit.test.unit'
-  - 'nosetests dronekit.test.sitl'
+#  - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests -svx dronekit.test.web'
+  - 'nosetests -svx dronekit.test.unit'
+  - 'nosetests -svx dronekit.test.sitl'
 
 git:
   depth: 10

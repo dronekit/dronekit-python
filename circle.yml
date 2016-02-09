@@ -14,9 +14,9 @@ test:
     - 'cd docs; make clean; make html'
 
     # code
-#    - 'nosetests dronekit.test.web'
-    - 'nosetests dronekit.test.unit'
-    - 'nosetests dronekit.test.sitl'
+#    - 'nosetests -svx dronekit.test.web'
+    - 'nosetests -svx dronekit.test.unit'
+    - 'nosetests -svx dronekit.test.sitl'
 
 general:
   build_dir: .
