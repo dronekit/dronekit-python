@@ -12,15 +12,29 @@ from pymavlink import mavutil
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Example which runs basic mission operations. Connects to SITL on local PC by default.')
-parser.add_argument('--connect', default='127.0.0.1:14550',
-                   help="vehicle connection target. Default '127.0.0.1:14550'")
+parser = argparse.ArgumentParser(description='Demonstrates basic mission operations.')
+parser.add_argument('--connect', 
+                   help="vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
+
+connection_string = args.connect
+sitl = None
+
+
+#Start SITL if no connection string specified
+if not args.connect:
+    print "Starting copter simulator (SITL)"
+    from dronekit_sitl import SITL
+    sitl = SITL()
+    sitl.download('copter', '3.3', verbose=True)
+    sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    sitl.launch(sitl_args, await_ready=True, restart=True)
+    connection_string='tcp:127.0.0.1:5760'
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % args.connect
-vehicle = connect(args.connect, wait_ready=True)
+print 'Connecting to vehicle on: %s' % connection_string
+vehicle = connect(connection_string, wait_ready=True)
 
 
 def get_location_metres(original_location, dNorth, dEast):
@@ -65,14 +79,14 @@ def distance_to_current_waypoint():
     Gets distance in metres to the current waypoint. 
     It returns None for the first waypoint (Home location).
     """
-    nextwaypoint=vehicle.commands.next
-    if nextwaypoint ==0:
+    nextwaypoint = vehicle.commands.next
+    if nextwaypoint==0:
         return None
     missionitem=vehicle.commands[nextwaypoint-1] #commands are zero indexed
-    lat=missionitem.x
-    lon=missionitem.y
-    alt=missionitem.z
-    targetWaypointLocation=LocationGlobalRelative(lat,lon,alt)
+    lat = missionitem.x
+    lon = missionitem.y
+    alt = missionitem.z
+    targetWaypointLocation = LocationGlobalRelative(lat,lon,alt)
     distancetopoint = get_distance_metres(vehicle.location.global_frame, targetWaypointLocation)
     return distancetopoint
 
@@ -137,8 +151,8 @@ def arm_and_takeoff(aTargetAltitude):
         
     print "Arming motors"
     # Copter should arm in GUIDED mode
-    vehicle.mode    = VehicleMode("GUIDED")
-    vehicle.armed   = True    
+    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.armed = True
 
     while not vehicle.armed:      
         print " Waiting for arming..."
@@ -183,7 +197,7 @@ while True:
   
     if nextwaypoint==3: #Skip to next waypoint
         print 'Skipping to Waypoint 5 when reach waypoint 3'
-        vehicle.commands.next=5
+        vehicle.commands.next = 5
     if nextwaypoint==5: #Dummy waypoint - as soon as we reach waypoint 4 this is true and we exit.
         print "Exit 'standard' mission when start heading to final waypoint (5)"
         break;
@@ -197,4 +211,6 @@ vehicle.mode = VehicleMode("RTL")
 print "Close vehicle object"
 vehicle.close()
 
-
+# Shut down simulator if it was started.
+if sitl is not None:
+    sitl.stop()
