@@ -951,6 +951,9 @@ class Vehicle(HasObservers):
         self._handler = handler
         self._master = handler.master
 
+        # a message listener to set Autopilot version and capabilties:
+        self.listener_capa = None
+
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
         self._ready_attrs = set(['commands'])
@@ -1036,6 +1039,8 @@ class Vehicle(HasObservers):
         def listener(vehicle, name, m):
             self._capabilities = m.capabilities
             self._raw_version = m.flight_sw_version
+            if self.listener_capa is not None:
+                self.remove_attribute_listener('HEARTBEAT', self.listener_capa)
 
         # gimbal
         self._gimbal = Gimbal(self)
@@ -2012,8 +2017,11 @@ class Vehicle(HasObservers):
                                                       rate, 1)
 
         #Request an AUTOPILOT_VERSION packet
-        capability_msg = self.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
-        self.send_mavlink(capability_msg)
+        def send_capabilties_request(vehicle, name, m):
+            capability_msg = self.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
+            self.send_mavlink(capability_msg)
+
+        self.listener_capa = self.add_message_listener('HEARTBEAT', send_capabilties_request)
 
         # Ensure initial parameter download has started.
         while True:
