@@ -278,6 +278,9 @@ class Version(object):
     .. py:attribute:: release
 
         Release type (integer). See the enum `FIRMWARE_VERSION_TYPE <http://mavlink.org/messages/common#http://mavlink.org/messages/common#FIRMWARE_VERSION_TYPE_DEV>`_.
+
+        This is a composite of the product release cycle stage (rc, beta etc) and the version in that cycle - e.g. 23.
+
     """
     def __init__(self, raw_version, autopilot_type, vehicle_type):
         self.autopilot_type = autopilot_type
@@ -301,6 +304,25 @@ class Version(object):
         """
         return self.release == 255
 
+        """
+        Returns the version (an integer) within the release type.  This method returns "23" for Copter-3.3rc23
+        """
+    def release_version(self):
+        if self.release is None:
+            return None
+        if(self.release == 255):
+            return 0
+        return self.release % 64
+
+        """
+        Returns text describing the release type e.g. "alpha", "stable" etc
+        """
+    def release_type(self):
+        if self.release is None:
+            return None
+        types = [ "dev", "alpha", "beta", "rc" ]
+        return types[self.release/64]
+
     def __str__(self):
         prefix=""
 
@@ -320,16 +342,14 @@ class Version(object):
         else:
             prefix += "UnknownVehicleType%d-" % (self.vehicle_type)
 
-        release_type="-dev"
-        if(self.release != None):
-            if(self.release == 255):
-                release_type = ""
-            if(self.release > 192-1):
-                release_type = "-rc" + str(self.release-(192-1))
-            if(self.release > 128-1):
-                release_type = "-beta" + str(self.release-(192-1))
-            if(self.release > 64-1):
-                release_type = "-alpha" + str(self.release-(192-1))
+        if self.release_type() is None:
+            release_type = "UnknownReleaseType"
+        elif self.is_stable():
+            release_type = ""
+        else:
+            # e.g. "-rc23"
+            release_type = "-" + str(self.release_type()) + str(self.release_version())
+
         return prefix + "%s.%s.%s" % (self.major, self.minor, self.patch) + release_type
 
 class Capabilities:
@@ -1058,6 +1078,7 @@ class Vehicle(HasObservers):
             self._raw_version = m.flight_sw_version
             if self.listener_capa is not None:
                 self.remove_attribute_listener('HEARTBEAT', self.listener_capa)
+            self.notify_attribute_listeners('autopilot_version', self._raw_version)
 
         # gimbal
         self._gimbal = Gimbal(self)
