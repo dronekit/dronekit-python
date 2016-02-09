@@ -73,12 +73,12 @@ running the connect within a ``try-catch`` block as shown:
     # Bad TCP connection
     except socket.error:
         print 'No server exists!'
-    except dronekit.APIException:
-        print 'Timeout!'
  
     # Bad TTY connection
     except exceptions.OSError as e:
         print 'No serial exists!'
+
+    # API Error
     except dronekit.APIException:
         print 'Timeout!'
         
