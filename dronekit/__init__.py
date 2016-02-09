@@ -254,11 +254,14 @@ class Rangefinder(object):
 
 class Version(object):
     """
-    Version numbers.
+    Autopilot version and type.
 
-    An object of this type is returned by :py:attr:`Vehicle.version`
+    An object of this type is returned by :py:attr:`Vehicle.version`.
+    
     The version number can be read in a few different formats. To get it in a human-readable
-    format, just print `vehicle.version`.  This might print somthing like "APM:Copter-3.3.2-rc4".
+    format, just print `vehicle.version`.  This might print something like "APM:Copter-3.3.2-rc4".
+    
+    .. versionadded:: 2.0.3
 
     .. py:attribute:: major
 
@@ -274,7 +277,7 @@ class Version(object):
 
     .. py:attribute:: release
 
-        Release type (integer). See the enum `FIRMWARE_VERSION_TYPE <http://mavlink.org/messages/common#MAV_AUTOPILOT_GENERIC>`_.
+        Release type (integer). See the enum `FIRMWARE_VERSION_TYPE <http://mavlink.org/messages/common#http://mavlink.org/messages/common#FIRMWARE_VERSION_TYPE_DEV>`_.
     """
     def __init__(self, raw_version, autopilot_type, vehicle_type):
         self.autopilot_type = autopilot_type
@@ -294,7 +297,7 @@ class Version(object):
     def is_stable(self):
         """
         Returns True if the autopilot reports that the current firmware is a stable
-        release, not a pre-release or development version.
+        release (not a pre-release or development version).
         """
         return self.release == 255
 
@@ -331,15 +334,23 @@ class Version(object):
 
 class Capabilities:
     """
-    The capabilities tells us what messages the autopilot is capable of interpreting.
-
+    Autopilot capabilities (supported message types and functionality). 
+    
+    An object of this type is returned by :py:attr:`Vehicle.capabilities`.
+    
+    See the enum  
+    `MAV_PROTOCOL_CAPABILITY <http://mavlink.org/messages/common#MAV_PROTOCOL_CAPABILITY_MISSION_FLOAT>`_.
+    
+    .. versionadded:: 2.0.3
+    
+    
     .. py:attribute:: mission_float
 
         Autopilot supports MISSION float message type (Boolean).
 
     .. py:attribute:: param_float
 
-        Autopilot supports the new param float message type (Boolean).
+        Autopilot supports the PARAM float message type (Boolean).
 
     .. py:attribute:: mission_int
 
@@ -351,7 +362,7 @@ class Capabilities:
 
     .. py:attribute:: param_union 
 
-        Autopilot supports the new param union message type (Boolean).
+        Autopilot supports the PARAM_UNION message type (Boolean).
 
     .. py:attribute:: ftp
 
@@ -365,7 +376,7 @@ class Capabilities:
 
         Autopilot supports commanding position and velocity targets in local NED frame (Boolean).
 
-    .. py:attribute:: set_attitude_target_global_int
+    .. py:attribute:: set_altitude_target_global_int
 
         Autopilot supports commanding position and velocity targets in global scaled integers (Boolean).
     
@@ -1557,14 +1568,18 @@ class Vehicle(HasObservers):
     @property
     def version(self):
         """
-        The autopilot version in a :py:class:`Version object`.
+        The autopilot version and type in a :py:class:`Version` object.
+        
+        .. versionadded:: 2.0.3
         """
         return Version(self._raw_version, self._autopilot_type, self._vehicle_type)
 
     @property
     def capabilities(self):
         """
-        The capabilities of the autopilot in a :py:class:`Capabilities` object.
+        The autopilot capabilities in a :py:class:`Capabilities` object.
+        
+        .. versionadded:: 2.0.3
         """
         return Capabilities(self._capabilities)
 
@@ -1587,7 +1602,7 @@ class Vehicle(HasObservers):
         """
         This attribute can be used to get and set the ``armed`` state of the vehicle (``boolean``).
 
-        The code below shows how to read the state, and to arm/disam the vehicle:
+        The code below shows how to read the state, and to arm/disarm the vehicle:
 
         .. code:: python
 
@@ -1717,7 +1732,7 @@ class Vehicle(HasObservers):
         """
         Gimbal object for controlling, viewing and observing gimbal status (:py:class:`Gimbal`).
         
-        .. versionadded:: 2.1.0
+        .. versionadded:: 2.0.1
         """
         return self._gimbal
 
