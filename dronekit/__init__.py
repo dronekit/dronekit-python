@@ -884,9 +884,9 @@ class Vehicle(HasObservers):
 
         @self.on_message('MOUNT_STATUS')
         def listener(self, name, m):
-            self._mount_pitch = m.pointing_a / 100
-            self._mount_roll = m.pointing_b / 100
-            self._mount_yaw = m.pointing_c / 100
+            self._mount_pitch = m.pointing_a / 100.0
+            self._mount_roll = m.pointing_b / 100.0
+            self._mount_yaw = m.pointing_c / 100.0
             self.notify_attribute_listeners('mount', self.mount_status)
 
         # gimbal
@@ -1945,9 +1945,9 @@ class Gimbal(object):
 
         @vehicle.on_message('MOUNT_STATUS')
         def listener(vehicle, name, m):
-            self._pitch = m.pointing_a / 100
-            self._roll = m.pointing_b / 100
-            self._yaw = m.pointing_c / 100
+            self._pitch = m.pointing_a / 100.0
+            self._roll = m.pointing_b / 100.0
+            self._yaw = m.pointing_c / 100.0
             vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
 
     @property
