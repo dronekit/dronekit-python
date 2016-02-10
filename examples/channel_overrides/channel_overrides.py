@@ -17,15 +17,29 @@ from dronekit import connect
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Example showing how to set and clear vehicle channel-override information. Connects to SITL on local PC by default.')
-parser.add_argument('--connect', default='127.0.0.1:14550',
-                   help="vehicle connection target. Default '127.0.0.1:14550'")
+parser = argparse.ArgumentParser(description='Example showing how to set and clear vehicle channel-override information.')
+parser.add_argument('--connect', 
+                   help="vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
+
+connection_string = args.connect
+sitl = None
+
+
+#Start SITL if no connection string specified
+if not args.connect:
+    print "Starting copter simulator (SITL)"
+    from dronekit_sitl import SITL
+    sitl = SITL()
+    sitl.download('copter', '3.3', verbose=True)
+    sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    sitl.launch(sitl_args, await_ready=True, restart=True)
+    connection_string = 'tcp:127.0.0.1:5760'
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % args.connect
-vehicle = connect(args.connect, wait_ready=True)
+print 'Connecting to vehicle on: %s' % connection_string
+vehicle = connect(connection_string, wait_ready=True)
 
 # Get all original channel values (before override)
 print "Channel values from RC Tx:", vehicle.channels
@@ -80,5 +94,9 @@ print " Channel overrides: %s" % vehicle.channels.overrides
 #Close vehicle object before exiting script
 print "\nClose vehicle object"
 vehicle.close()
+
+# Shut down simulator if it was started.
+if sitl is not None:
+    sitl.stop()
 
 print("Completed")

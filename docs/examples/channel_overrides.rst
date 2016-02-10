@@ -35,65 +35,65 @@ In summary, after cloning the repository:
        cd dronekit-python/examples/channel_overrides/
 
 
-#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+#. You can run the example against a simulator (DroneKit-SITL) by specifying the Python script without any arguments.
+   The example will download SITL binaries (if needed), start the simulator, and then connect to it:
+
+   .. code-block:: bash
+
+       python channel_overrides.py
+
+   On the command prompt you should see (something like):
+   
+   .. code:: bash
+
+       Starting copter simulator (SITL)
+       SITL already Downloaded.
+       Connecting to vehicle on: tcp:127.0.0.1:5760
+       >>> APM:Copter V3.3 (d6053245)
+       >>> Frame: QUAD
+       >>> Calibrating barometer
+       >>> Initialising APM...
+       >>> barometer calibration complete
+       >>> GROUND START
+       Channel values from RC Tx: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
+       Read channels individually:
+        Ch1: 1500
+        Ch2: 1500
+        Ch3: 1000
+        Ch4: 1500
+        Ch5: 1800
+        Ch6: 1000
+        Ch7: 1000
+        Ch8: 1800
+       Number of channels: 8
+        Channel overrides: {}
+       Set Ch2 override to 200 (indexing syntax)
+        Channel overrides: {'2': 200}
+        Ch2 override: 200
+       Set Ch3 override to 300 (dictionary syntax)
+        Channel overrides: {'3': 300}
+       Set Ch1-Ch8 overrides to 110-810 respectively
+        Channel overrides: {'1': 110, '3': 310, '2': 210, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+        Cancel Ch2 override (indexing syntax)
+        Channel overrides: {'1': 110, '3': 310, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+       Clear Ch3 override (del syntax)
+        Channel overrides: {'1': 110, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
+       Clear Ch5, Ch6 override and set channel 3 to 500 (dictionary syntax)
+        Channel overrides: {'3': 500}
+       Clear all overrides
+        Channel overrides: {}
+        Close vehicle object
+       Completed
+
+#. You can run the example against a specific connection (simulated or otherwise) by passing the :ref:`connection string <get_started_connect_string>` for your vehicle in the ``--connect`` parameter. 
+
+   For example, to connect to SITL running on UDP port 14550 on your local computer:
 
    .. code-block:: bash
 
        python channel_overrides.py --connect 127.0.0.1:14550
 
-   .. note::
-   
-       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
-       This is the default value for the parameter, and may be omitted. 
-          
-
-
-On the command prompt you should see (something like):
-
-.. code:: bash
-
-    Connecting to vehicle on: 170.0.0.1:14550
-    >>> APM:Copter V3.3 (d6053245)
-    >>> Frame: QUAD
-    >>> Calibrating barometer
-    >>> Initialising APM...
-    >>> barometer calibration complete
-    >>> GROUND START
-    Channel values from RC Tx: {'1': 1500, '3': 1000, '2': 1500, '5': 1800, '4': 1500, '7': 1000, '6': 1000, '8': 1800}
-    Read channels individually:
-     Ch1: 1500
-     Ch2: 1500
-     Ch3: 1000
-     Ch4: 1500
-     Ch5: 1800
-     Ch6: 1000
-     Ch7: 1000
-     Ch8: 1800
-    Number of channels: 8
-
-    Channel overrides: {}
-    Set Ch2 override to 200 (indexing syntax)
-     Channel overrides: {'2': 200}
-     Ch2 override: 200
-    Set Ch3 override to 300 (dictionary syntax)
-     Channel overrides: {'3': 300}
-    Set Ch1-Ch8 overrides to 110-810 respectively
-     Channel overrides: {'1': 110, '3': 310, '2': 210, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
-
-    Cancel Ch2 override (indexing syntax)
-     Channel overrides: {'1': 110, '3': 310, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
-    Clear Ch3 override (del syntax)
-     Channel overrides: {'1': 110, '5': 510, '4': 4100, '7': 710, '6': 610, '8': 810}
-    Clear Ch5, Ch6 override and set channel 3 to 500 (dictionary syntax)
-     Channel overrides: {'3': 500}
-    Clear all overrides
-     Channel overrides: {}
-
-    Close vehicle object
-    Completed
-
-
-
+       
 How does it work?
 =================
 
