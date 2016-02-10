@@ -41,48 +41,59 @@ In summary, after cloning the repository:
 
        cd dronekit-python\examples\create_attribute\
 
+#. You can run the example against a simulator (DroneKit-SITL) by specifying the Python script without any arguments.
+   The example will download SITL binaries (if needed), start the simulator, and then connect to it:
 
-#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+   .. code-block:: bash
+
+       python create_attribute.py
+
+   On the command prompt you should see (something like):
+   
+   .. code:: bash
+
+       Starting copter simulator (SITL)
+       SITL already Downloaded.
+       Connecting to vehicle on: tcp:127.0.0.1:5760
+       >>> APM:Copter V3.3 (d6053245)
+       >>> Frame: QUAD
+       >>> Calibrating barometer
+       >>> Initialising APM...
+       >>> barometer calibration complete
+       >>> GROUND START
+       Display RAW_IMU messages for 5 seconds and then exit.
+       RAW_IMU: time_boot_us=15340000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=15580000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=15820000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=1,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=16060000,xacc=0,yacc=1,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=16300000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=16540000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=16780000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=17020000,xacc=1,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=17260000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=17500000,xacc=0,yacc=0,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=17740000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=17980000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=18220000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=1,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=18460000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=18700000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=18940000,xacc=1,yacc=0,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=19180000,xacc=1,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=19420000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=161,ymag=19,zmag=-365
+       RAW_IMU: time_boot_us=19660000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=0,xmag=154,ymag=52,zmag=-365
+       RAW_IMU: time_boot_us=19900000,xacc=0,yacc=0,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=154,ymag=52,zmag=-365
+       RAW_IMU: time_boot_us=20140000,xacc=0,yacc=0,zacc=-1000,xgyro=0,ygyro=0,zgyro=0,xmag=154,ymag=52,zmag=-365
+       Close vehicle object
+       
+       
+#. You can run the example against a specific connection (simulated or otherwise) by passing the :ref:`connection string <get_started_connect_string>` for your vehicle in the ``--connect`` parameter. 
+
+   For example, to connect to SITL running on UDP port 14550 on your local computer:
 
    .. code-block:: bash
 
        python create_attribute.py --connect 127.0.0.1:14550
 
-   .. note::
-   
-       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550.
-       This is the default value for the parameter, and may be omitted. 
-          
-
-
-On the command prompt you should see (something like):
-
-.. code:: bash
-
-    Connecting to vehicle on: tcp:127.0.0.1:14550
-    >>> APM:Copter V3.3 (d6053245)
-    >>> Frame: QUAD
-    Display RAW_IMU messages for 5 seconds and then exit.
-    RAW_IMU: time_boot_us=1593318928,xacc=-3,yacc=5,zacc=-999,xgyro=0,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1593558928,xacc=-4,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1593798928,xacc=-2,yacc=6,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1594038928,xacc=-2,yacc=6,zacc=-1000,xgyro=1,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1594278928,xacc=-2,yacc=5,zacc=-999,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1594518928,xacc=-2,yacc=4,zacc=-998,xgyro=1,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1594758928,xacc=-3,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1594998928,xacc=-2,yacc=4,zacc=-999,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1595238928,xacc=-3,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1595478928,xacc=-2,yacc=4,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1595718928,xacc=-2,yacc=4,zacc=-999,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1595958928,xacc=-3,yacc=6,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1596198928,xacc=-4,yacc=6,zacc=-1000,xgyro=1,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1596438928,xacc=-2,yacc=6,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1596678928,xacc=-3,yacc=4,zacc=-999,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1596918928,xacc=-2,yacc=4,zacc=-999,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1597158928,xacc=-2,yacc=6,zacc=-1000,xgyro=0,ygyro=1,zgyro=1,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1597398928,xacc=-2,yacc=5,zacc=-1000,xgyro=0,ygyro=1,zgyro=0,xmag=156,ymag=41,zmag=-365
-    RAW_IMU: time_boot_us=1597638928,xacc=-3,yacc=5,zacc=-1000,xgyro=1,ygyro=0,zgyro=0,xmag=156,ymag=41,zmag=-365
-    Close vehicle object
 
 
 
