@@ -3,6 +3,7 @@ import os
 import sys
 from dronekit_sitl import SITL
 from nose.tools import assert_equals, with_setup
+import time
 
 sitl = None
 sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
@@ -26,3 +27,10 @@ def with_sitl(fn):
     def test(*args, **kargs):
         return fn('tcp:127.0.0.1:5760', *args, **kargs)
     return test
+
+def wait_for(condition, time_max):
+    time_start = time.time()
+    while not condition():
+        if time.time() - time_start > time_max:
+            break
+        time.sleep(0.1)

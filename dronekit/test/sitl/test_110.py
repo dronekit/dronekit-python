@@ -2,7 +2,7 @@ import time
 import sys
 import os
 from dronekit import connect, VehicleMode
-from dronekit.test import with_sitl
+from dronekit.test import with_sitl, wait_for
 from nose.tools import assert_equals
 
 
@@ -17,8 +17,7 @@ def test_110(connpath):
     vehicle.parameters['FS_EKF_THRESH'] = 100
 
     # Await armability.
-    while not vehicle.is_armable:
-        time.sleep(.1)
+    wait_for(lambda : vehicle.is_armable, 60)
 
     # Change the vehicle into STABILIZE mode
     vehicle.mode = VehicleMode("GUIDED")
@@ -42,11 +41,12 @@ def test_110(connpath):
 
     # arm and see update.
     vehicle.armed = True
+
     # Wait for ACK.
-    time.sleep(3)
+    wait_for(lambda : armed_callback.called, 10)
 
     # Ensure the callback was called.
-    assert armed_callback.called > 0, "Callback should have been called."
+    assert armed_callback.called > 0, "Callback should have been called within %d seconds" % (time_max,)
 
     # Rmove all listeners. The first call should remove all listeners
     # we've added; the second call should be ignored and not throw.
@@ -59,6 +59,7 @@ def test_110(connpath):
 
     # Disarm and see update.
     vehicle.armed = False
+
     # Wait for ack
     time.sleep(3)
 
