@@ -10,19 +10,41 @@ Documentation is provided at http://python.dronekit.io/examples/mission_import_e
 
 
 from dronekit import connect, Command
+import time
 
 
 #Set up option parsing to get connection string
 import argparse  
-parser = argparse.ArgumentParser(description='Example that demonstrates mission import/export from a file. Connects to SITL on local PC by default.')
-parser.add_argument('--connect', default='127.0.0.1:14550',
-                   help="vehicle connection target. Default '127.0.0.1:14550'")
+parser = argparse.ArgumentParser(description='Demonstrates mission import/export from a file.')
+parser.add_argument('--connect', 
+                   help="Vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
 
+connection_string = args.connect
+sitl = None
 
-#Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % args.connect
-vehicle = connect(args.connect, wait_ready=True)
+
+#Start SITL if no connection string specified
+if not args.connect:
+    print "Starting copter simulator (SITL)"
+    from dronekit_sitl import SITL
+    sitl = SITL()
+    sitl.download('copter', '3.3', verbose=True)
+    sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
+    sitl.launch(sitl_args, await_ready=True, restart=True)
+    connection_string='tcp:127.0.0.1:5760'
+
+
+# Connect to the Vehicle
+print 'Connecting to vehicle on: %s' % connection_string
+vehicle = connect(connection_string, wait_ready=True)
+
+# Check that vehicle is armable. 
+# This ensures home_location is set (needed when saving WP file)
+
+while not vehicle.is_armable:
+    print " Waiting for vehicle to initialise..."
+    time.sleep(1)
 
 
 def readmission(aFileName):
@@ -127,6 +149,7 @@ def printfile(aFileName):
 import_mission_filename = 'mpmission.txt'
 export_mission_filename = 'exportedmission.txt'
 
+
 #Upload mission from file
 upload_mission(import_mission_filename)
 
@@ -137,6 +160,9 @@ save_mission(export_mission_filename)
 print "Close vehicle object"
 vehicle.close()
 
+# Shut down simulator if it was started.
+if sitl is not None:
+    sitl.stop()
 
 
 print "\nShow original and uploaded/downloaded files:"
