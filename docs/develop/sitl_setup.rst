@@ -15,6 +15,8 @@ The sections below explain how to install and run SITL, and how to connect to Dr
 Stations at the same time.
 
 
+.. _dronekit_sitl:
+
 DroneKit-SITL
 =============
 
@@ -68,42 +70,38 @@ There are a number of other useful arguments:
     dronekit-sitl --reset       #Delete all downloaded vehicle binaries.
     dronekit-sitl ./path [args...]  #Start SITL instance at target file location.
 
-
-.. note:: 
-
-    DroneKit-SITL also `exposes a Python API <https://github.com/dronekit/dronekit-sitl#api>`_, which you can use to start simulation from within your scripts. This is particularly useful for test code!
         
 
 .. _connecting_dronekit_sitl:
 
-Connecting to (DroneKit-) SITL
-------------------------------
+Connecting to DroneKit-SITL
+---------------------------
 
-SITL waits for TCP connections on ``127.0.0.1:5760``. DroneKit-Python scripts running on the same
+DroneKit-SITL waits for TCP connections on ``127.0.0.1:5760``. DroneKit-Python scripts running on the same
 computer can connect to the simulation using the connection string as shown:
 
 .. code-block:: python
 
     vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True)
 
-If you need to connect to DroneKit-Python and a ground station at the same time you will need to
-`install MAVProxy <http://dronecode.github.io/MAVProxy/html/getting_started/download_and_installation.html>`_ 
-for your system.
+After something connects to port ``5760``, SITL will then wait for additional connections on port ``5763``
+(and subsequently ``5766``, ``5769`` etc.)
 
-Then in a second terminal you spawn an instance of *MAVProxy* to forward messages from
-TCP ``127.0.0.1:5760`` to UDP ports ``127.0.0.1:14550`` and ``127.0.0.1:14551`` (this is what **sim_vehicle.sh** does
-if you build SITL from source):
+.. note::
 
-.. code-block:: bash
+    While you can connect to these additional ports, some users have reported problems when
+    viewing the running examples with *Mission Planner*. If you need to connect a ground station
+    and DroneKit at the same time we recommend you use *MAVProxy* (see :ref:`viewing_uav_on_map`).
 
-    mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550 --out 127.0.0.1:14551
 
-You can then connect to a ground station using one UDP address, and DroneKit-Python using the other. 
-For example:
 
-.. code-block:: python
+.. _dronekit_sitl_api:
 
-    vehicle = connect('127.0.0.1:14550', wait_ready=True)
+DroneKit-SITL Python API
+------------------------
+
+DroneKit-SITL `exposes a Python API <https://github.com/dronekit/dronekit-sitl#api>`_, which you can use to start and control simulation from within your scripts. This is particularly useful for test code and :ref:`examples <example-toc>`.
+
 
 
 
@@ -117,7 +115,14 @@ Building from source is useful if you want to need to test the latest changes (o
 a version for which DroneKit-SITL does not have pre-built binaries). 
 It can also be useful if you have problems getting DroneKit-SITL to work.
 
-The following topics from the ArduPilot wiki explain how:
+SITL built from source has a few differences from DroneKit-SITL:
+
+* MAVProxy is included and started by default. You can use MAVProxy terminal to control the autopilot.
+* You connect to SITL via UDP on ``127.0.0.1:14550``. You can use MAVProxy's ``output add`` command to add additional ports if needed.
+* You may need to disable arming checks and load autotest parameters to run examples.
+* It is easier to `add a virtual rangefinder <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_rangefinder>`_ and `add a virtual gimbal <http://dev.ardupilot.com/wiki/using-sitl-for-ardupilot-testing/#adding_a_virtual_gimbal>`_ for testing.
+
+The following topics from the ArduPilot wiki explain how to set up Native SITL builds:
 
 * `Setting up SITL on Linux <http://dev.ardupilot.com/wiki/setting-up-sitl-on-linux/>`_
 * `Setting up SITL on Windows <http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/sitl-native-on-windows/>`_ 
@@ -129,24 +134,38 @@ The following topics from the ArduPilot wiki explain how:
 Connecting an additional Ground Station
 =======================================
 
-You can connect a ground station to an unused port to which messages 
-are being forwarded. You can forward messages to additional ports 
-when you start *MAVProxy* using the using ``-out`` 
-parameter (as shown :ref:`above <connecting_dronekit_sitl>`).
+You can connect a ground station to an unused port to which messages are being forwarded.
 
-Alternatively, once *MAVProxy* is started you can add new output ports in the *MAVProxy* console using: ``output add``:
+The most reliable way to add new ports is to use *MAVProxy*:
 
-.. code:: bash
+* If you're using SITL built from source you will already have *MAVProxy* running. 
+  You can add new ports in the MAVProxy console using ``output add``:
 
-    output add 127.0.0.1:14552
+  .. code:: bash
 
-.. note::
+      output add 127.0.0.1:14552
 
-    Instead of the loopback address you can also specify the network IP address of your computer
-    (On Windows you can get this by running *ipconfig* in the *Windows Command Prompt*).
+* If you're using Dronekit-SITL you can:
+
+  * `Install MAVProxy <http://dronecode.github.io/MAVProxy/html/getting_started/download_and_installation.html>`_ 
+    for your system. 
+  * In a second terminal spawn an instance of *MAVProxy* to forward messages from
+    TCP ``127.0.0.1:5760`` to other UDP ports like ``127.0.0.1:14550`` and ``127.0.0.1:14551``:
+
+    .. code-block:: bash
+
+       mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550 --out 127.0.0.1:14551
+
+Once you have available ports you can connect to a ground station using one UDP address, and DroneKit-Python using the other. 
+
+For example, first connect the script:
+
+.. code-block:: python
+
+    vehicle = connect('127.0.0.1:14550', wait_ready=True)
 
 
-Then connect Mission Planner to this UDP port:  
+Then connect Mission Planner to the second UDP port:  
 
 * `Download and install Mission Planner <http://ardupilot.com/downloads/?did=82>`_
 * Ensure the selection list at the top right of the Mission Planner screen says *UDP* and then select the **Connect** button next to it. 
@@ -158,4 +177,13 @@ Then connect Mission Planner to this UDP port:
       Mission Planner: Listen Port Dialog
 
 After connecting, vehicle parameters will be loaded into *Mission Planner* and the vehicle is displayed on the map.
+
+.. tip::
+
+    If you're using the :ref:`dronekit_sitl_api` then you will instead have to 
+    connect to SITLs TCP port (as there is no way to set up MAVProxy in this case).
+    So if DroneKit is connecting to TCP port 5760, you would connect your GCS to 5763.
+    
+    Note that a few examples may not behave perfectly using this approach. If you need to 
+    observe them in a GCS you should run SITL externally and use MAVProxy to connect to it.
 
