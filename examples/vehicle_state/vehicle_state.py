@@ -16,9 +16,11 @@ parser.add_argument('--connect',
                    help="vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
 
-connection_string=args.connect
+connection_string = args.connect
+sitl = None
 
-#No connection string specified, so start SITL
+
+#Start SITL if no connection string specified
 if not args.connect:
     print "Starting copter simulator (SITL)"
     from dronekit_sitl import SITL
@@ -26,7 +28,7 @@ if not args.connect:
     sitl.download('copter', '3.3', verbose=True)
     sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
     sitl.launch(sitl_args, await_ready=True, restart=True)
-    connection_string='tcp:127.0.0.1:5760'
+    connection_string = 'tcp:127.0.0.1:5760'
 
 
 # Connect to the Vehicle. 
@@ -99,9 +101,9 @@ print "\n Home location: %s" % vehicle.home_location
 print "\nSet new home location"
 # Home location must be within 50km of EKF home location (or setting will fail silently)
 # In this case, just set value to current location with an easily recognisable altitude (222)
-my_location_alt=vehicle.location.global_frame
-my_location_alt.alt=222.0
-vehicle.home_location=my_location_alt
+my_location_alt = vehicle.location.global_frame
+my_location_alt.alt = 222.0
+vehicle.home_location = my_location_alt
 print " New Home Location (from attribute - altitude should be 222): %s" % vehicle.home_location
 
 #Confirm current value on vehicle by re-downloading commands
@@ -111,7 +113,7 @@ cmds.wait_ready()
 print " New Home Location (from vehicle - altitude should be 222): %s" % vehicle.home_location
 
 
-print "\nSet Vehicle.mode=GUIDED (currently: %s)" % vehicle.mode.name 
+print "\nSet Vehicle.mode = GUIDED (currently: %s)" % vehicle.mode.name 
 vehicle.mode = VehicleMode("GUIDED")
 while not vehicle.mode.name=='GUIDED':  #Wait until mode has changed
     print " Waiting for mode change ..."
@@ -136,7 +138,7 @@ print " Vehicle is armed: %s" % vehicle.armed
 # Add and remove and attribute callbacks
 
 #Define callback for `vehicle.attitude` observer
-last_attitude_cache=None
+last_attitude_cache = None
 def attitude_callback(self, attr_name, value):
     # `attr_name` - the observed attribute (used if callback is used for multiple attributes)
     # `self` - the associated vehicle object (used if a callback is different for multiple vehicles)
@@ -257,9 +259,8 @@ vehicle.parameters['THR_MID']=500
 print "\nClose vehicle object"
 vehicle.close()
 
-
-if not args.connect:
-    # Shut down simulator if it was started.
+# Shut down simulator if it was started.
+if sitl is not None:
     sitl.stop()
 
 print("Completed")
