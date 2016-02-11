@@ -21,7 +21,6 @@ during missions and outside missions using custom commands.
    Create Attribute in App <create_attribute>
    Follow Me (Linux only)<follow_me>
    Drone Delivery <drone_delivery>
-   Flight Replay <flight_replay>
    Channel Overrides <channel_overrides>
    Performance Test <performance_test>
    
