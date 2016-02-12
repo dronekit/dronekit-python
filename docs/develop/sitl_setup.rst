@@ -8,7 +8,7 @@ The `SITL (Software In The Loop) <http://dev.ardupilot.com/wiki/simulation-2/sit
 simulator allows you to create and test DroneKit-Python apps without a real vehicle (and from the comfort of 
 your own developer desktop!).
 
-SITL can run natively on Linux, Mac and Windows, or within a virtual machine. It can be 
+SITL can run natively on Linux (x86 architecture only), Mac and Windows, or within a virtual machine. It can be 
 installed on the same computer as DroneKit, or on another computer on the same network.
 
 The sections below explain how to install and run SITL, and how to connect to DroneKit-Python and Ground
@@ -20,7 +20,7 @@ Stations at the same time.
 DroneKit-SITL
 =============
 
-DroneKit-SITL is the simplest, fastest and easiest way to run SITL on Windows, Linux, or MAC OSX.
+DroneKit-SITL is the simplest, fastest and easiest way to run SITL on Windows, Linux (x86 architecture only), or Mac OS X.
 It is installed from Python's *pip* tool on all platforms, and works by downloading and running pre-built 
 vehicle binaries that are appropriate for the host operating system.
 
@@ -29,8 +29,12 @@ the `project on Github <https://github.com/dronekit/dronekit-sitl>`_.
 
 .. note:: 
 
-    DroneKit-SITL is still relatively experimental. There are only a few pre-built vehicles and
-    they have not been as well tested as the native builds.  
+    DroneKit-SITL is still relatively experimental and there are only a few pre-built vehicles.
+    
+    The binaries are built and tested on Windows 10, Ubuntu Linux, and Mac OS X
+    "El Capitan". Binaries are only available for x86 architectures. ARM builds 
+    (e.g. for RPi) are not supported.
+    
     Please report any issues on `Github here <https://github.com/dronekit/dronekit-sitl/issues>`_.
 
 Installation
