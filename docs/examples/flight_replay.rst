@@ -1,22 +1,26 @@
-=========================
+======================
 Example: Flight Replay
-=========================
+======================
 
-This example requests a past flight from Droneshare, and then writes the recorded path to the vehicle as mission waypoints. 
-For safety reasons, the altitude for the waypoints is set to 30 meters (irrespective of the recorded height).
+This example creates and runs a waypoint mission using position information from a TLOG file.
+
+The log used in this example contains around 2700 points. This is too many points to upload
+to the autopilot (and to usefully display). Instead we only add points that are more than 
+3 metres away from the previously kept point, and only store 99 points in total. 
+After 60 seconds the mission is ended by setting the mode to RTL (return to launch).
+
+.. figure:: flight_replay_example.png
+    :width: 50%
+
+    99 point mission generated from log
+
 
 .. note::
 
-    The mission is not actually run by this code - though it easily could be by taking off and putting the vehicle into
-    AUTO mode.
-
-
-You can specify which mission to replay using a parameter when starting the script (for example, to replay your own local flights).
-By default the code gets the public `Droneshare mission with ID 101 <http://www.droneshare.com/mission/101>`_. 
-
-.. figure:: flight_replay_example.png
-
-    Droneshare Mission #101
+    The method used to reduce the number of points is fairly effective, but we
+    could do better by grouping some of the waypoints, and mapping others using
+    spline waypoints. This might be a 
+    `fun research project <https://github.com/dronekit/dronekit-python/issues/561>`_!
 
 
 
@@ -26,9 +30,6 @@ Running the example
 The example can be run as described in :doc:`running_examples` (which in turn assumes that the vehicle
 and DroneKit have been set up as described in :ref:`installing_dronekit`). 
 
-If you're using a simulated vehicle, remember to :ref:`disable arming checks <disable-arming-checks>` so 
-that the example can run.
-
 In summary, after cloning the repository:
 
 #. Navigate to the example folder as shown:
@@ -36,71 +37,147 @@ In summary, after cloning the repository:
    .. code-block:: bash
 
        cd dronekit-python/examples/flight_replay/
-
-
-#. Start the example, passing the :ref:`connection string <get_started_connect_string>` 
-   you wish to use in the ``--connect`` parameter and specifying the mission to replay.
+       
+#. You can run the example against a simulator (DroneKit-SITL) by specifying the Python script without any arguments. 
+   The example will download SITL binaries if needed, start the simulator, and then connect to it:
 
    .. code-block:: bash
 
-       python flight_replay.py --connect 127.0.0.1:14550 --mission_id 101
+       python flight_replay.py
 
-   .. note::
+   On the command prompt you should see (something like):
    
-       The ``--connect`` parameter above connects to SITL on udp port 127.0.0.1:14550, while
-       ``--mission_id`` specifies we're replaying mission 101. Both of these are the default 
-       values for the parameters, and may be omitted.
+   .. code:: bash
+
+       Generating waypoints from tlog...
+        Generated 100 waypoints from tlog
+       Starting copter simulator (SITL)
+       SITL already Downloaded.
+       Connecting to vehicle on: tcp:127.0.0.1:5
+       >>> APM:Copter V3.3 (d6053245)
+       >>> Frame: QUAD
+       >>> Calibrating barometer
+       >>> Initialising APM...
+       >>> barometer calibration complete
+       >>> GROUND START
+       Uploading 100 waypoints to vehicle...
+       Arm and Takeoff
+        Waiting for vehicle to initialise...
+       >>> flight plan received
+        Waiting for arming...
+        Waiting for arming...
+        Waiting for arming...
+        Waiting for arming...
+       >>> ARMING MOTORS
+       >>> GROUND START
+        Waiting for arming...
+       >>> Initialising APM...
+        Waiting for arming...
+       >>> ARMING MOTORS
+        Taking off!
+        Altitude: 0.000000 < 28.500000
+        Altitude: 0.010000 < 28.500000
+        ...
+        Altitude: 26.350000 < 28.500000
+        Altitude: 28.320000 < 28.500000
+        Reached target altitude of ~30.000000
+       Starting mission
+       Distance to waypoint (1): 3.02389745499
+       >>> Reached Command #1
+       Distance to waypoint (2): 5.57718471895
+       Distance to waypoint (2): 4.1504263025
+       >>> Reached Command #2
+       Distance to waypoint (3): 0.872847106279
+       Distance to waypoint (3): 1.88967925144
+       Distance to waypoint (3): 2.16157704522
+       >>> Reached Command #3
+       Distance to waypoint (4): 4.91867197924
+       ...
+       ...
+       Distance to waypoint (35): 4.37309981133
+       >>> Reached Command #35
+       Distance to waypoint (36): 5.61829417257
+       >>> Reached Command #36
+       Return to launch
+       Close vehicle object
+       Completed...
+
+
+   .. tip::
+       It is more interesting to watch the example run on a map than the console. The topic :ref:`viewing_uav_on_map` 
+       explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
+       
+#. You can run the example against a specific connection (simulated or otherwise) by passing the :ref:`connection string <get_started_connect_string>` for your vehicle in the ``--connect`` parameter. 
+
+   For example, to connect to SITL running on UDP port 14550 on your local computer:
+
+   .. code-block:: bash
+
+       python simple_goto.py --connect 127.0.0.1:14550
+       
 
        
-.. tip::
-
-    It is more interesting to watch the example above on a map than the console. The topic :ref:`viewing_uav_on_map` 
-    explains how to set up *Mission Planner* to view a vehicle running on the simulator (SITL).
-
-On the command prompt you should see (something like):
-
-.. code-block:: bash
-
-    Connecting to vehicle on: 127.0.0.1:14550
-    >>> APM:Copter V3.3 (d6053245)
-    >>> Frame: QUAD
-    JSON downloaded...
-    Generating 95 waypoints from replay...
-    Close vehicle object
-    Completed...
-
-
 How it works
 ============
-
-The example requests the web server for representative points from the flight, parses the JSON response 
-and uses that data to generate 100 waypoints. These are then sent to the vehicle.
-
 
 Getting the points
 ------------------
 
-The following simple function asks for the droneshare flight data:
+The example parses the **flight.tlog** file for position information. First we read all the points. 
+We then keep the first 99 points that are at least 3 metres separated from the preceding kept point.
+
+For safety reasons, the altitude for the waypoints is set to 30 meters (irrespective of the recorded height).
 
 .. code:: python
 
-    def download_messages(mission_id, max_freq = 1.0):
-        """Download a public mission from droneshare (as JSON)"""
-        f = urllib.urlopen("%s/api/v1/mission/%s/messages.json?max_freq=%s&api_key=%s" % (api_server, mission_id, max_freq, api_key))
-        j = json.load(f, object_hook=_decode_dict)
-        f.close()
-        return j
+    def position_messages_from_tlog(filename):
+        """
+        Given telemetry log, get a series of wpts approximating the previous flight
+        """
+        # Pull out just the global position msgs
+        messages = []
+        mlog = mavutil.mavlink_connection(filename)
+        while True:
+            try:
+                m = mlog.recv_match(type=['GLOBAL_POSITION_INT'])
+                if m is None:
+                    break
+            except Exception:
+                break
+            # ignore we get where there is no fix:
+            if m.lat == 0:
+                continue
+            messages.append(m)
 
-Some comments:
+        # Shrink the number of points for readability and to stay within autopilot memory limits. 
+        # For coding simplicity we:
+        #   - only keep points that are with 3 metres of the previous kept point.
+        #   - only keep the first 100 points that meet the above criteria.
+        num_points = len(messages)
+        keep_point_distance=3 #metres
+        kept_messages = []
+        kept_messages.append(messages[0]) #Keep the first message
+        pt1num=0
+        pt2num=1
+        while True:
+            #Keep the last point. Only record 99 points.
+            if pt2num==num_points-1 or len(kept_messages)==99:
+                kept_messages.append(messages[pt2num])
+                break
+            pt1 = LocationGlobalRelative(messages[pt1num].lat/1.0e7,messages[pt1num].lon/1.0e7,0)
+            pt2 = LocationGlobalRelative(messages[pt2num].lat/1.0e7,messages[pt2num].lon/1.0e7,0)
+            distance_between_points = get_distance_metres(pt1,pt2)
+            if distance_between_points > keep_point_distance:
+                kept_messages.append(messages[pt2num])
+                pt1num=pt2num
+            pt2num=pt2num+1
 
-* ``max_freq`` is used to throttle the messages found in the raw flight data to a lower message rate
-* ``_decode_dict`` is a utility function found on stack overflow which extracts usable strings from unicode encoded JSON (see `flight_replay.py <https://github.com/hamishwillee/dronekit-python/blob/master/examples/flight_replay/flight_replay.py>`_ for its implementation).
+        return kept_messages
+
 
 
 Setting the new waypoints
 -------------------------
-
-If necessary, the example then reduces the number of messages retrieved into a set that can fit on the vehicle (in this case 100 waypoints).
 
 The following code shows how the vehicle writes the received messages as commands (this part of the code is very similar to that
 shown in :ref:`example_mission_basic`):
