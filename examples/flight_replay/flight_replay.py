@@ -68,7 +68,9 @@ def distance_to_current_waypoint():
     return distancetopoint
 
 def position_messages_from_tlog(filename):
-    """Given telemetry log, get a series of wpts approximating the previous flight"""
+    """
+    Given telemetry log, get a series of wpts approximating the previous flight
+    """
     # Pull out just the global position msgs
     messages = []
     mlog = mavutil.mavlink_connection(filename)
@@ -92,10 +94,48 @@ def position_messages_from_tlog(filename):
         shorter = [messages[i] for i in xrange(0, num_points, step)]
         messages = shorter
     return messages
+    
+    
+def arm_and_takeoff(aTargetAltitude):
+    """
+    Arms vehicle and fly to aTargetAltitude.
+    """
+
+    # Don't try to arm until autopilot is ready
+    while not vehicle.is_armable:
+        print " Waiting for vehicle to initialise..."
+        time.sleep(1)
+        
+    # Set mode to GUIDED for arming and takeoff:
+    while (vehicle.mode.name != "GUIDED"):
+        vehicle.mode = VehicleMode("GUIDED")
+        time.sleep(0.1)
+
+    # Confirm vehicle armed before attempting to take off
+    while not vehicle.armed:
+        vehicle.armed = True
+        print " Waiting for arming..."
+        time.sleep(1)
+
+    print " Taking off!"
+    vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
+
+    # Wait until the vehicle reaches a safe height 
+    # before allowing next command to process.
+    while True:
+        requiredAlt = aTargetAltitude*0.95
+        #Break and return from function just below target altitude.        
+        if vehicle.location.global_relative_frame.alt>=requiredAlt: 
+            print " Reached target altitude of ~%f" % (aTargetAltitude)
+            break
+        print " Altitude: %f < %f" % (vehicle.location.global_relative_frame.alt,
+                                      requiredAlt)
+        time.sleep(1)
+
 
 print("Generating waypoints from tlog...")
 messages = position_messages_from_tlog(args.tlog)
-print "Generated %d waypoints from tlog" % len(messages)
+print " Generated %d waypoints from tlog" % len(messages)
 if len(messages) == 0:
     print("No position messages found in log")
     exit(0)
@@ -124,7 +164,7 @@ cmds = vehicle.commands
 cmds.clear()
 for i in xrange(0, len(messages)):
     pt = messages[i]
-    print "Point: %d %d" % (pt.lat, pt.lon,)
+    #print "Point: %d %d" % (pt.lat, pt.lon,)
     lat = pt.lat
     lon = pt.lon
     # To prevent accidents we don't trust the altitude in the original flight, instead
@@ -143,31 +183,9 @@ for i in xrange(0, len(messages)):
 print("Uploading %d waypoints to vehicle..." % len(messages))
 cmds.upload()
 
-# Set mode to STABILISE for arming and takeoff:
-while (vehicle.mode.name != "GUIDED"):
-    vehicle.mode = VehicleMode("GUIDED")
-    time.sleep(0.1)
+print "Arm and Takeoff"
+arm_and_takeoff(30)
 
-while not vehicle.armed:      
-    print("Arming vehicle")
-    vehicle.armed = True
-    print "Waiting for arming..."
-    time.sleep(1)
-
-print("Taking off")
-aTargetAltitude = 30.0
-vehicle.simple_takeoff(aTargetAltitude)
-
-# Wait until the vehicle reaches a safe height
-while True:
-    requiredAlt = aTargetAltitude*0.95
-    #Break and return from function just below target altitude.        
-    if vehicle.location.global_relative_frame.alt>=requiredAlt: 
-        print "Reached target altitude of ~%f" % (aTargetAltitude)
-        break
-    print " Altitude: %f < %f" % (vehicle.location.global_relative_frame.alt,
-                                  requiredAlt)
-    time.sleep(1)
 
 print "Starting mission"
 
