@@ -47,8 +47,6 @@ import math
 import copy
 import collections
 from pymavlink.dialects.v10 import ardupilotmega
-from pymavlink import mavutil, mavwp
-from dronekit.util import errprinter
 
 
 class APIException(Exception):
@@ -253,6 +251,188 @@ class Rangefinder(object):
 
     def __str__(self):
         return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
+
+class Version(object):
+    """
+    Autopilot version and type.
+
+    An object of this type is returned by :py:attr:`Vehicle.version`.
+    
+    The version number can be read in a few different formats. To get it in a human-readable
+    format, just print `vehicle.version`.  This might print something like "APM:Copter-3.3.2-rc4".
+    
+    .. versionadded:: 2.0.3
+
+    .. py:attribute:: major
+
+        Major version number (integer).
+
+    .. py:attribute::minor
+
+        Minor version number (integer).
+
+    .. py:attribute:: patch
+
+        Patch version number (integer).
+
+    .. py:attribute:: release
+
+        Release type (integer). See the enum `FIRMWARE_VERSION_TYPE <http://mavlink.org/messages/common#http://mavlink.org/messages/common#FIRMWARE_VERSION_TYPE_DEV>`_.
+
+        This is a composite of the product release cycle stage (rc, beta etc) and the version in that cycle - e.g. 23.
+
+    """
+    def __init__(self, raw_version, autopilot_type, vehicle_type):
+        self.autopilot_type = autopilot_type
+        self.vehicle_type = vehicle_type
+        self.raw_version = raw_version
+        if(raw_version == None):
+            self.major = None
+            self.minor = None
+            self.patch = None
+            self.release = None
+        else:
+            self.major   = raw_version >> 24 & 0xFF
+            self.minor   = raw_version >> 16 & 0xFF
+            self.patch   = raw_version >> 8  & 0xFF
+            self.release = raw_version & 0xFF
+
+    def is_stable(self):
+        """
+        Returns True if the autopilot reports that the current firmware is a stable
+        release (not a pre-release or development version).
+        """
+        return self.release == 255
+
+
+    def release_version(self):
+        """
+        Returns the version within the release type (an integer).  
+        This method returns "23" for Copter-3.3rc23.
+        """
+        if self.release is None:
+            return None
+        if(self.release == 255):
+            return 0
+        return self.release % 64
+
+
+    def release_type(self):
+        """
+        Returns text describing the release type e.g. "alpha", "stable" etc.
+        """
+        if self.release is None:
+            return None
+        types = [ "dev", "alpha", "beta", "rc" ]
+        return types[self.release/64]
+
+    def __str__(self):
+        prefix=""
+
+        if(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA):
+            prefix += "APM:"
+        elif(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4):
+            prefix += "PX4"
+        else:
+            prefix += "UnknownAutoPilot"
+
+        if(self.vehicle_type == mavutil.mavlink.MAV_TYPE_QUADROTOR):
+            prefix += "Copter-"
+        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING):
+            prefix += "Plane-"
+        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_ROVER):
+            prefix += "Rover-"
+        else:
+            prefix += "UnknownVehicleType%d-" % (self.vehicle_type)
+
+        if self.release_type() is None:
+            release_type = "UnknownReleaseType"
+        elif self.is_stable():
+            release_type = ""
+        else:
+            # e.g. "-rc23"
+            release_type = "-" + str(self.release_type()) + str(self.release_version())
+
+        return prefix + "%s.%s.%s" % (self.major, self.minor, self.patch) + release_type
+
+class Capabilities:
+    """
+    Autopilot capabilities (supported message types and functionality). 
+    
+    An object of this type is returned by :py:attr:`Vehicle.capabilities`.
+    
+    See the enum  
+    `MAV_PROTOCOL_CAPABILITY <http://mavlink.org/messages/common#MAV_PROTOCOL_CAPABILITY_MISSION_FLOAT>`_.
+    
+    .. versionadded:: 2.0.3
+    
+    
+    .. py:attribute:: mission_float
+
+        Autopilot supports MISSION float message type (Boolean).
+
+    .. py:attribute:: param_float
+
+        Autopilot supports the PARAM float message type (Boolean).
+
+    .. py:attribute:: mission_int
+
+        Autopilot supports MISSION_INT scaled integer message type (Boolean).
+
+    .. py:attribute:: command_int
+
+        Autopilot supports COMMAND_INT scaled integer message type (Boolean).
+
+    .. py:attribute:: param_union 
+
+        Autopilot supports the PARAM_UNION message type (Boolean).
+
+    .. py:attribute:: ftp
+
+        Autopilot supports ftp for file transfers (Boolean).
+
+    .. py:attribute:: set_attitude_target
+
+        Autopilot supports commanding attitude offboard (Boolean).
+
+    .. py:attribute:: set_attitude_target_local_ned
+
+        Autopilot supports commanding position and velocity targets in local NED frame (Boolean).
+
+    .. py:attribute:: set_altitude_target_global_int
+
+        Autopilot supports commanding position and velocity targets in global scaled integers (Boolean).
+    
+    .. py:attribute:: terrain
+
+        Autopilot supports terrain protocol / data handling (Boolean).
+
+    .. py:attribute:: set_actuator_target
+
+        Autopilot supports direct actuator control (Boolean).
+
+    .. py:attribute:: flight_termination
+
+        Autopilot supports the flight termination command (Boolean).
+
+    .. py:attribute:: compass_calibration
+
+        Autopilot supports onboard compass calibration (Boolean).
+    """
+    def __init__(self, capabilities):
+        self.mission_float                  = (((capabilities >> 0)  & 1) == 1)
+        self.param_float                    = (((capabilities >> 1)  & 1) == 1)
+        self.mission_int                    = (((capabilities >> 2)  & 1) == 1)
+        self.command_int                    = (((capabilities >> 3)  & 1) == 1)
+        self.param_union                    = (((capabilities >> 4)  & 1) == 1)
+        self.ftp                            = (((capabilities >> 5)  & 1) == 1)
+        self.set_attitude_target            = (((capabilities >> 6)  & 1) == 1)
+        self.set_attitude_target_local_ned  = (((capabilities >> 7)  & 1) == 1)
+        self.set_altitude_target_global_int = (((capabilities >> 8)  & 1) == 1)
+        self.terrain                        = (((capabilities >> 9)  & 1) == 1)
+        self.set_actuator_target            = (((capabilities >> 10) & 1) == 1)
+        self.flight_termination             = (((capabilities >> 11) & 1) == 1)
+        self.compass_calibration            = (((capabilities >> 12) & 1) == 1)
 
 
 class VehicleMode(object):
@@ -811,6 +991,9 @@ class Vehicle(HasObservers):
         self._handler = handler
         self._master = handler.master
 
+        # a message listener to set Autopilot version and capabilties:
+        self.listener_capa = None
+
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
         self._ready_attrs = set(['commands'])
@@ -889,6 +1072,17 @@ class Vehicle(HasObservers):
             self._mount_yaw = m.pointing_c / 100.0
             self.notify_attribute_listeners('mount', self.mount_status)
 
+        self._capabilities = None
+        self._raw_version =None
+
+        @self.on_message('AUTOPILOT_VERSION')
+        def listener(vehicle, name, m):
+            self._capabilities = m.capabilities
+            self._raw_version = m.flight_sw_version
+            if self.listener_capa is not None:
+                self.remove_attribute_listener('HEARTBEAT', self.listener_capa)
+            self.notify_attribute_listeners('autopilot_version', self._raw_version)
+
         # gimbal
         self._gimbal = Gimbal(self)
 
@@ -960,6 +1154,8 @@ class Vehicle(HasObservers):
         self._flightmode = 'AUTO'
         self._armed = False
         self._system_status = None
+        self._autopilot_type = None#PX4, ArduPilot, etc.
+        self._vehicle_type = None#quadcopter, plane, etc.
 
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
@@ -969,6 +1165,8 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('mode', self.mode, cache=True)
             self._system_status = m.system_status
             self.notify_attribute_listeners('system_status', self.system_status, cache=True)
+            self._autopilot_type = m.autopilot
+            self._vehicle_type = m.type
 
         # Waypoints.
 
@@ -1392,6 +1590,24 @@ class Vehicle(HasObservers):
         return [self._vx, self._vy, self._vz]
 
     @property
+    def version(self):
+        """
+        The autopilot version and type in a :py:class:`Version` object.
+        
+        .. versionadded:: 2.0.3
+        """
+        return Version(self._raw_version, self._autopilot_type, self._vehicle_type)
+
+    @property
+    def capabilities(self):
+        """
+        The autopilot capabilities in a :py:class:`Capabilities` object.
+        
+        .. versionadded:: 2.0.3
+        """
+        return Capabilities(self._capabilities)
+
+    @property
     def attitude(self):
         """
         Current vehicle attitude - pitch, yaw, roll (:py:class:`Attitude`).
@@ -1410,7 +1626,7 @@ class Vehicle(HasObservers):
         """
         This attribute can be used to get and set the ``armed`` state of the vehicle (``boolean``).
 
-        The code below shows how to read the state, and to arm/disam the vehicle:
+        The code below shows how to read the state, and to arm/disarm the vehicle:
 
         .. code:: python
 
@@ -1540,7 +1756,7 @@ class Vehicle(HasObservers):
         """
         Gimbal object for controlling, viewing and observing gimbal status (:py:class:`Gimbal`).
         
-        .. versionadded:: 2.1.0
+        .. versionadded:: 2.0.1
         """
         return self._gimbal
 
@@ -1844,6 +2060,13 @@ class Vehicle(HasObservers):
         if rate != None:
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
+
+        #Request an AUTOPILOT_VERSION packet
+        def send_capabilties_request(vehicle, name, m):
+            capability_msg = self.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
+            self.send_mavlink(capability_msg)
+
+        self.listener_capa = self.add_message_listener('HEARTBEAT', send_capabilties_request)
 
         # Ensure initial parameter download has started.
         while True:

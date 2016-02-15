@@ -4,14 +4,20 @@
 Running the Examples
 ====================
 
-General instructions for running the `example source code <https://github.com/dronekit/dronekit-python/tree/master/examples>`_ are given below.
+General instructions for running the `example source code <https://github.com/dronekit/dronekit-python/tree/master/examples>`_ are given below. More explicit instructions are provided within the documentation for each example (and within the examples themselves by passing the ``-h`` (help) command line argument).
 
 .. tip::
 
-    More explicit instructions may be provided within the documentation for each example, and on the command line using the ``-h`` (help) parameter.
+    The examples all launch the :ref:`dronekit-sitl <dronekit_sitl>` simulator and connect to it by default. The ``--connect`` argument is used to instead specify the :ref:`connection string <get_started_connect_string>` for a target vehicle or an externally managed SITL instance.
+    
+To run the examples:
+
+#. :ref:`Install DroneKit-Python <installing_dronekit>` if you have not already done so! Install :ref:`dronekit-sitl <dronekit_sitl>` if you want to test against simulated vehicles.
 
 #. Get the DroneKit-Python example source code onto your local machine. The easiest way to do this 
-   is to clone the **dronekit-python** repository from Github. On the command prompt enter:
+   is to clone the **dronekit-python** repository from Github. 
+   
+   On the command prompt enter:
 
    .. code-block:: bash
 
@@ -20,26 +26,30 @@ General instructions for running the `example source code <https://github.com/dr
    
    
 #. Navigate to the example you wish to run (or specify the full path in the next step). The examples are all stored in 
-   subdirectories of **dronekit-python\\examples\\**. 
+   subdirectories of **dronekit-python/examples/**. 
    
-   To run the :ref:`vehicle_state <example-vehicle-state>` example, you would navigate as shown:
+   For example, to run the :ref:`vehicle_state <example-vehicle-state>` example, you would navigate as shown:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\vehicle_state\
+       cd dronekit-python/examples/vehicle_state/
 
 
-#. Start the example, passing the :ref:`connection string <get_started_connect_string>` you wish to use in the ``--connect`` parameter:
+#. Start the example as shown:
 
-   .. code-block:: bash
-
-       python vehicle_state.py --connect 127.0.0.1:14550
-
-   .. note::
+   * To connect to a simulator started/managed by the script:
    
-       The examples all use the ``--connect`` parameter to pass the :ref:`connection string <get_started_connect_string>` into the script. 
-       The command above would be used to connect to :ref:`SITL <sitl_setup>` running on the local machine via UDP port 14550.
-          
+     .. code-block:: bash
+
+         python vehicle_state.py
+
+   * To connect to a specific vehicle, pass its :ref:`connection string <get_started_connect_string>` via the ``connect`` argument. 
+     For example, to run the example on Solo you would use the following command:
+   
+     .. code-block:: bash
+
+         python vehicle_state.py --connect udpin:0.0.0.0:14550
+
 
 .. warning:: 
 
