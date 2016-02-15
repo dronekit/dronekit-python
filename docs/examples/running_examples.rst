@@ -26,13 +26,13 @@ To run the examples:
    
    
 #. Navigate to the example you wish to run (or specify the full path in the next step). The examples are all stored in 
-   subdirectories of **dronekit-python\\examples\\**. 
+   subdirectories of **dronekit-python/examples/**. 
    
    For example, to run the :ref:`vehicle_state <example-vehicle-state>` example, you would navigate as shown:
 
    .. code-block:: bash
 
-       cd dronekit-python\examples\vehicle_state\
+       cd dronekit-python/examples/vehicle_state/
 
 
 #. Start the example as shown:
