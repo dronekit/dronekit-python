@@ -1625,20 +1625,19 @@ class Vehicle(HasObservers):
     @property
     def armed(self):
         """
-        This attribute can be used to get and set the ``armed`` state of the vehicle (``boolean``).
-
-        The code below shows how to read the state, and to arm/disarm the vehicle:
+        This attribute can be used to get the ``armed`` state of the vehicle (``boolean``).
 
         .. code:: python
 
             # Print the armed state for the vehicle
             print "Armed: %s" % vehicle.armed
+            
+        To arm/disarm the vehicle use :py:func:`try_set_armed`.
 
-            # Disarm the vehicle
-            vehicle.armed = False
-
-            # Arm the vehicle
-            vehicle.armed = True
+        .. warning::
+        
+            The attribute can also be used to *set* the armed state.
+            This is deprecated, and may be removed in a future version.
         """
         return self._armed
 
@@ -1649,11 +1648,83 @@ class Vehicle(HasObservers):
                 self._master.arducopter_arm()
             else:
                 self._master.arducopter_disarm()
+                
+
+    def try_set_armed(self, value=True, wait_ready=True, retries=2, timeout=3):
+        """
+        Send a message to arm (default) or disarm the vehicle.
+        
+        The API should primarily be used as shown below:
+        
+        .. code-block:: python
+        
+            # Arm the vehicle
+            if vehicle.is_armable: //Required!
+                vehicle.try_set_armed() #returns when armed
+
+            # Disarm the vehicle
+            vehicle.try_set_armed(value=False) #returns when disarmed
+        
+        When used in this way the method will send a message (with retries) to arm/disarm 
+        the vehicle and will either return when the :py:attr:`armed` state has changed or 
+        raise an exception on failure. You can also set the number of retries and the timeout
+        between re-sending the message, if needed.
+
+        The function will return immediately if the new value is the same as the current value.
+        The function will raise an exception if called to arm a vehicle that is not 
+        armable (see :py:attr:`is_armable`).
+        
+        Setting ``wait_ready=False`` sends the message and then returns immediately 
+        (without checking the result).
+        
+        .. tip:: 
+        
+            We recommend the default (``wait_ready=True``) because it safely implements all
+            the checking that you would otherwise have to do yourself to determine when the
+            armed state has changed.
+        
+        :param Bool value: ``True`` (default) to arm, ``False`` to disarm.
+        :param Bool wait_ready: ``True`` (default) wait until the value has changed before completing. 
+            ``False`` to send the request and complete immediately.
+        :param int retries: Number of attempts to resend the message.
+        :param int timeout: Time to wait for the value to change before retrying/exiting (in seconds). 
+        """
+        # Return immediately if target value is current value.
+        if bool(value) == self._armed:
+            return
+            
+        # Invoke callback or raise exception if attempting to arm when not armable.
+        if self._armed==False and not self.is_armable and bool(value)==True:
+            raise APIException('Attempting to arm when not armable.')
+                
+        #If method is non waiting send command immediately.
+        if wait_ready==False:
+            if value:
+                self._master.arducopter_arm()
+            else:
+                self._master.arducopter_disarm()
+            return
+#chus
+        #Otherwise execute retry code  
+        for retry_num in range(0,retries):
+            if value:
+                self._master.arducopter_arm()
+            else:
+                self._master.arducopter_disarm()
+            start_time=time.time()
+            while time.time()-start_time <= timeout:
+                if bool(value) == self._armed:
+                    return
+                time.sleep(0.1)
+                
+        #No more retries. Raise exception.
+        raise APIException('Unable to arm.')
+                
 
     @property
     def is_armable(self):
         """
-        Returns ``True`` if the vehicle is ready to arm, false otherwise (``Boolean``).
+        Returns ``True`` if the vehicle is ready to :py:func:`arm <try_set_armed>`, ``false`` otherwise (``Boolean``).
         
         This attribute wraps a number of pre-arm checks, ensuring that the vehicle has booted,
         has a good GPS fix, and that the EKF pre-arm is complete.
