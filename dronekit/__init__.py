@@ -1161,7 +1161,8 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed, cache=True)
-            self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
+            if self._master.mode_mapping() != None:
+                self._flightmode = {v: k for k, v in self._master.mode_mapping().items()}[m.custom_mode]
             self.notify_attribute_listeners('mode', self.mode, cache=True)
             self._system_status = m.system_status
             self.notify_attribute_listeners('system_status', self.system_status, cache=True)
