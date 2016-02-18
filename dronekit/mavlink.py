@@ -220,13 +220,19 @@ class MAVConnection(object):
         # vehicle -> self -> target
         @self.forward_message
         def callback(_, msg):
-            target.out_queue.put(msg.pack(target.master.mav))
+            try:
+                target.out_queue.put(msg.pack(target.master.mav))
+            except:
+                errprinter('>>> Could not pack this object on receive: %s' % type(msg))
 
         # target -> self -> vehicle
         @target.forward_message
         def callback(_, msg):
             msg = copy.copy(msg)
             target.fix_targets(msg)
-            self.out_queue.put(msg.pack(self.master.mav))
+            try:
+                self.out_queue.put(msg.pack(self.master.mav))
+            except:
+                errprinter('>>> Could not pack this object on forward: %s' % type(msg))
 
         return target
