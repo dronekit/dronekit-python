@@ -21,6 +21,11 @@ else:
 
 
 class MAVWriter(object):
+    """
+    Indirection layer to take messages written to MAVlink and send them all
+    on the same thread.
+    """
+
     def __init__(self, queue):
         self.queue = queue
 
@@ -33,7 +38,7 @@ class MAVWriter(object):
 
 
 class MAVConnection(object):
-    def __init__(self, ip, baud=115200, target_system=0, source_system=255):
+    def __init__(self, ip, baud=115200, target_system=0, source_system=255, use_native=False):
         self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
 
         # TODO get rid of "master" object as exposed,
@@ -42,7 +47,7 @@ class MAVConnection(object):
         self.master.mav = mavutil.mavlink.MAVLink(
             MAVWriter(self.out_queue),
             srcSystem=self.master.source_system,
-            use_native=False)
+            use_native=use_native)
 
         # Monkey-patch MAVLink object for fix_targets.
         sendfn = self.master.mav.send
@@ -72,7 +77,42 @@ class MAVConnection(object):
 
         atexit.register(onexit)
 
-        def mavlink_thread():
+        def mavlink_thread_out():
+            # Huge try catch in case we see http://bugs.python.org/issue1856
+            try:
+                while self._alive:
+                    try:
+                        msg = self.out_queue.get(True, timeout=0.01)
+                        self.master.write(msg)
+                    except Empty:
+                        continue
+                    except socket.error as error:
+                        # If connection reset (closed), stop polling.
+                        if error.errno == ECONNABORTED:
+                            raise APIException('Connection aborting during read')
+                        raise
+                    except Exception as e:
+                        errprinter('>>> mav send error:', e)
+                        break
+            except APIException as e:
+                errprinter('>>> ' + str(e.message))
+                self._alive = False
+                self.master.close()
+                self._death_error = e
+
+            except Exception as e:
+                # http://bugs.python.org/issue1856
+                if not self._alive:
+                    pass
+                else:
+                    self._alive = False
+                    self.master.close()
+                    self._death_error = e
+
+            # Explicitly clear out buffer so .close closes.
+            self.out_queue = Queue()
+
+        def mavlink_thread_in():
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
                 while True:
@@ -82,21 +122,6 @@ class MAVConnection(object):
                     # Loop listeners.
                     for fn in self.loop_listeners:
                         fn(self)
-
-                    while True:
-                        try:
-                            msg = self.out_queue.get_nowait()
-                            self.master.write(msg)
-                        except socket.error as error:
-                            # If connection reset (closed), stop polling.
-                            if error.errno == ECONNABORTED:
-                                raise APIException('Connection aborting during read')
-                            raise
-                        except Empty:
-                            break
-                        except Exception as e:
-                            errprinter('>>> mav send error:', e)
-                            break
 
                     while self._accept_input:
                         try:
@@ -140,9 +165,13 @@ class MAVConnection(object):
                     self.master.close()
                     self._death_error = e
 
-        t = Thread(target=mavlink_thread)
+        t = Thread(target=mavlink_thread_in)
         t.daemon = True
-        self.mavlink_thread = t
+        self.mavlink_thread_in = t
+
+        t = Thread(target=mavlink_thread_out)
+        t.daemon = True
+        self.mavlink_thread_out = t
 
     def reset(self):
         self.out_queue = Queue()
@@ -173,8 +202,10 @@ class MAVConnection(object):
         self.message_listeners.append(fn)
 
     def start(self):
-        if not self.mavlink_thread.is_alive():
-            self.mavlink_thread.start()
+        if not self.mavlink_thread_in.is_alive():
+            self.mavlink_thread_in.start()
+        if not self.mavlink_thread_out.is_alive():
+            self.mavlink_thread_out.start()
 
     def close(self):
         # TODO this can block forever if parameters continue to be added

@@ -2705,7 +2705,8 @@ def connect(ip,
             rate=4,
             baud=115200,
             heartbeat_timeout=30,
-            source_system=255):
+            source_system=255,
+            use_native=False):
     """
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
     Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
@@ -2741,6 +2742,7 @@ def connect(ip,
     :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
         If a heartbeat is not detected within this time an exception will be raised.    
     :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
+    :param bool use_native: Use precompiled MAVLink parser.
 
         .. note::
 
@@ -2759,7 +2761,7 @@ def connect(ip,
     if not vehicle_class:
         vehicle_class = Vehicle
 
-    handler = MAVConnection(ip, baud=baud, source_system=source_system)
+    handler = MAVConnection(ip, baud=baud, source_system=source_system, use_native=use_native)
     vehicle = vehicle_class(handler)
     
     if status_printer:
