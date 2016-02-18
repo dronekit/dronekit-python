@@ -223,7 +223,11 @@ class MAVConnection(object):
             try:
                 target.out_queue.put(msg.pack(target.master.mav))
             except:
-                errprinter('>>> Could not pack this object on receive: %s' % type(msg))
+                try:
+                    assert len(msg.get_msgbuf()) > 0
+                    target.out_queue.put(msg.get_msgbuf())
+                except:
+                    errprinter('>>> Could not pack this object on receive: %s' % type(msg))
 
         # target -> self -> vehicle
         @target.forward_message
@@ -233,6 +237,10 @@ class MAVConnection(object):
             try:
                 self.out_queue.put(msg.pack(self.master.mav))
             except:
-                errprinter('>>> Could not pack this object on forward: %s' % type(msg))
+                try:
+                    assert len(msg.get_msgbuf()) > 0
+                    self.out_queue.put(msg.get_msgbuf())
+                except:
+                    errprinter('>>> Could not pack this object on forward: %s' % type(msg))
 
         return target
