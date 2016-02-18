@@ -12,6 +12,8 @@ from pymavlink import mavutil
 import json, urllib, math
 import time
 
+import threading
+
 #Set up option parsing to get connection string
 import argparse  
 parser = argparse.ArgumentParser(description='Load a telemetry log and use position data to create mission waypoints for a vehicle. Connects to SITL on local PC by default.')
@@ -35,6 +37,28 @@ def start_default_sitl(lat=None, lon=None):
         sitl_args.append('--home=%f,%f,584,353' % (lat,lon,))
     sitl.launch(sitl_args, await_ready=True, restart=True)
     connection_string='tcp:127.0.0.1:5760'
+
+    def main_thread():
+        for thread in threading.enumerate():
+            if thread.name == "MainThread":
+                return thread
+        return None # should not get to here!  Raise an exception instead?
+
+    def _sitl_reader(sitl):
+        while True:
+            line = sitl.stdout.readline(timeout=1)
+            if line is not None:
+                print "SITL> " + line
+            line = sitl.stderr.readline(timeout=1)
+            if line is not None:
+                print "SITL.stderr> " + line
+            if not main_thread().is_alive():
+                break
+
+    # start a thread to spew out messages from the SITL thread
+    t = threading.Thread(target = _sitl_reader, args = (sitl,))
+    t.start()
+
     return (sitl, connection_string)
 
 def get_distance_metres(aLocation1, aLocation2):
