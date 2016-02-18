@@ -2605,7 +2605,11 @@ class CommandSequence(object):
 
         # Add home point again.
         self.wait_ready()
-        home = self._vehicle._wploader.wp(0)
+        home = None
+        try:
+            home = self._vehicle._wploader.wp(0)
+        except:
+            pass
         self._vehicle._wploader.clear()
         if home:
             self._vehicle._wploader.add(home, comment='Added by DroneKit')
