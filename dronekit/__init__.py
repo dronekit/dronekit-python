@@ -1495,7 +1495,22 @@ class Vehicle(HasObservers):
     @property
     def mode(self):
         """
-        This attribute is used to get and set the current flight mode (:py:class:`VehicleMode`).
+        This attribute is used to get the current vehicle mode (:py:class:`VehicleMode`).
+
+        .. code:: python
+
+            # Print the vehicle mode
+            print "Mode: %s" % vehicle.mode
+            
+            # Print the vehicle mode name
+            print "Mode name: %s" % vehicle.mode.name
+            
+        The value of the attribute can be set using :py:func:`try_set_mode`.
+
+        .. warning::
+        
+            The attribute can also be used to *set* the mode.
+            This is deprecated, and may be removed in a future version.
         """
         if not self._flightmode:
             return None
@@ -1504,6 +1519,67 @@ class Vehicle(HasObservers):
     @mode.setter
     def mode(self, v):
         self._master.set_mode(self._mode_mapping[v.name])
+        
+        
+    def try_set_mode(self, value, wait_ready=True, retries=2, timeout=3):
+        """
+        Send a message to change the vehicle mode.
+        
+        The API should primarily be used as shown below:
+        
+        .. code-block:: python
+
+            # Set the mode using a VehicleMode
+            vehicle.try_set_mode(VehicleMode("GUIDED")) 
+        
+            # Set the mode using a string
+            vehicle.try_set_mode("STABILIZE")
+
+        When used in this way the method will send a message (with retries) to set the new mode 
+        and will either return when the :py:attr:`mode` has changed or raise an exception 
+        on failure. You can also set the number of retries and the timeout
+        between re-sending the message, if needed.
+
+        The function will return immediately if the new value is the same as the current value.
+        
+        Setting ``wait_ready=False`` sends the message and then returns immediately 
+        (without checking the result).
+        
+        .. tip:: 
+        
+            We recommend the default (``wait_ready=True``) because it safely implements 
+            the checking and resending that you would otherwise have to do yourself to determine when the
+            mode has changed.
+        
+        :param VehicleMode value: The new :py:class:`VehicleMode` (or mode name, as a string).
+        :param Bool wait_ready: ``True`` (default) wait until the value has changed before completing. 
+            ``False`` to send the request and complete immediately.
+        :param int retries: Number of attempts to resend the message.
+        :param int timeout: Time to wait for the value to change before retrying/exiting (in seconds). 
+        """
+        # Allow users to specify the target mode as a string.
+        if type(value)==str:
+           value=VehicleMode(value)
+        # Return immediately if target value is current value.
+        if value.name == self.mode.name:
+            return
+                
+        #If method is non waiting send command immediately.
+        if wait_ready==False:
+            self._master.set_mode(self._mode_mapping[value.name])
+            return
+
+        #Otherwise execute retry code  
+        for retry_num in range(0,retries):
+            self._master.set_mode(self._mode_mapping[value.name])
+            start_time=time.time()
+            while time.time()-start_time <= timeout:
+                if value.name == self.mode.name:
+                    return
+                time.sleep(0.1)
+                
+        #No more retries. Raise exception.
+        raise APIException('Unable to change mode.')
 
     @property
     def location(self):
@@ -1704,7 +1780,7 @@ class Vehicle(HasObservers):
             else:
                 self._master.arducopter_disarm()
             return
-#chus
+
         #Otherwise execute retry code  
         for retry_num in range(0,retries):
             if value:
@@ -1801,9 +1877,12 @@ class Vehicle(HasObservers):
         """
         Current airspeed in metres/second (``double``).
         
-        This attribute is settable. The set value is the default target airspeed 
-        when moving the vehicle using :py:func:`simple_goto` (or other position-based 
-        movement commands).
+        To set the airspeed use :py:func:`try_set_target_airspeed`.
+        
+        .. warning::
+        
+            The ability to directly set the airspeed using this attribute
+            is deprecated, and may be removed in a future version.
         """
         return self._airspeed
 
@@ -1822,6 +1901,46 @@ class Vehicle(HasObservers):
         # send command to vehicle
         self.send_mavlink(msg)
         
+
+    def try_set_target_airspeed(self, speed):
+        """
+        Send a message to change the vehicle speed. The set value is the 
+        default target airspeed when moving the vehicle using :py:func:`simple_goto` 
+        (or other position-based movement commands).
+        
+        The message will be sent immediately but may not be received 
+        or acted on by the autopilot. Users can monitor :py:attr:`airspeed` 
+        to determine if the command has had any effect.
+        
+        The API should be used as shown below:
+        
+        .. code-block:: python
+
+            # Set the speed
+            vehicle.try_set_target_airspeed(5)
+            
+        .. todo::
+        
+            We should monitor for receipt of the message but there is no
+            robust way to trust the COMMAND_ACK and no method to
+            read back the current speed setting:
+            https://github.com/diydrones/ardupilot/issues/3636
+        
+        :param float speed: The target speed.
+        """
+        speed_type = 0 # air speed
+        msg = self.message_factory.command_long_encode(
+            0, 0,    # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
+            0, #confirmation
+            speed_type, #param 1
+            speed, # speed in metres/second
+            -1, 0, 0, 0, 0 #param 3 - 7
+            )
+                
+        self.send_mavlink(msg)
+
+
         
     @property
     def gimbal(self):
