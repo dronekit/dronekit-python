@@ -1875,22 +1875,28 @@ class Vehicle(HasObservers):
         self.send_mavlink(msg)
 
         
-    def try_set_target_groundspeed(self, speed):
+    def try_set_target_groundspeed(self, speed, wait_ready=True):
         """
         Send a message to change the vehicle groundspeed. The set value is the 
         default target speed when moving the vehicle using :py:func:`simple_goto` 
         (or other position-based movement commands).
         
-        The message will be sent immediately but may not be received 
-        or acted on by the autopilot. Users can monitor :py:attr:`groundspeed` 
-        to determine if the command has had any effect.
-        
-        The API should be used as shown below:
+        The API **must** be used as shown below (or an exception will be raised):
         
         .. code-block:: python
 
             # Set the speed
-            vehicle.try_set_target_groundspeed(5)
+            vehicle.try_set_target_groundspeed(5, wait_ready=False)
+
+        Using ``wait_ready=False`` the message will be sent immediately but may not be received 
+        or acted on by the autopilot. Users can monitor :py:attr:`groundseed` 
+        to determine if the command has had any effect.
+        
+        .. note::
+        
+            ``wait_ready=True`` (default) is not supported and will raise an exception.
+            This is inconvenient, but is done to future proof the API for when a robust
+            synchronous speed setter can be written.
             
         .. todo::
         
@@ -1902,6 +1908,8 @@ class Vehicle(HasObservers):
         
         :param float speed: The target speed.
         """
+        if wait_ready == True:
+            raise APIException('try_set_target_groundspeed() must be called with wait_ready=True (False not supported).')
         speed_type = 1 # ground speed
         msg = self.message_factory.command_long_encode(
             0, 0,    # target system, target component
@@ -1945,23 +1953,30 @@ class Vehicle(HasObservers):
         self.send_mavlink(msg)
         
 
-    def try_set_target_airspeed(self, speed):
+    def try_set_target_airspeed(self, speed, wait_ready=True):
         """
         Send a message to change the vehicle airspeed. The set value is the 
         default target airspeed when moving the vehicle using :py:func:`simple_goto` 
         (or other position-based movement commands).
         
-        The message will be sent immediately but may not be received 
-        or acted on by the autopilot. Users can monitor :py:attr:`airspeed` 
-        to determine if the command has had any effect.
-        
-        The API should be used as shown below:
+        The API **must** be used as shown below (or an exception will be raised):
         
         .. code-block:: python
 
             # Set the speed
-            vehicle.try_set_target_airspeed(5)
-            
+            vehicle.try_set_target_airspeed(5, wait_ready=False)
+
+        Using ``wait_ready=False`` the message will be sent immediately but may not be received 
+        or acted on by the autopilot. Users can monitor :py:attr:`airspeed` 
+        to determine if the command has had any effect.
+        
+        .. note::
+        
+            ``wait_ready=True`` (default) is not supported and if used will raise an exception.
+            This is inconvenient, but is done to future proof the API for when a robust
+            synchronous speed setter can be written.
+        
+        
         .. todo::
         
             We should monitor for receipt of the message but there is no
@@ -1971,7 +1986,10 @@ class Vehicle(HasObservers):
             
         
         :param float speed: The target speed.
+        :param Boolean wait_ready: Set ``False`` to send the command immediately. This is required as waiting version is not implemented.
         """
+        if wait_ready == True:
+            raise APIException('try_set_target_airspeed() must be called with wait_ready=True (False not supported).')
         speed_type = 0 # air speed
         msg = self.message_factory.command_long_encode(
             0, 0,    # target system, target component
@@ -2107,6 +2125,34 @@ class Vehicle(HasObservers):
             0, 0, 0,  # params 2-4
             pos.lat, pos.lon, pos.alt))
 
+
+    def try_set_home_location(self, pos):
+        """
+        Attempts to set the home location (``LocationGlobal``).
+        
+        The value cannot be set until it has successfully been read from the vehicle. After being
+        set the value is *cached* in the home_location attribute and does not have to be re-read.
+
+        .. note:: 
+
+            Setting the value will fail silently if the specified location is more than 50km from the EKF origin.
+        """
+
+        if not isinstance(pos, LocationGlobal):
+            raise Exception('Excepting home_location to be set to a LocationGlobal.')
+
+        # Set cached home location.
+        self._home_location = copy.copy(pos)
+
+        # Send MAVLink update.
+        self.send_mavlink(self.message_factory.command_long_encode(
+            0, 0,  # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
+            0,  # confirmation
+            2,  # param 1: 1 to use current position, 2 to use the entered values.
+            0, 0, 0,  # params 2-4
+            pos.lat, pos.lon, pos.alt))
+            
     @property
     def commands(self):
         """
