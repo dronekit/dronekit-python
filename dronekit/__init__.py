@@ -1849,10 +1849,13 @@ class Vehicle(HasObservers):
     def groundspeed(self):
         """
         Current groundspeed in metres/second (``double``).
-        
-        This attribute is settable. The set value is the default target groundspeed 
-        when moving the vehicle using :py:func:`simple_goto` (or other position-based 
-        movement commands).
+
+        To set the groundspeed use :py:func:`try_set_target_groundspeed`.
+
+        .. warning::
+
+            The ability to directly set the airspeed using this attribute
+            is deprecated, and may be removed in a future version.
         """
         return self._groundspeed
 
@@ -1869,6 +1872,46 @@ class Vehicle(HasObservers):
             )
 
         # send command to vehicle
+        self.send_mavlink(msg)
+
+        
+    def try_set_target_groundspeed(self, speed):
+        """
+        Send a message to change the vehicle groundspeed. The set value is the 
+        default target speed when moving the vehicle using :py:func:`simple_goto` 
+        (or other position-based movement commands).
+        
+        The message will be sent immediately but may not be received 
+        or acted on by the autopilot. Users can monitor :py:attr:`groundspeed` 
+        to determine if the command has had any effect.
+        
+        The API should be used as shown below:
+        
+        .. code-block:: python
+
+            # Set the speed
+            vehicle.try_set_target_groundspeed(5)
+            
+        .. todo::
+        
+            We should monitor for receipt of the message but there is no
+            robust way to trust the COMMAND_ACK and no method to
+            read back the current speed setting:
+            https://github.com/diydrones/ardupilot/issues/3636
+            
+        
+        :param float speed: The target speed.
+        """
+        speed_type = 1 # ground speed
+        msg = self.message_factory.command_long_encode(
+            0, 0,    # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
+            0, #confirmation
+            speed_type, #param 1
+            speed, # speed in metres/second
+            -1, 0, 0, 0, 0 #param 3 - 7
+            )
+                
         self.send_mavlink(msg)
 
 
@@ -1904,7 +1947,7 @@ class Vehicle(HasObservers):
 
     def try_set_target_airspeed(self, speed):
         """
-        Send a message to change the vehicle speed. The set value is the 
+        Send a message to change the vehicle airspeed. The set value is the 
         default target airspeed when moving the vehicle using :py:func:`simple_goto` 
         (or other position-based movement commands).
         
@@ -1925,6 +1968,7 @@ class Vehicle(HasObservers):
             robust way to trust the COMMAND_ACK and no method to
             read back the current speed setting:
             https://github.com/diydrones/ardupilot/issues/3636
+            
         
         :param float speed: The target speed.
         """
