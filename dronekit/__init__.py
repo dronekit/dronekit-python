@@ -2085,15 +2085,18 @@ class Vehicle(HasObservers):
 
         The ``home_location`` is not observable.
         
-        The attribute can be written (in the same way as any other attribute) after it has successfully 
-        been populated from the vehicle. The value sent to the vehicle is cached in the attribute 
-        (and can potentially get out of date if you don't re-download ``Vehicle.commands``):
-
-        .. warning:: 
-
-            Setting the value will fail silently if the specified location is more than 50km from the EKF origin.
+        The attribute can be written using :py:func:`try_set_home_location` after it has successfully 
+        been populated from the vehicle. 
         
-
+        .. warning::
+        
+            This setter is deprecated. Instead use :py:func:`try_set_home_location`.
+            
+            If you use this method the value sent to the vehicle is cached in the attribute 
+            (and can potentially get out of date if you don't re-download ``Vehicle.commands``):
+            
+            Setting the value with this method will fail silently 
+            if the specified location is more than 50km from the EKF origin.
         """
         return copy.copy(self._home_location)
 
@@ -2108,38 +2111,14 @@ class Vehicle(HasObservers):
         .. note:: 
 
             Setting the value will fail silently if the specified location is more than 50km from the EKF origin.
-        """
-
-        if not isinstance(pos, LocationGlobal):
-            raise Exception('Excepting home_location to be set to a LocationGlobal.')
-
-        # Set cached home location.
-        self._home_location = copy.copy(pos)
-
-        # Send MAVLink update.
-        self.send_mavlink(self.message_factory.command_long_encode(
-            0, 0,  # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
-            0,  # confirmation
-            2,  # param 1: 1 to use current position, 2 to use the entered values.
-            0, 0, 0,  # params 2-4
-            pos.lat, pos.lon, pos.alt))
-
-
-    def try_set_home_location(self, pos):
-        """
-        Attempts to set the home location (``LocationGlobal``).
+            
+        .. warning::
         
-        The value cannot be set until it has successfully been read from the vehicle. After being
-        set the value is *cached* in the home_location attribute and does not have to be re-read.
-
-        .. note:: 
-
-            Setting the value will fail silently if the specified location is more than 50km from the EKF origin.
+            This setter is deprecated. Instead use :py:func:`try_set_home_location`.
         """
 
         if not isinstance(pos, LocationGlobal):
-            raise Exception('Excepting home_location to be set to a LocationGlobal.')
+            raise Exception('Expecting home_location to be set to a LocationGlobal.')
 
         # Set cached home location.
         self._home_location = copy.copy(pos)
@@ -2153,6 +2132,77 @@ class Vehicle(HasObservers):
             0, 0, 0,  # params 2-4
             pos.lat, pos.lon, pos.alt))
             
+
+
+    def try_set_home_location(self, pos, wait_ready=True):
+        """
+        Attempts to set the home location (``LocationGlobal``).
+        
+        The value cannot be set until it has successfully been read from the vehicle. 
+        Setting the value will also fail if the target location is more than 50km from the EKF origin.
+        
+        The method can be called with ``wait_ready=True`` (the default) as shown:
+        
+        .. code-block:: python
+
+            a_location = LocationGlobal(-34.364114, 149.166022, 30)
+            vehicle.try_set_home_location(a_location) #Returns if home_location is verified as set
+        
+        This verifies the home location was changed by re-downloading the home location 
+        and comparing it to the original value. It raises an exception if the values do not match.
+        
+        Calling the method with ``wait_ready=False`` will try and send the home location value to the autopilot. 
+        This can fail silently and readers will need to write code (as below) to populate the :py:attr:`home_location`
+        and confirm the value is correct.
+        
+        .. code-block:: python
+
+            a_location = LocationGlobal(-34.364114, 149.166022, 30)
+            # Set home location
+            vehicle.try_set_home_location(a_location, wait_ready=False) #Returns immediately
+
+            # Get new value of home location by re-downloading commands
+            cmds = vehicle.commands
+            cmds.download()
+            cmds.wait_ready()
+            print " New Home Location (from vehicle): %s" % vehicle.home_location
+
+        .. note:: 
+
+            The ``wait_ready=True`` version verifies the value has changed but can take a long time to complete
+            if the autopilot has a large mission (On ArduPilot the home_location is stored in the mission data).
+            By contrast the other method is fast, but can silently fail.
+            
+        :param LocationGlobal pos: The `LocationGlobal` to set as home location.
+        :param Boolean wait_ready: ``True`` (default) to wait until the 
+            home location has been re-downloaded/confirmed before returning. Set ``False`` to just set the home
+            location and then return.
+        """
+
+        if not isinstance(pos, LocationGlobal):
+            raise Exception('Expecting home_location to be set to a LocationGlobal.')
+
+        # Send MAVLink update.
+        self.send_mavlink(self.message_factory.command_long_encode(
+            0, 0,  # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
+            0,  # confirmation
+            2,  # param 1: 1 to use current position, 2 to use the entered values.
+            0, 0, 0,  # params 2-4
+            pos.lat, pos.lon, pos.alt))
+
+        if wait_ready==True:
+            old_home_location=self.home_location
+            cmds = self.commands
+            cmds.download()
+            cmds.wait_ready()
+            # Test that home location has changed for success. 
+            #   Would be better to test that new home location is same as pos
+            #   but that is subject to rounding errors so direct comparion difficult.
+            if old_home_location==self.home_location:
+                raise Exception('Setting home location failed. Can only be called after home first set by GPS.')
+
+
     @property
     def commands(self):
         """
