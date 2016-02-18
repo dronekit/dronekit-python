@@ -78,10 +78,10 @@ print " Rangefinder voltage: %s" % vehicle.rangefinder.voltage
 print " Heading: %s" % vehicle.heading
 print " Is Armable?: %s" % vehicle.is_armable
 print " System status: %s" % vehicle.system_status.state
-print " Groundspeed: %s" % vehicle.groundspeed    # settable
-print " Airspeed: %s" % vehicle.airspeed    # settable
-print " Mode: %s" % vehicle.mode.name    # settable
-print " Armed: %s" % vehicle.armed    # settable
+print " Groundspeed: %s" % vehicle.groundspeed    
+print " Airspeed: %s" % vehicle.airspeed
+print " Mode: %s" % vehicle.mode.name
+print " Armed: %s" % vehicle.armed
 
 
 
@@ -113,11 +113,21 @@ cmds.wait_ready()
 print " New Home Location (from vehicle - altitude should be 222): %s" % vehicle.home_location
 
 
-print "\nSet Vehicle.mode = GUIDED (currently: %s)" % vehicle.mode.name 
-vehicle.mode = VehicleMode("GUIDED")
-while not vehicle.mode.name=='GUIDED':  #Wait until mode has changed
-    print " Waiting for mode change ..."
-    time.sleep(1)
+print "\nSet Vehicle mode to GUIDED (currently: %s)" % vehicle.mode.name 
+vehicle.try_set_mode(VehicleMode("GUIDED"))
+print " New mode: %s" % vehicle.mode.name 
+
+print "\nSet Vehicle mode to STABILIZE (currently: %s)" % vehicle.mode.name 
+vehicle.try_set_mode("STABILIZE")
+print " New mode: %s" % vehicle.mode.name 
+
+print "\nSet Vehicle.mode = GUIDED without waiting  (currently: %s)" % vehicle.mode.name 
+vehicle.try_set_mode(value=VehicleMode("GUIDED"), wait_ready=False)
+while not vehicle.mode.name=="GUIDED":
+    print " Waiting for mode change..."
+    time.sleep(0.3)
+print " New mode: %s" % vehicle.mode.name 
+
 
 
 # Check that vehicle is armable
@@ -126,12 +136,22 @@ while not vehicle.is_armable:
     time.sleep(1)
     # If required, you can provide additional information about initialisation
     # using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
+
+print "\nSend arm message and wait (currently: %s)" % vehicle.armed
+if vehicle.is_armable: 
+    vehicle.try_set_armed() #returns when armed
+    print " Vehicle is armed: %s" % vehicle.armed 
+
+print "\nSend disarm message and wait (currently: %s)" % vehicle.armed
+vehicle.try_set_armed(value=False) #returns when armed
+print " Vehicle is armed: %s" % vehicle.armed     
     
-print "\nSet Vehicle.armed=True (currently: %s)" % vehicle.armed 
-vehicle.armed = True
+print "\nSend arm message without waiting (currently: %s)" % vehicle.armed
+# This non-waiting form is not recommended.
+vehicle.try_set_armed(wait_ready=False)
 while not vehicle.armed:
     print " Waiting for arming..."
-    time.sleep(1)
+    time.sleep(0.3)
 print " Vehicle is armed: %s" % vehicle.armed 
 
 
@@ -170,8 +190,8 @@ def decorated_mode_callback(self, attr_name, value):
     # `value` is the updated attribute value.
     print " CALLBACK: Mode changed to", value
 
-print " Set mode=STABILIZE (currently: %s) and wait for callback" % vehicle.mode.name 
-vehicle.mode = VehicleMode("STABILIZE")
+print " Set mode=STABILIZE (currently: %s) and wait for callback" % vehicle.mode.name
+vehicle.try_set_mode(VehicleMode("STABILIZE"))
 
 print " Wait 2s so callback invoked before moving to next example"
 time.sleep(2)
@@ -249,8 +269,8 @@ vehicle.parameters['THR_MIN']=30
 
 ## Reset variables to sensible values.
 print "\nReset vehicle attributes/parameters and exit"
-vehicle.mode = VehicleMode("STABILIZE")
-vehicle.armed = False
+vehicle.try_set_mode(value=VehicleMode("STABILIZE"))
+vehicle.try_set_armed(value=False)
 vehicle.parameters['THR_MIN']=130
 vehicle.parameters['THR_MID']=500
 
