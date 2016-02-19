@@ -991,9 +991,6 @@ class Vehicle(HasObservers):
         self._handler = handler
         self._master = handler.master
 
-        # a message listener to set Autopilot version and capabilties:
-        self.listener_capa = None
-
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
         self._ready_attrs = set(['commands'])
@@ -1079,8 +1076,10 @@ class Vehicle(HasObservers):
         def listener(vehicle, name, m):
             self._capabilities = m.capabilities
             self._raw_version = m.flight_sw_version
-            if self.listener_capa is not None:
-                self.remove_attribute_listener('HEARTBEAT', self.listener_capa)
+            if self._capabilities != 0:
+                # ArduPilot <3.4 fails to send capabilities correctly
+                # straight after boot.
+                vehicle.remove_message_listener('HEARTBEAT', self.send_capabilties_request)
             self.notify_attribute_listeners('autopilot_version', self._raw_version)
 
         # gimbal
@@ -1751,7 +1750,6 @@ class Vehicle(HasObservers):
         # send command to vehicle
         self.send_mavlink(msg)
         
-        
     @property
     def gimbal(self):
         """
@@ -2062,12 +2060,7 @@ class Vehicle(HasObservers):
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
 
-        #Request an AUTOPILOT_VERSION packet
-        def send_capabilties_request(vehicle, name, m):
-            capability_msg = self.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
-            self.send_mavlink(capability_msg)
-
-        self.listener_capa = self.add_message_listener('HEARTBEAT', send_capabilties_request)
+        self.add_message_listener('HEARTBEAT', self.send_capabilties_request)
 
         # Ensure initial parameter download has started.
         while True:
@@ -2077,6 +2070,11 @@ class Vehicle(HasObservers):
             time.sleep(0.1)
             if self._params_count > -1:
                 break
+
+    def send_capabilties_request(self, vehicle, name, m):
+        '''Request an AUTOPILOT_VERSION packet'''
+        capability_msg = vehicle.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
+        vehicle.send_mavlink(capability_msg)
 
     def wait_ready(self, *types, **kwargs):
         """
