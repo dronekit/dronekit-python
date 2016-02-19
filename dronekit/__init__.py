@@ -1076,7 +1076,10 @@ class Vehicle(HasObservers):
         def listener(vehicle, name, m):
             self._capabilities = m.capabilities
             self._raw_version = m.flight_sw_version
-            vehicle.remove_message_listener('HEARTBEAT', self.send_capabilties_request)
+            if self._capabilities != 0:
+                # ArduPilot <3.4 fails to send capabilities correctly
+                # straight after boot.
+                vehicle.remove_message_listener('HEARTBEAT', self.send_capabilties_request)
             self.notify_attribute_listeners('autopilot_version', self._raw_version)
 
         # gimbal
