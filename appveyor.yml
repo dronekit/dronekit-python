@@ -7,6 +7,7 @@ environment:
 
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"
+  - "c:\\Python27\\Scripts"
 
 install:
   - ps: |
@@ -27,7 +28,6 @@ install:
   - cmd: 'pip install -r requirements.txt -UI'
 
 build_script:
-#  - cmd: 'nosetests -svx dronekit.test.web'
   - cmd: 'nosetests -svx dronekit.test.unit'
   - cmd: 'nosetests -svx dronekit.test.sitl'
 
