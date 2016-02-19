@@ -1,3 +1,6 @@
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
 environment:
   SITL_SPEEDUP: 10
   SITL_RATE: 200
@@ -15,7 +18,7 @@ install:
       [wheel]
       wheel-dir = c:/Users/appveyor/.pip-wheelhouse
       '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
-  
+
   - cmd: 'SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH%'
   - cmd: 'SET PYTHONUNBUFFERED=1'
 
