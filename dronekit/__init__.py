@@ -991,9 +991,6 @@ class Vehicle(HasObservers):
         self._handler = handler
         self._master = handler.master
 
-        # a message listener to set Autopilot version and capabilties:
-        self.listener_capa = None
-
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
         self._ready_attrs = set(['commands'])
@@ -1079,8 +1076,10 @@ class Vehicle(HasObservers):
         def listener(vehicle, name, m):
             self._capabilities = m.capabilities
             self._raw_version = m.flight_sw_version
-            if self.listener_capa is not None:
-                self.remove_attribute_listener('HEARTBEAT', self.listener_capa)
+            if self._capabilities != 0:
+                # ArduPilot <3.4 fails to send capabilities correctly
+                # straight after boot.
+                vehicle.remove_message_listener('HEARTBEAT', self.send_capabilties_request)
             self.notify_attribute_listeners('autopilot_version', self._raw_version)
 
         # gimbal
@@ -1453,9 +1452,10 @@ class Vehicle(HasObservers):
         """
         name = str(name)
         if name in self._message_listeners:
-            self._message_listeners[name].remove(fn)
-            if len(self._message_listeners[name]) == 0:
-                del self._message_listeners[name]
+            if fn in self._message_listeners[name]:
+                self._message_listeners[name].remove(fn)
+                if len(self._message_listeners[name]) == 0:
+                    del self._message_listeners[name]
 
     def notify_message_listeners(self, name, msg):
         for fn in self._message_listeners.get(name, []):
@@ -1750,7 +1750,6 @@ class Vehicle(HasObservers):
 
         # send command to vehicle
         self.send_mavlink(msg)
-        
         
     @property
     def gimbal(self):
@@ -2062,12 +2061,7 @@ class Vehicle(HasObservers):
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
 
-        #Request an AUTOPILOT_VERSION packet
-        def send_capabilties_request(vehicle, name, m):
-            capability_msg = self.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
-            self.send_mavlink(capability_msg)
-
-        self.listener_capa = self.add_message_listener('HEARTBEAT', send_capabilties_request)
+        self.add_message_listener('HEARTBEAT', self.send_capabilties_request)
 
         # Ensure initial parameter download has started.
         while True:
@@ -2077,6 +2071,11 @@ class Vehicle(HasObservers):
             time.sleep(0.1)
             if self._params_count > -1:
                 break
+
+    def send_capabilties_request(self, vehicle, name, m):
+        '''Request an AUTOPILOT_VERSION packet'''
+        capability_msg = vehicle.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
+        vehicle.send_mavlink(capability_msg)
 
     def wait_ready(self, *types, **kwargs):
         """
@@ -2607,7 +2606,11 @@ class CommandSequence(object):
 
         # Add home point again.
         self.wait_ready()
-        home = self._vehicle._wploader.wp(0)
+        home = None
+        try:
+            home = self._vehicle._wploader.wp(0)
+        except:
+            pass
         self._vehicle._wploader.clear()
         if home:
             self._vehicle._wploader.add(home, comment='Added by DroneKit')
@@ -2703,7 +2706,8 @@ def connect(ip,
             rate=4,
             baud=115200,
             heartbeat_timeout=30,
-            source_system=255):
+            source_system=255,
+            use_native=False):
     """
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``. 
     Connection string parameters (``ip``) for different targets are listed in the :ref:`getting started guide <get_started_connecting>`.
@@ -2739,6 +2743,7 @@ def connect(ip,
     :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
         If a heartbeat is not detected within this time an exception will be raised.    
     :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
+    :param bool use_native: Use precompiled MAVLink parser.
 
         .. note::
 
@@ -2757,7 +2762,7 @@ def connect(ip,
     if not vehicle_class:
         vehicle_class = Vehicle
 
-    handler = MAVConnection(ip, baud=baud, source_system=source_system)
+    handler = MAVConnection(ip, baud=baud, source_system=source_system, use_native=use_native)
     vehicle = vehicle_class(handler)
     
     if status_printer:
