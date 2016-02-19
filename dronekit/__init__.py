@@ -1452,9 +1452,10 @@ class Vehicle(HasObservers):
         """
         name = str(name)
         if name in self._message_listeners:
-            self._message_listeners[name].remove(fn)
-            if len(self._message_listeners[name]) == 0:
-                del self._message_listeners[name]
+            if fn in self._message_listeners[name]:
+                self._message_listeners[name].remove(fn)
+                if len(self._message_listeners[name]) == 0:
+                    del self._message_listeners[name]
 
     def notify_message_listeners(self, name, msg):
         for fn in self._message_listeners.get(name, []):
