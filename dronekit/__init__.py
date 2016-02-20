@@ -1163,15 +1163,14 @@ class Vehicle(HasObservers):
         def listener(self, name, m):
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed, cache=True)
-            if self._master.mode_mapping() != None:
-                flightmodesById = {v: k for k, v in self._master.mode_mapping().items()}
-                if m.custom_mode in flightmodesById:
-                    self._flightmode = flightmodesById[m.custom_mode]
+            self._autopilot_type = m.autopilot
+            self._vehicle_type = m.type
+            if self._is_mode_available(m.custom_mode) == False:
+                raise APIException("mode %s not available on mavlink definition" % m.custom_mode)
+            self._flightmode = self._mode_mapping_bynumber[m.custom_mode]
             self.notify_attribute_listeners('mode', self.mode, cache=True)
             self._system_status = m.system_status
             self.notify_attribute_listeners('system_status', self.system_status, cache=True)
-            self._autopilot_type = m.autopilot
-            self._vehicle_type = m.type
 
         # Waypoints.
 
@@ -1492,6 +1491,13 @@ class Vehicle(HasObservers):
     @property
     def _mode_mapping(self):
         return self._master.mode_mapping()
+
+    @property
+    def _mode_mapping_bynumber(self):
+        return mavutil.mode_mapping_bynumber(self._vehicle_type)
+
+    def _is_mode_available(self, mode_code):
+        return mode_code in self._mode_mapping_bynumber
 
     #
     # Operations to support the standard API.
