@@ -191,7 +191,7 @@ class GPSInfo(object):
     If there is no GPS lock the parameters are set to ``None``.
 
     :param Int eph: GPS horizontal dilution of position (HDOP).
-    :param Int epv: GPS horizontal dilution of position (VDOP).
+    :param Int epv: GPS vertical dilution of position (VDOP).
     :param Int fix_type: 0-1: no fix, 2: 2D fix, 3: 3D fix
     :param Int satellites_visible: Number of satellites visible.
 
