@@ -1013,11 +1013,12 @@ class Vehicle(HasObservers):
         to the project!
     """
 
-    def __init__(self, handler):
+    def __init__(self, handler, target_system=1):
         super(Vehicle, self).__init__()
 
         self._handler = handler
         self._master = handler.master
+        self._target_system = target_system
 
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
@@ -1035,6 +1036,12 @@ class Vehicle(HasObservers):
 
         @handler.forward_message
         def listener(_, msg):
+            if self._target_system is None:
+                return
+            if self._target_system:
+                src = msg.get_srcSystem()
+                if src != self._target_system and src != 0:
+                    return
             self.notify_message_listeners(msg.get_type(), msg)
 
         self._location = Locations(self)
@@ -2812,6 +2819,7 @@ def connect(ip,
             baud=115200,
             heartbeat_timeout=30,
             source_system=255,
+            target_system=1,
             use_native=False):
     """
     Returns a :py:class:`Vehicle` object connected to the address specified by string parameter ``ip``.
@@ -2845,9 +2853,10 @@ def connect(ip,
         This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).
     :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
     :param int baud: The baud rate for the connection. The default is 115200.
-    :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s).
-        If a heartbeat is not detected within this time an exception will be raised.
-    :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).
+    :param int heartbeat_timeout: Connection timeout value in seconds (default is 30s). 
+        If a heartbeat is not detected within this time an exception will be raised.    
+    :param int source_system: The MAVLink ID of the :py:class:`Vehicle` object returned by this method (by default 255).  When commands are sent to the vehicle, this is used as the source ID.
+    :param int target_system: The MAVLink ID of the vehicle this Vehicle object represents.  When commands are sent to the vehicle, this SHOULD be used as the target id.  Incoming messages from the connection are filtered according to this value, with "0" indicating no filtering and None indicating total filtering.  Broadcast messages (those with a source system of 0) are only filtered if target_id is None
     :param bool use_native: Use precompiled MAVLink parser.
 
         .. note::
@@ -2868,8 +2877,9 @@ def connect(ip,
         vehicle_class = Vehicle
 
     handler = MAVConnection(ip, baud=baud, source_system=source_system, use_native=use_native)
-    vehicle = vehicle_class(handler)
 
+    vehicle = vehicle_class(handler, target_system=target_system)
+    
     if status_printer:
 
         @vehicle.on_message('STATUSTEXT')
