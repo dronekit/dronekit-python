@@ -629,9 +629,20 @@ class HasObservers(object):
 
         # Notify observers.
         for fn in self._attribute_listeners.get(attr_name, []):
-            fn(self, attr_name, value)
+            try:
+                fn(self, attr_name, value)
+            except Exception as e:
+                errprinter('>>> Exception in attribute handler for %s' %
+                           attr_name)
+                errprinter('>>> ' + str(e))
+
         for fn in self._attribute_listeners.get('*', []):
-            fn(self, attr_name, value)
+            try:
+                fn(self, attr_name, value)
+            except Exception as e:
+                errprinter('>>> Exception in attribute handler for %s' %
+                           attr_name)
+                errprinter('>>> ' + str(e))
 
     def on_attribute(self, name):
         """
