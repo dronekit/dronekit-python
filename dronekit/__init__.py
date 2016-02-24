@@ -1071,14 +1071,17 @@ class Vehicle(HasObservers):
 
         self._capabilities = None
         self._raw_version =None
+        self._autopilot_version_msg_count = 0
 
         @self.on_message('AUTOPILOT_VERSION')
         def listener(vehicle, name, m):
             self._capabilities = m.capabilities
             self._raw_version = m.flight_sw_version
-            if self._capabilities != 0:
+            self._autopilot_version_msg_count += 1
+            if self._capabilities != 0 or self._autopilot_version_msg_count > 5:
                 # ArduPilot <3.4 fails to send capabilities correctly
-                # straight after boot.
+                # straight after boot, and even older versions send
+                # this back as always-0.
                 vehicle.remove_message_listener('HEARTBEAT', self.send_capabilties_request)
             self.notify_attribute_listeners('autopilot_version', self._raw_version)
 
