@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '2.2.0'
+version = '2.2.1'
 
 setup(name='dronekit',
       zip_safe=True,
@@ -12,7 +12,6 @@ setup(name='dronekit',
       author='3D Robotics',
       install_requires=[
           'pymavlink>=1.1.62',
-          'requests>=2.5.0,<=2.99999',
       ],
       author_email='tim@3drobotics.com, kevinh@geeksville.com',
       classifiers=[
