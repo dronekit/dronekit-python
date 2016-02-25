@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '2.2.1'
+version = '2.3.0'
 
 setup(name='dronekit',
       zip_safe=True,
