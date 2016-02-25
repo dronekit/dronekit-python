@@ -3,6 +3,71 @@
 Changelog
 =========
 
+Version 2.3.0 (2016-11-25)
+--------------------------
+
+New Features
+~~~~~~~~~~~~
+
+* px4 compatability improvements
+
+Updated Features
+~~~~~~~~~~~~~~~~
+
+- Documentation fixes
+- PIP repository improvements
+- mode-setting API improvements
+- ardupilot-solo compatability fixes
+
+
+Version 2.2.0 (2016-02-19)
+--------------------------
+
+Bug Fixes
+~~~~~~~~~
+
+- Splits outbound messages into its own thread.
+- remove of capabilities request on HEARTBEAT listener
+- check if mode_mapping has items before iteration
+
+
+Version 2.1.0 (2016-02-16)
+--------------------------
+
+New Features
+~~~~~~~~~~~~
+
+- Gimbal control attribute
+- Autopilot version attribute
+- Autopilot capabilities attribute
+- Best Practice guide documentation.
+- Performance test example (restructured and docs added)
+
+Updated Features
+~~~~~~~~~~~~~~~~
+
+Many documentation fixes:
+
+- Restructured documentation with Develop (Concepts) and Guide (HowTo) sections
+- Docs separated out "Connection Strings" section.
+- Improved test and contribution sections.
+- Updated examples and documentation to use DroneKit-Sitl for simulation ("zero setup examples")
+- Debugging docs updated with additional libraries.
+- Flight Replay example fetches data from TLOG rather than droneshare
+- Drone Delivery example now uses strart location for home address.
+- Disabled web tests (not currently supported/used)
+- Updated copyright range to include changes in 2016
+
+
+Bug Fixes
+~~~~~~~~~
+
+- Numerous minor docs fixes.
+- Harmonise nosetest options across each of the integration platforms
+- Fix incorrect property marker for airspeed attribute
+
+
+
 Version 2.0.0 (2015-11-23)
 --------------------------
 
