@@ -1151,7 +1151,7 @@ class Vehicle(HasObservers):
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
 
-            self.notify_attribute_listeners('ekf_ok', self.ekf_ok)
+            self.notify_attribute_listeners('ekf_ok', self.ekf_ok, cache=True)
 
         self._flightmode = 'AUTO'
         self._armed = False
