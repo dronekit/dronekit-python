@@ -1232,7 +1232,7 @@ class Vehicle(HasObservers):
         self._params_loaded = False
         self._params_start = False
         self._params_map = {}
-        self._params_last = time.time()  # Last new param.
+        self._params_last = monotonic.monotonic()  # Last new param.
         self._params_duration = start_duration
         self._parameters = Parameters(self)
 
@@ -1246,7 +1246,7 @@ class Vehicle(HasObservers):
                 self._params_loaded = True
                 self.notify_attribute_listeners('parameters', self.parameters)
 
-            if not self._params_loaded and time.time() - self._params_last > self._params_duration:
+            if not self._params_loaded and monotonic.monotonic() - self._params_last > self._params_duration:
                 c = 0
                 for i, v in enumerate(self._params_set):
                     if v == None:
@@ -1255,7 +1255,7 @@ class Vehicle(HasObservers):
                         if c > 50:
                             break
                 self._params_duration = repeat_duration
-                self._params_last = time.time()
+                self._params_last = monotonic.monotonic()
 
         @self.on_message(['PARAM_VALUE'])
         def listener(self, name, msg):
@@ -1273,7 +1273,7 @@ class Vehicle(HasObservers):
             try:
                 if msg.param_index < msg.param_count and msg:
                     if self._params_set[msg.param_index] == None:
-                        self._params_last = time.time()
+                        self._params_last = monotonic.monotonic()
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
                 self._params_map[msg.param_id] = msg.param_value
@@ -2386,11 +2386,11 @@ class Parameters(collections.MutableMapping, HasObservers):
         remaining = retries
         while True:
             self._vehicle._master.param_set_send(name, value)
-            tstart = time.time()
+            tstart = monotonic.monotonic()
             if remaining == 0:
                 break
             remaining -= 1
-            while time.time() - tstart < 1:
+            while monotonic.monotonic() - tstart < 1:
                 if name in self._vehicle._params_map and self._vehicle._params_map[name] == value:
                     return True
                 time.sleep(0.1)
