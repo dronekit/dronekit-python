@@ -2133,10 +2133,10 @@ class Vehicle(HasObservers):
 
         # Wait for these attributes to have been set.
         await = set(types)
-        start = time.time()
+        start = monotonic.monotonic()
         while not await.issubset(self._ready_attrs):
             time.sleep(0.1)
-            if time.time() - start > timeout:
+            if monotonic.monotonic() - start > timeout:
                 if raise_exception:
                     raise APIException('wait_ready experienced a timeout after %s seconds.' %
                                        timeout)
