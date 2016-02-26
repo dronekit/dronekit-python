@@ -31,6 +31,7 @@ A number of other useful classes and methods are listed below.
 """
 
 from __future__ import print_function
+import monotonic
 import time
 import socket
 import sys
@@ -1296,18 +1297,18 @@ class Vehicle(HasObservers):
         @handler.forward_loop
         def listener(_):
             # Send 1 heartbeat per second
-            if time.time() - self._heartbeat_lastsent > 1:
+            if monotonic.monotonic() - self._heartbeat_lastsent > 1:
                 self._master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS,
                                                 mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
-                self._heartbeat_lastsent = time.time()
+                self._heartbeat_lastsent = monotonic.monotonic()
 
             # Timeouts.
             if self._heartbeat_started:
-                if self._heartbeat_error and self._heartbeat_error > 0 and time.time(
+                if self._heartbeat_error and self._heartbeat_error > 0 and monotonic.monotonic(
                 ) - self._heartbeat_lastreceived > self._heartbeat_error:
                     raise APIException('No heartbeat in %s seconds, aborting.' %
                                        self._heartbeat_error)
-                elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
+                elif monotonic.monotonic() - self._heartbeat_lastreceived > self._heartbeat_warning:
                     if self._heartbeat_timeout == False:
                         errprinter('>>> Link timeout, no heartbeat in last %s seconds' %
                                    self._heartbeat_warning)
@@ -1316,7 +1317,7 @@ class Vehicle(HasObservers):
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
             self._heartbeat_system = msg.get_srcSystem()
-            self._heartbeat_lastreceived = time.time()
+            self._heartbeat_lastreceived = monotonic.monotonic()
             if self._heartbeat_timeout:
                 errprinter('>>> ...link restored.')
             self._heartbeat_timeout = False
@@ -1326,7 +1327,7 @@ class Vehicle(HasObservers):
         @handler.forward_loop
         def listener(_):
             if self._heartbeat_lastreceived:
-                self._last_heartbeat = time.time() - self._heartbeat_lastreceived
+                self._last_heartbeat = monotonic.monotonic() - self._heartbeat_lastreceived
                 self.notify_attribute_listeners('last_heartbeat', self.last_heartbeat)
 
     @property
@@ -2044,7 +2045,7 @@ class Vehicle(HasObservers):
         self._handler.start()
 
         # Start heartbeat polling.
-        start = time.time()
+        start = monotonic.monotonic()
         self._heartbeat_error = heartbeat_timeout or 0
         self._heartbeat_started = True
         self._heartbeat_lastreceived = start
