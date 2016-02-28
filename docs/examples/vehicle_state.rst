@@ -37,7 +37,7 @@ In summary, after cloning the repository:
 
    .. code:: bash
 
-       Connecting to vehicle on: 170.0.0.1:14550
+       Connecting to vehicle on: tcp:127.0.0.1:5760
        >>> APM:Copter V3.3 (d6053245)
        >>> Frame: QUAD
        >>> Calibrating barometer
