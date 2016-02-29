@@ -1,7 +1,15 @@
 # Changelog
 
+## Version 2.4.0 (2016-02-29)
 
-## Version 2.3.0 (2016-11-25)
+### Bug Fixes
+
+* Use monotonic clock for all of the internal timeouts and time
+  measurements
+* Docs fixes
+
+
+## Version 2.3.0 (2016-02-26)
 
 ### New Features
 
