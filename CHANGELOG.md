@@ -13,14 +13,14 @@
 
 ### New Features
 
-* px4 compatability improvements
+* PX4 compatibility improvements
 
 ### Updated Features
 
 * Documentation fixes
 * PIP repository improvements
-* mode-setting API improvements
-* ardupilot-solo compatability fixes
+* Mode-setting API improvements
+* ardupilot-solo compatibility fixes
 
 
 
@@ -29,8 +29,10 @@
 ### Bug Fixes
 
 * Splits outbound messages into its own thread.
-* remove of capabilities request on HEARTBEAT listener
-* check if mode_mapping has items before iteration
+* Remove of capabilities request on HEARTBEAT listener
+* Check if mode_mapping has items before iteration
+
+
 
 ## Version 2.1.0 (2016-02-16)
 
