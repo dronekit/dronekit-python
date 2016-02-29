@@ -13,6 +13,7 @@ from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from queue import Queue, Empty
 from threading import Thread
+import traceback
 import types
 
 if platform.system() == 'Windows':
@@ -36,6 +37,94 @@ class MAVWriter(object):
     def read(self):
         errprinter('writer should not have had a read request')
         os._exit(43)
+
+class MAVSystem(mavutil.mavsource):
+    def __init__(self, conn, target_system=None, target_component=1):
+
+        if target_system is None:
+            # replace this with some sort of search function
+            target_system = 1
+
+        super(MAVSystem,self).__init__(conn.master, target_system, target_component)
+
+        self.conn = conn
+        self.mav = self.conn.master.mav
+        self.target_system = target_system
+        self.target_component = target_component
+        self._message_listeners = []
+
+        @conn.forward_message
+        def listener(_, msg):
+            if msg.get_srcSystem() == self.target_system:
+                self.notify_message_listeners(msg)
+
+    def remove_message_listener(self, name, fn):
+        """
+        Removes a message listener (that was previously added using :py:func:`add_message_listener`).
+
+        See :ref:`mavlink_messages` for more information.
+
+        :param String name: The name of the message for which the listener is to be removed (or '*' to remove an 'all messages' observer).
+        :param fn: The listener callback function to remove.
+
+        """
+        name = str(name)
+        if name in self._message_listeners:
+            if fn in self._message_listeners[name]:
+                self._message_listeners[name].remove(fn)
+                if len(self._message_listeners[name]) == 0:
+                    del self._message_listeners[name]
+
+    def notify_message_listeners(self, msg):
+        for fn in self._message_listeners:
+            try:
+                fn(self, msg)
+            except Exception as e:
+                errprinter('>>> Exception in message handler for %s' %
+                           msg.get_type())
+                errprinter('>>> ' + str(e))
+
+    def start(self):
+        self.conn.start()
+
+    def alive(self):
+        # should we check we've received a hearbeat from the system here?
+        return self.conn._alive
+
+    def request_data_stream(self, rate):
+            self.mav.request_data_stream_send(self.target_system,
+                                              self.target_component,
+                                              mavutil.mavlink.MAV_DATA_STREAM_ALL,
+                                              rate, 1)
+    def forward_message(self, fn):
+        """
+        Decorator for message inputs.
+        """
+        self._message_listeners.append(fn)
+
+
+    # APM discards information about the relative frame and treats any
+    # alt value as relative. So we require relative positions for the
+    # time being
+    def simple_goto(self, lat, lon, alt, relative=False):
+        if relative != True:
+            raise APIException('relative positions required')
+
+        self.mav.mission_item_send(self.target_system,
+                                          self.target_component,
+                                          0,
+                                          mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+                                          mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
+                                          0, 0, 0, lat, lon,
+                                          alt)
+
+    def fix_targets(self, message):
+        """Set correct target IDs for our vehicle"""
+        if hasattr(message, 'target_system'):
+            message.target_system = self.target_system
+        if hasattr(message, 'target_component'):
+            message.target_component = self.target_component
+
 
 
 class mavudpin_multi(mavutil.mavfile):
@@ -121,7 +210,8 @@ class MAVConnection(object):
             self.mavlink_thread_out.join()
             self.mavlink_thread_out = None
 
-    def __init__(self, ip, baud=115200, target_system=0, source_system=255, use_native=False):
+    def __init__(self, ip, baud=115200, source_system=255, use_native=False):
+        self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
         if ip.startswith("udpin:"):
             self.master = mavudpin_multi(ip[6:], input=True, baud=baud, source_system=source_system)
         else:
@@ -134,18 +224,6 @@ class MAVConnection(object):
             MAVWriter(self.out_queue),
             srcSystem=self.master.source_system,
             use_native=use_native)
-
-        # Monkey-patch MAVLink object for fix_targets.
-        sendfn = self.master.mav.send
-
-        def newsendfn(mavmsg, *args, **kwargs):
-            self.fix_targets(mavmsg)
-            return sendfn(mavmsg, *args, **kwargs)
-
-        self.master.mav.send = newsendfn
-
-        # Targets
-        self.target_system = target_system
 
         # Listeners.
         self.loop_listeners = []
@@ -163,6 +241,10 @@ class MAVConnection(object):
             self.stop_threads()
 
         atexit.register(onexit)
+
+        # Heartbeats.
+        self._heartbeat_lastsent = 0
+
 
         def mavlink_thread_out():
             # Huge try catch in case we see http://bugs.python.org/issue1856
@@ -208,11 +290,13 @@ class MAVConnection(object):
 
                     # Loop listeners.
                     for fn in self.loop_listeners:
+                        self.send_heartbeat()
                         fn(self)
 
                     while self._accept_input:
                         try:
                             msg = self.master.recv_msg()
+#                            print("msg=%s" % (str(msg)))
                         except socket.error as error:
                             # If connection reset (closed), stop polling.
                             if error.errno == ECONNABORTED:
@@ -222,7 +306,7 @@ class MAVConnection(object):
                             # TODO this should be more rigorous. How to avoid
                             #   invalid MAVLink prefix '73'
                             #   invalid MAVLink prefix '13'
-                            # errprinter('mav recv error:', e)
+                            errprinter('mav recv error:', e)
                             msg = None
                         if not msg:
                             break
@@ -237,7 +321,7 @@ class MAVConnection(object):
                                 errprinter('>>> ' + str(e))
 
             except APIException as e:
-                errprinter('>>> ' + str(e))
+                errprinter('>>> APIException (' + str(e.message) + ")")
                 self._alive = False
                 self.master.close()
                 self._death_error = e
@@ -251,6 +335,8 @@ class MAVConnection(object):
                     self._alive = False
                     self.master.close()
                     self._death_error = e
+                    errprinter('>>> Exception (' + str(e.message) + ")")
+                    traceback.print_exc()
 
         t = Thread(target=mavlink_thread_in)
         t.daemon = True
@@ -259,6 +345,14 @@ class MAVConnection(object):
         t = Thread(target=mavlink_thread_out)
         t.daemon = True
         self.mavlink_thread_out = t
+
+    def send_heartbeat(self):
+        # Send 1 heartbeat per second
+        if time.time() - self._heartbeat_lastsent > 1:
+#            print ("sending heartbeat %s" % str(self))
+            self.master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS,
+                                           mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
+            self._heartbeat_lastsent = time.time()
 
     def reset(self):
         self.out_queue = Queue()
@@ -270,11 +364,6 @@ class MAVConnection(object):
             except:
                 pass
             self.master = mavutil.mavlink_connection(self.master.address)
-
-    def fix_targets(self, message):
-        """Set correct target IDs for our vehicle"""
-        if hasattr(message, 'target_system'):
-            message.target_system = self.target_system
 
     def forward_loop(self, fn):
         """
