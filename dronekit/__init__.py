@@ -31,6 +31,7 @@ A number of other useful classes and methods are listed below.
 """
 
 from __future__ import print_function
+import monotonic
 import time
 import socket
 import sys
@@ -1231,7 +1232,7 @@ class Vehicle(HasObservers):
         self._params_loaded = False
         self._params_start = False
         self._params_map = {}
-        self._params_last = time.time()  # Last new param.
+        self._params_last = monotonic.monotonic()  # Last new param.
         self._params_duration = start_duration
         self._parameters = Parameters(self)
 
@@ -1245,7 +1246,7 @@ class Vehicle(HasObservers):
                 self._params_loaded = True
                 self.notify_attribute_listeners('parameters', self.parameters)
 
-            if not self._params_loaded and time.time() - self._params_last > self._params_duration:
+            if not self._params_loaded and monotonic.monotonic() - self._params_last > self._params_duration:
                 c = 0
                 for i, v in enumerate(self._params_set):
                     if v == None:
@@ -1254,7 +1255,7 @@ class Vehicle(HasObservers):
                         if c > 50:
                             break
                 self._params_duration = repeat_duration
-                self._params_last = time.time()
+                self._params_last = monotonic.monotonic()
 
         @self.on_message(['PARAM_VALUE'])
         def listener(self, name, msg):
@@ -1272,7 +1273,7 @@ class Vehicle(HasObservers):
             try:
                 if msg.param_index < msg.param_count and msg:
                     if self._params_set[msg.param_index] == None:
-                        self._params_last = time.time()
+                        self._params_last = monotonic.monotonic()
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
                 self._params_map[msg.param_id] = msg.param_value
@@ -1296,18 +1297,18 @@ class Vehicle(HasObservers):
         @handler.forward_loop
         def listener(_):
             # Send 1 heartbeat per second
-            if time.time() - self._heartbeat_lastsent > 1:
+            if monotonic.monotonic() - self._heartbeat_lastsent > 1:
                 self._master.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_GCS,
                                                 mavutil.mavlink.MAV_AUTOPILOT_INVALID, 0, 0, 0)
-                self._heartbeat_lastsent = time.time()
+                self._heartbeat_lastsent = monotonic.monotonic()
 
             # Timeouts.
             if self._heartbeat_started:
-                if self._heartbeat_error and self._heartbeat_error > 0 and time.time(
+                if self._heartbeat_error and self._heartbeat_error > 0 and monotonic.monotonic(
                 ) - self._heartbeat_lastreceived > self._heartbeat_error:
                     raise APIException('No heartbeat in %s seconds, aborting.' %
                                        self._heartbeat_error)
-                elif time.time() - self._heartbeat_lastreceived > self._heartbeat_warning:
+                elif monotonic.monotonic() - self._heartbeat_lastreceived > self._heartbeat_warning:
                     if self._heartbeat_timeout == False:
                         errprinter('>>> Link timeout, no heartbeat in last %s seconds' %
                                    self._heartbeat_warning)
@@ -1316,7 +1317,7 @@ class Vehicle(HasObservers):
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
             self._heartbeat_system = msg.get_srcSystem()
-            self._heartbeat_lastreceived = time.time()
+            self._heartbeat_lastreceived = monotonic.monotonic()
             if self._heartbeat_timeout:
                 errprinter('>>> ...link restored.')
             self._heartbeat_timeout = False
@@ -1326,7 +1327,7 @@ class Vehicle(HasObservers):
         @handler.forward_loop
         def listener(_):
             if self._heartbeat_lastreceived:
-                self._last_heartbeat = time.time() - self._heartbeat_lastreceived
+                self._last_heartbeat = monotonic.monotonic() - self._heartbeat_lastreceived
                 self.notify_attribute_listeners('last_heartbeat', self.last_heartbeat)
 
     @property
@@ -2044,7 +2045,7 @@ class Vehicle(HasObservers):
         self._handler.start()
 
         # Start heartbeat polling.
-        start = time.time()
+        start = monotonic.monotonic()
         self._heartbeat_error = heartbeat_timeout or 0
         self._heartbeat_started = True
         self._heartbeat_lastreceived = start
@@ -2132,10 +2133,10 @@ class Vehicle(HasObservers):
 
         # Wait for these attributes to have been set.
         await = set(types)
-        start = time.time()
+        start = monotonic.monotonic()
         while not await.issubset(self._ready_attrs):
             time.sleep(0.1)
-            if time.time() - start > timeout:
+            if monotonic.monotonic() - start > timeout:
                 if raise_exception:
                     raise APIException('wait_ready experienced a timeout after %s seconds.' %
                                        timeout)
@@ -2385,11 +2386,11 @@ class Parameters(collections.MutableMapping, HasObservers):
         remaining = retries
         while True:
             self._vehicle._master.param_set_send(name, value)
-            tstart = time.time()
+            tstart = monotonic.monotonic()
             if remaining == 0:
                 break
             remaining -= 1
-            while time.time() - tstart < 1:
+            while monotonic.monotonic() - tstart < 1:
                 if name in self._vehicle._params_map and self._vehicle._params_map[name] == value:
                     return True
                 time.sleep(0.1)
