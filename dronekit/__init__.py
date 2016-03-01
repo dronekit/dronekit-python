@@ -629,9 +629,20 @@ class HasObservers(object):
 
         # Notify observers.
         for fn in self._attribute_listeners.get(attr_name, []):
-            fn(self, attr_name, value)
+            try:
+                fn(self, attr_name, value)
+            except Exception as e:
+                errprinter('>>> Exception in attribute handler for %s' %
+                           attr_name)
+                errprinter('>>> ' + str(e))
+
         for fn in self._attribute_listeners.get('*', []):
-            fn(self, attr_name, value)
+            try:
+                fn(self, attr_name, value)
+            except Exception as e:
+                errprinter('>>> Exception in attribute handler for %s' %
+                           attr_name)
+                errprinter('>>> ' + str(e))
 
     def on_attribute(self, name):
         """
@@ -1464,9 +1475,21 @@ class Vehicle(HasObservers):
 
     def notify_message_listeners(self, name, msg):
         for fn in self._message_listeners.get(name, []):
-            fn(self, name, msg)
+            try:
+                fn(self, name, msg)
+            except Exception as e:
+                errprinter('>>> Exception in message handler for %s' %
+                           msg.get_type())
+                errprinter('>>> ' + str(e))
+
         for fn in self._message_listeners.get('*', []):
-            fn(self, name, msg)
+            try:
+                fn(self, name, msg)
+            except Exception as e:
+                errprinter('>>> Exception in message handler for %s' %
+                           msg.get_type())
+                errprinter('>>> ' + str(e))
+
 
     def close(self):
         return self._handler.close()
