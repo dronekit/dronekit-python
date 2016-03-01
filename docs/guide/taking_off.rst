@@ -35,7 +35,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
 .. code-block:: python
 
     # Connect to the Vehicle (in this case a simulator running the same computer)
-    vehicle = connect('127.0.0.1:14550', wait_ready=True)
+    vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True)
 
     def arm_and_takeoff(aTargetAltitude):
         """
@@ -59,6 +59,7 @@ The code below shows a function to arm a Copter, take off, and fly to a specifie
             time.sleep(1)
 
         print "Taking off!"
+        vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
         # Wait until the vehicle reaches a safe height before processing the goto (otherwise the command 
         #  after Vehicle.simple_takeoff will execute immediately).
