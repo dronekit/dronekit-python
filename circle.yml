@@ -20,3 +20,9 @@ test:
 
 general:
   build_dir: .
+
+deployment:
+    production:
+        branch: master
+        commands:
+            - ./scripts/update-docs.sh
