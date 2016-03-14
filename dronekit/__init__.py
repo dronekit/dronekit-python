@@ -341,7 +341,7 @@ class Version(object):
             prefix += "Copter-"
         elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING):
             prefix += "Plane-"
-        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_ROVER):
+        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_GROUND_ROVER):
             prefix += "Rover-"
         else:
             prefix += "UnknownVehicleType%d-" % (self.vehicle_type)
