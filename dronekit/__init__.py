@@ -1521,7 +1521,10 @@ class Vehicle(HasObservers):
         return mavutil.mode_mapping_bynumber(self._vehicle_type)
 
     def _is_mode_available(self, mode_code):
-        return mode_code in self._mode_mapping_bynumber
+        try:
+            return mode_code in self._mode_mapping_bynumber
+        except:
+            return False
 
     #
     # Operations to support the standard API.
