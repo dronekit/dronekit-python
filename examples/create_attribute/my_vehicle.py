@@ -53,8 +53,8 @@ class RawIMU(object):
 
    
 class MyVehicle(Vehicle):
-    def __init__(self, *args):
-        super(MyVehicle, self).__init__(*args)
+    def __init__(self, *args, **kwargs):
+        super(MyVehicle, self).__init__(*args, **kwargs)
 
         # Create an Vehicle.raw_imu object with initial values set to None.
         self._raw_imu = RawIMU()
