@@ -109,7 +109,10 @@ class Drone(object):
             'log.screen': None
          })
 
-        print 'http://localhost:8080/'
+        print('''Server is bound on all addresses, port 8080
+You may connect to it using your web broser using a URL looking like this:
+http://localhost:8080/
+''')
         cherrypy.engine.start()
 
     def change_mode(self, mode):
