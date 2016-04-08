@@ -24,5 +24,6 @@ def test_mavlink(connpath):
     i = 20
     while not result['success'] and i > 0:
         time.sleep(1)
+        i -= 1
 
     assert result['success']
