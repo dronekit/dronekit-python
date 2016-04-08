@@ -19,7 +19,7 @@ Full documentation is provided at http://python.dronekit.io/examples/channel_ove
 """
 from __future__ import print_function
 from dronekit import connect
-
+import time
 
 #Set up option parsing to get connection string
 import argparse  
@@ -92,6 +92,31 @@ print(" Channel overrides: %s" % vehicle.channels.overrides)
 print("Clear all overrides")
 vehicle.channels.overrides = {}
 print(" Channel overrides: %s" % vehicle.channels.overrides) 
+
+print("Define a channel override callback and register it")
+result = {'value': -1}
+vehicle.channels.overrides = {}
+def channels_callback(vehicle, name, channels):
+    print("channels['3'] == %d\n" % channels['3'])
+    result['value'] = channels['3']
+
+vehicle.add_attribute_listener('channels', channels_callback)
+vehicle.channels.overrides = {'3': 55}
+
+print("Wait for channel callback to be called")
+i = 5
+while result['value'] != 55 and i>0:
+    time.sleep(.5)
+    i -= 1
+
+if result['value'] != -1:
+    print("Value changed")
+if result['value'] == 55:
+    print("Value correct")
+else:
+    print("Value incorrect (%d)" % (result['value'],))
+vehicle.remove_attribute_listener('channels', channels_callback)
+print("Unregistered")
 
 #Close vehicle object before exiting script
 print("\nClose vehicle object")
