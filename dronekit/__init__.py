@@ -1540,7 +1540,8 @@ class Vehicle(HasObservers):
             # Print the vehicle mode name
             print "Mode name: %s" % vehicle.mode.name
             
-        The value of the attribute can be set using :py:func:`try_set_mode`.
+        The value of the attribute can be changed using :py:func:`sync_set_mode` or 
+        :py:func:`set_mode`.
 
         .. warning::
         
@@ -1556,41 +1557,22 @@ class Vehicle(HasObservers):
         self._master.set_mode(self._mode_mapping[v.name])
         
         
-    def try_set_mode(self, value, wait_ready=True, retries=2, timeout=3):
+    def set_mode(self, value):
         """
-        Send a message to change the vehicle mode.
+        Send a message to attempt to change the vehicle mode and return immediately (without checking the result).
         
-        The API should primarily be used as shown below:
+        .. warning:: 
         
-        .. code-block:: python
-
-            # Set the mode using a VehicleMode
-            vehicle.try_set_mode(VehicleMode("GUIDED")) 
+            It is possible for the message to be lost or ignored by the connected vehicle. 
+            If using this method you may need to explicitly check that the mode has changed. 
         
-            # Set the mode using a string
-            vehicle.try_set_mode("STABILIZE")
-
-        When used in this way the method will send a message (with retries) to set the new mode 
-        and will either return when the :py:attr:`mode` has changed or raise an exception 
-        on failure. You can also set the number of retries and the timeout
-        between re-sending the message, if needed.
-
-        The function will return immediately if the new value is the same as the current value.
+        .. tip::  
         
-        Setting ``wait_ready=False`` sends the message and then returns immediately 
-        (without checking the result).
+            Use :py:func:`sync_set_mode` to robustly wait for the mode to change before continuing.
         
-        .. tip:: 
+        The message is not sent if the target mode is the current mode.
         
-            We recommend the default (``wait_ready=True``) because it safely implements 
-            the checking and resending that you would otherwise have to do yourself to determine when the
-            mode has changed.
-        
-        :param VehicleMode value: The new :py:class:`VehicleMode` (or mode name, as a string).
-        :param Bool wait_ready: ``True`` (default) wait until the value has changed before completing. 
-            ``False`` to send the request and complete immediately.
-        :param int retries: Number of attempts to resend the message.
-        :param int timeout: Time to wait for the value to change before retrying/exiting (in seconds). 
+        :param VehicleMode value: The target :py:class:`VehicleMode` (or mode name, as a string).
         """
         # Allow users to specify the target mode as a string.
         if type(value)==str:
@@ -1600,8 +1582,43 @@ class Vehicle(HasObservers):
             return
                 
         #If method is non waiting send command immediately.
-        if wait_ready==False:
-            self._master.set_mode(self._mode_mapping[value.name])
+        self._master.set_mode(self._mode_mapping[value.name])
+        
+        
+    def sync_set_mode(self, value, retries=2, timeout=3):
+        """
+        Send a message to change the vehicle mode and synchronously wait for success.
+        
+        The API should primarily be used as shown below:
+        
+        .. code-block:: python
+
+            # Set the mode using a VehicleMode
+            vehicle.sync_set_mode(VehicleMode("GUIDED")) 
+        
+            # Set the mode using a string
+            vehicle.sync_set_mode("STABILIZE")
+
+        The method will sends a message (with retries) to set the new mode 
+        and will either return when the :py:attr:`mode` has changed or raise an exception 
+        on failure. You can also set the number of retries and the timeout
+        between re-sending the message, if needed.
+
+        The function will return immediately if the new value is the same as the current value.
+        
+        .. tip:: 
+        
+            The :py:func:`set_mode` method should be used if you don't want to synchronously wait for the mode change.
+        
+        :param VehicleMode value: The new :py:class:`VehicleMode` (or mode name, as a string).
+        :param int retries: Number of attempts to resend the message.
+        :param int timeout: Time to wait for the value to change before retrying/exiting (in seconds). 
+        """
+        # Allow users to specify the target mode as a string.
+        if type(value)==str:
+           value=VehicleMode(value)
+        # Return immediately if target value is current value.
+        if value.name == self.mode.name:
             return
 
         #Otherwise execute retry code  
@@ -1615,6 +1632,7 @@ class Vehicle(HasObservers):
                 
         #No more retries. Raise exception.
         raise APIException('Unable to change mode.')
+
 
     @property
     def location(self):
