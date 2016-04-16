@@ -151,6 +151,7 @@ def test_timeout(connpath):
     i = 5
     while not result['success'] and i > 0:
         time.sleep(.1)
+        i -= 1
     assert result['success'], 'channels callback should be invoked.'
 
     vehicle.close()

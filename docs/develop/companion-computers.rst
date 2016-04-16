@@ -15,21 +15,21 @@ The following computing platforms are known to work with DroneKit, and are suppo
 RaspberryPi
 -----------
 
-* `Communicating with Raspberry Pi via MAVLink <http://dev.ardupilot.com/wiki/companion-computers/raspberry-pi-via-mavlink/>`_
-* `Making a Mavlink WiFi bridge using the Raspberry Pi <http://dev.ardupilot.com/wiki/companion-computers/raspberry-pi-via-mavlink/making-a-mavlink-wifi-bridge-using-the-raspberry-pi/>`_
+* `Communicating with Raspberry Pi via MAVLink <http://ardupilot.org/dev/docs/raspberry-pi-via-mavlink.html>`_
+* `Making a Mavlink WiFi bridge using the Raspberry Pi <http://ardupilot.org/dev/docs/making-a-mavlink-wifi-bridge-using-the-raspberry-pi.html>`_
 
 Intel Edison
 ------------
 
-* `Edison for drones <http://dev.ardupilot.com/wiki/companion-computers/edison-for-drones/>`_
+* `Edison for drones <http://ardupilot.org/dev/docs/edison-for-drones.html>`_
 
 BeagleBoneBlack
 ---------------
 
-* `BeaglePilot <http://dev.ardupilot.com/wiki/companion-computers/beaglepilot/>`_
+* `BeaglePilot <http://ardupilot.org/dev/docs/beaglepilot.html>`_
 
 Odroid
 ------
-* `Communicating with ODroid via MAVLink <http://dev.ardupilot.com/wiki/companion-computers/odroid-via-mavlink/>`_
-* `ODroid Wifi Access Point for sharing files via Samba <http://dev.ardupilot.com/wiki/companion-computers/odroid-via-mavlink/odroid-wifi-access-point-for-sharing-files-via-samba/>`_
+* `Communicating with ODroid via MAVLink <http://ardupilot.org/dev/docs/odroid-via-mavlink.html>`_
+* `ODroid Wifi Access Point for sharing files via Samba <http://ardupilot.org/dev/docs/odroid-wifi-access-point-for-sharing-files-via-samba.html>`_
 
