@@ -1,6 +1,5 @@
 """
-This test represents a simple demo for testing.
-Feel free to copy and modify at your leisure.
+Simple test to trigger a bug in Vehicle class: issue #610 fixed in PR #611
 """
 
 import time
