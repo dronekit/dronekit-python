@@ -32,7 +32,7 @@ def test_115(connpath):
     savecount = mavlink_callback.count
 
     # Disarm. A callback of None should not throw errors
-    v.set_mode(False)
+    v.set_armed(False)
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
 
