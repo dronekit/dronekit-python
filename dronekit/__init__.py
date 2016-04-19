@@ -1545,8 +1545,8 @@ class Vehicle(HasObservers):
 
         .. warning::
         
-            The attribute can also be used to *set* the mode.
-            This is deprecated, and may be removed in a future version.
+            This attribute can also be used to directly *set* the mode.
+            This approach is deprecated, and may be removed in a future version.
         """
         if not self._flightmode:
             return None
@@ -1599,7 +1599,7 @@ class Vehicle(HasObservers):
             # Set the mode using a string
             vehicle.sync_set_mode("STABILIZE")
 
-        The method will sends a message (with retries) to set the new mode 
+        The method will send a message (with retries) to set the new mode 
         and will either return when the :py:attr:`mode` has changed or raise an exception 
         on failure. You can also set the number of retries and the timeout
         between re-sending the message, if needed.
@@ -1761,7 +1761,7 @@ class Vehicle(HasObservers):
             # Print the armed state for the vehicle
             print "Armed: %s" % vehicle.armed
             
-        To arm/disarm the vehicle use :py:func:`try_set_armed`.
+        To arm/disarm the vehicle use :py:func:`sync_set_armed` or :py:func:`set_armed`.
 
         .. warning::
         
@@ -1779,22 +1779,58 @@ class Vehicle(HasObservers):
                 self._master.arducopter_disarm()
                 
 
-    def try_set_armed(self, value=True, wait_ready=True, retries=2, timeout=3):
+    def set_armed(self, value=True):
         """
-        Send a message to arm (default) or disarm the vehicle.
+        Send a message to attempt to change the :py:attr:`armed` state (armed/disarmed) of the vehicle and then return immediately (without checking the result).
+        
+        .. warning:: 
+        
+            It is possible for the message to be lost or ignored by the connected vehicle. 
+            If using this method you may need to explicitly check that the armed state has changed. 
+        
+        .. tip::  
+        
+            Use :py:func:`sync_set_armed` to synchronously wait for the armed state to change before continuing.
+        
+        The message is not sent if the target armed state is the current state. The method will raise an exception
+        if called to arm the vehicle when it is not armable (see :py:attr:`is_armable`).
+        
+        :param Bool value: ``True`` (default) to arm, ``False`` to disarm.
+        """
+        # Return immediately if target value is current value.
+        if bool(value) == self._armed:
+            return
+
+        # Raise exception if attempting to arm when not armable.
+        if self._armed==False and not self.is_armable and bool(value)==True:
+            raise APIException('Attempting to arm when not armable.')
+                
+        #Send arm or disarm command then return.
+        if value:
+            self._master.arducopter_arm()
+        else:
+            self._master.arducopter_disarm()
+        
+
+        
+
+        
+    def sync_set_armed(self, value=True, wait_ready=True, retries=2, timeout=3):
+        """
+        Send a message to arm (default) or disarm the vehicle and synchronously wait for success.
         
         The API should primarily be used as shown below:
         
         .. code-block:: python
         
-            # Arm the vehicle
+            # Arm the vehicle (first checking it is armable)
             if vehicle.is_armable: //Required!
-                vehicle.try_set_armed() #returns when armed
+                vehicle.sync_set_armed() #returns when armed
 
             # Disarm the vehicle
-            vehicle.try_set_armed(value=False) #returns when disarmed
-        
-        When used in this way the method will send a message (with retries) to arm/disarm 
+            vehicle.sync_set_armed(value=False) #returns when disarmed
+            
+        The method will send a message (with retries) to arm/disarm 
         the vehicle and will either return when the :py:attr:`armed` state has changed or 
         raise an exception on failure. You can also set the number of retries and the timeout
         between re-sending the message, if needed.
@@ -1802,19 +1838,9 @@ class Vehicle(HasObservers):
         The function will return immediately if the new value is the same as the current value.
         The function will raise an exception if called to arm a vehicle that is not 
         armable (see :py:attr:`is_armable`).
-        
-        Setting ``wait_ready=False`` sends the message and then returns immediately 
-        (without checking the result).
-        
-        .. tip:: 
-        
-            We recommend the default (``wait_ready=True``) because it safely implements all
-            the checking that you would otherwise have to do yourself to determine when the
-            armed state has changed.
+
         
         :param Bool value: ``True`` (default) to arm, ``False`` to disarm.
-        :param Bool wait_ready: ``True`` (default) wait until the value has changed before completing. 
-            ``False`` to send the request and complete immediately.
         :param int retries: Number of attempts to resend the message.
         :param int timeout: Time to wait for the value to change before retrying/exiting (in seconds). 
         """
@@ -1822,19 +1848,11 @@ class Vehicle(HasObservers):
         if bool(value) == self._armed:
             return
             
-        # Invoke callback or raise exception if attempting to arm when not armable.
+        # Raise exception if attempting to arm when not armable.
         if self._armed==False and not self.is_armable and bool(value)==True:
             raise APIException('Attempting to arm when not armable.')
-                
-        #If method is non waiting send command immediately.
-        if wait_ready==False:
-            if value:
-                self._master.arducopter_arm()
-            else:
-                self._master.arducopter_disarm()
-            return
 
-        #Otherwise execute retry code  
+        #Execute retry code  
         for retry_num in range(0,retries):
             if value:
                 self._master.arducopter_arm()
@@ -1848,12 +1866,13 @@ class Vehicle(HasObservers):
                 
         #No more retries. Raise exception.
         raise APIException('Unable to arm.')
-                
+        
+        
 
     @property
     def is_armable(self):
         """
-        Returns ``True`` if the vehicle is ready to :py:func:`arm <try_set_armed>`, ``false`` otherwise (``Boolean``).
+        Returns ``True`` if the vehicle is ready to :py:attr:`arm <armed>`, ``false`` otherwise (``Boolean``).
 
         This attribute wraps a number of pre-arm checks, ensuring that the vehicle has booted,
         has a good GPS fix, and that the EKF pre-arm is complete.
@@ -1903,7 +1922,7 @@ class Vehicle(HasObservers):
         """
         Current groundspeed in metres/second (``double``).
 
-        To set the groundspeed use :py:func:`try_set_target_groundspeed`.
+        To set the groundspeed use :py:func:`set_target_groundspeed`.
 
         .. warning::
 
@@ -1928,41 +1947,33 @@ class Vehicle(HasObservers):
         self.send_mavlink(msg)
 
         
-    def try_set_target_groundspeed(self, speed, wait_ready=True):
+    def set_target_groundspeed(self, speed):
         """
-        Send a message to change the vehicle groundspeed. The set value is the 
-        default target speed when moving the vehicle using :py:func:`simple_goto` 
+        Send a message to change the target vehicle :py:attr:`groundspeed` and return immediately (without checking the result). 
+        
+        The set value is the default target speed when moving the vehicle using :py:func:`simple_goto` 
         (or other position-based movement commands).
         
-        The API **must** be used as shown below (or an exception will be raised):
+        The API should be used as shown below:
         
         .. code-block:: python
 
             # Set the speed
-            vehicle.try_set_target_groundspeed(5, wait_ready=False)
-
-        Using ``wait_ready=False`` the message will be sent immediately but may not be received 
-        or acted on by the autopilot. Users can monitor :py:attr:`groundseed` 
-        to determine if the command has had any effect.
+            vehicle.set_target_groundspeed(5)
+            
+        .. warning:: 
         
+            It is possible for the message to be lost or ignored by the connected vehicle. 
+            If using this method you may need to explicitly check that the speed has changed.
+            
         .. note::
         
-            ``wait_ready=True`` (default) is not supported and will raise an exception.
-            This is inconvenient, but is done to future proof the API for when a robust
-            synchronous speed setter can be written.
-            
-        .. todo::
-        
-            We should monitor for receipt of the message but there is no
-            robust way to trust the COMMAND_ACK and no method to
-            read back the current speed setting:
-            https://github.com/diydrones/ardupilot/issues/3636
-            
+            We do not provide a synchronous setter that confirms successful update of the groundspeed value. 
+            This is because there is no robust way to trust the COMMAND_ACK and currently no method 
+            to read back the current speed setting: https://github.com/diydrones/ardupilot/issues/3636
         
         :param float speed: The target speed.
         """
-        if wait_ready == True:
-            raise APIException('try_set_target_groundspeed() must be called with wait_ready=True (False not supported).')
         speed_type = 1 # ground speed
         msg = self.message_factory.command_long_encode(
             0, 0,    # target system, target component
@@ -1981,7 +1992,7 @@ class Vehicle(HasObservers):
         """
         Current airspeed in metres/second (``double``).
         
-        To set the airspeed use :py:func:`try_set_target_airspeed`.
+        To set the airspeed use :py:func:`set_target_airspeed`.
         
         .. warning::
         
@@ -2006,43 +2017,33 @@ class Vehicle(HasObservers):
         self.send_mavlink(msg)
         
 
-    def try_set_target_airspeed(self, speed, wait_ready=True):
+    def set_target_airspeed(self, speed):
         """
-        Send a message to change the vehicle airspeed. The set value is the 
-        default target airspeed when moving the vehicle using :py:func:`simple_goto` 
+        Send a message to change the target vehicle :py:attr:`airspeed` and return immediately (without checking the result). 
+        
+        The set value is the default target speed when moving the vehicle using :py:func:`simple_goto` 
         (or other position-based movement commands).
         
-        The API **must** be used as shown below (or an exception will be raised):
+        The API should be used as shown below:
         
         .. code-block:: python
 
             # Set the speed
-            vehicle.try_set_target_airspeed(5, wait_ready=False)
-
-        Using ``wait_ready=False`` the message will be sent immediately but may not be received 
-        or acted on by the autopilot. Users can monitor :py:attr:`airspeed` 
-        to determine if the command has had any effect.
+            vehicle.set_target_airspeed(5)
+            
+        .. warning:: 
         
+            It is possible for the message to be lost or ignored by the connected vehicle. 
+            If using this method you may need to explicitly check that the speed has changed.
+            
         .. note::
         
-            ``wait_ready=True`` (default) is not supported and if used will raise an exception.
-            This is inconvenient, but is done to future proof the API for when a robust
-            synchronous speed setter can be written.
-        
-        
-        .. todo::
-        
-            We should monitor for receipt of the message but there is no
-            robust way to trust the COMMAND_ACK and no method to
-            read back the current speed setting:
-            https://github.com/diydrones/ardupilot/issues/3636
-            
+            We do not provide a synchronous setter that confirms successful update of the airspeed value. 
+            This is because there is no robust way to trust the COMMAND_ACK and currently no method 
+            to read back the current speed setting: https://github.com/diydrones/ardupilot/issues/3636
         
         :param float speed: The target speed.
-        :param Boolean wait_ready: Set ``False`` to send the command immediately. This is required as waiting version is not implemented.
         """
-        if wait_ready == True:
-            raise APIException('try_set_target_airspeed() must be called with wait_ready=True (False not supported).')
         speed_type = 0 # air speed
         msg = self.message_factory.command_long_encode(
             0, 0,    # target system, target component
@@ -2138,18 +2139,17 @@ class Vehicle(HasObservers):
 
         The ``home_location`` is not observable.
         
-        The attribute can be written using :py:func:`try_set_home_location` after it has successfully 
-        been populated from the vehicle. 
+        The attribute can be written using :py:func:`sync_set_home_location` or :py:func:`set_home_location` 
+        *after* it has successfully been populated from the vehicle. 
         
         .. warning::
         
-            This setter is deprecated. Instead use :py:func:`try_set_home_location`.
+            This setter is deprecated. Instead use :py:func:`sync_set_home_location` or :py:func:`set_home_location`.
             
             If you use this method the value sent to the vehicle is cached in the attribute 
             (and can potentially get out of date if you don't re-download ``Vehicle.commands``):
             
-            Setting the value with this method will fail silently 
-            if the specified location is more than 50km from the EKF origin.
+            Setting the value with this attribute will fail silently if the specified location is more than 50km from the EKF origin.
         """
         return copy.copy(self._home_location)
 
@@ -2167,7 +2167,7 @@ class Vehicle(HasObservers):
             
         .. warning::
         
-            This setter is deprecated. Instead use :py:func:`try_set_home_location`.
+            This setter is deprecated. Instead use :py:func:`sync_set_home_location` or :py:func:`set_home_location`.
         """
 
         if not isinstance(pos, LocationGlobal):
@@ -2186,33 +2186,25 @@ class Vehicle(HasObservers):
             pos.lat, pos.lon, pos.alt))
             
 
-
-    def try_set_home_location(self, pos, wait_ready=True):
+    def set_home_location(self, pos):
         """
-        Attempts to set the home location (``LocationGlobal``).
-        
-        The value cannot be set until it has successfully been read from the vehicle. 
-        Setting the value will also fail if the target location is more than 50km from the EKF origin.
-        
-        The method can be called with ``wait_ready=True`` (the default) as shown:
-        
-        .. code-block:: python
+        Sends a message to attempt to set the home location (``LocationGlobal``) and returns immediately (without checking for success).
 
-            a_location = LocationGlobal(-34.364114, 149.166022, 30)
-            vehicle.try_set_home_location(a_location) #Returns if home_location is verified as set
+        Setting the value can fail silently:
         
-        This verifies the home location was changed by re-downloading the home location 
-        and comparing it to the original value. It raises an exception if the values do not match.
+        * The value cannot be set until after the autopilot has first set the value (on getting GPS).
+        * The value cannot be set until after it has successfully been read from the vehicle. 
+        * Setting the value will silently fail if the target location is more than 50km from the EKF origin.
         
-        Calling the method with ``wait_ready=False`` will try and send the home location value to the autopilot. 
-        This can fail silently and readers will need to write code (as below) to populate the :py:attr:`home_location`
-        and confirm the value is correct.
+        The method will raise an exception if it is called with anything other than a ``LocationGlobal``.
         
+        It should called as shown below (this example re-downloads the home location so you can verify the value has changed):
+                
         .. code-block:: python
 
             a_location = LocationGlobal(-34.364114, 149.166022, 30)
             # Set home location
-            vehicle.try_set_home_location(a_location, wait_ready=False) #Returns immediately
+            vehicle.set_home_location(a_location) #Returns immediately
 
             # Get new value of home location by re-downloading commands
             cmds = vehicle.commands
@@ -2220,16 +2212,14 @@ class Vehicle(HasObservers):
             cmds.wait_ready()
             print " New Home Location (from vehicle): %s" % vehicle.home_location
 
-        .. note:: 
+        .. tip:: 
 
-            The ``wait_ready=True`` version verifies the value has changed but can take a long time to complete
+            The :py:func:`sync_set_home_location` method can be use to synchronously set the home location and then 
+            return when the value change is confirmed. This method can take a long time to complete
             if the autopilot has a large mission (On ArduPilot the home_location is stored in the mission data).
-            By contrast the other method is fast, but can silently fail.
+            By contrast, this method is fast, but can silently fail.
             
         :param LocationGlobal pos: The `LocationGlobal` to set as home location.
-        :param Boolean wait_ready: ``True`` (default) to wait until the 
-            home location has been re-downloaded/confirmed before returning. Set ``False`` to just set the home
-            location and then return.
         """
 
         if not isinstance(pos, LocationGlobal):
@@ -2244,16 +2234,62 @@ class Vehicle(HasObservers):
             0, 0, 0,  # params 2-4
             pos.lat, pos.lon, pos.alt))
 
-        if wait_ready==True:
-            old_home_location=self.home_location
-            cmds = self.commands
-            cmds.download()
-            cmds.wait_ready()
-            # Test that home location has changed for success. 
-            #   Would be better to test that new home location is same as pos
-            #   but that is subject to rounding errors so direct comparion difficult.
-            if old_home_location==self.home_location:
-                raise Exception('Setting home location failed. Can only be called after home first set by GPS.')
+
+
+
+    def sync_set_home_location(self, pos, wait_ready=True):
+        """
+        Sends a message to attempt to set the :py:attr:`home_location` and returns once the value has changed (or raises an exception).
+        
+        .. warning::
+        
+            * The home location must already have been downloaded from the vehicle before this method is called.
+            * The method re-downloads the home location to verify the value has changed (note - not that it matches the set value!) 
+              This can be a long-running operation if the autopilot has a large mission 
+              (on ArduPilot the home location is stored as part of the mission data.)            
+
+        The method will raise an exception if it is called with anything other than a ``LocationGlobal`` or if the
+        value is not detected as having changed. Possible reasons for failure include:
+        
+        * Home location cannot be set until after the autopilot has first set the value (on getting GPS).
+        * Home location cannot be set using this method until after it has successfully been read from the vehicle. 
+        * Home location must be within 50km of the EKF origin. 
+        
+        The method can be called as shown:
+        
+        .. code-block:: python
+        
+            ... 
+            #The home_location must already have been read at least once before calling this method
+            ...
+
+            a_location = LocationGlobal(-34.364114, 149.166022, 30)
+            vehicle.sync_set_home_location(a_location) #Returns if home_location value has changed
+            
+        :param LocationGlobal pos: The `LocationGlobal` to set as home location.
+        """
+
+        if not isinstance(pos, LocationGlobal):
+            raise Exception('Expecting home_location to be set to a LocationGlobal.')
+
+        # Send MAVLink update.
+        self.send_mavlink(self.message_factory.command_long_encode(
+            0, 0,  # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
+            0,  # confirmation
+            2,  # param 1: 1 to use current position, 2 to use the entered values.
+            0, 0, 0,  # params 2-4
+            pos.lat, pos.lon, pos.alt))
+
+        old_home_location=self.home_location
+        cmds = self.commands
+        cmds.download()
+        cmds.wait_ready()
+        # Test that home location has changed for success. 
+        #   Would be better to test that new home location is same as pos
+        #   but that is subject to rounding errors so direct comparion difficult.
+        if old_home_location==self.home_location:
+            raise Exception('Setting home location failed. Can only be called after home first set by GPS.')
 
 
     @property

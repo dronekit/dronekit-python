@@ -95,23 +95,46 @@ In summary, after cloning the repository:
 
         Home location: LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=583.989990234
 
-       Set new home location
-        New Home Location (from attribute - altitude should be 222): LocationGlobal:lat=-35.363261,lon=149.1652299,alt=222
-        New Home Location (from vehicle - altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0
+        Set new home location using synchronous function (returns when value confirmed changed)
+         New Home Location (altitude should be 222): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=222.0
 
-       Set Vehicle.mode=GUIDED (currently: STABILIZE)
-        Waiting for mode change ...
+        Set new home location using asynchronous function (returns immediately)
+         New Home Location (from vehicle - should be 333.0): LocationGlobal:lat=-35.3632621765,lon=149.165237427,alt=333.0
 
-       Set Vehicle.armed=True (currently: False)
-        Waiting for arming...
-        Waiting for arming...
-        Waiting for arming...
-       >>> ARMING MOTORS
-       >>> GROUND START
-        Waiting for arming...
-        Waiting for arming...
-       >>> Initialising APM...
-        Vehicle is armed: True
+        Set Vehicle mode to GUIDED using synchronous setter (currently: STABILIZE)
+         New mode: GUIDED
+
+        Set Vehicle mode to STABILIZE using synchronous setter and 'mode string' (currently: GUIDED)
+         New mode: STABILIZE
+
+        Set Vehicle.mode = GUIDED using asynchronous setter (currently: STABILIZE)
+         Waiting for mode change...
+         Waiting for mode change...
+         Waiting for mode change...
+         Waiting for mode change...
+         New mode: GUIDED
+
+        Send arm message and return when value changed (currently: False)
+        >>> ARMING MOTORS
+        >>> GROUND START
+        >>> Initialising APM...
+         Vehicle is armed: True
+
+        Send disarm message and return when value changed (currently: True)
+        >>> DISARMING MOTORS
+         Vehicle is armed: False
+
+        Send arm message and poll in loop for value to change (currently: False)
+         Waiting for arming...
+        >>> ARMING MOTORS
+         Waiting for arming...
+         Waiting for arming...
+         Waiting for arming...
+         Vehicle is armed: True
+
+        Send 'set target groundspeed' message (currently: 0.0)
+
+        Set 'set target airspeed' message (currently: 0.0)
 
        Add `attitude` attribute callback/observer on `vehicle`
         Wait 2s so callback invoked before observer removed

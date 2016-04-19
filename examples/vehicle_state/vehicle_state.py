@@ -96,26 +96,39 @@ while not vehicle.home_location:
 print "\n Home location: %s" % vehicle.home_location
 
 
-# Set vehicle home_location, mode, and armed attributes (the only settable attributes)
+# Set vehicle home_location, mode, armed, groundspeed and airspeed attributes (the only settable attributes)
 
-print "\nSet new home location"
+print "\nSet new home location using synchronous function (returns when value confirmed changed)"
 # Set home location to current location but change altitude to 222)
-my_location_alt = vehicle.location.global_frame
-my_location_alt.alt = 222.0
-vehicle.try_set_home_location(my_location_alt)
+my_location = vehicle.location.global_frame
+my_location.alt = 222.0
+vehicle.sync_set_home_location(my_location)
 print " New Home Location (altitude should be 222): %s" % vehicle.home_location
 
+print "\nSet new home location using asynchronous function (returns immediately)"
+my_location = vehicle.location.global_frame
+# Set home location to current location but change altitude to 333)
+my_location.alt = 333.0
+vehicle.set_home_location(my_location) #Returns immediately
 
-print "\nSet Vehicle mode to GUIDED (currently: %s)" % vehicle.mode.name 
-vehicle.try_set_mode(VehicleMode("GUIDED"))
+# Get new value of home location by re-downloading commands
+cmds = vehicle.commands
+cmds.download()
+cmds.wait_ready()
+print " New Home Location (from vehicle - should be 333.0): %s" % vehicle.home_location
+
+
+
+print "\nSet Vehicle mode to GUIDED using synchronous setter (currently: %s)" % vehicle.mode.name 
+vehicle.sync_set_mode(VehicleMode("GUIDED"))
 print " New mode: %s" % vehicle.mode.name 
 
-print "\nSet Vehicle mode to STABILIZE (currently: %s)" % vehicle.mode.name 
-vehicle.try_set_mode("STABILIZE")
+print "\nSet Vehicle mode to STABILIZE using synchronous setter and 'mode string' (currently: %s)" % vehicle.mode.name 
+vehicle.sync_set_mode("STABILIZE") #return when value changed
 print " New mode: %s" % vehicle.mode.name 
 
-print "\nSet Vehicle.mode = GUIDED without waiting  (currently: %s)" % vehicle.mode.name 
-vehicle.try_set_mode(value=VehicleMode("GUIDED"), wait_ready=False)
+print "\nSet Vehicle.mode = GUIDED using asynchronous setter (currently: %s)" % vehicle.mode.name 
+vehicle.set_mode(value=VehicleMode("GUIDED"))
 while not vehicle.mode.name=="GUIDED":
     print " Waiting for mode change..."
     time.sleep(0.3)
@@ -130,22 +143,28 @@ while not vehicle.is_armable:
     # If required, you can provide additional information about initialisation
     # using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
 
-print "\nSend arm message and wait (currently: %s)" % vehicle.armed
+print "\nSend arm message and return when value changed (currently: %s)" % vehicle.armed
 if vehicle.is_armable: 
-    vehicle.try_set_armed() #returns when armed
+    vehicle.sync_set_armed() #returns when armed
     print " Vehicle is armed: %s" % vehicle.armed 
 
-print "\nSend disarm message and wait (currently: %s)" % vehicle.armed
-vehicle.try_set_armed(value=False) #returns when armed
+print "\nSend disarm message and return when value changed (currently: %s)" % vehicle.armed
+vehicle.sync_set_armed(value=False) #returns when armed
 print " Vehicle is armed: %s" % vehicle.armed     
     
-print "\nSend arm message without waiting (currently: %s)" % vehicle.armed
-# This non-waiting form is not recommended.
-vehicle.try_set_armed(wait_ready=False)
+print "\nSend arm message and poll in loop for value to change (currently: %s)" % vehicle.armed
+vehicle.set_armed()
 while not vehicle.armed:
     print " Waiting for arming..."
     time.sleep(0.3)
 print " Vehicle is armed: %s" % vehicle.armed 
+
+#Set groundspeed and airspeed target values asynchronously. There is no reliable way to 
+# check that the target value has been set and hence no equivalent synchronous method.
+print "\nSend 'set target groundspeed' message (currently: %s)" % vehicle.groundspeed
+vehicle.set_target_groundspeed(5)
+print "\nSend 'set target airspeed' message (currently: %s)" % vehicle.airspeed
+vehicle.set_target_airspeed(5)
 
 
 # Add and remove and attribute callbacks
@@ -183,8 +202,8 @@ def decorated_mode_callback(self, attr_name, value):
     # `value` is the updated attribute value.
     print " CALLBACK: Mode changed to", value
 
-print " Set mode=STABILIZE (currently: %s) and wait for callback" % vehicle.mode.name
-vehicle.try_set_mode(VehicleMode("STABILIZE"))
+print " Set mode=STABILIZE asynchronously (currently: %s) and wait for callback" % vehicle.mode.name
+vehicle.set_mode(VehicleMode("STABILIZE"))
 
 print " Wait 2s so callback invoked before moving to next example"
 time.sleep(2)
@@ -262,8 +281,8 @@ vehicle.parameters['THR_MIN']=30
 
 ## Reset variables to sensible values.
 print "\nReset vehicle attributes/parameters and exit"
-vehicle.try_set_mode(value=VehicleMode("STABILIZE"))
-vehicle.try_set_armed(value=False)
+vehicle.sync_set_mode(value=VehicleMode("STABILIZE"))
+vehicle.sync_set_armed(value=False)
 vehicle.parameters['THR_MIN']=130
 vehicle.parameters['THR_MID']=500
 
@@ -277,6 +296,7 @@ if sitl is not None:
     sitl.stop()
 
 print("Completed")
+
 
 
 
