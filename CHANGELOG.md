@@ -1,5 +1,23 @@
 # Changelog
 
+## Version 2.5.0 (2016-05-04)
+
+### Improvements
+* Catch and display message and attribute errors, then continue
+* Improved takeoff example docs
+* Deploy docs on successful merge into master (from CircleCI)
+* Drone delivery example, explain port to connect
+* MicroCGS example now uses SITL
+* Make running examples possible on Vagrant
+
+### Bug Fixes
+* Mav type for rover was incorrect
+* `_is_mode_available` can now handle unrecognized mode codes
+* Fix broken links on companion computer page
+* Fix infinite loop on channel test
+
+
+
 ## Version 2.4.0 (2016-02-29)
 
 ### Bug Fixes
