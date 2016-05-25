@@ -52,9 +52,9 @@ class MAVConnection(object):
         # Monkey-patch MAVLink object for fix_targets.
         sendfn = self.master.mav.send
 
-        def newsendfn(mavmsg):
+        def newsendfn(mavmsg, **kwargs):
             self.fix_targets(mavmsg)
-            return sendfn(mavmsg)
+            return sendfn(mavmsg, kwargs)
 
         self.master.mav.send = newsendfn
 
