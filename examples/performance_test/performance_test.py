@@ -1,4 +1,5 @@
 """
+© Copyright 2015-2016, 3D Robotics.
 performance_test.py: 
 
 This performance test logs the interval between messages being 

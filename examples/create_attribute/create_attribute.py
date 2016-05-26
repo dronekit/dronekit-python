@@ -1,4 +1,6 @@
 """
+© Copyright 2015-2016, 3D Robotics.
+
 create_attribute.py:
 
 Demonstrates how to create attributes from MAVLink messages within your DroneKit-Python script 

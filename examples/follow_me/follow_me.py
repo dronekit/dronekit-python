@@ -1,4 +1,5 @@
 """
+© Copyright 2015-2016, 3D Robotics.
 followme - Tracks GPS position of your computer (Linux only).
 
 This example uses the python gps package to read positions from a GPS attached to your 

@@ -1,4 +1,5 @@
 """
+© Copyright 2015-2016, 3D Robotics.
 vehicle_state.py: 
 
 Demonstrates how to get and set vehicle state and parameter information, 

@@ -1,4 +1,5 @@
 """
+© Copyright 2015-2016, 3D Robotics.
 drone_delivery.py: 
 
 A CherryPy based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude.

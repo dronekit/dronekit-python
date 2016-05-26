@@ -1,4 +1,6 @@
 """
+© Copyright 2015-2016, 3D Robotics.
+
 my_vehicle.py:
 
 Custom Vehicle subclass to add IMU data.

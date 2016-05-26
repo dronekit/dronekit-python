@@ -1,4 +1,6 @@
 """
+© Copyright 2015-2016, 3D Robotics.
+
 channel_overrides.py: 
 
 Demonstrates how set and clear channel-override information.

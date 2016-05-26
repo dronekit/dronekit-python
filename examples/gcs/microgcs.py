@@ -1,3 +1,6 @@
+"""
+© Copyright 2015-2016, 3D Robotics.
+"""
 #
 # This is a small example of the python drone API - an ultra minimal GCS
 #

@@ -1,5 +1,6 @@
 
 """
+© Copyright 2015-2016, 3D Robotics.
 guided_set_speed_yaw.py: (Copter Only)
 
 This example shows how to move/direct Copter and send commands in GUIDED mode using DroneKit Python.
