@@ -1,4 +1,5 @@
 """
+© Copyright 2015-2016, 3D Robotics.
 mission_import_export.py: 
 
 This example demonstrates how to import and export files in the Waypoint file format 

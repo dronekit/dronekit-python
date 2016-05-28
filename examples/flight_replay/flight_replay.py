@@ -1,4 +1,5 @@
 """
+© Copyright 2015-2016, 3D Robotics.
 flight_replay.py: 
 
 This example requests a past flight from Droneshare, and then 'replays' 
