@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.7.0 (2016-06-21)
+
+### Improvements
+* Adds udpin-multi support
+
 ## Version 2.6.0 (2016-06-17)
 
 ### Bug Fixes
