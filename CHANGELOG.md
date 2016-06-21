@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 2.6.0 (2016-06-17)
+
+### Bug Fixes
+* Fixes patched mavutil sendfn
+
 ## Version 2.5.0 (2016-05-04)
 
 ### Improvements
