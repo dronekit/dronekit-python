@@ -48,11 +48,15 @@ vehicle_setup[0] = {
     "target-lon": 149.165230,
 }
 vehicle_setup[1] = {
-    "lat": vehicle_setup[0]["lat"] + 0.00032,
+    "lat": vehicle_setup[0]["lat"] + 0.00064,
     "lon": vehicle_setup[0]["lon"] + 0.00032,
-    "target-lat": -35.363261 + 1.25*0.00120,
-    "target-lon": 149.165230 - 1.25*0.00128,
+#    "target-lat": -35.363261 + 1.25*0.00120,
+    "target-lat": -35.363261 + -1.25*0.00120,
+    #    "target-lat": -35.363261 + 0.00032,
+    "target-lon": 149.165230 - 0.5*0.00128,
 }
+
+
 
 # start many dronekit-sitl processes
 simulation_count = 2
@@ -89,11 +93,13 @@ def change_sysid_target(i, new_sysid, connection_string):
 
         # set the warn radius down to let us see everything on a reasonable scale:
         vehicle.parameters["AVOID_W_DIST_XY"] = 30
+        vehicle.parameters["AVOID_W_DIST_Z"] = 20
         # set the warn horizon down to let us see everything on a reasonable scale:
         vehicle.parameters["AVOID_W_TIME"] = 10
 
         # set the fail radius down to let us see everything on a reasonable scale:
         vehicle.parameters["AVOID_F_DIST_XY"] = 20
+        vehicle.parameters["AVOID_F_DIST_Z"] = 10
         # set the time horizon down to let us see everything on a reasonable scale:
         vehicle.parameters["AVOID_F_TIME"] = 10
 
@@ -244,30 +250,6 @@ def arm_and_takeoff(vehicle, aTargetAltitude):
             break
         time.sleep(1)
 
-def vehicle_launcher_target(i):
-    arm_and_takeoff(vehicles[i], 5)
-
-launcher_threads = []
-for i in range(0,len(vehicles)):
-    print("Launching Vehicle %d:" % (target_systems[i],))
-    launcher_threads.append(threading.Thread(target=vehicle_launcher_target,
-                                             args=(i,)))
-    launcher_threads[-1].start()
-for thread in launcher_threads:
-    print("Waiting for launcher thread...")
-    thread.join()
-
-speed = 2
-for i in range(0,len(vehicles)):
-    print("Set default/target airspeed to %d on vehicle %d (%s)" % (target_systems[i],speed, str(target_systems[i])))
-    vehicles[i].airspeed = speed
-    speed += 1
-
-for i in range(0,len(vehicles)):
-    print("vehicle %d going towards first point for 30 seconds ..." % (target_systems[i],))
-    point = LocationGlobalRelative(vehicle_setup[i]["target-lat"], vehicle_setup[i]["target-lon"], 20)
-    vehicles[i].simple_goto(point)
-
 # sleep so we can see the change in map
 def watch_things_for_a_while(duration=30):
     start = time.time()
@@ -275,21 +257,95 @@ def watch_things_for_a_while(duration=30):
     while time.time() - start < duration:
         for i in range(0,len(vehicles)):
             vehicle = vehicles[i]
-            print("Vehicle %d (%s) Lat=%f Lon=%f Alt=%f MODE=%s" % (target_systems[i], vehicle.mode, vehicle.location.global_frame.lat, vehicle.location.global_frame.lon, vehicle.location.global_relative_frame.alt, str(vehicle.mode)))
+            print("Vehicle %d (%s) Lat=%f Lon=%f Alt=%f MODE=%s Hdg=%f" % (target_systems[i], vehicle.mode, vehicle.location.global_frame.lat, vehicle.location.global_frame.lon, vehicle.location.global_relative_frame.alt, str(vehicle.mode), vehicle.heading))
             time.sleep(1)
 
-watch_things_for_a_while(60)
+def vehicle_launcher_target(i):
+    arm_and_takeoff(vehicles[i], 5)
 
-for i in range(0, len(vehicles)):
-    if vehicles[i].mode != "RTL":
-        print("Vehicle mode should already be in RTL mode!")
+def launch_all_vehicles():
+    launcher_threads = []
+    for i in range(0,len(vehicles)):
+        print("Launching Vehicle %d:" % (target_systems[i],))
+        launcher_threads.append(threading.Thread(target=vehicle_launcher_target,
+                                                 args=(i,)))
+        launcher_threads[-1].start()
+    for thread in launcher_threads:
+        print("Waiting for launcher thread...")
+        thread.join()
 
-    while vehicles[i].mode != "RTL":
-        print("Setting returning to Launch - vehicle %d" % (target_systems[i],))
-        vehicles[i].mode = VehicleMode("RTL")
-        time.sleep(0.1)
+    speed = 2
+    for i in range(0,len(vehicles)):
+        print("Set default/target airspeed to %d on vehicle %d (%s)" % (target_systems[i],speed, str(target_systems[i])))
+        vehicles[i].airspeed = speed
+        speed += 1
 
-watch_things_for_a_while(duration=60)
+def oblique_chase():
+    print("Starting oblique chase")
+
+    bring_vehicles_to_altitudes([ 10, 5 ])
+
+    for i in range(0,len(vehicles)):
+        print("vehicle %d: doing simple_goto ..." % (target_systems[i],))
+        point = LocationGlobalRelative(vehicle_setup[i]["target-lat"], vehicle_setup[i]["target-lon"], 20)
+        vehicles[i].simple_goto(point)
+
+    watch_things_for_a_while(60)
+
+    for i in range(0, len(vehicles)):
+
+        while vehicles[i].mode != "RTL":
+            print("Setting returning to Launch - vehicle %d" % (target_systems[i],))
+            vehicles[i].mode = VehicleMode("RTL")
+            time.sleep(0.1)
+
+    watch_things_for_a_while(duration=60)
+
+    print("Finished oblique chase")
+
+def bring_vehicles_to_altitudes(altitudes):
+    print("having vehicles climb a bit")
+    while True:
+        all_done = True
+        for i in range(0, len(vehicles)):
+            v_location = vehicles[i].location.global_relative_frame
+            print("%d alt: %f" % (i, v_location.alt))
+            if v_location.alt < altitudes[i]-2:
+                v_location.alt = altitudes[i]
+                vehicles[i].simple_goto(v_location)
+                all_done = False
+        if all_done:
+            break
+        time.sleep(1)
+
+def vertical_separation():
+
+    bring_vehicles_to_altitudes([ 5, 30 ])
+
+    def should_see_no_collision_msgs(conn, name , m):
+        print("UNEXPECTED collision message: %s" % (str(m),))
+
+    vehicles[0].add_message_listener('COLLISION', should_see_no_collision_msgs)
+
+    for i in range(0,len(vehicles)):
+        print("vehicle %d going towards first point for 30 seconds ..." % (target_systems[i],))
+        point = LocationGlobalRelative(vehicle_setup[i]["target-lat"], vehicle_setup[i]["target-lon"], altitudes[i])
+        vehicles[i].simple_goto(point)
+
+    watch_things_for_a_while(60)
+
+    for i in range(0, len(vehicles)):
+
+        while vehicles[i].mode != "RTL":
+            print("Setting returning to Launch - vehicle %d" % (target_systems[i],))
+            vehicles[i].mode = VehicleMode("RTL")
+            time.sleep(0.1)
+
+    watch_things_for_a_while(duration=60)
+
+launch_all_vehicles()
+oblique_chase()
+# vertical_separation()
 
 print("All done")
 
