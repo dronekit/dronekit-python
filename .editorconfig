@@ -20,6 +20,8 @@ trim_trailing_whitespace = true
 [*.py]
 indent_style = space
 indent_size = 4
+trim_trailing_whitespace = true
+end_of_line = LF
 
 [*.mk]
 indent_style = tab
