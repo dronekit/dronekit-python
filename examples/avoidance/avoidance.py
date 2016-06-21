@@ -58,7 +58,7 @@ vehicle_setup[1] = {
 
 
 
-# start many dronekit-sitl processes
+# ready data for many dronekit-sitl processes
 simulation_count = 2
 for i in range(0,simulation_count):
     print("Creating simulator (SITL) %d" % (i,))
