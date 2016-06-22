@@ -14,12 +14,15 @@ import threading
 
 import dronekit
 import mavlink_hub
+import sys
 
 #Set up option parsing to get connection string
 import argparse
 parser = argparse.ArgumentParser(description='Demonstrates autopilot automatic avoidance functionality.')
 parser.add_argument('--extra-connection',
                    help="extra MAVLink connections to make.")
+parser.add_argument('--test',
+                   help="test to run")
 parser.add_argument('--binary',
                     help="path to autopilot binary to use")
 parser.add_argument('--defaults',
@@ -42,21 +45,298 @@ hub_connection_strings = []
 
 # units for lat/lon are multiples of ~11 metres from -35.363261 149.165230
 tests = [
-    {
-        vehicle1 = {
-            "lat": 0,
-            "lon": 0,
-            "target-lat": 10,
-            "target-lon": 0,
-        },
-        vehicle2 = {
-            "lat": 12,
-            "lon": 0,
-            "target-lat": 0,
-            "target-lon": 0,
-        }
-    ]
-    
+    { #0
+        "vehicle_info": [
+            {
+                "lat": 0,
+                "lon": -2,
+                "alt": 10,
+                "target-lat": 10,
+                "target-lon": -2,
+                "target-alt": 10,
+                "expected-heading": 270,
+            },
+            {
+                "lat": 12,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 180,
+            }
+        ]
+    },
+    { #1
+        "vehicle_info": [
+            {
+                "lat": 0,
+                "lon": 2,
+                "alt": 10,
+                "target-lat": 10,
+                "target-lon": 2,
+                "target-alt": 10,
+                "expected-heading": 90,
+            },
+            {
+                "lat": 12,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 180,
+            }
+        ]
+    },
+    { #2 horizontal movement, avoidance LTR, above threat
+        "vehicle_info": [
+            {
+                "lat": 1,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 1,
+                "target-lon": 10,
+                "target-alt": 10,
+                "expected-heading": 0,
+            },
+            {
+                "lat": 0,
+                "lon": 12,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 270,
+            }
+        ]
+    },
+    { #3 horizontal movement, avoiding aircraft LTR, below threat
+        "vehicle_info": [
+            {
+                "lat": -1,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": -1,
+                "target-lon": 10,
+                "target-alt": 10,
+                "expected-heading": 180,
+            },
+            {
+                "lat": 0,
+                "lon": 12,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 270,
+            }
+        ]
+    },
+    { #4 horizontal movement, avoiding aircraft RTL, below threat
+        "vehicle_info": [
+            {
+                "lat": 0,
+                "lon": 12,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 360,
+            },
+            {
+                "lat": -1,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": -1,
+                "target-lon": 10,
+                "target-alt": 10,
+                "expected-heading": 90,
+            },
+        ]
+    },
+
+
+    { #5 threat moves vertically S, we move ENE towards it
+        "vehicle_info": [
+            {
+                "lat": 0,
+                "lon": -12,
+                "alt": 10,
+                "target-lat": 3,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 270,
+            },
+            {
+                "lat": 12,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 180,
+            }
+        ]
+    },
+    { #6 threat moves vertically S, we move ESE towards it
+        "vehicle_info": [
+            {
+                "lat": 12,
+                "lon": -12,
+                "alt": 10,
+                "target-lat": 9,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 270,
+            },
+            {
+                "lat": 0,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 12,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 0,
+            }
+        ]
+    },
+    { #7 threat moves N, we move NW towards it
+        "vehicle_info": [
+            {
+                "lat": 3,
+                "lon": 12,
+                "alt": 10,
+                "target-lat": 12,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 90,
+            },
+            {
+                "lat": 0,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 12,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 0,
+            }
+        ],
+    },
+    { #8 threat moves N, we move NE towards it
+        "vehicle_info": [
+            {
+                "lat": 3,
+                "lon": -12,
+                "alt": 10,
+                "target-lat": 12,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 270,
+            },
+            {
+                "lat": 0,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 12,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 0,
+            }
+        ],
+    },
+    { #9 threat moves E, we move NNE
+        "vehicle_info": [
+            {
+                "lat": -8,
+                "lon": 6,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 12,
+                "target-alt": 10,
+                "expected-heading": 180,
+            },
+            {
+                "lat": 0,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 12,
+                "target-alt": 10,
+                "expected-heading": 90,
+            }
+        ],
+    },
+
+
+    { #10 threate moves NE, we move SE
+        "vehicle_info": [
+            {
+                "lat": 6,
+                "lon": -6,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 309,
+            },
+            {
+                "lat": -6,
+                "lon": -6,
+                "alt": 10,
+                "target-lat": 6,
+                "target-lon": 6,
+                "target-alt": 10,
+                "expected-heading": 39,
+            }
+        ],
+    },
+    { #11 threat moves SE, we move NE
+        "vehicle_info": [
+            {
+                "lat": -6,
+                "lon": -6,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 230,
+            },
+            {
+                "lat": 6,
+                "lon": -6,
+                "alt": 10,
+                "target-lat": -6,
+                "target-lon": 6,
+                "target-alt": 10,
+                "expected-heading": 140,
+            }
+        ],
+    },
+    { #12 threat moves SW, we move SE
+        "vehicle_info": [
+            {
+                "lat": 6,
+                "lon": 6,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 50,
+            },
+            {
+                "lat": 6,
+                "lon": -6,
+                "alt": 10,
+                "target-lat": -6,
+                "target-lon": 6,
+                "target-alt": 10,
+                "expected-heading": 140,
+            }
+        ],
+    },
+]
+
 
 
 # ready data for many dronekit-sitl processes
@@ -66,17 +346,16 @@ for i in range(0,simulation_count):
     from dronekit_sitl import SITL
     sitl = SITL(instance=i, path=args.binary, defaults_filepath=args.defaults, gdb=True)
 #    sitl.download('copter', '3.3', verbose=True)
-    lat = -35.363261 + i*0.00128
-    lat = vehicle_setup[i]["lat"]
-    lon = vehicle_setup[i]["lon"]
-    sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
-    sitls.append([sitl, sitl_args])
+    sitls.append(sitl)
     hub_connection_strings.append(sitl.connection_string())
 
 # start the SITLs one at a time, giving each a unique SYSID_THISMAV
-def change_sysid_target(i, new_sysid, connection_string):
-    print("%d: Launching SITL (%s)" % (i,str(sitls[i][1])))
-    sitls[i][0].launch(sitls[i][1], await_ready=True, verbose=True, speedup=50,)
+def set_params_target(i, new_sysid, connection_string):
+    lat = -35.363261
+    lon = 149.165230
+    sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
+    print("%d: Launching SITL (%s)" % (i,str(sitl_args)))
+    sitls[i].launch(sitl_args, await_ready=True, verbose=True, speedup=50,)
     print("%d: Connecting to its vehicle 1" % (i,))
     vehicle = dronekit.connect(connection_string, wait_ready=True, target_system=1)
     while vehicle.parameters["SYSID_THISMAV"] != new_sysid:
@@ -86,51 +365,52 @@ def change_sysid_target(i, new_sysid, connection_string):
 
     # set avoidance behaviour to RTL:
     if i == 0:
+        print("%d: Setting avoidance parameters" % (i,))
 
         # enable ADSB:
         vehicle.parameters["ADSB_ENABLE"] = 1
         # enable avoidance:
-        vehicle.parameters["AVOID_ENABLE"] = 1
+        vehicle.parameters["AVD_ENABLE"] = 1
 
         # set the warn radius down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_W_DIST_XY"] = 30
-        vehicle.parameters["AVOID_W_DIST_Z"] = 20
+        vehicle.parameters["AVD_W_DIST_XY"] = 30
+        vehicle.parameters["AVD_W_DIST_Z"] = 20
         # set the warn horizon down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_W_TIME"] = 10
+        vehicle.parameters["AVD_W_TIME"] = 10
 
         # set the fail radius down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_F_DIST_XY"] = 20
-        vehicle.parameters["AVOID_F_DIST_Z"] = 10
+        vehicle.parameters["AVD_F_DIST_XY"] = 20
+        vehicle.parameters["AVD_F_DIST_Z"] = 10
         # set the time horizon down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_F_TIME"] = 10
+        vehicle.parameters["AVD_F_TIME"] = 10
 
-        vehicle.parameters["AVOID_W_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_REPORT
-        vehicle.parameters["AVOID_W_RCVRY"] = 1
-        vehicle.parameters["AVOID_F_RCVRY"] = 1
+        vehicle.parameters["AVD_W_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_REPORT
+        vehicle.parameters["AVD_W_RCVRY"] = 1
+        vehicle.parameters["AVD_F_RCVRY"] = 1
         if args.resolution == "RTL":
-            vehicle.parameters["AVOID_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_RTL
+            vehicle.parameters["AVD_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_RTL
         elif args.resolution == "PERPENDICULAR":
-            vehicle.parameters["AVOID_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_MOVE_PERPENDICULAR
+            vehicle.parameters["AVD_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_MOVE_PERPENDICULAR
         elif args.resolution == "TCAS":
-            vehicle.parameters["AVOID_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_TCAS
+            vehicle.parameters["AVD_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_TCAS
 
     print("%d: Allowing time for parameter write" % (i,))
     time.sleep(2)
     print("%d: Stop" % (i,))
-    sitls[i][0].stop()
+    sitls[i].stop()
     vehicle.disconnect()
 
-change_sysid_threads = []
+set_params_threads = []
 for i in range(0,len(sitls)):
     new_sysid = len(sitls)-i+1
-    change_sysid_threads.append(threading.Thread(target=change_sysid_target,
+    set_params_threads.append(threading.Thread(target=set_params_target,
                                                  args=(i,new_sysid, hub_connection_strings[i])))
-    change_sysid_threads[-1].start()
+    set_params_threads[-1].start()
     target_systems.append(new_sysid)
 #        mav.remove_message_listener(vehicle)
     time.sleep(1) # mavlink not thread safe...
 
-for thread in change_sysid_threads:
+for thread in set_params_threads:
     print("Waiting for thread...")
     thread.join()
 
@@ -243,7 +523,7 @@ def watch_things_for_a_while(duration=30):
 def vehicle_launcher_target(i):
     arm_and_takeoff(vehicles[i], 5)
 
-def launch_all_vehicles():
+def launch_all_vehicles(altitudes):
     launcher_threads = []
     for i in range(0,len(vehicles)):
         print("Launching Vehicle %d:" % (target_systems[i],))
@@ -254,15 +534,11 @@ def launch_all_vehicles():
         print("Waiting for launcher thread...")
         thread.join()
 
-    speed = 5
-    for i in range(0,len(vehicles)):
-        print("Set default/target airspeed to %d on vehicle %d (%s)" % (target_systems[i],speed, str(target_systems[i])))
-        vehicles[i].airspeed = speed
+#    speed = 5
+#    for i in range(0,len(vehicles)):
+#        print("Set default/target airspeed to %d on vehicle %d (%s)" % (target_systems[i],speed, str(target_systems[i])))
+#        vehicles[i].airspeed = speed
 
-def oblique_chase():
-
-def bring_vehicles_to_altitudes(altitudes):
-    print("having vehicles climb a bit")
     while True:
         all_done = True
         for i in range(0, len(vehicles)):
@@ -276,37 +552,24 @@ def bring_vehicles_to_altitudes(altitudes):
             break
         time.sleep(1)
 
-def vertical_separation():
+def relative_lat(increment):
+    return -35.363261 + 0.0001 * increment
 
-    bring_vehicles_to_altitudes([ 5, 30 ])
+def relative_lon(increment):
+    return 149.165230 + 0.0001 * increment
 
-    def should_see_no_collision_msgs(conn, name , m):
-        print("UNEXPECTED collision message: %s" % (str(m),))
+class TestFailedException(Exception):
+    pass
 
-    vehicles[0].add_message_listener('COLLISION', should_see_no_collision_msgs)
-
-    for i in range(0,len(vehicles)):
-        print("vehicle %d going towards first point for 30 seconds ..." % (target_systems[i],))
-        point = LocationGlobalRelative(vehicle_setup[i]["target-lat"], vehicle_setup[i]["target-lon"], altitudes[i])
-        vehicles[i].simple_goto(point)
-
-    watch_things_for_a_while(60)
-
-    for i in range(0, len(vehicles)):
-
-        while vehicles[i].mode != "RTL":
-            print("Setting returning to Launch - vehicle %d" % (target_systems[i],))
-            vehicles[i].mode = VehicleMode("RTL")
-            time.sleep(0.1)
-
-    watch_things_for_a_while(duration=60)
 
 def do_test(test):
     print("Launching SITLs")
     for i in range(0,len(sitls)):
-        sitl = sitls[i][0]
-        sitl_args = sitls[i][1]
-        sitl.launch(sitl_args, await_ready=True, restart=True, use_saved_data=True, wd=sitl.wd, verbose=True)
+        sitl = sitls[i]
+        lat = relative_lat(test["vehicle_info"][i]["lat"])
+        lon = relative_lon(test["vehicle_info"][i]["lon"])
+        sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
+        sitl.launch(sitl_args, await_ready=True, restart=True, use_saved_data=True, wd=sitl.wd, verbose=True, speedup=2)
 
     offset = 0
     connect_threads = []
@@ -327,35 +590,77 @@ def do_test(test):
 
     vehicles[0].add_message_listener('COLLISION', print_collision_message)
 
-    launch_all_vehicles()
+    altitudes = []
+    for i in range(0,len(vehicles)):
+        altitudes.append(test["vehicle_info"][i]["alt"])
 
-    print("Starting oblique chase")
+    launch_all_vehicles(altitudes)
 
-    bring_vehicles_to_altitudes([ 10, 5 ])
+    print("Starting gotos")
 
     for i in range(0,len(vehicles)):
-        print("vehicle %d: doing simple_goto ..." % (target_systems[i],))
-        point = LocationGlobalRelative(vehicle_setup[i]["target-lat"], vehicle_setup[i]["target-lon"], 20)
+        lat = relative_lat(test["vehicle_info"][i]["target-lat"])
+        lon = relative_lon(test["vehicle_info"][i]["target-lon"])
+        alt = test["vehicle_info"][i]["target-alt"]
+        print("vehicle %d: doing simple_goto (%s %s %s" % (target_systems[i],lat, lon, alt))
+        point = LocationGlobalRelative(lat, lon, alt)
         vehicles[i].simple_goto(point)
 
-    watch_things_for_a_while(60)
+    vehicles_at_correct_heading_timer = 0
+    loop_start_time = time.time()
+    success = None
+    while success is None:
+        all_correct = True
+        for i in range(0,len(vehicles)):
+            vehicle = vehicles[i]
+            print("Vehicle %d (%s) Lat=%f Lon=%f Alt=%f MODE=%s Hdg=%f" % (target_systems[i], vehicle.mode, vehicle.location.global_frame.lat, vehicle.location.global_frame.lon, vehicle.location.global_relative_frame.alt, str(vehicle.mode), vehicle.heading))
+            expected = test["vehicle_info"][i]["expected-heading"]
+            if abs(vehicles[i].heading - expected) > 3:
+                print("Expecting vehicle %d at heading=%f actual=%f" % (i, expected, vehicles[i].heading))
+                all_correct = False
+        if all_correct:
+            if vehicles_at_correct_heading_timer != 0:
+                if time.time() - vehicles_at_correct_heading_timer > 5:
+                   success = True
+                else:
+                    time.sleep(1)
+            else:
+                # start the timer
+                vehicles_at_correct_heading_timer = time.time()
+                time.sleep(1)
+        else:
+            vehicles_at_correct_heading_timer = 0
+            time.sleep(1)
+        timeout = 30
+        if time.time() - loop_start_time > timeout:
+            success = False
 
-    for i in range(0, len(vehicles)):
+    for i in range(0,len(vehicles)):
+        vehicle = vehicles[i]
+        vehicle.disconnect()
+        sitls[i].stop()
 
-        while vehicles[i].mode != "RTL":
-            print("Setting returning to Launch - vehicle %d" % (target_systems[i],))
-            vehicles[i].mode = VehicleMode("RTL")
-            time.sleep(0.1)
+    if not success:
+        print("Test failed")
+        raise TestFailedException("Test failed")
 
-    watch_things_for_a_while(duration=60)
+    print("Success")
 
-    print("Finished ")
-
-    sitls[i][0].stop()
-    vehicle.disconnect()
-
-for test in tests:
-    do_test(test)
+if args.test is not None:
+    try:
+        do_test(tests[int(args.test)])
+    except TestFailedException as e:
+        print("Test {} Failed: {}".format(int(args.test), str(e)))
+else:
+    count=0
+    for test in tests:
+        print("Doing test #%d" % (count,))
+        try:
+            do_test(test)
+        except TestFailedException as e:
+            print("Test {} Failed: {}".format(count, str(e)))
+            break
+        count += 1
 
 print("All done")
 
