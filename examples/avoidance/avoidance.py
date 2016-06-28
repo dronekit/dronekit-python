@@ -89,29 +89,29 @@ def change_sysid_target(i, new_sysid, connection_string):
         # enable ADSB:
         vehicle.parameters["ADSB_ENABLE"] = 1
         # enable avoidance:
-        vehicle.parameters["AVOID_ENABLE"] = 1
+        vehicle.parameters["AVD_ENABLE"] = 1
 
         # set the warn radius down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_W_DIST_XY"] = 30
-        vehicle.parameters["AVOID_W_DIST_Z"] = 20
+        vehicle.parameters["AVD_W_DIST_XY"] = 30
+        vehicle.parameters["AVD_W_DIST_Z"] = 20
         # set the warn horizon down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_W_TIME"] = 10
+        vehicle.parameters["AVD_W_TIME"] = 10
 
         # set the fail radius down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_F_DIST_XY"] = 20
-        vehicle.parameters["AVOID_F_DIST_Z"] = 10
+        vehicle.parameters["AVD_F_DIST_XY"] = 20
+        vehicle.parameters["AVD_F_DIST_Z"] = 10
         # set the time horizon down to let us see everything on a reasonable scale:
-        vehicle.parameters["AVOID_F_TIME"] = 10
+        vehicle.parameters["AVD_F_TIME"] = 10
 
-        vehicle.parameters["AVOID_W_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_REPORT
-        vehicle.parameters["AVOID_W_RCVRY"] = 1
-        vehicle.parameters["AVOID_F_RCVRY"] = 1
+        vehicle.parameters["AVD_W_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_REPORT
+        vehicle.parameters["AVD_W_RCVRY"] = 1
+        vehicle.parameters["AVD_F_RCVRY"] = 1
         if args.resolution == "RTL":
-            vehicle.parameters["AVOID_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_RTL
+            vehicle.parameters["AVD_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_RTL
         elif args.resolution == "PERPENDICULAR":
-            vehicle.parameters["AVOID_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_MOVE_PERPENDICULAR
+            vehicle.parameters["AVD_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_MOVE_PERPENDICULAR
         elif args.resolution == "TCAS":
-            vehicle.parameters["AVOID_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_TCAS
+            vehicle.parameters["AVD_F_ACTION"] = mavutil.mavlink.MAV_COLLISION_ACTION_TCAS
 
     print("%d: Allowing time for parameter write" % (i,))
     time.sleep(2)
