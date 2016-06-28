@@ -562,15 +562,19 @@ class TestFailedException(Exception):
     pass
 
 
-def do_test(test):
-    print("Launching SITLs")
-    for i in range(0,len(sitls)):
-        sitl = sitls[i]
-        lat = relative_lat(test["vehicle_info"][i]["lat"])
-        lon = relative_lon(test["vehicle_info"][i]["lon"])
-        sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
-        sitl.launch(sitl_args, await_ready=True, restart=True, use_saved_data=True, wd=sitl.wd, verbose=True, speedup=2)
+def heading_delta(a, b):
+    if vehicles[i].heading > expected:
+        delta =  vehicles[i].heading - expected
+    else:
+        delta = expected - vehicles[i].heading
+    if delta > 180:
+        if vehicles[i].heading > 180:
+            delta = 360 - vehicles[i].heading + expected
+        else:
+            delta = 360 - expected + vehicles[i].heading
+    return delta
 
+def do_vehicle_connects():
     offset = 0
     connect_threads = []
     for id in target_systems:
@@ -587,6 +591,17 @@ def do_test(test):
 
     for vehicle in vehicles:
         dump_vehicle_state(vehicle)
+
+def do_heading_test(test):
+    print("Launching SITLs")
+    for i in range(0,len(sitls)):
+        sitl = sitls[i]
+        lat = relative_lat(test["vehicle_info"][i]["lat"])
+        lon = relative_lon(test["vehicle_info"][i]["lon"])
+        sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
+        sitl.launch(sitl_args, await_ready=True, restart=True, use_saved_data=True, wd=sitl.wd, verbose=True, speedup=2)
+
+    do_vehicle_connects()
 
     vehicles[0].add_message_listener('COLLISION', print_collision_message)
 
@@ -615,8 +630,10 @@ def do_test(test):
             vehicle = vehicles[i]
             print("Vehicle %d (%s) Lat=%f Lon=%f Alt=%f MODE=%s Hdg=%f" % (target_systems[i], vehicle.mode, vehicle.location.global_frame.lat, vehicle.location.global_frame.lon, vehicle.location.global_relative_frame.alt, str(vehicle.mode), vehicle.heading))
             expected = test["vehicle_info"][i]["expected-heading"]
-            if abs(vehicles[i].heading - expected) > 3:
-                print("Expecting vehicle %d at heading=%f actual=%f" % (i, expected, vehicles[i].heading))
+            delta = heading_delta(expected, vehicles[i].heading)
+
+            print("Expecting vehicle %d at heading=%f actual=%f delta=%f" % (i, expected, vehicles[i].heading, delta))
+            if delta > 3:
                 all_correct = False
         if all_correct:
             if vehicles_at_correct_heading_timer != 0:
@@ -648,7 +665,7 @@ def do_test(test):
 
 if args.test is not None:
     try:
-        do_test(tests[int(args.test)])
+        do_heading_test(tests[int(args.test)])
     except TestFailedException as e:
         print("Test {} Failed: {}".format(int(args.test), str(e)))
 else:
@@ -656,11 +673,13 @@ else:
     for test in tests:
         print("Doing test #%d" % (count,))
         try:
-            do_test(test)
+            do_heading_test(test)
         except TestFailedException as e:
             print("Test {} Failed: {}".format(count, str(e)))
             break
         count += 1
+
+    do_disable_test()
 
 print("All done")
 
