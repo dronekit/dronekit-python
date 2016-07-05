@@ -149,7 +149,7 @@ tests = [
                 "lon": 0,
                 "alt": 10,
                 "target-lat": -1,
-                "target-lon": 10,
+                "target-lon": 20,
                 "target-alt": 10,
                 "expected-heading": 90,
             },
@@ -216,7 +216,7 @@ tests = [
                 "lat": 0,
                 "lon": 0,
                 "alt": 10,
-                "target-lat": 12,
+                "target-lat": 30,
                 "target-lon": 0,
                 "target-alt": 10,
                 "expected-heading": 0,
@@ -238,7 +238,7 @@ tests = [
                 "lat": 0,
                 "lon": 0,
                 "alt": 10,
-                "target-lat": 12,
+                "target-lat": 22,
                 "target-lon": 0,
                 "target-alt": 10,
                 "expected-heading": 0,
@@ -332,6 +332,53 @@ tests = [
                 "target-lon": 6,
                 "target-alt": 10,
                 "expected-heading": 140,
+            }
+        ],
+    },
+
+
+    { #13 threat is stationery, we move SE, BELOW 3D-avoid height
+        "vehicle_info": [
+            {
+                "lat": 1,
+                "lon": 6,
+                "alt": 10,
+                "target-lat": 1,
+                "target-lon": -6,
+                "target-alt": 10,
+                "expected-heading": 73,
+            },
+            {
+                "lat": 0,
+                "lon": 0,
+                "alt": 10,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 10,
+                "expected-heading": 307, # this is kind of random
+            }
+        ],
+    },
+
+    { #14 threat is stationery, we move SE, ABOVE 3D-avoid height
+        "vehicle_info": [
+            {
+                "lat": 1,
+                "lon": 15,
+                "alt": 50,
+                "target-lat": 1,
+                "target-lon": -6,
+                "target-alt": 60,
+                "expected-heading": 72,
+            },
+            {
+                "lat": 0,
+                "lon": -0.001,
+                "alt": 60,
+                "target-lat": 0,
+                "target-lon": 0,
+                "target-alt": 50,
+                "expected-heading": 90,
             }
         ],
     },
@@ -563,15 +610,15 @@ class TestFailedException(Exception):
 
 
 def heading_delta(a, b):
-    if vehicles[i].heading > expected:
-        delta =  vehicles[i].heading - expected
+    if a > b:
+        delta =  a - b
     else:
-        delta = expected - vehicles[i].heading
+        delta = b - a
     if delta > 180:
-        if vehicles[i].heading > 180:
-            delta = 360 - vehicles[i].heading + expected
+        if a > 180:
+            delta = 360 - a + b
         else:
-            delta = 360 - expected + vehicles[i].heading
+            delta = 360 - b + a
     return delta
 
 def do_vehicle_connects():
@@ -592,34 +639,50 @@ def do_vehicle_connects():
     for vehicle in vehicles:
         dump_vehicle_state(vehicle)
 
-def do_heading_test(test):
+def position_vehicles(positions):
     print("Launching SITLs")
     for i in range(0,len(sitls)):
         sitl = sitls[i]
-        lat = relative_lat(test["vehicle_info"][i]["lat"])
-        lon = relative_lon(test["vehicle_info"][i]["lon"])
+        position = positions[i]
+        lat = position["lat"]
+        lon = position["lon"]
         sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
         sitl.launch(sitl_args, await_ready=True, restart=True, use_saved_data=True, wd=sitl.wd, verbose=True, speedup=2)
 
     do_vehicle_connects()
 
-    vehicles[0].add_message_listener('COLLISION', print_collision_message)
-
     altitudes = []
     for i in range(0,len(vehicles)):
-        altitudes.append(test["vehicle_info"][i]["alt"])
+        altitudes.append(positions[i]["alt"])
 
     launch_all_vehicles(altitudes)
 
     print("Starting gotos")
 
     for i in range(0,len(vehicles)):
-        lat = relative_lat(test["vehicle_info"][i]["target-lat"])
-        lon = relative_lon(test["vehicle_info"][i]["target-lon"])
-        alt = test["vehicle_info"][i]["target-alt"]
+        position = positions[i]
+        lat = position["target-lat"]
+        lon = position["target-lon"]
+        alt = position["target-alt"]
         print("vehicle %d: doing simple_goto (%s %s %s" % (target_systems[i],lat, lon, alt))
         point = LocationGlobalRelative(lat, lon, alt)
         vehicles[i].simple_goto(point)
+
+
+def do_heading_test(test):
+
+    positions = []
+    for i in range(0,len(sitls)):
+        positions.append({ "lat": relative_lat(test["vehicle_info"][i]["lat"]),
+                           "lon": relative_lon(test["vehicle_info"][i]["lon"]),
+                           "alt": test["vehicle_info"][i]["alt"],
+                           "target-lat": relative_lat(test["vehicle_info"][i]["target-lat"]),
+                           "target-lon": relative_lon(test["vehicle_info"][i]["target-lon"]),
+                           "target-alt": test["vehicle_info"][i]["target-alt"],
+        })
+    position_vehicles(positions)
+
+    vehicles[0].add_message_listener('COLLISION', print_collision_message)
 
     vehicles_at_correct_heading_timer = 0
     loop_start_time = time.time()
@@ -652,6 +715,8 @@ def do_heading_test(test):
         if time.time() - loop_start_time > timeout:
             success = False
 
+    vehicles[0].remove_message_listener('COLLISION', print_collision_message)
+
     for i in range(0,len(vehicles)):
         vehicle = vehicles[i]
         vehicle.disconnect()
@@ -663,24 +728,91 @@ def do_heading_test(test):
 
     print("Success")
 
-if args.test is not None:
-    try:
-        do_heading_test(tests[int(args.test)])
-    except TestFailedException as e:
-        print("Test {} Failed: {}".format(int(args.test), str(e)))
-else:
-    count=0
-    for test in tests:
-        print("Doing test #%d" % (count,))
-        try:
-            do_heading_test(test)
-        except TestFailedException as e:
-            print("Test {} Failed: {}".format(count, str(e)))
-            break
-        count += 1
+def do_disable_test():
+
+    vehicle_info = [
+        {
+            "lat": 0,
+            "lon": -2,
+            "alt": 10,
+            "target-lat": 10,
+            "target-lon": -2,
+            "target-alt": 10,
+        },
+        {
+            "lat": 12,
+            "lon": 0,
+            "alt": 10,
+            "target-lat": 0,
+            "target-lon": 0,
+            "target-alt": 10,
+        }
+    ]
+
+    positions = []
+    for i in range(0,len(sitls)):
+        positions.append({ "lat": relative_lat(vehicle_info[i]["lat"]),
+                           "lon": relative_lon(vehicle_info[i]["lon"]),
+                           "alt": vehicle_info[i]["alt"],
+                           "target-lat": relative_lat(vehicle_info[i]["target-lat"]),
+                           "target-lon": relative_lon(vehicle_info[i]["target-lon"]),
+                           "target-alt": vehicle_info[i]["target-alt"],
+        })
+
+    global success
+    success = True
+    def mode_watcher(conn, name , m):
+        global success
+        if vehicles[0].mode != "GUIDED":
+            print("mode is not GUIDED: %s" % (str(vehicles[0].mode)));
+            success = False;
+
+    position_vehicles(positions)
+
+    vehicles[0].add_message_listener('HEARTBEAT', mode_watcher)
+
+    # turn off avoidance (vehicle is already flying!)
+    vehicles[0].parameters['CH8_OPT'] = 38
+    vehicles[0].channels.overrides[8] = 30
+
+    # just wait
+    start = time.time()
+    while success == True and time.time() - start < 30:
+        time.sleep(1)
+
+    for i in range(0,len(vehicles)):
+        vehicle = vehicles[i]
+        vehicle.disconnect()
+        sitls[i].stop()
+
+    if not success:
+        print("Test failed")
+        raise TestFailedException("Test failed")
+
+    print("Success")
+
+
+if False:
 
     do_disable_test()
 
+else:
+    if args.test is not None:
+        try:
+            do_heading_test(tests[int(args.test)])
+        except TestFailedException as e:
+            print("Test {} Failed: {}".format(int(args.test), str(e)))
+    else:
+        count=0
+        for test in tests:
+            print("Doing test #%d" % (count,))
+            try:
+                do_heading_test(test)
+            except TestFailedException as e:
+                print("Test {} Failed: {}".format(count, str(e)))
+                break
+            count += 1
+    
 print("All done")
 
 if hub_thread is not None:
