@@ -2211,6 +2211,9 @@ class Vehicle(HasObservers):
 
         return True
 
+    def waypoint_count_send(self,count):
+        self._master.waypoint_count_send(count)
+
     def set_close_mav_on_disconnect(self, value):
         self._close_mav_on_disconnect = value
         
@@ -2730,7 +2733,7 @@ class CommandSequence(object):
             self._vehicle._master.waypoint_clear_all_send()
             if self._vehicle._wploader.count() > 0:
                 self._vehicle._wp_uploaded = [False] * self._vehicle._wploader.count()
-                self._vehicle._master.waypoint_count_send(self._vehicle._wploader.count())
+                self._vehicle.waypoint_count_send(self._vehicle._wploader.count())
                 while False in self._vehicle._wp_uploaded:
                     time.sleep(0.1)
                 self._vehicle._wp_uploaded = None
@@ -2858,6 +2861,7 @@ def connect(ip,
         handler = ip
     else:
         handler = MAVConnection(ip, baud=baud, source_system=source_system, use_native=use_native)
+
     vehicle = vehicle_class(handler, target_system=target_system, target_component=target_component)
     
     vehicle.set_close_mav_on_disconnect(not isinstance(ip,mavlink.MAVConnection))
