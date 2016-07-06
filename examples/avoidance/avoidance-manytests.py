@@ -443,9 +443,10 @@ def set_params_target(i, new_sysid, connection_string):
 
     print("%d: Allowing time for parameter write" % (i,))
     time.sleep(2)
+    vehicle.disconnect()
+
     print("%d: Stop" % (i,))
     sitls[i].stop()
-    vehicle.disconnect()
 
 set_params_threads = []
 for i in range(0,len(sitls)):
