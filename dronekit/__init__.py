@@ -1200,6 +1200,11 @@ class Vehicle(HasObservers):
                 self._wploader.expected_count = msg.count
                 self._master.waypoint_request_send(0)
 
+
+        @self.on_message(['HOME_POSITION'])
+        def listener(self, name, msg):
+            self._home_location = LocationGlobal(msg.latitude/1.0e7, msg.longitude/1.0e7, msg.altitude/1000.0);
+            
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
@@ -1904,7 +1909,7 @@ class Vehicle(HasObservers):
         # Send MAVLink update.
         self.send_mavlink(self.message_factory.command_long_encode(
             0, 0,  # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
+            mavutil.mavlink.MAV_CMD_DO_SETH_OME,  # command
             0,  # confirmation
             2,  # param 1: 1 to use current position, 2 to use the entered values.
             0, 0, 0,  # params 2-4
