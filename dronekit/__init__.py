@@ -1200,6 +1200,11 @@ class Vehicle(HasObservers):
                 self._wploader.expected_count = msg.count
                 self._master.waypoint_request_send(0)
 
+
+        @self.on_message(['HOME_POSITION'])
+        def listener(self, name, msg):
+            self._home_location = LocationGlobal(msg.latitude/1.0e7, msg.longitude/1.0e7, msg.altitude/1000.0);
+            
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
