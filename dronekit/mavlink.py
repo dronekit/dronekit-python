@@ -112,6 +112,15 @@ class mavudpin_multi(mavutil.mavfile):
 
 
 class MAVConnection(object):
+
+    def stop_threads(self):
+        if self.mavlink_thread_in is not None:
+            self.mavlink_thread_in.join()
+            self.mavlink_thread_in = None
+        if self.mavlink_thread_out is not None:
+            self.mavlink_thread_out.join()
+            self.mavlink_thread_out = None
+
     def __init__(self, ip, baud=115200, target_system=0, source_system=255, use_native=False):
         if ip.startswith("udpin:"):
             self.master = mavudpin_multi(ip[6:], input=True, baud=baud, source_system=source_system)
@@ -151,6 +160,7 @@ class MAVConnection(object):
 
         def onexit():
             self._alive = False
+            self.stop_threads()
 
         atexit.register(onexit)
 
@@ -192,7 +202,7 @@ class MAVConnection(object):
         def mavlink_thread_in():
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
-                while True:
+                while self._alive:
                     # Downtime
                     time.sleep(0.05)
 
@@ -289,6 +299,7 @@ class MAVConnection(object):
         self._alive = False
         while not self.out_queue.empty():
             time.sleep(0.1)
+        self.stop_threads()
         self.master.close()
 
     def pipe(self, target):
