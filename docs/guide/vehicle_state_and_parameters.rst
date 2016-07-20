@@ -79,8 +79,6 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Attitude: %s" % vehicle.attitude
     print "Velocity: %s" % vehicle.velocity
     print "GPS: %s" % vehicle.gps_0
-    print "Groundspeed: %s" % vehicle.groundspeed
-    print "Airspeed: %s" % vehicle.airspeed
     print "Gimbal status: %s" % vehicle.gimbal
     print "Battery: %s" % vehicle.battery
     print "EKF OK?: %s" % vehicle.ekf_ok
@@ -91,6 +89,8 @@ regularly updated from MAVLink messages sent by the vehicle).
     print "Heading: %s" % vehicle.heading
     print "Is Armable?: %s" % vehicle.is_armable
     print "System status: %s" % vehicle.system_status.state
+    print "Groundspeed: %s" % vehicle.groundspeed     # settable
+    print "Airspeed: %s" % vehicle.airspeed    # settable
     print "Mode: %s" % vehicle.mode.name    # settable
     print "Armed: %s" % vehicle.armed    # settable
 
@@ -119,39 +119,76 @@ regularly updated from MAVLink messages sent by the vehicle).
 Setting attributes
 ------------------
 
-The :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`, :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`
-, :py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>` and :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`, 
-attributes can all be "directly" written (:py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` can also be directly written, 
+The :py:attr:`Vehicle.mode <dronekit.Vehicle.mode>`, :py:attr:`Vehicle.armed <dronekit.Vehicle.armed>`, 
+:py:attr:`Vehicle.airspeed <dronekit.Vehicle.airspeed>` and :py:attr:`Vehicle.groundspeed <dronekit.Vehicle.groundspeed>`, 
+attributes can all be written using setter functions (:py:attr:`Vehicle.home_location <dronekit.Vehicle.home_location>` can also be written, 
 but has special considerations that are :ref:`discussed below <vehicle_state_home_location>`).
 
-These attributes are set by assigning a value:
+The setter functions generally take two forms:
+
+* Setters with the name prefix ``set_`` simply send the associated MAVLink message to set the attribute and then return.
+  These include: :py:func:`set_mode() <dronekit.Vehicle.set_mode>`, :py:func:`set_armed() <dronekit.Vehicle.set_armed>`,
+  :py:func:`set_home_location() <dronekit.Vehicle.set_home_location>`, :py:func:`set_target_groundspeed() <dronekit.Vehicle.set_target_groundspeed>`,
+  :py:func:`set_target_airspeed() <dronekit.Vehicle.set_target_airspeed>`.
+* Setters with the name prefix ``sync_set_`` are "synchronous" - they send the message (with retries) and 
+  either return when the value has changed or raise an exception. These include: :py:func:`sync_set_armed() <dronekit.Vehicle.sync_set_armed>`,
+  :py:func:`sync_set_mode() <dronekit.Vehicle.sync_set_armed>`, :py:func:`sync_set_home_location() <dronekit.Vehicle.sync_set_home_location>`.  
+  
+  .. note::
+
+    Not every setter has a ``sync_set_`` variant. For example, we could not create ``set_sync_target_airspeed()`` because
+    there is no reliable way to check whether the message has been received.
+
+.. warning::
+
+    It is also possible to set the value of most of the *settable attributes* by directly assigning a value to the attribute itself.
+    This form is deprecated because it creates the incorrect impression for developers that the write operation must succeed, and confusion
+    when a re-read value does not match a just-set value. This feature will be removed in a future version.
+  
+Using the synchronous version is often preferred because the methods are guaranteed to succeed or fail in an obvious way. 
+Commands to change a value are **not guaranteed to succeed** (or even to be received) so if you use the asynchronous version
+you may have to write your own code to check for success. On the other hand, the ``set_`` methods are more flexible, and are useful
+for developers who prefer to set values and use observers to drive the program flow.
+
+
+The code snippet below shows the use of the synchronous functions:
 
 .. code:: python
 
-    #disarm the vehicle
-    vehicle.armed = False
+    # Set mode using synchronous function
+    vehicle.sync_set_mode(VehicleMode("GUIDED"))
+    print " New mode: %s" % vehicle.mode.name 
     
-    #set the default groundspeed to be used in movement commands
-    vehicle.groundspeed = 3.2
-
-
-Commands to change a value are **not guaranteed to succeed** (or even to be received) and code should be written with this in mind. 
-For example, the code snippet below polls the attribute values to confirm they have changed before proceeding.
+    # Check that vehicle is armable (required)
+    while not vehicle.is_armable:
+        print " Waiting for vehicle to initialise..."
+        time.sleep(1)
+        # If required, you can provide additional information about initialisation
+        # using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
+    
+    # Arm the vehicle (return when armed)
+    vehicle.sync_set_armed()  #returns when armed.
+    
+The code snippet below shows a similar use of the ``set_`` functions:
 
 .. code:: python
-    
-    vehicle.mode = VehicleMode("GUIDED")
-    vehicle.armed = True
-    while not vehicle.mode.name=='GUIDED' and not vehicle.armed and not api.exit:
-        print " Getting ready to take off ..."
+
+    # Check that vehicle is armable (required)
+    while not vehicle.is_armable:
+        print " Waiting for vehicle to initialise..."
         time.sleep(1)
 
-.. note::
+    #set mode and armed at same time
+    vehicle.set_mode(VehicleMode("GUIDED"))
+    vehicle.set_armed()
 
-    While the autopilot does send information about the success (or failure) of the request, 
-    this is `not currently handled by DroneKit <https://github.com/dronekit/dronekit-python/issues/114>`_.
+    while not vehicle.armed:
+        print " Waiting for arming..."
+        time.sleep(0.3)
+    #vehicle not armed.
+ 
 
-:py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>` can't be written directly, but the gimbal can be controlled using the 
+The gimbal (:py:attr:`Vehicle.gimbal <dronekit.Vehicle.gimbal>`) can be controlled using the 
 :py:func:`Vehicle.gimbal.rotate() <dronekit.Gimbal.rotate>` and :py:func:`Vehicle.gimbal.target_location() <dronekit.Gimbal.target_location>` 
 methods. The first method lets you set the precise orientation of the gimbal while the second makes the gimbal track a specific "region of interest".
 
@@ -312,21 +349,21 @@ waypoints is set relative to this position.
       # We have a home location.     
       print "\n Home location: %s" % vehicle.home_location
 
-* The attribute can be *set* to a :py:class:`LocationGlobal <dronekit.LocationGlobal>` object 
-  (the code fragment below sets it to the current location):
+* The home location can be *set* to a :py:class:`LocationGlobal <dronekit.LocationGlobal>` object using
+  :py:attr:`Vehicle.set_home_location <dronekit.Vehicle.set_home_location>` or 
+  :py:attr:`Vehicle.sync_set_home_location <dronekit.Vehicle.sync_set_home_location>`.
+  
+  Both variants require that the home location have previously been read as shown above and the write will 
+  fail if the new location is not within 50 km of the EKF origin. 
+  
+  The main difference is that the ``sync_set`` variant re-downloads the home location in order to verify that 
+  the value actually changed. This is more "robust" and a lot easier to use, but can take a long time to complete:
 
   .. code:: python
     
-        vehicle.home_location=vehicle.location.global_frame
-        
-  There are some caveats:
-  
-  * You must be able to read a non-``None`` value before you can write it
-    (the autopilot has to set the value initially before it can be written or read).
-  * The new location must be within 50 km of the EKF origin or setting the value will silently fail.
-  * The value is cached in the ``home_location``. If the variable can potentially change on the vehicle
-    you will need to re-download the ``Vehicle.commands`` in order to confirm the value.
-    
+        # Set the home location to the current location
+        vehicle.sync_set_home_location(vehicle.location.global_frame)
+
 * The attribute is not observable.
 
  
@@ -339,6 +376,7 @@ waypoints is set relative to this position.
     
     We hope to improve this attribute in later versions of ArduPilot, where there may be specific 
     commands to get the home location from the vehicle.
+    
 
 
 .. _vehicle_state_parameters:
@@ -450,9 +488,6 @@ for "any parameter") using the
     #Add observer for the vehicle's any/all parameters parameter (note wildcard string ``'*'``)
     vehicle.parameters.add_attribute_listener('*', any_parameter_callback)    
         
-
-
-
 
 .. _api-information-known-issues:
 

@@ -20,7 +20,7 @@ def test_110(connpath):
     wait_for(lambda : vehicle.is_armable, 60)
 
     # Change the vehicle into STABILIZE mode
-    vehicle.mode = VehicleMode("GUIDED")
+    vehicle.set_mode(VehicleMode("GUIDED"))
 
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
@@ -40,7 +40,7 @@ def test_110(connpath):
     vehicle.add_attribute_listener('armed', armed_callback)
 
     # arm and see update.
-    vehicle.armed = True
+    vehicle.set_armed()
 
     # Wait for ACK.
     wait_for(lambda : armed_callback.called, 10)
@@ -58,7 +58,7 @@ def test_110(connpath):
     callcount = armed_callback.called
 
     # Disarm and see update.
-    vehicle.armed = False
+    vehicle.set_armed(False)
 
     # Wait for ack
     time.sleep(3)

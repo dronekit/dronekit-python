@@ -20,7 +20,7 @@ def test_115(connpath):
     v.add_message_listener('*', mavlink_callback)
 
     # Change the vehicle into STABILIZE mode
-    v.mode = VehicleMode("STABILIZE")
+    v.set_mode(VehicleMode("STABILIZE"))
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
 
@@ -32,7 +32,7 @@ def test_115(connpath):
     savecount = mavlink_callback.count
 
     # Disarm. A callback of None should not throw errors
-    v.armed = False
+    v.set_armed(False)
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
 
@@ -40,7 +40,7 @@ def test_115(connpath):
     assert_equals(savecount, mavlink_callback.count)
 
     # Re-arm should not throw errors.
-    v.armed = True
+    v.set_armed()
     # NOTE wait crudely for ACK on mode update
     time.sleep(3)
 
