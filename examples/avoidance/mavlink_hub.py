@@ -13,13 +13,13 @@ class Connection():
 
     def open(self):
         try:
-            print("Opening connection to %s" % (self.addr,))
+            print("HUB: Opening connection to %s" % (self.addr,))
             self.mav = mavutil.mavlink_connection(self.addr)
             self._active = True
             self.last_packet_received = time.time() # lie
 
         except Exception as e:
-            print("Connection to (%s) failed: %s" % (self.addr, str(e)))
+            print("HUB: Connection to (%s) failed: %s" % (self.addr, str(e)))
 
     def close(self):
         self.mav.close()
@@ -42,7 +42,7 @@ class MAVLinkHub():
             if not conn.active():
                 continue
             if now - conn.last_packet_received > self.inactivity_timeout:
-                print("Connection (%s) timed out" % (conn.addr,))
+                print("HUB: Connection (%s) timed out" % (conn.addr,))
                 conn.close()
         for conn in self.conns:
             if not conn.active():
@@ -68,19 +68,19 @@ class MAVLinkHub():
             try:
                 m = conn.mav.recv_msg()
             except Exception as e:
-                print("Exception receiving message on addr(%s): %s" % (str(conn.addr),str(e)))
+                print("HUB: Exception receiving message on addr(%s): %s" % (str(conn.addr),str(e)))
                 conn.close()
 
             if m is not None:
                 conn.last_packet_received = now
                 packet_received = True
-#               print("Received message (%s) on connection %s from src=(%d/%d)" % (str(m), conn.addr, m.get_srcSystem(), m.get_srcComponent(),))
+#               print("HUB: Received message (%s) on connection %s from src=(%d/%d)" % (str(m), conn.addr, m.get_srcSystem(), m.get_srcComponent(),))
                 for j in self.conns:
                     if not j.active():
                         continue
                     if j.addr == conn.addr:
                         continue
-#                    print("  Resending message on connection %s" % (j.addr,))
+#                    print("HUB:  Resending message on connection %s" % (j.addr,))
                     j.mav.write(m.get_msgbuf())
         if not packet_received:
             time.sleep(0.01)
@@ -104,7 +104,7 @@ class MAVLinkHub():
     def run(self):
         self.init()
 
-#        print("Entering main loop")
+#        print("HUB: Entering main loop")
         while True:
             self.loop()
 
@@ -116,6 +116,6 @@ if __name__ == '__main__':
 
     hub = MAVLinkHub(args)
     if len(args) == 0:
-        print("Insufficient arguments")
+        print("HUB: Insufficient arguments")
         sys.exit(1)
     hub.run()
