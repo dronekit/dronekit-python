@@ -296,6 +296,8 @@ class MAVConnection(object):
                         fn(self)
 
                     while self._accept_input:
+                        if not self._alive:
+                            break
                         try:
                             msg = self.master.recv_msg()
 #                            print("msg=%s" % (str(msg)))
