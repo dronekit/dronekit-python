@@ -57,6 +57,7 @@ Please note that these instructions will significantly change your environment. 
 
   ```
   DRONEKIT_TOP=$HOME # e.g.
+  git clone https://github.com/dronekit/dronekit-sitl
   cd $DRONEKIT_TOP/dronekit-sitl
   git checkout multivehicle-wip
   ```
