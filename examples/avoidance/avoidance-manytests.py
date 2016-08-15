@@ -403,8 +403,10 @@ def set_params_target(i, new_sysid, connection_string):
     sitl_args = ['--model', 'quad', '--home=%s,%s,584,353' % (lat,lon,) ]
     print("%d: Launching SITL (%s)" % (i,str(sitl_args)))
     sitls[i].launch(sitl_args, await_ready=True, verbose=True, speedup=50,)
+    print("Sleeping a little here")
+    time.sleep(5)
     print("%d: Connecting to its vehicle 1" % (i,))
-    vehicle = dronekit.connect(connection_string, wait_ready=True, target_system=1)
+    vehicle = dronekit.connect(connection_string, wait_ready=True, target_system=1, heartbeat_timeout=60)
     while vehicle.parameters["SYSID_THISMAV"] != new_sysid:
         print("%d: Resetting its SYID_THISMAV to %d" % (i, new_sysid,))
         vehicle.parameters["SYSID_THISMAV"] = new_sysid
