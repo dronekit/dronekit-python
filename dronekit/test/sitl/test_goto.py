@@ -1,7 +1,7 @@
 """
 simple_goto.py: GUIDED mode "simple goto" example (Copter Only)
 
-The example demonstrates how to arm and takeoff in Copter and how to navigate to 
+The example demonstrates how to arm and takeoff in Copter and how to navigate to
 points using Vehicle.simple_goto.
 
 Full documentation is provided at http://python.dronekit.io/examples/simple_goto.html
@@ -60,9 +60,9 @@ def test_goto(connpath):
         # processing the goto (otherwise the command after
         # Vehicle.simple_takeoff will execute immediately).
         while True:
-            # print " Altitude: ", vehicle.location.alt
+            # print " Altitude: ", vehicle.location.global_relative_frame.alt
             # Test for altitude just below target, in case of undershoot.
-            if vehicle.location.global_frame.alt >= aTargetAltitude * 0.95:
+            if vehicle.location.global_relative_frame.alt >= aTargetAltitude * 0.95:
                 # print "Reached target altitude"
                 break
 
