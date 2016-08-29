@@ -3,6 +3,22 @@
 Changelog
 =========
 
+Version 2.9.0 (2016-08-29)
+--------------------------
+
+Bug Fixes
+~~~~~~~~~
+
+-  MAVConnection stops threads on exit and close
+-  PX4 Pro flight modes are now properly supported
+-  go to test now uses correct ``global_relative_frame`` alt
+
+Improvements
+~~~~~~~~~~~~
+
+-  Updated pymavlink dependency to v2 from v1 hoping we don't fall
+   behind again.
+
 Version 2.8.0 (2016-07-15)
 --------------------------
 
