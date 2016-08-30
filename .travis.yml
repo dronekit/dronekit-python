@@ -5,6 +5,7 @@ env:
 
 python:
   - "2.7"
+  - "3.5"
 
 install:
   - 'sudo pip install . -UI'
@@ -17,7 +18,7 @@ script:
 git:
   depth: 10
 
-language: objective-c
+language: python
 
 notifications:
   email: false
@@ -34,6 +35,3 @@ matrix:
 branches:
   only:
     - master
-    - patch
-    - major
-    - minor
