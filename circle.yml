@@ -25,3 +25,7 @@ deployment:
         branch: master
         commands:
             - ./scripts/update-docs.sh
+
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/27b0e1a9fede99dbbe6c
