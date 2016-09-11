@@ -1148,7 +1148,10 @@ class Vehicle(HasObservers):
 
         @self.on_message(['WAYPOINT_CURRENT', 'MISSION_CURRENT'])
         def listener(self, name, m):
-            self._current_waypoint = m.seq
+            if m.seq != self._current_waypoint:
+                self._current_waypoint = m.seq
+                self.notify_attribute_listeners('commands.next',self._current_waypoint)
+
 
         self._ekf_poshorizabs = False
         self._ekf_constposmode = False
