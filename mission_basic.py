@@ -183,6 +183,9 @@ vehicle.add_attribute_listener('commands.next', waypoint_callback)
 # From Copter 3.3 you will be able to take off using a mission item. Plane must take off using a mission item (currently).
 arm_and_takeoff(10)
 
+#Demonstrate servo output. You can also create a listener and callback function for this.
+print "Servo output:", vehicle.servo_output_raw
+
 print "Starting mission"
 # Reset mission set to first (0) waypoint
 vehicle.commands.next=0
