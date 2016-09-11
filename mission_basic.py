@@ -181,18 +181,17 @@ shutter = "http://10.5.5.9/bacpac/SH?t=" + wifipassword + "&p=%01"
 
 #GoPro Init and functions
 from urllib2 import urlopen
+from dronekit.cameras import GoProHero3
 
-def SendGoProCmd(cmd):
-    data = urlopen(cmd).read()
+my_cam = GoProHero3(wifi_password="goprohero3")
 
-SendGoProCmd(photoMode)
-
+my_cam.photo_mode()
 
 def waypoint_callback(self, attribute, value):
     print "A new waypoint! It's: ", value
 
     #Now let's take a pic
-    SendGoProCmd(shutter)
+    my_cam.shutter()
 
 
 print "\nAdd `commands.next` attribute callback/observer on `vehicle`"
