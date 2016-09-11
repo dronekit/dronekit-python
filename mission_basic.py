@@ -8,11 +8,11 @@ mission_basic.py: Example demonstrating basic mission operations including creat
 Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
 """
 
-from ..dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Command
+from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Command
 import time
 import math
 from pymavlink import mavutil
-from urllib2 import urlopen
+
 
 #Set up option parsing to get connection string
 import argparse
@@ -170,18 +170,15 @@ def arm_and_takeoff(aTargetAltitude):
             break
         time.sleep(1)
 
-def waypoint_callback(self, name, msg):
-    print "Callback! ", msg.seq
-
-print "\nAdd `commands.next` attribute callback/observer on `vehicle`"
-vehicle.add_message_listener('MISSION_CURRENT', waypoint_callback)
-
-print "\nAdd `commands.next` attribute callback/observer on `vehicle`"
-vehicle.add_message_listener('WAYPOINT_CURRENT', waypoint_callback)
 
 print 'Create a new mission (for current location)'
 adds_square_mission(vehicle.location.global_frame,50)
 
+def waypoint_callback(self, attribute, value):
+    print "A new waypoint! It's: ", value
+
+print "\nAdd `commands.next` attribute callback/observer on `vehicle`"
+vehicle.add_attribute_listener('commands.next', waypoint_callback)
 
 # From Copter 3.3 you will be able to take off using a mission item. Plane must take off using a mission item (currently).
 arm_and_takeoff(10)
