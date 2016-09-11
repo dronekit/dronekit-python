@@ -13,7 +13,6 @@ import time
 import math
 from pymavlink import mavutil
 
-
 #Set up option parsing to get connection string
 import argparse
 parser = argparse.ArgumentParser(description='Demonstrates basic mission operations.')
@@ -174,8 +173,27 @@ def arm_and_takeoff(aTargetAltitude):
 print 'Create a new mission (for current location)'
 adds_square_mission(vehicle.location.global_frame,50)
 
+#GoPro Constants
+wifipassword = "goprohero3"
+photoMode = "http://10.5.5.9/camera/CM?t=" + wifipassword + "&p=%01"
+shutter = "http://10.5.5.9/bacpac/SH?t=" + wifipassword + "&p=%01"
+
+
+#GoPro Init and functions
+from urllib2 import urlopen
+
+def SendGoProCmd(cmd):
+    data = urlopen(cmd).read()
+
+SendGoProCmd(photoMode)
+
+
 def waypoint_callback(self, attribute, value):
     print "A new waypoint! It's: ", value
+
+    #Now let's take a pic
+    SendGoProCmd(shutter)
+
 
 print "\nAdd `commands.next` attribute callback/observer on `vehicle`"
 vehicle.add_attribute_listener('commands.next', waypoint_callback)
