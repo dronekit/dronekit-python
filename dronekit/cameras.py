@@ -14,10 +14,34 @@ Creating an camera object supposes your computer is connected to the wifi hotspo
 
 from urllib2 import urlopen
 from time import localtime
+#from __init__ import Vehicle
+import logging
+FORMAT = '%(asctime)s, %(message)s'
+DATEFORMAT = "%d-%m-%Y, %H:%M:%S"
+logging.basicConfig(format=FORMAT, datefmt=DATEFORMAT, filename="camera_log.csv")
+
+
+class GeoTagger(object):
+    def __init__(self,vehicle=None):
+        self.vehicle = vehicle
+        logging.info("Date (DMY), time, picture number, waypoint, gimbal, attitude, location")
+
+    def log_vehicle_state(self, num_picture):
+        if self.vehicle:
+            log_msg = ",".join([num_picture, self.vehicle.commands.next, self.vehicle.gimbal, self.vehicle.attitude, self.vehicle.location])
+        else:
+            log_msg = num_picture
+        logging.info(log_msg)
+        pass
+
 
 class GoProHero3(object):
-    def __init__(self, wifi_password="goprohero3"):
+    def __init__(self, wifi_password="goprohero3", geotag=True, vehicle=None):
         self.wifipassword = wifi_password
+        self.num_picture = 0
+        self.geotagger = None
+        if geotag:
+            self.geotagger = GeoTagger(vehicle=vehicle)
 
         # See https://github.com/KonradIT/goprowifihack/blob/master/WiFi-Commands.mkdn
         # for a list of http commands to control the GoPro camera
@@ -66,7 +90,10 @@ class GoProHero3(object):
         self.send_cmd("http://10.5.5.9/camera/TM?t=" + self.wifipassword + "&p=" + goprotime)
 
     def shutter(self):
+        self.num_picture +=1
         self.send_cmd("http://10.5.5.9/bacpac/SH?t=" + self.wifipassword + "&p=%01")
+        if self.geotagger:
+            self.geotagger.log_vehicle_state(self.num_picture)
 
     def photo_mode(self):
         self.send_cmd("http://10.5.5.9/camera/CM?t=" + self.wifipassword + "&p=%01")
