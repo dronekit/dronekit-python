@@ -14,34 +14,65 @@ Creating an camera object supposes your computer is connected to the wifi hotspo
 
 from urllib2 import urlopen
 from time import localtime
-#from __init__ import Vehicle
+import sys, signal
+from __init__ import Vehicle
 import logging
-FORMAT = '%(asctime)s, %(message)s'
-DATEFORMAT = "%d-%m-%Y, %H:%M:%S"
-logging.basicConfig(format=FORMAT, datefmt=DATEFORMAT, filename="camera_log.csv")
+
+
+
+class Timeout():
+    """Timeout class using ALARM signal."""
+    class Timeout(Exception):
+        pass
+
+    def __init__(self, sec):
+        self.sec = sec
+
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.raise_timeout)
+        signal.alarm(self.sec)
+
+    def __exit__(self, *args):
+        signal.alarm(0)    # disable alarm
+
+    def raise_timeout(self, *args):
+        raise Timeout.Timeout()
 
 
 class GeoTagger(object):
-    def __init__(self,vehicle=None):
+    def __init__(self, vehicle=None):
         self.vehicle = vehicle
-        logging.info("Date (DMY), time, picture number, waypoint, gimbal, attitude, location")
+        FORMAT = '%(asctime)s, %(message)s'
+        DATEFORMAT = "%d-%m-%Y, %H:%M:%S"
+        logging.basicConfig(format=FORMAT, datefmt=DATEFORMAT, filename="camera_log.csv", filemode='w', level=logging.INFO)
+        logging.info("picture number, waypoint, gimbal pitch, gimbal yaw, gimbal roll, att pitch, att yaw, att roll, latitude, longitude, altitude")
 
     def log_vehicle_state(self, num_picture):
         if self.vehicle:
-            log_msg = ",".join([num_picture, self.vehicle.commands.next, self.vehicle.gimbal, self.vehicle.attitude, self.vehicle.location])
+            log_msg = ",".join(map(str,[num_picture, self.vehicle.commands.next,
+                                        self.vehicle.gimbal.pitch,
+                                        self.vehicle.gimbal.yaw,
+                                        self.vehicle.gimbal.roll,
+                                        self.vehicle.attitude.pitch,
+                                        self.vehicle.attitude.yaw,
+                                        self.vehicle.attitude.roll,
+                                        self.vehicle.location.global_frame.lat,
+                                        self.vehicle.location.global_frame.lon,
+                                        self.vehicle.location.global_frame.alt,
+                                        ]))
         else:
-            log_msg = num_picture
+            log_msg = str(num_picture)
         logging.info(log_msg)
         pass
 
 
 class GoProHero3(object):
-    def __init__(self, wifi_password="goprohero3", geotag=True, vehicle=None):
+    def __init__(self, wifi_password="goprohero3", geotag=True, myvehicle=None):
         self.wifipassword = wifi_password
         self.num_picture = 0
         self.geotagger = None
         if geotag:
-            self.geotagger = GeoTagger(vehicle=vehicle)
+            self.geotagger = GeoTagger(vehicle=myvehicle)
 
         # See https://github.com/KonradIT/goprowifihack/blob/master/WiFi-Commands.mkdn
         # for a list of http commands to control the GoPro camera
@@ -77,7 +108,11 @@ class GoProHero3(object):
 
     @staticmethod
     def send_cmd(cmd):
-        data = urlopen(cmd).read()
+        try:
+            with Timeout(1):
+                data = urlopen(cmd).read()
+        except Exception as e:
+                print '>>> Exception in camera command ' + str(e) #TODO: log this
 
     def sync_time(self):
         lt = localtime()
@@ -91,9 +126,10 @@ class GoProHero3(object):
 
     def shutter(self):
         self.num_picture +=1
-        self.send_cmd("http://10.5.5.9/bacpac/SH?t=" + self.wifipassword + "&p=%01")
         if self.geotagger:
             self.geotagger.log_vehicle_state(self.num_picture)
+        self.send_cmd("http://10.5.5.9/bacpac/SH?t=" + self.wifipassword + "&p=%01")
+
 
     def photo_mode(self):
         self.send_cmd("http://10.5.5.9/camera/CM?t=" + self.wifipassword + "&p=%01")
