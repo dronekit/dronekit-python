@@ -14,11 +14,9 @@ Creating an camera object supposes your computer is connected to the wifi hotspo
 
 from urllib2 import urlopen
 from time import localtime
-import sys, signal
-from __init__ import Vehicle
+import signal
+from . import errprinter
 import logging
-
-
 
 class Timeout():
     """Timeout class using ALARM signal."""
@@ -45,9 +43,9 @@ class GeoTagger(object):
         FORMAT = '%(asctime)s, %(message)s'
         DATEFORMAT = "%d-%m-%Y, %H:%M:%S"
         logging.basicConfig(format=FORMAT, datefmt=DATEFORMAT, filename="camera_log.csv", filemode='w', level=logging.INFO)
-        logging.info("picture number, waypoint, gimbal pitch, gimbal yaw, gimbal roll, att pitch, att yaw, att roll, latitude, longitude, altitude")
+        logging.info("picture number, waypoint, gimbal pitch, gimbal yaw, gimbal roll, att pitch, att yaw, att roll, latitude, longitude, altitude, camera message")
 
-    def log_vehicle_state(self, num_picture):
+    def log_vehicle_state(self, num_picture, cam_message):
         if self.vehicle:
             log_msg = ",".join(map(str,[num_picture, self.vehicle.commands.next,
                                         self.vehicle.gimbal.pitch,
@@ -59,11 +57,22 @@ class GeoTagger(object):
                                         self.vehicle.location.global_frame.lat,
                                         self.vehicle.location.global_frame.lon,
                                         self.vehicle.location.global_frame.alt,
+                                        cam_message
                                         ]))
         else:
             log_msg = str(num_picture)
         logging.info(log_msg)
         pass
+
+
+def send_http_cmd(cmd):
+    try:
+        with Timeout(1):
+            data = urlopen(cmd).read()
+            return data
+    except Exception as e:
+            errprinter('>>> Exception in http command: ' + str(e))
+            return str(e)
 
 
 class GoProHero3(object):
@@ -106,13 +115,6 @@ class GoProHero3(object):
 
         self.sync_time()
 
-    @staticmethod
-    def send_cmd(cmd):
-        try:
-            with Timeout(1):
-                data = urlopen(cmd).read()
-        except Exception as e:
-                print '>>> Exception in camera command ' + str(e) #TODO: log this
 
     def sync_time(self):
         lt = localtime()
@@ -122,14 +124,15 @@ class GoProHero3(object):
                                                                         lt.tm_hour,
                                                                         lt.tm_min,
                                                                         lt.tm_sec)
-        self.send_cmd("http://10.5.5.9/camera/TM?t=" + self.wifipassword + "&p=" + goprotime)
+        send_http_cmd("http://10.5.5.9/camera/TM?t=" + self.wifipassword + "&p=" + goprotime)
 
     def shutter(self):
         self.num_picture +=1
+        result = send_http_cmd("http://10.5.5.9/bacpac/SH?t=" + self.wifipassword + "&p=%01")
         if self.geotagger:
-            self.geotagger.log_vehicle_state(self.num_picture)
-        self.send_cmd("http://10.5.5.9/bacpac/SH?t=" + self.wifipassword + "&p=%01")
+            self.geotagger.log_vehicle_state(self.num_picture, result)
+
 
 
     def photo_mode(self):
-        self.send_cmd("http://10.5.5.9/camera/CM?t=" + self.wifipassword + "&p=%01")
+        send_http_cmd("http://10.5.5.9/camera/CM?t=" + self.wifipassword + "&p=%01")
