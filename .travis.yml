@@ -8,7 +8,7 @@ python:
   - "3.5"
 
 install:
-  - 'pip install --user -r requirements.txt'
+  - 'pip install -r requirements.txt'
 
 script:
   - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
