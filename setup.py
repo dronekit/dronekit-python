@@ -12,7 +12,8 @@ setup(name='dronekit',
       author='3D Robotics',
       install_requires=[
           'pymavlink==2.0.6',
-          'monotonic==1.2'
+          'monotonic==1.2',
+          'future==0.15.2'
       ],
       author_email='tim@3drobotics.com, kevinh@geeksville.com',
       classifiers=[

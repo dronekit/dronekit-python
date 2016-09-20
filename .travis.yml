@@ -5,19 +5,19 @@ env:
 
 python:
   - "2.7"
+  - "3.5"
 
 install:
-  - 'sudo pip install . -UI'
-  - 'sudo pip install -r requirements.txt -UI'
+  - 'pip install -r requirements.txt'
 
 script:
-  - 'nosetests -svx dronekit.test.unit'
-  - 'nosetests -svx dronekit.test.sitl'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.sitl'
 
 git:
   depth: 10
 
-language: objective-c
+language: python
 
 notifications:
   email: false
@@ -34,6 +34,3 @@ matrix:
 branches:
   only:
     - master
-    - patch
-    - major
-    - minor

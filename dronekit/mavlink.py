@@ -11,7 +11,7 @@ import dronekit
 from dronekit import APIException
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 import types
 
