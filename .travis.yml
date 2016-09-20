@@ -8,12 +8,11 @@ python:
   - "3.5"
 
 install:
-  - 'sudo pip install . -UI'
-  - 'sudo pip install -r requirements.txt -UI'
+  - 'pip install --user -r requirements.txt'
 
 script:
-  - 'nosetests -svx dronekit.test.unit'
-  - 'nosetests -svx dronekit.test.sitl'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.sitl'
 
 git:
   depth: 10
