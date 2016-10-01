@@ -30,7 +30,7 @@ from dronekit import connect, VehicleMode
 # Connect to UDP endpoint.
 vehicle = connect('127.0.0.1:14550', wait_ready=True)
 # Use returned Vehicle object to query device state - e.g. to get the mode:
-print " Mode: %s" % vehicle.mode.name
+print("Mode: %s" % vehicle.mode.name)
 ```
 
 Once you've got DroneKit set up, the [guide](http://python.dronekit.io/guide/index.html) explains how to perform operations like taking off and flying the vehicle. You can also try out most of the tasks by running the [examples](http://python.dronekit.io/examples/index.html).
