@@ -15,25 +15,27 @@ from Tkinter import *
 # The tkinter root object
 global root
 
-#Set up option parsing to get connection string
-import argparse  
-parser = argparse.ArgumentParser(description='Tracks GPS position of your computer (Linux only). Connects to SITL on local PC by default.')
-parser.add_argument('--connect',
-                   help="vehicle connection target.")
+# Set up option parsing to get connection string
+import argparse  # noqa
+description = ('Tracks GPS position of your computer (Linux only). '
+               'Connects to SITL on local PC by default.')
+parser = argparse.ArgumentParser(description=description)
+parser.add_argument('--connect', help="vehicle connection target.")
 args = parser.parse_args()
 
 connection_string = args.connect
 sitl = None
 
-#Start SITL if no connection string specified
+# Start SITL if no connection string specified
 if not connection_string:
     import dronekit_sitl
     sitl = dronekit_sitl.start_default()
     connection_string = sitl.connection_string()
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
+
 
 def setMode(mode):
     # Now change the vehicle into auto mode
@@ -43,8 +45,11 @@ def setMode(mode):
 def updateGUI(label, value):
     label['text'] = value
 
+
 def addObserverAndInit(name, cb):
-    """We go ahead and call our observer once at startup to get an initial value"""
+    """
+    We go ahead and call our observer once at startup to get an initial value
+    """
     vehicle.add_attribute_listener(name, cb)
 
 root = Tk()
@@ -52,22 +57,26 @@ root.wm_title("microGCS - the worlds crummiest GCS")
 frame = Frame(root)
 frame.pack()
 
-locationLabel = Label(frame, text = "No location", width=60)
+locationLabel = Label(frame, text="No location", width=60)
 locationLabel.pack()
-attitudeLabel = Label(frame, text = "No Att", width=60)
+attitudeLabel = Label(frame, text="No Att", width=60)
 attitudeLabel.pack()
-modeLabel = Label(frame, text = "mode")
+modeLabel = Label(frame, text="mode")
 modeLabel.pack()
 
-addObserverAndInit('attitude', lambda vehicle, name, attitude: updateGUI(attitudeLabel, vehicle.attitude))
-addObserverAndInit('location', lambda vehicle, name, location: updateGUI(locationLabel, str(location.global_frame)))
-addObserverAndInit('mode', lambda vehicle,name,mode: updateGUI(modeLabel, mode))
+addObserverAndInit('attitude',
+    lambda vehicle, name, attitude: updateGUI(attitudeLabel, vehicle.attitude))
+addObserverAndInit('location',
+    lambda vehicle, name, location: updateGUI(locationLabel,
+                                              str(location.global_frame)))
+addObserverAndInit('mode',
+    lambda vehicle, name, mode: updateGUI(modeLabel, mode))
 
-Button(frame, text = "Auto", command = lambda : setMode("AUTO")).pack()
-Button(frame, text = "RTL", command = lambda : setMode("RTL")).pack()
+Button(frame, text="Auto", command=lambda: setMode("AUTO")).pack()
+Button(frame, text="RTL", command=lambda: setMode("RTL")).pack()
 
 root.mainloop()
 
 # Shut down simulator if it was started.
-if sitl is not None:
+if sitl:
     sitl.stop()

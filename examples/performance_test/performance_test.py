@@ -3,14 +3,15 @@
 
 """
 © Copyright 2015-2016, 3D Robotics.
-performance_test.py: 
+performance_test.py:
 
-This performance test logs the interval between messages being 
-sent by Dronekit-Python and an acknowledgment being received 
-from the autopilot. It provides a running report of the maximum, 
-minimum, and most recent interval for 30 seconds.
+This performance test logs the interval between messages being sent by
+Dronekit-Python and an acknowledgment being received from the autopilot. It
+provides a running report of the maximum, minimum, and most recent interval for
+30 seconds.
 
-Full documentation is provided at http://python.dronekit.io/examples/performance_test.html
+Full documentation is provided at:
+    http://python.dronekit.io/examples/performance_test.html
 """
 from dronekit import connect
 from pymavlink import mavutil
@@ -18,17 +19,21 @@ import time
 import sys
 from datetime import datetime
 
-
-#Set up option parsing to get connection string
-import argparse  
-parser = argparse.ArgumentParser(description='Generates max, min and current interval between message sent and ack recieved. Will start and connect to SITL if no connection string specified.')
-parser.add_argument('--connect', 
-                   help="vehicle connection target string. If not specified, SITL automatically started and used.")
+# Set up option parsing to get connection string
+import argparse
+description = ('Generates max, min and current interval between message sent '
+               'and ack recieved. Will start and connect to SITL if no '
+               'connection string specified.')
+parser = argparse.ArgumentParser(description=description)
+help = ("vehicle connection target string. "
+        "If not specified, SITL automatically started and used.")
+parser.add_argument('--connect', help=help)
 args = parser.parse_args()
 
-connection_string=args.connect
+sitl = None
+connection_string = args.connect
 
-#Start SITL if no connection string specified
+# Start SITL if no connection string specified
 if not connection_string:
     import dronekit_sitl
     sitl = dronekit_sitl.start_default()
@@ -36,10 +41,10 @@ if not connection_string:
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
-#global vehicle
+# global vehicle
 
 
 def cur_usec():
@@ -48,6 +53,7 @@ def cur_usec():
     dt = datetime.now()
     t = dt.minute * 60 + dt.second + dt.microsecond / (1e6)
     return t
+
 
 class MeasureTime(object):
     def __init__(self):
@@ -59,30 +65,31 @@ class MeasureTime(object):
     def reset(self):
         self.maxinterval = 0
         self.mininterval = 10000
-        
-    def log(self):
-        #print "Interval", self.previnterval
-        #print "MaxInterval", self.maxinterval
-        #print "MinInterval", self.mininterval
-        sys.stdout.write('MaxInterval: %s\tMinInterval: %s\tInterval: %s\r' % (self.maxinterval,self.mininterval, self.previnterval) )
-        sys.stdout.flush()
 
+    def log(self):
+        # print "Interval", self.previnterval
+        # print "MaxInterval", self.maxinterval
+        # print "MinInterval", self.mininterval
+        sys.stdout.write('MaxInterval: %s\tMinInterval: %s\tInterval: %s\r' %
+                         (self.maxinterval, self.mininterval,
+                          self.previnterval))
+        sys.stdout.flush()
 
     def update(self):
         now = cur_usec()
-        self.numcount = self.numcount + 1
+        self.numcount += 1
         self.previnterval = now - self.prevtime
         self.prevtime = now
-        if self.numcount>1: #ignore first value where self.prevtime not reliable.
+        # ignore first value where self.prevtime not reliable.
+        if self.numcount > 1:
             self.maxinterval = max(self.previnterval, self.maxinterval)
             self.mininterval = min(self.mininterval, self.previnterval)
             self.log()
 
-
 acktime = MeasureTime()
 
 
-#Create COMMAND_ACK message listener.
+# Create COMMAND_ACK message listener.
 @vehicle.on_message('COMMAND_ACK')
 def listener(self, name, message):
     acktime.update()
@@ -90,30 +97,26 @@ def listener(self, name, message):
 
 
 def send_testpackets():
-    #Send message using `command_long_encode` (returns an ACK)
+    # Send message using `command_long_encode` (returns an ACK)
     msg = vehicle.message_factory.command_long_encode(
-                                                    1, 1,    # target system, target component
-                                                    #mavutil.mavlink.MAV_CMD_DO_SET_RELAY, #command
-                                                    mavutil.mavlink.MAV_CMD_DO_SET_ROI, #command
-                                                    0, #confirmation
-                                                    0, 0, 0, 0, #params 1-4
-                                                    0,
-                                                    0,
-                                                    0
-                                                    )
+        1, 1,    # target system, target component
+        # mavutil.mavlink.MAV_CMD_DO_SET_RELAY,  # command
+        mavutil.mavlink.MAV_CMD_DO_SET_ROI,  # command
+        0,  # confirmation
+        0, 0, 0, 0, 0, 0, 0)  # params 1-7
 
     vehicle.send_mavlink(msg)
 
-#Start logging by sending a test packet
+# Start logging by sending a test packet
 send_testpackets()
 
-print "Logging for 30 seconds"
-for x in range(1,30):
+print("Logging for 30 seconds")
+for _ in range(30):
     time.sleep(1)
 
 # Close vehicle object before exiting script
 vehicle.close()
 
-if not args.connect:
+if sitl:
     # Shut down simulator if it was started.
     sitl.stop()
