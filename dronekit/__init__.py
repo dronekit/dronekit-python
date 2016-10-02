@@ -49,7 +49,11 @@ import copy
 import collections
 from pymavlink.dialects.v10 import ardupilotmega
 
-
+try:
+    basestring     # Python 2
+except NameError:  # Python 3
+    basestring = (str, bytes)
+            
 class APIException(Exception):
     """
     Base class for DroneKit related exceptions.
@@ -2822,7 +2826,7 @@ def connect(ip,
 
         @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.decode('utf-8').rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
