@@ -91,7 +91,8 @@ class Attitude(object):
         self.roll = roll
 
     def __str__(self):
-        return "Attitude:pitch=%s,yaw=%s,roll=%s" % (self.pitch, self.yaw, self.roll)
+        fmt = '{}:pitch={pitch},yaw={yaw},roll={roll}'
+        return fmt.format(self.__class__.__name__, **vars(self))
 
 
 class LocationGlobal(object):
