@@ -9,6 +9,10 @@ python:
 
 install:
   - 'pip install -r requirements.txt'
+  - pip install flake8
+
+before_script:
+  flake8 . --count --exit-zero --max-line-length=120 --statistics
 
 script:
   - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
