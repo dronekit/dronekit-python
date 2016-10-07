@@ -12,7 +12,7 @@ install:
   - pip install flake8
 
 before_script:
-  flake8 . --count --exit-zero --max-line-length=120 --statistics
+  flake8 . --count --exit-zero --max-line-length=120 --statistics 
 
 script:
   - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
