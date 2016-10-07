@@ -49,6 +49,11 @@ import copy
 import collections
 from pymavlink.dialects.v10 import ardupilotmega
 
+try:
+    basestring     # Python 2
+except NameError:  # Python 3
+    basestring = (str, bytes)
+
 
 class APIException(Exception):
     """
@@ -87,7 +92,8 @@ class Attitude(object):
         self.roll = roll
 
     def __str__(self):
-        return "Attitude:pitch=%s,yaw=%s,roll=%s" % (self.pitch, self.yaw, self.roll)
+        fmt = '{}:pitch={pitch},yaw={yaw},roll={roll}'
+        return fmt.format(self.__class__.__name__, **vars(self))
 
 
 class LocationGlobal(object):
@@ -2822,7 +2828,7 @@ def connect(ip,
 
         @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.decode('utf-8').rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
