@@ -2740,7 +2740,7 @@ class CommandSequence(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return [self[ii] for ii in xrange(*index.indices(len(self)))]
+            return [self[ii] for ii in range(*index.indices(len(self)))]
         elif isinstance(index, int):
             item = self._vehicle._wploader.wp(index + 1)
             if not item:
