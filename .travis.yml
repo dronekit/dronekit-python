@@ -14,7 +14,16 @@ install:
 before_script:
   # --exit-zero means that flake8 will not stop the build
   # 127 characters is the width of a GitHub editor
-  flake8 . --count --exit-zero --max-line-length=127 --statistics
+  # E703 statement ends with a semicolon
+  # E711 comparison to None should be 'if cond is None:'
+  # E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+  # E713 test for membership should be 'not in'
+  # E999 SyntaxError: invalid syntax
+  # F401 'socket' imported but unused
+  # F403 'from dronekit import *' used; unable to detect undefined names
+  # F811 redefinition of unused 'types' from line 45
+  # F821 undefined name 'xrange'
+  flake8 . --count --exit-zero --max-line-length=127 --select=E703,E711,E712,E713,E999,F401,F403,F811,F821 --statistics
 
 script:
   - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
