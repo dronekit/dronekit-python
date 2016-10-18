@@ -48,14 +48,14 @@ class MAVSystem(mavutil.mavsource):
         super(MAVSystem,self).__init__(conn.master, target_system, target_component)
 
         self.conn = conn
-        self.mav = self.conn.master.mav
-        self.target_system = target_system
-        self.target_component = target_component
         self._message_listeners = []
 
+        # at the moment we only use mavsource for sending messages to
+        # the correct place.  Listening is currently done directly on
+        # the upstream connection object:
         @conn.forward_message
         def listener(_, msg):
-            if msg.get_srcSystem() == self.target_system:
+            if msg.get_srcSystem() == self.system_id:
                 self.notify_message_listeners(msg)
 
     def remove_message_listener(self, name, fn):
