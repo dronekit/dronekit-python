@@ -10,23 +10,25 @@ Please note that these instructions will significantly change your environment. 
   ```
   DRONEKIT_TOP=$HOME # e.g.
   cd $DRONEKIT_TOP/dronekit-python
-  got remote add peterbarker ssh://git@github.com/peterbarker/dronekit-python.git
+  git remote add peterbarker ssh://git@github.com/peterbarker/dronekit-python.git
   git fetch peterbarker
   git checkout peterbarker/source-system-filtering
   ```
 
-2. Run version of mavlink which contains source system filtering:
+2. Run a version of pymavlink which contains source system filtering:
 
   ```
   ARDUPILOT_HOME=$HOME/ardupilot # e.g.
-  cd $ARDUPILOT_HOME/modules/mavlink
-  git remote add peterbarker https://github.com/peterbarker/mavlink
-  git fetch --all peterbarker
-  git checkout peterbarker/mavsystem-object
   cd $ARDUPILOT_HOME/modules/mavlink/pymavlink
+  git remote add peterbarker https://github.com/peterbarker/pymavlink
+  git fetch --all peterbarker
+  git checkout peterbarker/mavsource
   python setup.py build install --user --force
   ```
-  
+
+  Note that in the above shell code we are re-using a pymavlink
+  repository present in a buildable ArduPilot repository.  You can
+  instead clone the pymavlink tree directly.
 
 3. Run peterbarker's avoidance MAVProxy branch
 
@@ -39,18 +41,7 @@ Please note that these instructions will significantly change your environment. 
   python seutp.setup.py build install --user --force
   ```
 
-4. Run the _multivehicle-wip_ branch of dronekit-sitl
-
-  This branch allows the user to specify a --defaults option to the SITL instance, allowing modern ArduPilots to run.  It also adds diagnostic options.
-
-  ```
-  DRONEKIT_TOP=$HOME # e.g.
-  git clone https://github.com/dronekit/dronekit-sitl
-  cd $DRONEKIT_TOP/dronekit-sitl
-  git checkout multivehicle-wip
-  ```
-  
-5. Connect a GCS to port 3456
+4. Connect a GCS to port 3456
 
   This varies by GCS.  With *MAVProxy* you might run this:
   ```
@@ -67,7 +58,7 @@ Please note that these instructions will significantly change your environment. 
      - Listening port 3456
     ```
 
-6. Run the avoidance sample program:
+5. Run the avoidance sample program:
   ```
   DRONEKIT_TOP=$HOME # e.g.
   ARDUPILOT_HOME=$HOME/ardupilot
@@ -76,7 +67,7 @@ Please note that these instructions will significantly change your environment. 
   python avoidance.py --binary $ARDUPILOT_HOME/build/sitl-debug/bin/arducopter-quad --resolution=PERPENDICULAR --defaults=$ARDUPILOT_HOME/Tools/autotest/copter_params.parm --extra-connection=udpout:localhost:3456
 
   ```
-7. What you should see:
+6. What you should see:
  - two quadcopters should both enter guided mode
  - both should rise to 5m
  - one of the copters will start to head north
