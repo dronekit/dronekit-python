@@ -184,6 +184,13 @@ class LocationLocal(object):
     def __str__(self):
         return "LocationLocal:north=%s,east=%s,down=%s" % (self.north, self.east, self.down)
 
+    def distance(self):
+        """
+        Distance away from home, in meters.
+        """
+        if self.north is not None and self.east is not None and self.down is not None:
+            return math.sqrt(self.north**2 + self.east**2 + self.down**2)
+
 
 class GPSInfo(object):
     """
