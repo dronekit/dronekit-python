@@ -21,7 +21,7 @@ Please note that these instructions will significantly change your environment. 
   ARDUPILOT_HOME=$HOME/ardupilot # e.g.
   cd $ARDUPILOT_HOME/modules/mavlink/pymavlink
   git remote add peterbarker https://github.com/peterbarker/pymavlink
-  git fetch --all peterbarker
+  git fetch peterbarker
   git checkout peterbarker/mavsource
   python setup.py build install --user --force
   ```
@@ -62,8 +62,9 @@ Please note that these instructions will significantly change your environment. 
   ```
   DRONEKIT_TOP=$HOME # e.g.
   ARDUPILOT_HOME=$HOME/ardupilot
-  export PYTHONPATH=$DRONEKIT_TOP/dronekit-python:$DRONEKIT_TOP/dronekit-sitl
+  export PYTHONPATH=$DRONEKIT_TOP/dronekit-python
   cd $DRONEKIT_TOP/dronekit-python/examples/avoidance
+  # this assumes you are compiling your own ArduPilot binary:
   python avoidance.py --binary $ARDUPILOT_HOME/build/sitl-debug/bin/arducopter-quad --resolution=PERPENDICULAR --defaults=$ARDUPILOT_HOME/Tools/autotest/copter_params.parm --extra-connection=udpout:localhost:3456
 
   ```
