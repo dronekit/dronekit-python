@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
+© Copyright 2015-2016, 3D Robotics.
 flight_replay.py: 
 
 This example requests a past flight from Droneshare, and then 'replays' 
@@ -20,22 +24,6 @@ parser.add_argument('--tlog', default='flight.tlog',
                    help="Telemetry log containing path to replay")
 args = parser.parse_args()
 
-
-def start_default_sitl(lat=None, lon=None):
-    print "Starting copter simulator (SITL)"
-    from dronekit_sitl import SITL
-    sitl = SITL()
-    sitl.download('copter', '3.3', verbose=True)
-    if ((lat is not None and lon is None) or
-        (lat is None and lon is not None)):
-        print("Supply both lat and lon, or neither")
-        exit(1)
-    sitl_args = ['-I0', '--model', 'quad', ]
-    if lat is not None:
-        sitl_args.append('--home=%f,%f,584,353' % (lat,lon,))
-    sitl.launch(sitl_args, await_ready=True, restart=True)
-    connection_string='tcp:127.0.0.1:5760'
-    return (sitl, connection_string)
 
 def get_distance_metres(aLocation1, aLocation2):
     """
@@ -164,7 +152,9 @@ else:
     start_lat = messages[0].lat/1.0e7
     start_lon = messages[0].lon/1.0e7
 
-    (sitl, connection_string) = start_default_sitl(lat=start_lat,lon=start_lon)
+    import dronekit_sitl
+    sitl = dronekit_sitl.start_default(lat=start_lat,lon=start_lon)
+    connection_string = sitl.connection_string()
 
 # Connect to the Vehicle
 print 'Connecting to vehicle on: %s' % connection_string

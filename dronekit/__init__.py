@@ -40,7 +40,7 @@ import platform
 import re
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 import types
 import threading
@@ -341,7 +341,7 @@ class Version(object):
             prefix += "Copter-"
         elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING):
             prefix += "Plane-"
-        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_ROVER):
+        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_GROUND_ROVER):
             prefix += "Rover-"
         else:
             prefix += "UnknownVehicleType%d-" % (self.vehicle_type)
@@ -1177,9 +1177,12 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('armed', self.armed, cache=True)
             self._autopilot_type = m.autopilot
             self._vehicle_type = m.type
-            if self._is_mode_available(m.custom_mode) == False:
+            if self._is_mode_available(m.custom_mode, m.base_mode) == False:
                 raise APIException("mode %s not available on mavlink definition" % m.custom_mode)
-            self._flightmode = self._mode_mapping_bynumber[m.custom_mode]
+            if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
+                self._flightmode = mavutil.interpret_px4_mode(m.base_mode, m.custom_mode)
+            else:
+                self._flightmode = self._mode_mapping_bynumber[m.custom_mode]
             self.notify_attribute_listeners('mode', self.mode, cache=True)
             self._system_status = m.system_status
             self.notify_attribute_listeners('system_status', self.system_status, cache=True)
@@ -1199,6 +1202,12 @@ class Vehicle(HasObservers):
                 self._wploader.clear()
                 self._wploader.expected_count = msg.count
                 self._master.waypoint_request_send(0)
+
+
+        @self.on_message(['HOME_POSITION'])
+        def listener(self, name, msg):
+            self._home_location = LocationGlobal(msg.latitude/1.0e7, msg.longitude/1.0e7, msg.altitude/1000.0);
+            self.notify_attribute_listeners('home_location', self.home_location, cache=True)
 
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
@@ -1520,8 +1529,14 @@ class Vehicle(HasObservers):
     def _mode_mapping_bynumber(self):
         return mavutil.mode_mapping_bynumber(self._vehicle_type)
 
-    def _is_mode_available(self, mode_code):
-        return mode_code in self._mode_mapping_bynumber
+    def _is_mode_available(self, custommode_code, basemode_code=0):
+        try:
+            if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
+                mode = mavutil.interpret_px4_mode(basemode_code, custommode_code)
+                return mode in self._mode_mapping
+            return custommode_code in self._mode_mapping_bynumber
+        except:
+            return False
 
     #
     # Operations to support the standard API.
@@ -1538,7 +1553,10 @@ class Vehicle(HasObservers):
 
     @mode.setter
     def mode(self, v):
-        self._master.set_mode(self._mode_mapping[v.name])
+        if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
+            self._master.set_mode(v.name)
+        else:
+            self._master.set_mode(self._mode_mapping[v.name])
 
     @property
     def location(self):

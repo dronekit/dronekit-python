@@ -5,25 +5,28 @@ env:
 
 python:
   - "2.7"
+  - "3.5"
 
 install:
-  - 'sudo pip install . -UI'
-  - 'sudo pip install -r requirements.txt -UI'
+  - 'pip install -r requirements.txt'
 
 script:
-#  - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || nosetests -svx dronekit.test.web'
-  - 'nosetests -svx dronekit.test.unit'
-  - 'nosetests -svx dronekit.test.sitl'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
+  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.sitl'
 
 git:
   depth: 10
 
-language: objective-c
+language: python
 
 notifications:
   email: false
-  slack:
-    secure: IYgZ83X065I/LljGrPEACZms+KDwrojiQbboFHhvNxL2Zkc5jHqwBK6PD1BsJh2JVun9fCZ1v2R8KuDsf+Qz2dCximdOZcHI81L9JUOZYuSJ2TVlbKiC00WdXpcQ6g7pDTLm/mGBoPxC+MuC5l8zZdbpPBpEa0F/YCe/n7tbT+g=
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/f3f81b74f930dac9583a
+    on_success: change
+    on_failure: always
+    on_start: never
 
 matrix:
   fast_finish: true
@@ -31,6 +34,3 @@ matrix:
 branches:
   only:
     - master
-    - patch
-    - major
-    - minor

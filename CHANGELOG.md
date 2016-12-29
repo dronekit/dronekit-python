@@ -1,5 +1,50 @@
 # Changelog
 
+## Version 2.9.0 (2016-08-29)
+
+### Bug Fixes
+* MAVConnection stops threads on exit and close
+* PX4 Pro flight modes are now properly supported
+* go to test now uses correct `global_relative_frame` alt
+
+### Improvements
+* Updated pymavlink dependency to v2 from v1 hoping we don't fall behind
+  again.
+
+## Version 2.8.0 (2016-07-15)
+
+### Bug Fixes
+* Makes sure we are listening to `HOME_LOCATION` message, befor we
+  would only set home location if received by waypoints.
+
+## Version 2.7.0 (2016-06-21)
+
+### Improvements
+* Adds udpin-multi support
+
+## Version 2.6.0 (2016-06-17)
+
+### Bug Fixes
+* Fixes patched mavutil sendfn
+
+## Version 2.5.0 (2016-05-04)
+
+### Improvements
+* Catch and display message and attribute errors, then continue
+* Improved takeoff example docs
+* Deploy docs on successful merge into master (from CircleCI)
+* Drone delivery example, explain port to connect
+* MicroCGS example now uses SITL
+* Make running examples possible on Vagrant
+
+### Bug Fixes
+* Mav type for rover was incorrect
+* `_is_mode_available` can now handle unrecognized mode codes
+* Fix broken links on companion computer page
+* Fix infinite loop on channel test
+
+
+
 ## Version 2.4.0 (2016-02-29)
 
 ### Bug Fixes

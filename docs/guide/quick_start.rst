@@ -13,14 +13,8 @@ Installation
 ============
 
 DroneKit-Python and the *dronekit-sitl simulator* are installed 
-from **pip** on all platforms:
+from **pip** on all platforms.
 
-.. code-block:: bash
-
-    pip install dronekit
-    pip install dronekit-sitl
-
-Mac and Linux require you prefix the command with ``sudo``. 
 On Linux you will first need to install **pip** and **python-dev**:
     
 .. code-block:: bash
@@ -28,6 +22,14 @@ On Linux you will first need to install **pip** and **python-dev**:
     sudo apt-get install python-pip python-dev
 
     
+**pip** is then used to install *dronekit* and *dronekit-sitl*.
+Mac and Linux may require you to prefix these commands with ``sudo``:
+
+.. code-block:: bash
+
+    pip install dronekit
+    pip install dronekit-sitl
+
 See :doc:`../develop/installation` and `dronekit-sitl <https://github.com/dronekit/dronekit-sitl#dronekit-sitl>`_ 
 for more detailed installation instructions.
 
@@ -44,18 +46,16 @@ we then use to query the attributes.
 .. code:: python
 
     print "Start simulator (SITL)"
-    from dronekit_sitl import SITL
-    sitl = SITL()
-    sitl.download('copter', '3.3', verbose=True)
-    sitl_args = ['-I0', '--model', 'quad', '--home=-35.363261,149.165230,584,353']
-    sitl.launch(sitl_args, await_ready=True, restart=True)
+    import dronekit_sitl
+    sitl = dronekit_sitl.start_default()
+    connection_string = sitl.connection_string()
 
     # Import DroneKit-Python
     from dronekit import connect, VehicleMode
 
     # Connect to the Vehicle. 
-    print "Connecting to vehicle on: 'tcp:127.0.0.1:5760'"
-    vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True)
+    print("Connecting to vehicle on: %s" % (connection_string,))
+    vehicle = connect(connection_string, wait_ready=True)
 
     # Get some vehicle attributes (state)
     print "Get some vehicle attribute values:"

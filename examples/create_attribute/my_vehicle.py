@@ -1,4 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
+© Copyright 2015-2016, 3D Robotics.
+
 my_vehicle.py:
 
 Custom Vehicle subclass to add IMU data.

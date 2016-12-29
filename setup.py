@@ -1,7 +1,7 @@
 from setuptools import setup, Extension
 import platform
 
-version = '2.4.0'
+version = '2.9.0'
 
 setup(name='dronekit',
       zip_safe=True,
@@ -11,8 +11,9 @@ setup(name='dronekit',
       url='https://github.com/dronekit/dronekit-python',
       author='3D Robotics',
       install_requires=[
-          'pymavlink>=1.1.62',
-          'monotonic<1.0'
+          'pymavlink==2.0.6',
+          'monotonic==1.2',
+          'future==0.15.2'
       ],
       author_email='tim@3drobotics.com, kevinh@geeksville.com',
       classifiers=[
@@ -26,6 +27,6 @@ setup(name='dronekit',
       ],
       license='apache',
       packages=[
-          'dronekit', 'dronekit.cloud', 'dronekit.test'
+          'dronekit', 'dronekit.test'
       ],
       ext_modules=[])

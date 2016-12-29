@@ -15,7 +15,7 @@ install:
       [wheel]
       wheel-dir = c:/Users/appveyor/.pip-wheelhouse
       '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
-  
+
   - cmd: 'SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH%'
   - cmd: 'SET PYTHONUNBUFFERED=1'
 
@@ -24,7 +24,6 @@ install:
   - cmd: 'pip install -r requirements.txt -UI'
 
 build_script:
-#  - cmd: 'nosetests -svx dronekit.test.web'
   - cmd: 'nosetests -svx dronekit.test.unit'
   - cmd: 'nosetests -svx dronekit.test.sitl'
 

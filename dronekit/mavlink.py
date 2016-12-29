@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time
 import socket
+import errno
 import sys
 import os
 import platform
@@ -10,7 +11,7 @@ import dronekit
 from dronekit import APIException
 from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 import types
 
@@ -37,9 +38,94 @@ class MAVWriter(object):
         os._exit(43)
 
 
+class mavudpin_multi(mavutil.mavfile):
+    '''a UDP mavlink socket'''
+    def __init__(self, device, baud=None, input=True, broadcast=False, source_system=255, use_native=mavutil.default_native):
+        a = device.split(':')
+        if len(a) != 2:
+            print("UDP ports must be specified as host:port")
+            sys.exit(1)
+        self.port = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.udp_server = input
+        self.broadcast = False
+        self.addresses = set()
+        if input:
+            self.port.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.port.bind((a[0], int(a[1])))
+        else:
+            self.destination_addr = (a[0], int(a[1]))
+            if broadcast:
+                self.port.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                self.broadcast = True
+        mavutil.set_close_on_exec(self.port.fileno())
+        self.port.setblocking(0)
+        mavutil.mavfile.__init__(self, self.port.fileno(), device, source_system=source_system, input=input, use_native=use_native)
+
+    def close(self):
+        self.port.close()
+
+    def recv(self,n=None):
+        try:
+            try:
+                data, new_addr = self.port.recvfrom(65535)
+            except socket.error as e:
+                if e.errno in [ errno.EAGAIN, errno.EWOULDBLOCK, errno.ECONNREFUSED ]:
+                    return ""
+            if self.udp_server:
+                self.addresses.add(new_addr)
+            elif self.broadcast:
+                self.addresses = set([new_addr])
+            return data
+        except Exception as e:
+            print(e)
+
+    def write(self, buf):
+        try:
+            try:
+                if self.udp_server:
+                    for addr in self.addresses:
+                        self.port.sendto(buf, addr)
+                else:
+                    if len(self.addresses) and self.broadcast:
+                        self.destination_addr = self.addresses[0]
+                        self.broadcast = False
+                        self.port.connect(self.destination_addr)
+                    self.port.sendto(buf, self.destination_addr)
+            except socket.error:
+                pass
+        except Exception as e:
+            print(e)
+
+    def recv_msg(self):
+        '''message receive routine for UDP link'''
+        self.pre_message()
+        s = self.recv()
+        if len(s) > 0:
+            if self.first_byte:
+                self.auto_mavlink_version(s)
+
+        m = self.mav.parse_char(s)
+        if m is not None:
+            self.post_message(m)
+
+        return m
+
+
 class MAVConnection(object):
+
+    def stop_threads(self):
+        if self.mavlink_thread_in is not None:
+            self.mavlink_thread_in.join()
+            self.mavlink_thread_in = None
+        if self.mavlink_thread_out is not None:
+            self.mavlink_thread_out.join()
+            self.mavlink_thread_out = None
+
     def __init__(self, ip, baud=115200, target_system=0, source_system=255, use_native=False):
-        self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
+        if ip.startswith("udpin:"):
+            self.master = mavudpin_multi(ip[6:], input=True, baud=baud, source_system=source_system)
+        else:
+            self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
 
         # TODO get rid of "master" object as exposed,
         # keep it private, expose something smaller for dronekit
@@ -52,9 +138,9 @@ class MAVConnection(object):
         # Monkey-patch MAVLink object for fix_targets.
         sendfn = self.master.mav.send
 
-        def newsendfn(mavmsg):
+        def newsendfn(mavmsg, **kwargs):
             self.fix_targets(mavmsg)
-            return sendfn(mavmsg)
+            return sendfn(mavmsg, kwargs)
 
         self.master.mav.send = newsendfn
 
@@ -74,6 +160,7 @@ class MAVConnection(object):
 
         def onexit():
             self._alive = False
+            self.stop_threads()
 
         atexit.register(onexit)
 
@@ -115,7 +202,7 @@ class MAVConnection(object):
         def mavlink_thread_in():
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
-                while True:
+                while self._alive:
                     # Downtime
                     time.sleep(0.05)
 
@@ -212,6 +299,7 @@ class MAVConnection(object):
         self._alive = False
         while not self.out_queue.empty():
             time.sleep(0.1)
+        self.stop_threads()
         self.master.close()
 
     def pipe(self, target):
