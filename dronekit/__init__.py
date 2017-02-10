@@ -45,6 +45,7 @@ from threading import Thread
 import types
 import threading
 import math
+import struct
 import copy
 import collections
 from pymavlink.dialects.v10 import ardupilotmega
@@ -2433,7 +2434,8 @@ class Parameters(collections.MutableMapping, HasObservers):
         # instead just wait until the value itself was changed
 
         name = name.upper()
-        value = float(value)
+        # convert to single precision floating point number (the type used by low level mavlink messages)
+        value = float(struct.unpack('f', struct.pack('f', value))[0])
         success = False
         remaining = retries
         while True:
