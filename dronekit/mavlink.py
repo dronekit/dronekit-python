@@ -140,7 +140,7 @@ class MAVConnection(object):
 
         def newsendfn(mavmsg, **kwargs):
             self.fix_targets(mavmsg)
-            return sendfn(mavmsg, kwargs)
+            return sendfn(mavmsg, **kwargs)
 
         self.master.mav.send = newsendfn
 
