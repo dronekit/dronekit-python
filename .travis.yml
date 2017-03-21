@@ -4,8 +4,8 @@ env:
     - SITL_RATE=200
 
 python:
-  - "2.7.13"
-  - "3.6"
+  - 2.7.13
+  - 3.6
 
 install:
   - 'pip install -r requirements.txt'
@@ -29,6 +29,8 @@ notifications:
     on_start: never
 
 matrix:
+  allow_failures:
+  - python: 3.6
   fast_finish: true
 
 branches:
