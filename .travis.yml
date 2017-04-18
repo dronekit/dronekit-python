@@ -1,3 +1,5 @@
+language: python
+
 env:
   global:
     - SITL_SPEEDUP=10
@@ -7,17 +9,23 @@ python:
   - 2.7.13
   - 3.6
 
+before_install:
+  - pip install --upgrade pip
+  
 install:
-  - 'pip install -r requirements.txt'
+  - pip install -r requirements.txt
+  - pip install flake8
+
+before_script:
+  # --exit-zero means that flake8 will not stop the build
+  - flake8 . --count --exit-zero --statistics
 
 script:
-  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit'
-  - 'nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.sitl'
+  - nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.unit
+  - nosetests --debug=nose,nose.importer --debug-log=nose_debug -svx dronekit.test.sitl
 
 git:
   depth: 10
-
-language: python
 
 notifications:
   email: false
