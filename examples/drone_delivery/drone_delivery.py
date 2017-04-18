@@ -3,39 +3,39 @@
 
 """
 © Copyright 2015-2016, 3D Robotics.
-drone_delivery.py: 
+drone_delivery.py:
 
 A CherryPy based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude.
 
 Full documentation is provided at http://python.dronekit.io/examples/drone_delivery.html
 """
 
+from __future__ import print_function
 import os
 import simplejson
 import time
-from pymavlink import mavutil
+
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 import cherrypy
-from cherrypy.process import wspbus, plugins
 from jinja2 import Environment, FileSystemLoader
 
-#Set up option parsing to get connection string
-import argparse  
+# Set up option parsing to get connection string
+import argparse
 parser = argparse.ArgumentParser(description='Creates a CherryPy based web application that displays a mapbox map to let you view the current vehicle position and send the vehicle commands to fly to a particular latitude and longitude. Will start and connect to SITL if no connection string specified.')
-parser.add_argument('--connect', 
-                   help="vehicle connection target string. If not specified, SITL is automatically started and used.")
+parser.add_argument('--connect',
+                    help="vehicle connection target string. If not specified, SITL is automatically started and used.")
 args = parser.parse_args()
 
-connection_string=args.connect
+connection_string = args.connect
 
-#Start SITL if no connection string specified
+# Start SITL if no connection string specified
 if not connection_string:
     import dronekit_sitl
     sitl = dronekit_sitl.start_default()
     connection_string = sitl.connection_string()
 
-local_path=os.path.dirname(os.path.abspath(__file__))
-print "local path: %s" % local_path
+local_path = os.path.dirname(os.path.abspath(__file__))
+print("local path: %s" % local_path)
 
 
 cherrypy_conf = {
@@ -89,11 +89,10 @@ class Drone(object):
         self._log("Taking off")
         self.vehicle.simple_takeoff(30.0)
 
-        
     def arm(self, value=True):
         if value:
             self._log('Waiting for arming...')
-            self.vehicle.armed = True    
+            self.vehicle.armed = True
             while not self.vehicle.armed:
                 time.sleep(.1)
         else:
@@ -104,11 +103,9 @@ class Drone(object):
         # Start web server if enabled
         cherrypy.tree.mount(DroneDelivery(self), '/', config=cherrypy_conf)
 
-        cherrypy.config.update({
-            'server.socket_port': 8080,
-            'server.socket_host': '0.0.0.0',
-            'log.screen': None
-         })
+        cherrypy.config.update({'server.socket_port': 8080,
+                                'server.socket_host': '0.0.0.0',
+                                'log.screen': None})
 
         print('''Server is bound on all addresses, port 8080
 You may connect to it using your web broser using a URL looking like this:
@@ -153,28 +150,26 @@ http://localhost:8080/
         self.current_location = location.global_relative_frame
 
     def _log(self, message):
-        print "[DEBUG]: {0}".format(message)
+        print("[DEBUG]: {0}".format(message))
+
 
 class Templates:
     def __init__(self, home_coords):
         self.home_coords = home_coords
         self.options = self.get_options()
-        self.environment = Environment(loader=FileSystemLoader( local_path + '/html'))
+        self.environment = Environment(loader=FileSystemLoader(local_path + '/html'))
 
     def get_options(self):
-        return {
-                'width': 670,
+        return {'width': 670,
                 'height': 470,
                 'zoom': 13,
                 'format': 'png',
                 'access_token': 'pk.eyJ1Ijoia2V2aW4zZHIiLCJhIjoiY2lrOGoxN2s2MDJzYnR6a3drbTYwdGxmMiJ9.bv5u7QgmcJd6dZfLDGoykw',
                 'mapid': 'kevin3dr.n56ffjoo',
                 'home_coords': self.home_coords,
-                'menu': [
-                    {'name': 'Home', 'location': '/'},
-                    {'name': 'Track', 'location': '/track'},
-                    {'name': 'Command', 'location': '/command'}
-                    ],
+                'menu': [{'name': 'Home', 'location': '/'},
+                         {'name': 'Track', 'location': '/track'},
+                         {'name': 'Command', 'location': '/command'}],
                 'current_url': '/',
                 'json': ''
                 }
@@ -198,8 +193,9 @@ class Templates:
         return self.get_template('command')
 
     def get_template(self, file_name):
-        template = self.environment.get_template( file_name + '.html')
+        template = self.environment.get_template(file_name + '.html')
         return template.render(options=self.options)
+
 
 class DroneDelivery(object):
     def __init__(self, drone):
@@ -230,13 +226,13 @@ class DroneDelivery(object):
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
-print 'Launching Drone...'
+print('Launching Drone...')
 Drone().launch()
 
-print 'Waiting for cherrypy engine...'
+print('Waiting for cherrypy engine...')
 cherrypy.engine.block()
 
 if not args.connect:
