@@ -19,6 +19,7 @@ install:
 before_script:
   # --exit-zero means that flake8 will not stop the build
   # 127 characters is the width of a GitHub editor
+  - flake8 . --count --exit-zero  --max-line-length=127 --select=E999 --statistics  # syntax errors
   - flake8 . --count --exit-zero  --max-line-length=127 --statistics
 
 script:
