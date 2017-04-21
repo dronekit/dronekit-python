@@ -35,6 +35,7 @@ import collections
 import copy
 import math
 import os
+import struct
 import platform
 from queue import Queue, Empty
 import re
@@ -2437,7 +2438,8 @@ class Parameters(collections.MutableMapping, HasObservers):
         # instead just wait until the value itself was changed
 
         name = name.upper()
-        value = float(value)
+        # convert to single precision floating point number (the type used by low level mavlink messages)
+        value = float(struct.unpack('f', struct.pack('f', value))[0])
         success = False
         remaining = retries
         while True:
