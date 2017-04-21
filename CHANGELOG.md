@@ -1,5 +1,20 @@
 # Changelog
 
+## Version 2.9.1 (2017-04-21)
+
+### Improvements
+* home locatin notifications
+* notify ci status to gitter
+* basic python 3 support
+* isolated logger function so implementers can override
+* rename windows installer
+
+### Cleanup
+* removed legacy cloud integrations
+
+### Bug Fixes
+* fix missing ** operator for pymavlink compatibility
+
 ## Version 2.9.0 (2016-08-29)
 
 ### Bug Fixes
