@@ -16,7 +16,7 @@ DroneKit-Python (formerly DroneAPI-Python) contains the python language implemen
 
 The API allows developers to create Python apps that communicate with vehicles over MAVLink. It provides programmatic access to a connected vehicle's telemetry, state and parameter information, and enables both mission management and direct control over vehicle movement and operations.
 
-The API is primarily intended for use in onboard companion computers (to support advanced use cases including computer vision, path planning, 3D modelling etc). It can also be used for ground station apps, communicating with vehicles over a higher latency RF-link. 
+The API is primarily intended for use in onboard companion computers (to support advanced use cases including computer vision, path planning, 3D modelling etc). It can also be used for ground station apps, communicating with vehicles over a higher latency RF-link.
 
 ## Getting Started
 
@@ -30,7 +30,7 @@ from dronekit import connect, VehicleMode
 # Connect to UDP endpoint.
 vehicle = connect('127.0.0.1:14550', wait_ready=True)
 # Use returned Vehicle object to query device state - e.g. to get the mode:
-print " Mode: %s" % vehicle.mode.name
+print("Mode: %s" % vehicle.mode.name)
 ```
 
 Once you've got DroneKit set up, the [guide](http://python.dronekit.io/guide/index.html) explains how to perform operations like taking off and flying the vehicle. You can also try out most of the tasks by running the [examples](http://python.dronekit.io/examples/index.html).
@@ -62,7 +62,7 @@ If you want to contribute, see our [Contributing](http://python.dronekit.io/cont
 
 ## Licence
 
-DroneKit-Python is made available under the permissive open source [Apache 2.0 License](http://python.dronekit.io/about/license.html). 
+DroneKit-Python is made available under the permissive open source [Apache 2.0 License](http://python.dronekit.io/about/license.html).
 
 
 ***
