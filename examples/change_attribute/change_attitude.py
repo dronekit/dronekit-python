@@ -151,6 +151,7 @@ def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
 arm_and_takeoff_nogps(2.5)
 
 # Hold the position for 3 seconds.
+print("Hold position for 3 seconds")
 set_attitude(duration = 3)
 
 # Uncomment the lines below for testing roll angle and yaw rate.
@@ -161,7 +162,10 @@ set_attitude(duration = 3)
 
 # Move the drone forward and backward.
 # Note that it will be in front of original position due to inertia.
+print("Move forward")
 set_attitude(pitch_angle = 1, thrust = 0.5, duration = 3.21)
+
+print("Move backward")
 set_attitude(pitch_angle = -1, thrust = 0.5, duration = 3)
 
 
