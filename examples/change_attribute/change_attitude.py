@@ -19,7 +19,7 @@ from pymavlink import mavutil # Needed for command message definitions
 import time
 import math
 
-#Set up option parsing to get connection string
+# Set up option parsing to get connection string
 import argparse  
 parser = argparse.ArgumentParser(description='Control Copter and send commands in GUIDED mode ')
 parser.add_argument('--connect', 
@@ -29,7 +29,7 @@ args = parser.parse_args()
 connection_string = args.connect
 sitl = None
 
-#Start SITL if no connection string specified
+# Start SITL if no connection string specified
 if not connection_string:
     import dronekit_sitl
     sitl = dronekit_sitl.start_default()
@@ -99,14 +99,22 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0
     # Thrust <  0.5: Descend
     msg = vehicle.message_factory.set_attitude_target_encode(
                                                              0,
-                                                             0,                                         #target system
-                                                             0,                                         #target component
-                                                             0b00000000,                                #type mask: bit 1 is LSB
-                                                             to_quaternion(roll_angle, pitch_angle),    #q
-                                                             0,                                         #body roll rate in radian
-                                                             0,                                         #body pitch rate in radian
-                                                             math.radians(yaw_rate),                    #body yaw rate in radian
-                                                             thrust)                                    #thrust
+                                                             0,
+                                                                 # Target system
+                                                             0,
+                                                                 # Target component
+                                                             0b00000000,
+                                                                 # Type mask: bit 1 is LSB
+                                                             to_quaternion(roll_angle, pitch_angle),
+                                                                 # Quaternion
+                                                             0,
+                                                                 # Body roll rate in radian
+                                                             0,
+                                                                 # Body pitch rate in radian
+                                                             math.radians(yaw_rate),
+                                                                 # Body yaw rate in radian
+                                                             thrust)
+                                                                 # Thrust
     vehicle.send_mavlink(msg)
                                                              
     if duration != 0:
@@ -139,12 +147,20 @@ def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
     
     return [w, x, y, z]
 
+# Take off 2.5m in GUIDED_NOGPS mode.
 arm_and_takeoff_nogps(2.5)
 
+# Hold the position for 3 seconds.
 set_attitude(duration = 3)
 
-#set_attitude(yaw_rate = 30, thrust = 0.5, duration = 3)
+# Uncomment the lines below for testing roll angle and yaw rate.
+# Make sure that there is enough space for testing this.
 
+# set_attitude(roll_angle = 1, thrust = 0.5, duration = 3)
+# set_attitude(yaw_rate = 30, thrust = 0.5, duration = 3)
+
+# Move the drone forward and backward.
+# Note that it will be in front of original position due to inertia.
 set_attitude(pitch_angle = 1, thrust = 0.5, duration = 3.21)
 set_attitude(pitch_angle = -1, thrust = 0.5, duration = 3)
 
@@ -153,7 +169,7 @@ print("Setting LAND mode...")
 vehicle.mode = VehicleMode("LAND")
 time.sleep(1)
 
-#Close vehicle object before exiting script
+# Close vehicle object before exiting script
 print("Close vehicle object")
 vehicle.close()
 
