@@ -37,7 +37,7 @@ if not connection_string:
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
 def arm_and_takeoff_nogps(aTargetAltitude):
@@ -49,31 +49,31 @@ def arm_and_takeoff_nogps(aTargetAltitude):
     DEFAULT_TAKEOFF_THRUST = 0.7
     SMOOTH_TAKEOFF_THRUST = 0.6
     
-    print "Basic pre-arm checks"
+    print("Basic pre-arm checks")
     # Don't let the user try to arm until autopilot is ready
     # If you need to disable the arming check, just comment it with your own responsibility.
     while not vehicle.is_armable:
-        print " Waiting for vehicle to initialise..."
+        print(" Waiting for vehicle to initialise...")
         time.sleep(1)
 
 
-    print "Arming motors"
+    print("Arming motors")
     # Copter should arm in GUIDED_NOGPS mode
     vehicle.mode = VehicleMode("GUIDED_NOGPS")
     vehicle.armed = True
 
     while not vehicle.armed:
-        print " Waiting for arming..."
+        print(" Waiting for arming...")
         time.sleep(1)
 
-    print "Taking off!"
+    print("Taking off!")
 
     thrust = DEFAULT_TAKEOFF_THRUST
     while True:
         current_altitude = vehicle.location.global_relative_frame.alt
-        print " Altitude: ", current_altitude
+        print(" Altitude: ", current_altitude)
         if current_altitude >= aTargetAltitude*0.95: # Trigger just below target alt.
-            print "Reached target altitude"
+            print("Reached target altitude")
             break
         elif current_altitude >= aTargetAltitude*0.6:
             thrust = SMOOTH_TAKEOFF_THRUST
@@ -154,7 +154,7 @@ vehicle.mode = VehicleMode("LAND")
 time.sleep(1)
 
 #Close vehicle object before exiting script
-print "Close vehicle object"
+print("Close vehicle object")
 vehicle.close()
 
 # Shut down simulator if it was started.
