@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-© Copyright 2017, Team OpenMakerDrone at Yonsei Univ.
 
 change_attitude.py: (Copter Only)
 
 This example shows how to move/direct Copter and send commands in GUIDED_NOGPS mode using DroneKit Python.
+Caution: A lot of unexpected behaviors may occur in GUIDED_NOGPS mode.
+        Always watch the drone movement, and make sure that you are in dangerless environment.
+        Land the drone as soon as possible when it shows any unexpected behavior.
+
+Tested in Python 2.7.10
 
 """
 
