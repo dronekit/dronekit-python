@@ -71,7 +71,7 @@ def arm_and_takeoff_nogps(aTargetAltitude):
     thrust = DEFAULT_TAKEOFF_THRUST
     while True:
         current_altitude = vehicle.location.global_relative_frame.alt
-        print(" Altitude: ", current_altitude)
+        print(" Altitude: %s" % current_altitude)
         if current_altitude >= aTargetAltitude*0.95: # Trigger just below target alt.
             print("Reached target altitude")
             break
