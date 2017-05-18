@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7c762d7d-6a5d-42f0-b2db-19e392f81c31}</ProjectGuid>
+    <ProjectHome>..\</ProjectHome>
+    <StartupFile>setup.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="docs\about\github_latest_release.txt" />
+    <Content Include="docs\develop\MissionPlanner_ConnectPort.png" />
+    <Content Include="docs\examples\drone-delivery-command.png" />
+    <Content Include="docs\examples\drone-delivery-splash.png" />
+    <Content Include="docs\examples\drone-delivery-track.png" />
+    <Content Include="docs\examples\flight_replay_example.png" />
+    <Content Include="docs\examples\GuidedModeExample_FlyByPosition.png" />
+    <Content Include="docs\examples\GuidedModeExample_FlyByVelocity.png" />
+    <Content Include="docs\examples\mission_basic_example_copter_path.png" />
+    <Content Include="docs\examples\simple_goto_example_copter_path.png" />
+    <Content Include="docs\guide\win-screenshot.png" />
+    <Content Include="dronekit.egg-info\dependency_links.txt" />
+    <Content Include="dronekit.egg-info\requires.txt" />
+    <Content Include="dronekit.egg-info\SOURCES.txt" />
+    <Content Include="dronekit.egg-info\top_level.txt" />
+    <Content Include="examples\drone_delivery\html\assets\styles.css" />
+    <Content Include="examples\drone_delivery\html\bottom-scripts.html" />
+    <Content Include="examples\drone_delivery\html\command.html" />
+    <Content Include="examples\drone_delivery\html\head.html" />
+    <Content Include="examples\drone_delivery\html\header.html" />
+    <Content Include="examples\drone_delivery\html\index.html" />
+    <Content Include="examples\drone_delivery\html\mapbox.html" />
+    <Content Include="examples\drone_delivery\html\track.html" />
+    <Content Include="examples\gcs\screenshot.png" />
+    <Content Include="examples\mission_import_export\mpmission.txt" />
+    <Content Include="requirements.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="build\lib\dronekit\cloud\CloudClient.py" />
+    <Compile Include="build\lib\dronekit\cloud\__init__.py" />
+    <Compile Include="build\lib\dronekit\lib.py" />
+    <Compile Include="build\lib\dronekit\mavlink.py" />
+    <Compile Include="build\lib\dronekit\test\__init__.py" />
+    <Compile Include="build\lib\dronekit\util.py" />
+    <Compile Include="build\lib\dronekit\__init__.py" />
+    <Compile Include="docs\conf.py" />
+    <Compile Include="dronekit\cloud\CloudClient.py" />
+    <Compile Include="dronekit\cloud\__init__.py" />
+    <Compile Include="dronekit\lib.py" />
+    <Compile Include="dronekit\mavlink.py" />
+    <Compile Include="dronekit\test\sitl\test_110.py" />
+    <Compile Include="dronekit\test\sitl\test_115.py" />
+    <Compile Include="dronekit\test\sitl\test_12.py" />
+    <Compile Include="dronekit\test\sitl\test_capability_and_version.py" />
+    <Compile Include="dronekit\test\sitl\test_channels.py" />
+    <Compile Include="dronekit\test\sitl\test_earlyattrs.py" />
+    <Compile Include="dronekit\test\sitl\test_goto.py" />
+    <Compile Include="dronekit\test\sitl\test_locations.py" />
+    <Compile Include="dronekit\test\sitl\test_mavlink.py" />
+    <Compile Include="dronekit\test\sitl\test_modeavailable.py" />
+    <Compile Include="dronekit\test\sitl\test_mode_settings.py" />
+    <Compile Include="dronekit\test\sitl\test_parameters.py" />
+    <Compile Include="dronekit\test\sitl\test_simpledemo.py" />
+    <Compile Include="dronekit\test\sitl\test_state.py" />
+    <Compile Include="dronekit\test\sitl\test_timeout.py" />
+    <Compile Include="dronekit\test\sitl\test_vehicleclass.py" />
+    <Compile Include="dronekit\test\sitl\test_waypoints.py" />
+    <Compile Include="dronekit\test\sitl\__init__.py" />
+    <Compile Include="dronekit\test\unit\test_api.py" />
+    <Compile Include="dronekit\test\unit\__init__.py" />
+    <Compile Include="dronekit\test\web\cloud_client_test.py" />
+    <Compile Include="dronekit\test\web\__init__.py" />
+    <Compile Include="dronekit\test\__init__.py" />
+    <Compile Include="dronekit\util.py" />
+    <Compile Include="dronekit\__init__.py" />
+    <Compile Include="examples\channel_overrides\channel_overrides.py" />
+    <Compile Include="examples\create_attribute\create_attribute.py" />
+    <Compile Include="examples\create_attribute\my_vehicle.py" />
+    <Compile Include="examples\drone_delivery\drone_delivery.py" />
+    <Compile Include="examples\flight_replay\flight_replay.py" />
+    <Compile Include="examples\follow_me\follow_me.py" />
+    <Compile Include="examples\gcs\microgcs.py" />
+    <Compile Include="examples\guided_set_speed_yaw\guided_set_speed_yaw.py" />
+    <Compile Include="examples\mission_basic\mission_basic.py" />
+    <Compile Include="examples\mission_import_export\mission_import_export.py" />
+    <Compile Include="examples\performance_test\performance_test.py" />
+    <Compile Include="examples\simple_goto\simple_goto.py" />
+    <Compile Include="examples\vehicle_state\vehicle_state.py" />
+    <Compile Include="setup.py" />
+    <Compile Include="windows\returnVersion.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="build\" />
+    <Folder Include="build\lib\" />
+    <Folder Include="build\lib\dronekit" />
+    <Folder Include="build\lib\dronekit\cloud" />
+    <Folder Include="build\lib\dronekit\test" />
+    <Folder Include="docs" />
+    <Folder Include="docs\about" />
+    <Folder Include="docs\develop" />
+    <Folder Include="docs\examples" />
+    <Folder Include="docs\guide" />
+    <Folder Include="dronekit" />
+    <Folder Include="dronekit.egg-info" />
+    <Folder Include="dronekit\cloud" />
+    <Folder Include="dronekit\test" />
+    <Folder Include="dronekit\test\sitl" />
+    <Folder Include="dronekit\test\unit" />
+    <Folder Include="dronekit\test\web" />
+    <Folder Include="examples\" />
+    <Folder Include="examples\channel_overrides" />
+    <Folder Include="examples\create_attribute" />
+    <Folder Include="examples\drone_delivery" />
+    <Folder Include="examples\drone_delivery\html" />
+    <Folder Include="examples\drone_delivery\html\assets" />
+    <Folder Include="examples\flight_replay" />
+    <Folder Include="examples\follow_me" />
+    <Folder Include="examples\gcs" />
+    <Folder Include="examples\guided_set_speed_yaw" />
+    <Folder Include="examples\mission_basic" />
+    <Folder Include="examples\mission_import_export" />
+    <Folder Include="examples\performance_test" />
+    <Folder Include="examples\simple_goto" />
+    <Folder Include="examples\vehicle_state" />
+    <Folder Include="windows" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
