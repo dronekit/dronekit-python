@@ -53,7 +53,11 @@ from dronekit.util import errprinter
 from pymavlink import mavutil, mavwp
 from pymavlink.dialects.v10 import ardupilotmega
 
-
+try:
+    basestring     # Python 2
+except NameError:  # Python 3
+    basestring = (str, bytes)
+            
 class APIException(Exception):
     """
     Base class for DroneKit related exceptions.
