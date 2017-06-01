@@ -2146,6 +2146,11 @@ class Vehicle(HasObservers):
         capability_msg = vehicle.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
         vehicle.send_mavlink(capability_msg)
 
+    def play_tune(self, tune):
+        '''Request an AUTOPILOT_VERSION packet'''
+        msg = self.message_factory.play_tune_encode(0, 0, tune)
+        self.send_mavlink(msg)
+
     def wait_ready(self, *types, **kwargs):
         """
         Waits for specified attributes to be populated from the vehicle (values are initially ``None``).
