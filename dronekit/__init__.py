@@ -1561,7 +1561,26 @@ class Vehicle(HasObservers):
     @property
     def mode(self):
         """
-        This attribute is used to get and set the current flight mode (:py:class:`VehicleMode`).
+        This attribute is used to get and set the current flight mode. You
+        can specify the value as a :py:class:`VehicleMode`, like this:
+
+        .. code-block:: python
+
+           vehicle.mode = VehicleMode('LOITER')
+
+        Or as a simple string:
+
+        .. code-block:: python
+
+            vehicle.mode = 'LOITER'
+
+        If you are targeting ArduPilot you can also specify the flight mode
+        using a numeric value (this will not work with PX4 autopilots):
+
+        .. code-block:: python
+
+            # set mode to LOITER
+            vehicle.mode = 5
         """
         if not self._flightmode:
             return None
@@ -1569,8 +1588,13 @@ class Vehicle(HasObservers):
 
     @mode.setter
     def mode(self, v):
+        if isinstance(v, basestring):
+            v = VehicleMode(v)
+
         if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
             self._master.set_mode(v.name)
+        elif isinstance(v, int):
+            self._master.set_mode(v)
         else:
             self._master.set_mode(self._mode_mapping[v.name])
 
