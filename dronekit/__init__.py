@@ -1983,7 +1983,7 @@ class Vehicle(HasObservers):
         """
         if alt is not None:
             altitude = float(alt)
-            if math.isnan(alt) or math.isinf(alt):
+            if math.isnan(altitude) or math.isinf(altitude):
                 raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
             self._master.mav.command_long_send(0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
                                                   0, 0, 0, 0, 0, 0, 0, altitude)
