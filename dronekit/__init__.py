@@ -1189,19 +1189,21 @@ class Vehicle(HasObservers):
 
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
-            self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
-            self.notify_attribute_listeners('armed', self.armed, cache=True)
-            self._autopilot_type = m.autopilot
-            self._vehicle_type = m.type
-            if self._is_mode_available(m.custom_mode, m.base_mode) == False:
-                raise APIException("mode (%s, %s) not available on mavlink definition" % (m.custom_mode, m.base_mode))
-            if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
-                self._flightmode = mavutil.interpret_px4_mode(m.base_mode, m.custom_mode)
-            else:
-                self._flightmode = self._mode_mapping_bynumber[m.custom_mode]
-            self.notify_attribute_listeners('mode', self.mode, cache=True)
-            self._system_status = m.system_status
-            self.notify_attribute_listeners('system_status', self.system_status, cache=True)
+            # ignore groundstations
+            if m.type != mavutil.mavlink.MAV_TYPE_GCS:
+                self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+                self.notify_attribute_listeners('armed', self.armed, cache=True)
+                self._autopilot_type = m.autopilot
+                self._vehicle_type = m.type
+                if self._is_mode_available(m.custom_mode, m.base_mode) == False:
+                    raise APIException("mode (%s, %s) not available on mavlink definition" % (m.custom_mode, m.base_mode))
+                if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
+                    self._flightmode = mavutil.interpret_px4_mode(m.base_mode, m.custom_mode)
+                else:
+                    self._flightmode = self._mode_mapping_bynumber[m.custom_mode]
+                self.notify_attribute_listeners('mode', self.mode, cache=True)
+                self._system_status = m.system_status
+                self.notify_attribute_listeners('system_status', self.system_status, cache=True)
 
         # Waypoints.
 
@@ -1352,11 +1354,13 @@ class Vehicle(HasObservers):
 
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
-            self._heartbeat_system = msg.get_srcSystem()
-            self._heartbeat_lastreceived = monotonic.monotonic()
-            if self._heartbeat_timeout:
-                errprinter('>>> ...link restored.')
-            self._heartbeat_timeout = False
+            # ignore groundstations
+            if msg.type != mavutil.mavlink.MAV_TYPE_GCS:
+                self._heartbeat_system = msg.get_srcSystem()
+                self._heartbeat_lastreceived = monotonic.monotonic()
+                if self._heartbeat_timeout:
+                    errprinter('>>> ...link restored.')
+                self._heartbeat_timeout = False
 
         self._last_heartbeat = None
 
