@@ -89,9 +89,9 @@ class Attitude(object):
         self.pitch = pitch
         self.yaw = yaw
         self.roll = roll
-	self.pitchspeed = pitchspeed
-	self.yawspeed = yawspeed
-	self.rollspeed = rollspeed
+        self.pitchspeed = pitchspeed
+        self.yawspeed = yawspeed
+        self.rollspeed = rollspeed
 
     def __str__(self):
         fmt = '{}:pitch={pitch},yaw={yaw},roll={roll}'
