@@ -85,10 +85,13 @@ class Attitude(object):
     :param roll: Roll in radians
     """
 
-    def __init__(self, pitch, yaw, roll):
+    def __init__(self, pitch, yaw, roll,pitchspeed,yawspeed,rollspeed):
         self.pitch = pitch
         self.yaw = yaw
         self.roll = roll
+	self.pitchspeed = pitchspeed
+	self.yawspeed = yawspeed
+	self.rollspeed = rollspeed
 
     def __str__(self):
         fmt = '{}:pitch={pitch},yaw={yaw},roll={roll}'
@@ -1712,7 +1715,7 @@ class Vehicle(HasObservers):
         """
         Current vehicle attitude - pitch, yaw, roll (:py:class:`Attitude`).
         """
-        return Attitude(self._pitch, self._yaw, self._roll)
+        return Attitude(self._pitch, self._yaw, self._roll,self._pitchspeed,self._yawspeed,self._rollspeed)
 
     @property
     def gps_0(self):
