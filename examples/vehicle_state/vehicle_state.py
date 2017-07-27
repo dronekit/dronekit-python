@@ -127,12 +127,12 @@ while not vehicle.is_armable:
     # If required, you can provide additional information about initialisation
     # using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
     
-print "\nSet Vehicle.armed=True (currently: %s)" % vehicle.armed 
-vehicle.armed = True
-while not vehicle.armed:
-    print " Waiting for arming..."
-    time.sleep(1)
-print " Vehicle is armed: %s" % vehicle.armed 
+#print "\nSet Vehicle.armed=True (currently: %s)" % vehicle.armed 
+#vehicle.armed = True
+#while not vehicle.armed:
+#    print " Waiting for arming..."
+#    time.sleep(1)
+#print " Vehicle is armed: %s" % vehicle.armed 
 
 
 # Add and remove and attribute callbacks
@@ -250,7 +250,7 @@ vehicle.parameters['THR_MIN']=30
 ## Reset variables to sensible values.
 print "\nReset vehicle attributes/parameters and exit"
 vehicle.mode = VehicleMode("STABILIZE")
-vehicle.armed = False
+#vehicle.armed = False
 vehicle.parameters['THR_MIN']=130
 vehicle.parameters['THR_MID']=500
 
