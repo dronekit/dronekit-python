@@ -34,7 +34,7 @@ if not connection_string:
 # Connect to the Vehicle. 
 #   Set `wait_ready=True` to ensure default attributes are populated before `connect()` returns.
 print "\nConnecting to vehicle on: %s" % connection_string
-vehicle = connect(connection_string, wait_ready=True)
+vehicle = connect(connection_string, wait_ready=False)
 
 vehicle.wait_ready('autopilot_version')
 
@@ -77,7 +77,7 @@ print " Rangefinder distance: %s" % vehicle.rangefinder.distance
 print " Rangefinder voltage: %s" % vehicle.rangefinder.voltage
 print " Heading: %s" % vehicle.heading
 print " Is Armable?: %s" % vehicle.is_armable
-print " IsFlying: %s" % vehicle.isflying
+print " Is Flying: %s" % vehicle.isflying
 print " System status: %s" % vehicle.system_status.state
 print " Groundspeed: %s" % vehicle.groundspeed    # settable
 print " Airspeed: %s" % vehicle.airspeed    # settable
