@@ -1067,6 +1067,7 @@ class Vehicle(HasObservers):
         self._heading = None
         self._airspeed = None
         self._groundspeed = None
+        self._isflying = False
 
         @self.on_message('VFR_HUD')
         def listener(self, name, m):
@@ -1790,6 +1791,18 @@ class Vehicle(HasObservers):
             7: SystemStatus('POWEROFF'),
         }.get(self._system_status, None)
 
+    
+    @property
+    def isflying (self):
+        isFlying = ((self._system_status == MyVehicle.MAV_STATE_ACTIVE) or 
+            ((self._isflying == True) and (self._system_status == MyVehicle.MAV_STATE_CRITICAL or self._system_status == MyVehicle.MAV_STATE_EMERGENCY)))
+
+        self._isflying = isFlying        
+        
+        return self._isflying
+
+
+    
     @property
     def heading(self):
         """
