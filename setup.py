@@ -11,7 +11,7 @@ setup(name='dronekit',
       url='https://github.com/dronekit/dronekit-python',
       author='3D Robotics',
       install_requires=[
-          'pymavlink==2.0.6',
+          'pymavlink>=2.2.3',
           'monotonic==1.2',
           'future==0.15.2'
       ],
