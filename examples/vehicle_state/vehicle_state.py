@@ -34,7 +34,7 @@ if not connection_string:
 # Connect to the Vehicle. 
 #   Set `wait_ready=True` to ensure default attributes are populated before `connect()` returns.
 print "\nConnecting to vehicle on: %s" % connection_string
-vehicle = connect(connection_string, wait_ready=False)
+vehicle = connect(connection_string, wait_ready=True)
 
 vehicle.wait_ready('autopilot_version')
 
