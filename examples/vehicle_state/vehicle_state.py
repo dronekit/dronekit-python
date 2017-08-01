@@ -86,7 +86,6 @@ print " Armed: %s" % vehicle.armed    # settable
 
 
 
-
 # Get Vehicle Home location - will be `None` until first set by autopilot
 while not vehicle.home_location:
     cmds = vehicle.commands
