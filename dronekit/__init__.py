@@ -1013,6 +1013,16 @@ class Vehicle(HasObservers):
         to the project!
     """
 
+    MAV_STATE_UNINIT        = 0
+    MAV_STATE_BOOT          = 1
+    MAV_STATE_CALIBRATING   = 2
+    MAV_STATE_STANDBY       = 3
+    MAV_STATE_ACTIVE        = 4
+    MAV_STATE_CRITICAL      = 5
+    MAV_STATE_EMERGENCY     = 6
+    MAV_STATE_HILSIM        = 7
+    MAV_STATE_POWEROFF      = 8
+
     def __init__(self, handler):
         super(Vehicle, self).__init__()
 
@@ -1794,8 +1804,8 @@ class Vehicle(HasObservers):
     
     @property
     def isflying (self):
-        isFlying = ((self._system_status == MyVehicle.MAV_STATE_ACTIVE) or 
-            ((self._isflying == True) and (self._system_status == MyVehicle.MAV_STATE_CRITICAL or self._system_status == MyVehicle.MAV_STATE_EMERGENCY)))
+        isFlying = ((self._system_status == Vehicle.MAV_STATE_ACTIVE) or 
+            ((self._isflying == True) and (self._system_status == Vehicle.MAV_STATE_CRITICAL or Vehicle._system_status == self.MAV_STATE_EMERGENCY)))
 
         self._isflying = isFlying        
         

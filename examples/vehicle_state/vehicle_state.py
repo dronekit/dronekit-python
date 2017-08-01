@@ -10,7 +10,7 @@ and how to observe vehicle attribute (state) changes.
 
 Full documentation is provided at http://python.dronekit.io/examples/vehicle_state.html
 """
-from dronekit import connect, VehicleMode
+import connect, VehicleMode
 import time
 
 #Set up option parsing to get connection string
@@ -77,11 +77,13 @@ print " Rangefinder distance: %s" % vehicle.rangefinder.distance
 print " Rangefinder voltage: %s" % vehicle.rangefinder.voltage
 print " Heading: %s" % vehicle.heading
 print " Is Armable?: %s" % vehicle.is_armable
+print " IsFlying: %s" % vehicle.isflying
 print " System status: %s" % vehicle.system_status.state
 print " Groundspeed: %s" % vehicle.groundspeed    # settable
 print " Airspeed: %s" % vehicle.airspeed    # settable
 print " Mode: %s" % vehicle.mode.name    # settable
 print " Armed: %s" % vehicle.armed    # settable
+
 
 
 
