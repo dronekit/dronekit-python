@@ -43,7 +43,8 @@ def test_110(connpath):
     vehicle.armed = True
 
     # Wait for ACK.
-    wait_for(lambda : armed_callback.called, 10)
+    time_max = 10
+    wait_for(lambda : armed_callback.called, time_max)
 
     # Ensure the callback was called.
     assert armed_callback.called > 0, "Callback should have been called within %d seconds" % (time_max,)
