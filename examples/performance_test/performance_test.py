@@ -36,7 +36,7 @@ if not connection_string:
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
 #global vehicle
@@ -61,9 +61,9 @@ class MeasureTime(object):
         self.mininterval = 10000
         
     def log(self):
-        #print "Interval", self.previnterval
-        #print "MaxInterval", self.maxinterval
-        #print "MinInterval", self.mininterval
+        #print("Interval", self.previnterval)
+        #print("MaxInterval", self.maxinterval)
+        #print("MinInterval", self.mininterval)
         sys.stdout.write('MaxInterval: %s\tMinInterval: %s\tInterval: %s\r' % (self.maxinterval,self.mininterval, self.previnterval) )
         sys.stdout.flush()
 
@@ -107,7 +107,7 @@ def send_testpackets():
 #Start logging by sending a test packet
 send_testpackets()
 
-print "Logging for 30 seconds"
+print("Logging for 30 seconds")
 for x in range(1,30):
     time.sleep(1)
 
