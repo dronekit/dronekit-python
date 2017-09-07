@@ -168,8 +168,7 @@ cmds.wait_ready()
 
 cmds = vehicle.commands
 cmds.clear()
-for i in xrange(0, len(messages)):
-    pt = messages[i]
+for pt in messages:
     #print("Point: %d %d" % (pt.lat, pt.lon,))
     lat = pt.lat
     lon = pt.lon
