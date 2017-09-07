@@ -82,7 +82,7 @@ print(" System status: %s" % vehicle.system_status.state)
 print(" Groundspeed: %s" % vehicle.groundspeed)    # settable
 print(" Airspeed: %s" % vehicle.airspeed)    # settable
 print(" Mode: %s" % vehicle.mode.name)    # settable
-print(" Armed: %s" % vehicle.armed_    # settable
+print(" Armed: %s" % vehicle.armed)    # settable
 
 
 
