@@ -60,7 +60,7 @@ print("Number of channels: %s" % len(vehicle.channels))
 
 
 # Override channels
-print("\nChannel overrides: %s" % vehicle.channels.overrides
+print("\nChannel overrides: %s" % vehicle.channels.overrides)
 
 print("Set Ch2 override to 200 (indexing syntax)")
 vehicle.channels.overrides['2'] = 200
