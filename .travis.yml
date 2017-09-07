@@ -41,7 +41,6 @@ notifications:
 matrix:
   allow_failures:
   - python: 3.6
-  fast_finish: true
 
 branches:
   only:
