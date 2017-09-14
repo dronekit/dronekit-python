@@ -11,6 +11,7 @@ into a list, and can be modified before saving and/or uploading.
 
 Documentation is provided at http://python.dronekit.io/examples/mission_import_export.html
 """
+from __future__ import print_function
 
 
 from dronekit import connect, Command
@@ -36,14 +37,14 @@ if not connection_string:
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
 # Check that vehicle is armable. 
 # This ensures home_location is set (needed when saving WP file)
 
 while not vehicle.is_armable:
-    print " Waiting for vehicle to initialise..."
+    print(" Waiting for vehicle to initialise...")
     time.sleep(1)
 
 
@@ -54,7 +55,7 @@ def readmission(aFileName):
 
     This function is used by upload_mission().
     """
-    print "\nReading mission from file: %s" % aFileName
+    print("\nReading mission from file: %s" % aFileName)
     cmds = vehicle.commands
     missionlist=[]
     with open(aFileName) as f:
@@ -88,15 +89,15 @@ def upload_mission(aFileName):
     #Read mission from file
     missionlist = readmission(aFileName)
     
-    print "\nUpload mission from a file: %s" % import_mission_filename
+    print("\nUpload mission from a file: %s" % import_mission_filename)
     #Clear existing mission from vehicle
-    print ' Clear mission'
+    print(' Clear mission')
     cmds = vehicle.commands
     cmds.clear()
     #Add new mission to vehicle
     for command in missionlist:
         cmds.add(command)
-    print ' Upload mission'
+    print(' Upload mission')
     vehicle.commands.upload()
 
 
@@ -105,7 +106,7 @@ def download_mission():
     Downloads the current mission and returns it in a list.
     It is used in save_mission() to get the file information to save.
     """
-    print " Download mission from vehicle"
+    print(" Download mission from vehicle")
     missionlist=[]
     cmds = vehicle.commands
     cmds.download()
@@ -119,7 +120,7 @@ def save_mission(aFileName):
     Save a mission in the Waypoint file format 
     (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
     """
-    print "\nSave mission from Vehicle to file: %s" % export_mission_filename    
+    print("\nSave mission from Vehicle to file: %s" % export_mission_filename)    
     #Download mission from vehicle
     missionlist = download_mission()
     #Add file-format information
@@ -132,7 +133,7 @@ def save_mission(aFileName):
         commandline="%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (cmd.seq,cmd.current,cmd.frame,cmd.command,cmd.param1,cmd.param2,cmd.param3,cmd.param4,cmd.x,cmd.y,cmd.z,cmd.autocontinue)
         output+=commandline
     with open(aFileName, 'w') as file_:
-        print " Write mission to file"
+        print(" Write mission to file")
         file_.write(output)
         
         
@@ -140,10 +141,10 @@ def printfile(aFileName):
     """
     Print a mission file to demonstrate "round trip"
     """
-    print "\nMission file: %s" % aFileName
+    print("\nMission file: %s" % aFileName)
     with open(aFileName) as f:
         for line in f:
-            print ' %s' % line.strip()        
+            print(' %s' % line.strip())        
 
 
 import_mission_filename = 'mpmission.txt'
@@ -157,7 +158,7 @@ upload_mission(import_mission_filename)
 save_mission(export_mission_filename)
 
 #Close vehicle object before exiting script
-print "Close vehicle object"
+print("Close vehicle object")
 vehicle.close()
 
 # Shut down simulator if it was started.
@@ -165,7 +166,7 @@ if sitl is not None:
     sitl.stop()
 
 
-print "\nShow original and uploaded/downloaded files:"
+print("\nShow original and uploaded/downloaded files:")
 #Print original file (for demo purposes only)
 printfile(import_mission_filename)
 #Print exported file (for demo purposes only)

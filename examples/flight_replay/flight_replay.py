@@ -10,6 +10,7 @@ the flight by sending waypoints to a vehicle.
 
 Full documentation is provided at http://python.dronekit.io/examples/flight_replay.html
 """
+from __future__ import print_function
 
 from dronekit import connect, Command, VehicleMode, LocationGlobalRelative
 from pymavlink import mavutil
@@ -107,7 +108,7 @@ def arm_and_takeoff(aTargetAltitude):
 
     # Don't try to arm until autopilot is ready
     while not vehicle.is_armable:
-        print " Waiting for vehicle to initialise..."
+        print(" Waiting for vehicle to initialise...")
         time.sleep(1)
         
     # Set mode to GUIDED for arming and takeoff:
@@ -118,10 +119,10 @@ def arm_and_takeoff(aTargetAltitude):
     # Confirm vehicle armed before attempting to take off
     while not vehicle.armed:
         vehicle.armed = True
-        print " Waiting for arming..."
+        print(" Waiting for arming...")
         time.sleep(1)
 
-    print " Taking off!"
+    print(" Taking off!")
     vehicle.simple_takeoff(aTargetAltitude) # Take off to target altitude
 
     # Wait until the vehicle reaches a safe height 
@@ -130,16 +131,16 @@ def arm_and_takeoff(aTargetAltitude):
         requiredAlt = aTargetAltitude*0.95
         #Break and return from function just below target altitude.        
         if vehicle.location.global_relative_frame.alt>=requiredAlt: 
-            print " Reached target altitude of ~%f" % (aTargetAltitude)
+            print(" Reached target altitude of ~%f" % (aTargetAltitude))
             break
-        print " Altitude: %f < %f" % (vehicle.location.global_relative_frame.alt,
-                                      requiredAlt)
+        print(" Altitude: %f < %f" % (vehicle.location.global_relative_frame.alt,
+                                      requiredAlt))
         time.sleep(1)
 
 
 print("Generating waypoints from tlog...")
 messages = position_messages_from_tlog(args.tlog)
-print " Generated %d waypoints from tlog" % len(messages)
+print(" Generated %d waypoints from tlog" % len(messages))
 if len(messages) == 0:
     print("No position messages found in log")
     exit(0)
@@ -157,7 +158,7 @@ else:
     connection_string = sitl.connection_string()
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
 
@@ -168,8 +169,7 @@ cmds.wait_ready()
 
 cmds = vehicle.commands
 cmds.clear()
-for i in xrange(0, len(messages)):
-    pt = messages[i]
+for pt in messages:
     #print "Point: %d %d" % (pt.lat, pt.lon,)
     lat = pt.lat
     lon = pt.lon
@@ -189,11 +189,11 @@ for i in xrange(0, len(messages)):
 print("Uploading %d waypoints to vehicle..." % len(messages))
 cmds.upload()
 
-print "Arm and Takeoff"
+print("Arm and Takeoff")
 arm_and_takeoff(30)
 
 
-print "Starting mission"
+print("Starting mission")
 
 # Reset mission set to first (0) waypoint
 vehicle.commands.next=0
@@ -207,20 +207,20 @@ while (vehicle.mode.name != "AUTO"):
 time_start = time.time()
 while time.time() - time_start < 60:
     nextwaypoint=vehicle.commands.next
-    print 'Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint())
+    print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint()))
 
     if nextwaypoint==len(messages):
-        print "Exit 'standard' mission when start heading to final waypoint"
+        print("Exit 'standard' mission when start heading to final waypoint")
         break;
     time.sleep(1)
 
-print 'Return to launch'
+print('Return to launch')
 while (vehicle.mode.name != "RTL"):
     vehicle.mode = VehicleMode("RTL")
     time.sleep(0.1)
 
 #Close vehicle object before exiting script
-print "Close vehicle object"
+print("Close vehicle object")
 vehicle.close()
 
 # Shut down simulator if it was started.
