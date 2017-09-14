@@ -4,6 +4,7 @@
 """
 © Copyright 2015-2016, 3D Robotics.
 """
+from __future__ import print_function
 #
 # This is a small example of the python drone API - an ultra minimal GCS
 #
@@ -32,7 +33,7 @@ if not connection_string:
     connection_string = sitl.connection_string()
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
 def setMode(mode):
