@@ -1169,6 +1169,7 @@ class Vehicle(HasObservers):
         self._ekf_poshorizabs = False
         self._ekf_constposmode = False
         self._ekf_predposhorizabs = False
+        self._ekf_predposhorizrel = False
 
         @self.on_message('EKF_STATUS_REPORT')
         def listener(self, name, m):
@@ -1178,6 +1179,8 @@ class Vehicle(HasObservers):
             self._ekf_constposmode = (m.flags & ardupilotmega.EKF_CONST_POS_MODE) > 0
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+            # boolean: EKF's predicted horizontal position (relative) estimate is good
+            self._ekf_predposhorizrel = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_REL) > 0
 
             self.notify_attribute_listeners('ekf_ok', self.ekf_ok, cache=True)
 
@@ -1761,6 +1764,20 @@ class Vehicle(HasObservers):
         # check that we have a GPS fix
         # check that EKF pre-arm is complete
         return self.mode != 'INITIALISING' and self.gps_0.fix_type > 1 and self._ekf_predposhorizabs
+
+    @property
+	def is_armable_indoor(self):
+        """
+        Returns ``True`` if the vehicle is ready to arm, false otherwise (``Boolean``).
+
+        This attribute wraps a number of pre-arm checks, ensuring that the vehicle has booted,
+        the rangefinder is working and the EKF pre-arm for optical flow sensor is complete. 
+        This attribute is intended for indoor applications with optical flow and rangefinder.
+        """
+        # check that the mode is not INITIALISING
+		# check that rangefinder is working
+        # check that EKF pre-arm for optical flow sensor is complete
+        return self.mode != 'INITIALISING' and self.rangefinder.distance and self._ekf_predposhorizrel
 
     @property
     def system_status(self):
