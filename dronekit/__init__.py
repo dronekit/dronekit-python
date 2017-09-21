@@ -1766,7 +1766,7 @@ class Vehicle(HasObservers):
         return self.mode != 'INITIALISING' and self.gps_0.fix_type > 1 and self._ekf_predposhorizabs
 
     @property
-	def is_armable_indoor(self):
+    def is_armable_indoor(self):
         """
         Returns ``True`` if the vehicle is ready to arm, false otherwise (``Boolean``).
 
@@ -1775,7 +1775,7 @@ class Vehicle(HasObservers):
         This attribute is intended for indoor applications with optical flow and rangefinder.
         """
         # check that the mode is not INITIALISING
-		# check that rangefinder is working
+        # check that rangefinder is working
         # check that EKF pre-arm for optical flow sensor is complete
         return self.mode != 'INITIALISING' and self.rangefinder.distance and self._ekf_predposhorizrel
 
