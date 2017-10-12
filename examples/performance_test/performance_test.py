@@ -13,6 +13,10 @@ minimum, and most recent interval for 30 seconds.
 Full documentation is provided at http://python.dronekit.io/examples/performance_test.html
 """
 from __future__ import print_function
+from __future__ import division
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from dronekit import connect
 from pymavlink import mavutil
 import time
@@ -47,7 +51,7 @@ def cur_usec():
     """Return current time in usecs"""
     # t = time.time()
     dt = datetime.now()
-    t = dt.minute * 60 + dt.second + dt.microsecond / (1e6)
+    t = dt.minute * 60 + dt.second + old_div(dt.microsecond, (1e6))
     return t
 
 class MeasureTime(object):

@@ -9,9 +9,12 @@ from __future__ import print_function
 # This is a small example of the python drone API - an ultra minimal GCS
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
-from Tkinter import *
+from tkinter import *
 
 # The tkinter root object
 global root

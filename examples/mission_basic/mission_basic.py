@@ -8,7 +8,9 @@ mission_basic.py: Example demonstrating basic mission operations including creat
 Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
 """
 from __future__ import print_function
+from __future__ import division
 
+from past.utils import old_div
 from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Command
 import time
 import math
@@ -52,8 +54,8 @@ def get_location_metres(original_location, dNorth, dEast):
     """
     earth_radius=6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
-    dLat = dNorth/earth_radius
-    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
+    dLat = old_div(dNorth,earth_radius)
+    dLon = old_div(dEast,(earth_radius*math.cos(math.pi*original_location.lat/180)))
 
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
@@ -80,7 +82,7 @@ def distance_to_current_waypoint():
     Gets distance in metres to the current waypoint. 
     It returns None for the first waypoint (Home location).
     """
-    nextwaypoint = vehicle.commands.next
+    nextwaypoint = vehicle.commands.__next__
     if nextwaypoint==0:
         return None
     missionitem=vehicle.commands[nextwaypoint-1] #commands are zero indexed
@@ -193,7 +195,7 @@ vehicle.mode = VehicleMode("AUTO")
 #   distance to the next waypoint.
 
 while True:
-    nextwaypoint=vehicle.commands.next
+    nextwaypoint=vehicle.commands.__next__
     print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint()))
   
     if nextwaypoint==3: #Skip to next waypoint

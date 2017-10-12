@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import str
 import os
 import sys
 from dronekit_sitl import SITL

@@ -10,7 +10,10 @@ This example shows how to move/direct Copter and send commands in GUIDED mode us
 Example documentation: http://python.dronekit.io/examples/guided-set-speed-yaw-demo.html
 """
 from __future__ import print_function
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil # Needed for command message definitions
 import time
@@ -178,8 +181,8 @@ def get_location_metres(original_location, dNorth, dEast):
     """
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #Coordinate offsets in radians
-    dLat = dNorth/earth_radius
-    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
+    dLat = old_div(dNorth,earth_radius)
+    dLon = old_div(dEast,(earth_radius*math.cos(math.pi*original_location.lat/180)))
 
     #New position in decimal degrees
     newlat = original_location.lat + (dLat * 180/math.pi)
