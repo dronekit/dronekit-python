@@ -755,7 +755,7 @@ class ChannelsOverride(dict):
     def _send(self):
         if self._active:
             overrides = [0] * 8
-            for k, v in list(self.items()):
+            for k, v in self.items():
                 overrides[int(k) - 1] = v
             self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
 
