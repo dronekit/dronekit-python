@@ -12,7 +12,7 @@ def assert_readback(vehicle, values):
     while i > 0:
         time.sleep(.1)
         i -= .1
-        for k, v in list(values.items()):
+        for k, v in values.items():
             if vehicle.channels[k] != v:
                 continue
         break
