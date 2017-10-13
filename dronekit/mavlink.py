@@ -182,7 +182,7 @@ class MAVConnection(object):
                         errprinter('>>> mav send error:', e)
                         break
             except APIException as e:
-                errprinter('>>> ' + str(e.message))
+                errprinter('>>> ' + str(e))
                 self._alive = False
                 self.master.close()
                 self._death_error = e
@@ -237,7 +237,7 @@ class MAVConnection(object):
                                 errprinter('>>> ' + str(e))
 
             except APIException as e:
-                errprinter('>>> ' + str(e.message))
+                errprinter('>>> ' + str(e))
                 self._alive = False
                 self.master.close()
                 self._death_error = e

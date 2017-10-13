@@ -1189,12 +1189,15 @@ class Vehicle(HasObservers):
 
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
+            # ignore groundstations
+            if m.type == mavutil.mavlink.MAV_TYPE_GCS:
+                return
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed, cache=True)
             self._autopilot_type = m.autopilot
             self._vehicle_type = m.type
             if self._is_mode_available(m.custom_mode, m.base_mode) == False:
-                raise APIException("mode %s not available on mavlink definition" % m.custom_mode)
+                raise APIException("mode (%s, %s) not available on mavlink definition" % (m.custom_mode, m.base_mode))
             if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
                 self._flightmode = mavutil.interpret_px4_mode(m.base_mode, m.custom_mode)
             else:
@@ -1352,6 +1355,9 @@ class Vehicle(HasObservers):
 
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
+            # ignore groundstations
+            if msg.type == mavutil.mavlink.MAV_TYPE_GCS:
+                return
             self._heartbeat_system = msg.get_srcSystem()
             self._heartbeat_lastreceived = monotonic.monotonic()
             if self._heartbeat_timeout:
@@ -1561,7 +1567,26 @@ class Vehicle(HasObservers):
     @property
     def mode(self):
         """
-        This attribute is used to get and set the current flight mode (:py:class:`VehicleMode`).
+        This attribute is used to get and set the current flight mode. You
+        can specify the value as a :py:class:`VehicleMode`, like this:
+
+        .. code-block:: python
+
+           vehicle.mode = VehicleMode('LOITER')
+
+        Or as a simple string:
+
+        .. code-block:: python
+
+            vehicle.mode = 'LOITER'
+
+        If you are targeting ArduPilot you can also specify the flight mode
+        using a numeric value (this will not work with PX4 autopilots):
+
+        .. code-block:: python
+
+            # set mode to LOITER
+            vehicle.mode = 5
         """
         if not self._flightmode:
             return None
@@ -1569,8 +1594,13 @@ class Vehicle(HasObservers):
 
     @mode.setter
     def mode(self, v):
+        if isinstance(v, basestring):
+            v = VehicleMode(v)
+
         if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
             self._master.set_mode(v.name)
+        elif isinstance(v, int):
+            self._master.set_mode(v)
         else:
             self._master.set_mode(self._mode_mapping[v.name])
 
@@ -1983,7 +2013,7 @@ class Vehicle(HasObservers):
         """
         if alt is not None:
             altitude = float(alt)
-            if math.isnan(alt) or math.isinf(alt):
+            if math.isnan(altitude) or math.isinf(altitude):
                 raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
             self._master.mav.command_long_send(0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
                                                   0, 0, 0, 0, 0, 0, 0, altitude)
@@ -2145,6 +2175,11 @@ class Vehicle(HasObservers):
         '''Request an AUTOPILOT_VERSION packet'''
         capability_msg = vehicle.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
         vehicle.send_mavlink(capability_msg)
+
+    def play_tune(self, tune):
+        '''Request an AUTOPILOT_VERSION packet'''
+        msg = self.message_factory.play_tune_encode(0, 0, tune)
+        self.send_mavlink(msg)
 
     def wait_ready(self, *types, **kwargs):
         """

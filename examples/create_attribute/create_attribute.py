@@ -14,6 +14,7 @@ intercepted using the message_listener decorator.
 
 Full documentation is provided at http://python.dronekit.io/examples/create_attribute.html
 """
+from __future__ import print_function
 
 from dronekit import connect, Vehicle
 from my_vehicle import MyVehicle #Our custom vehicle class
@@ -40,7 +41,7 @@ if not connection_string:
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True, vehicle_class=MyVehicle)
 
 # Add observer for the custom attribute
@@ -48,17 +49,17 @@ vehicle = connect(connection_string, wait_ready=True, vehicle_class=MyVehicle)
 def raw_imu_callback(self, attr_name, value):
     # attr_name == 'raw_imu'
     # value == vehicle.raw_imu
-    print value
+    print(value)
 
 vehicle.add_attribute_listener('raw_imu', raw_imu_callback)
 
-print 'Display RAW_IMU messages for 5 seconds and then exit.'
+print('Display RAW_IMU messages for 5 seconds and then exit.')
 time.sleep(5)
 
 #The message listener can be unset using ``vehicle.remove_message_listener``
 
 #Close vehicle object before exiting script
-print "Close vehicle object"
+print("Close vehicle object")
 vehicle.close()
 
 # Shut down simulator if it was started.

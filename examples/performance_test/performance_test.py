@@ -12,6 +12,7 @@ minimum, and most recent interval for 30 seconds.
 
 Full documentation is provided at http://python.dronekit.io/examples/performance_test.html
 """
+from __future__ import print_function
 from dronekit import connect
 from pymavlink import mavutil
 import time
@@ -36,7 +37,7 @@ if not connection_string:
 
 
 # Connect to the Vehicle
-print 'Connecting to vehicle on: %s' % connection_string
+print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
 #global vehicle
@@ -107,7 +108,7 @@ def send_testpackets():
 #Start logging by sending a test packet
 send_testpackets()
 
-print "Logging for 30 seconds"
+print("Logging for 30 seconds")
 for x in range(1,30):
     time.sleep(1)
 
