@@ -214,8 +214,8 @@ print(" Read new value of param 'THR_MIN': %s" % vehicle.parameters['THR_MIN'])
 
 
 print("\nPrint all parameters (iterate `vehicle.parameters`):")
-for key, value in list(vehicle.parameters.items()):
-    print(" Key:%s Value:%s" % (key,value))
+for key, value in vehicle.parameters.items():
+    print(" Key:%s Value:%s" % (key, value))
     
 
 print("\nCreate parameter observer using decorator")
