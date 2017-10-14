@@ -11,10 +11,14 @@ the flight by sending waypoints to a vehicle.
 Full documentation is provided at http://python.dronekit.io/examples/flight_replay.html
 """
 from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 from dronekit import connect, Command, VehicleMode, LocationGlobalRelative
 from pymavlink import mavutil
-import json, urllib, math
+import json, urllib.request, urllib.parse, urllib.error, math
 import time
 
 #Set up option parsing to get connection string
@@ -45,7 +49,7 @@ def distance_to_current_waypoint():
     Gets distance in metres to the current waypoint. 
     It returns None for the first waypoint (Home location).
     """
-    nextwaypoint = vehicle.commands.next
+    nextwaypoint = vehicle.commands.__next__
     if nextwaypoint==0:
         return None
     missionitem=vehicle.commands[nextwaypoint-1] #commands are zero indexed
@@ -90,8 +94,8 @@ def position_messages_from_tlog(filename):
         if pt2num==num_points-1 or len(kept_messages)==99:
             kept_messages.append(messages[pt2num])
             break
-        pt1 = LocationGlobalRelative(messages[pt1num].lat/1.0e7,messages[pt1num].lon/1.0e7,0)
-        pt2 = LocationGlobalRelative(messages[pt2num].lat/1.0e7,messages[pt2num].lon/1.0e7,0)
+        pt1 = LocationGlobalRelative(old_div(messages[pt1num].lat,1.0e7),old_div(messages[pt1num].lon,1.0e7),0)
+        pt2 = LocationGlobalRelative(old_div(messages[pt2num].lat,1.0e7),old_div(messages[pt2num].lon,1.0e7),0)
         distance_between_points = get_distance_metres(pt1,pt2)
         if distance_between_points > keep_point_distance:
             kept_messages.append(messages[pt2num])
@@ -150,8 +154,8 @@ if args.connect:
     connection_string = args.connect
     sitl = None
 else:
-    start_lat = messages[0].lat/1.0e7
-    start_lon = messages[0].lon/1.0e7
+    start_lat = old_div(messages[0].lat,1.0e7)
+    start_lon = old_div(messages[0].lon,1.0e7)
 
     import dronekit_sitl
     sitl = dronekit_sitl.start_default(lat=start_lat,lon=start_lon)
@@ -182,7 +186,7 @@ for pt in messages:
                    mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
                    0, 0, 0, 0, 0, 0,
-                   lat/1.0e7, lon/1.0e7, altitude)
+                   old_div(lat,1.0e7), old_div(lon,1.0e7), altitude)
     cmds.add(cmd)
 
 #Upload clear message and command messages to vehicle.
@@ -206,7 +210,7 @@ while (vehicle.mode.name != "AUTO"):
 # Monitor mission for 60 seconds then RTL and quit:
 time_start = time.time()
 while time.time() - time_start < 60:
-    nextwaypoint=vehicle.commands.next
+    nextwaypoint=vehicle.commands.__next__
     print('Distance to waypoint (%s): %s' % (nextwaypoint, distance_to_current_waypoint()))
 
     if nextwaypoint==len(messages):

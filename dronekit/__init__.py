@@ -31,6 +31,11 @@ A number of other useful classes and methods are listed below.
 """
 
 from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import collections
 import copy
 import math
@@ -237,11 +242,11 @@ class Battery(object):
     """
 
     def __init__(self, voltage, current, level):
-        self.voltage = voltage / 1000.0
+        self.voltage = old_div(voltage, 1000.0)
         if current == -1:
             self.current = None
         else:
-            self.current = current / 100.0
+            self.current = old_div(current, 100.0)
         if level == -1:
             self.level = None
         else:
@@ -341,7 +346,7 @@ class Version(object):
         if self.release is None:
             return None
         types = [ "dev", "alpha", "beta", "rc" ]
-        return types[self.release/64]
+        return types[old_div(self.release,64)]
 
     def __str__(self):
         prefix=""
@@ -372,7 +377,7 @@ class Version(object):
 
         return prefix + "%s.%s.%s" % (self.major, self.minor, self.patch) + release_type
 
-class Capabilities:
+class Capabilities(object):
     """
     Autopilot capabilities (supported message types and functionality).
 
@@ -750,7 +755,7 @@ class ChannelsOverride(dict):
     def _send(self):
         if self._active:
             overrides = [0] * 8
-            for k, v in self.iteritems():
+            for k, v in self.items():
                 overrides[int(k) - 1] = v
             self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
 
@@ -845,7 +850,7 @@ class Channels(dict):
     def overrides(self, newch):
         self._overrides._active = False
         self._overrides.clear()
-        for k, v in newch.iteritems():
+        for k, v in list(newch.items()):
             if v:
                 self._overrides[str(k)] = v
             else:
@@ -878,8 +883,8 @@ class Locations(HasObservers):
 
         @vehicle.on_message('GLOBAL_POSITION_INT')
         def listener(vehicle, name, m):
-            (self._lat, self._lon) = (m.lat / 1.0e7, m.lon / 1.0e7)
-            self._relative_alt = m.relative_alt / 1000.0
+            (self._lat, self._lon) = (old_div(m.lat, 1.0e7), old_div(m.lon, 1.0e7))
+            self._relative_alt = old_div(m.relative_alt, 1000.0)
             self.notify_attribute_listeners('global_relative_frame', self.global_relative_frame)
             vehicle.notify_attribute_listeners('location.global_relative_frame',
                                                vehicle.location.global_relative_frame)
@@ -887,7 +892,7 @@ class Locations(HasObservers):
             if self._alt != None or m.alt != 0:
                 # Require first alt value to be non-0
                 # TODO is this the proper check to do?
-                self._alt = m.alt / 1000.0
+                self._alt = old_div(m.alt, 1000.0)
                 self.notify_attribute_listeners('global_frame', self.global_frame)
                 vehicle.notify_attribute_listeners('location.global_frame',
                                                    vehicle.location.global_frame)
@@ -1044,7 +1049,7 @@ class Vehicle(HasObservers):
 
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
-            (self._vx, self._vy, self._vz) = (m.vx / 100.0, m.vy / 100.0, m.vz / 100.0)
+            (self._vx, self._vy, self._vz) = (old_div(m.vx, 100.0), old_div(m.vy, 100.0), old_div(m.vz, 100.0))
             self.notify_attribute_listeners('velocity', self.velocity)
 
         self._pitch = None
@@ -1092,9 +1097,9 @@ class Vehicle(HasObservers):
 
         @self.on_message('MOUNT_STATUS')
         def listener(self, name, m):
-            self._mount_pitch = m.pointing_a / 100.0
-            self._mount_roll = m.pointing_b / 100.0
-            self._mount_yaw = m.pointing_c / 100.0
+            self._mount_pitch = old_div(m.pointing_a, 100.0)
+            self._mount_roll = old_div(m.pointing_b, 100.0)
+            self._mount_yaw = old_div(m.pointing_c, 100.0)
             self.notify_attribute_listeners('mount', self.mount_status)
 
         self._capabilities = None
@@ -1225,7 +1230,7 @@ class Vehicle(HasObservers):
 
         @self.on_message(['HOME_POSITION'])
         def listener(self, name, msg):
-            self._home_location = LocationGlobal(msg.latitude/1.0e7, msg.longitude/1.0e7, msg.altitude/1000.0);
+            self._home_location = LocationGlobal(old_div(msg.latitude,1.0e7), old_div(msg.longitude,1.0e7), old_div(msg.altitude,1000.0));
             self.notify_attribute_listeners('home_location', self.home_location, cache=True)
 
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
@@ -2272,9 +2277,9 @@ class Gimbal(object):
 
         @vehicle.on_message('MOUNT_STATUS')
         def listener(vehicle, name, m):
-            self._pitch = m.pointing_a / 100.0
-            self._roll = m.pointing_b / 100.0
-            self._yaw = m.pointing_c / 100.0
+            self._pitch = old_div(m.pointing_a, 100.0)
+            self._roll = old_div(m.pointing_b, 100.0)
+            self._yaw = old_div(m.pointing_c, 100.0)
             vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
 
     @property

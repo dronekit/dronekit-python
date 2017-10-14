@@ -11,6 +11,7 @@ Full documentation is provided at http://python.dronekit.io/examples/drone_deliv
 """
 
 from __future__ import print_function
+from builtins import object
 import os
 import simplejson
 import time
@@ -153,7 +154,7 @@ http://localhost:8080/
         print("[DEBUG]: {0}".format(message))
 
 
-class Templates:
+class Templates(object):
     def __init__(self, home_coords):
         self.home_coords = home_coords
         self.options = self.get_options()

@@ -15,6 +15,7 @@ Example documentation: http://python.dronekit.io/examples/follow_me.html
 """
 from __future__ import print_function
 
+from builtins import next
 from dronekit import connect, VehicleMode, LocationGlobalRelative
 import gps
 import socket
