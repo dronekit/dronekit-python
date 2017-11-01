@@ -1110,7 +1110,7 @@ class Vehicle(HasObservers):
                 # ArduPilot <3.4 fails to send capabilities correctly
                 # straight after boot, and even older versions send
                 # this back as always-0.
-                vehicle.remove_message_listener('HEARTBEAT', self.send_capabilties_request)
+                vehicle.remove_message_listener('HEARTBEAT', self.send_capabilities_request)
             self.notify_attribute_listeners('autopilot_version', self._raw_version)
 
         # gimbal
@@ -2160,7 +2160,7 @@ class Vehicle(HasObservers):
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
 
-        self.add_message_listener('HEARTBEAT', self.send_capabilties_request)
+        self.add_message_listener('HEARTBEAT', self.send_capabilities_request)
 
         # Ensure initial parameter download has started.
         while True:
@@ -2172,6 +2172,14 @@ class Vehicle(HasObservers):
                 break
 
     def send_capabilties_request(self, vehicle, name, m):
+        '''An alias for send_capabilities_request.
+
+        The word "capabilities" was misspelled in previous versions of this code. This is simply
+        an alias to send_capabilities_request using the legacy name.
+        '''
+        return self.send_capabilities_request(vehicle, name, m)
+
+    def send_capabilities_request(self, vehicle, name, m):
         '''Request an AUTOPILOT_VERSION packet'''
         capability_msg = vehicle.message_factory.command_long_encode(0, 0, mavutil.mavlink.MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, 0, 1, 0, 0, 0, 0, 0, 0)
         vehicle.send_mavlink(capability_msg)
