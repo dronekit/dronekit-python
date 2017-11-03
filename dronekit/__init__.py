@@ -61,8 +61,9 @@ class APIException(Exception):
     :param String message: Message string describing the exception
     """
 
-    def __init__(self, message):
-        super(APIException, self).__init__(message)
+
+class TimeoutError(APIException):
+    '''Raised by operations that have timeouts.'''
 
 
 class Attitude(object):
@@ -1989,6 +1990,119 @@ class Vehicle(HasObservers):
         """
         return self._parameters
 
+    def wait_for(self, condition, timeout=None, interval=0.1, errmsg=None):
+        '''Wait for a condition to be True.
+
+        Wait for condition, a callable, to return True.  If timeout is
+        nonzero, raise a TimeoutError(errmsg) if the condition is not
+        True after timeout seconds.  Check the condition everal
+        interval seconds.
+        '''
+
+        t0 = time.time()
+        while not condition():
+            t1 = time.time()
+            if timeout and (t1 - t0) >= timeout:
+                raise TimeoutError(errmsg)
+
+            time.sleep(interval)
+
+    def wait_for_armable(self, timeout=None):
+        '''Wait for the vehicle to become armable.
+
+        If timeout is nonzero, raise a TimeoutError if the vehicle
+        is not armable after timeout seconds.
+        '''
+
+        def check_armable():
+            return self.is_armable
+
+        self.wait_for(check_armable, timeout=timeout)
+
+    def arm(self, wait=True, timeout=None):
+        '''Arm the vehicle.
+
+        If wait is True, wait for arm operation to complete before
+        returning.  If timeout is nonzero, raise a TimeouTerror if the
+        vehicle has not armed after timeout seconds.
+        '''
+
+        self.armed = True
+
+        if wait:
+            self.wait_for(lambda: self.armed, timeout=timeout,
+                          errmsg='failed to arm vehicle')
+
+    def disarm(self, wait=True, timeout=None):
+        '''Disarm the vehicle.
+
+        If wait is True, wait for disarm operation to complete before
+        returning.  If timeout is nonzero, raise a TimeouTerror if the
+        vehicle has not disarmed after timeout seconds.
+        '''
+        self.armed = False
+
+        if wait:
+            self.wait_for(lambda: not self.armed, timeout=timeout,
+                          errmsg='failed to disarm vehicle')
+
+    def wait_for_mode(self, mode, timeout=None):
+        '''Set the flight mode.
+
+        If wait is True, wait for the mode to change before returning.
+        If timeout is nonzero, raise a TimeoutError if the flight mode
+        hasn't changed after timeout seconds.
+        '''
+
+        if not isinstance(mode, VehicleMode):
+            mode = VehicleMode(mode)
+
+        self.mode = mode
+
+        self.wait_for(lambda: self.mode.name == mode.name,
+                      timeout=timeout,
+                      errmsg='failed to set flight mode')
+
+    def wait_for_alt(self, alt, epsilon=0.1, rel=True, timeout=None):
+        '''Wait for the vehicle to reach the specified altitude.
+
+        Wait for the vehicle to get within epsilon meters of the
+        given altitude.  If rel is True (the default), use the
+        global_relative_frame. If rel is False, use the global_frame.
+        If timeout is nonzero, raise a TimeoutError if the specified
+        altitude has not been reached after timeout seconds.
+        '''
+
+        def get_alt():
+            if rel:
+                alt = self.location.global_relative_frame.alt
+            else:
+                alt = self.location.global_frame.alt
+
+            return alt
+
+        def check_alt():
+            cur = get_alt()
+            delta = abs(alt-cur)
+
+            return (
+                (delta < epsilon) or
+                (start < alt and cur > alt) or
+                (start > alt and cur < alt)
+            )
+
+        start = get_alt()
+
+        self.wait_for(
+            check_alt,
+            timeout=timeout,
+            errmsg='failed to reach specified altitude')
+
+    def wait_simple_takeoff(self, alt=None, epsilon=0.1, timeout=None):
+        self.simple_takeoff(alt)
+
+        if alt is not None:
+            self.wait_for_alt(alt, epsilon=epsilon, timeout=timeout)
 
     def simple_takeoff(self, alt=None):
         """
@@ -2238,7 +2352,7 @@ class Vehicle(HasObservers):
             time.sleep(0.1)
             if monotonic.monotonic() - start > timeout:
                 if raise_exception:
-                    raise APIException('wait_ready experienced a timeout after %s seconds.' %
+                    raise TimeoutError('wait_ready experienced a timeout after %s seconds.' %
                                        timeout)
                 else:
                     return False
