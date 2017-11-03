@@ -6,13 +6,14 @@ Please note that these instructions will significantly change your environment. 
 
   Given that this README file exists within that branch, this should not be too much of a problem.
 
-  The branch can be cloned from ssh://git@github.com/peterbarker/dronekit-python.git
+  The branch can be cloned from https://github.com/peterbarker/dronekit-python
   ```
   DRONEKIT_TOP=$HOME # e.g.
   cd $DRONEKIT_TOP/dronekit-python
-  git remote add peterbarker ssh://git@github.com/peterbarker/dronekit-python.git
+  git remote add peterbarker https://github.com/peterbarker/dronekit-python
   git fetch peterbarker
   git checkout peterbarker/source-system-filtering
+  python setup.py build install --user --force
   ```
 
 2. Run a version of pymavlink which contains source system filtering:
@@ -38,7 +39,7 @@ Please note that these instructions will significantly change your environment. 
   git remote add peterbarker https://github.com/peterbarker/MAVProxy
   git fetch peterbarker
   git checkout avoidance
-  python seutp.setup.py build install --user --force
+  python setup.py build install --user --force
   ```
 
 4. Connect a GCS to port 3456
