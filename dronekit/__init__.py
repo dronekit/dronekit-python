@@ -1957,7 +1957,7 @@ class Vehicle(HasObservers):
         """
 
         if not isinstance(pos, LocationGlobal):
-            raise Exception('Excepting home_location to be set to a LocationGlobal.')
+            raise ValueError('Expecting home_location to be set to a LocationGlobal.')
 
         # Set cached home location.
         self._home_location = copy.copy(pos)
@@ -2058,7 +2058,7 @@ class Vehicle(HasObservers):
                 self.commands.wait_ready()
             alt = location.alt - self.home_location.alt
         else:
-            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+            raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
         self._master.mav.mission_item_send(0, 0, 0, frame,
                                            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
@@ -2229,7 +2229,7 @@ class Vehicle(HasObservers):
             types = self._default_ready_attrs
 
         if not all(isinstance(item, basestring) for item in types):
-            raise APIException('wait_ready expects one or more string arguments.')
+            raise ValueError('wait_ready expects one or more string arguments.')
 
         # Wait for these attributes to have been set.
         await = set(types)
@@ -2387,7 +2387,7 @@ class Gimbal(object):
                 self.commands.wait_ready()
             alt = roi.alt - self.home_location.alt
         else:
-            raise APIException('Expecting location to be LocationGlobal or LocationGlobalRelative.')
+            raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
         #set the ROI
         msg = self._vehicle.message_factory.command_long_encode(
