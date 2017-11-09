@@ -2349,14 +2349,24 @@ class Vehicle(HasObservers):
         # Wait for these attributes to have been set.
         await_attributes = set(types)
         start = monotonic.monotonic()
+        still_waiting_last_message_sent = start
+        still_waiting_callback = kwargs.get('still_waiting_callback')
+        still_waiting_message_interval = kwargs.get('still_waiting_interval', 1)
+
         while not await_attributes.issubset(self._ready_attrs):
             time.sleep(0.1)
-            if monotonic.monotonic() - start > timeout:
+            now = monotonic.monotonic()
+            if now - start > timeout:
                 if raise_exception:
                     raise TimeoutError('wait_ready experienced a timeout after %s seconds.' %
                                        timeout)
                 else:
                     return False
+            if (still_waiting_callback and
+                now - still_waiting_last_message_sent > still_waiting_message_interval):
+                still_waiting_last_message_sent = now
+                if still_waiting_callback:
+                    still_waiting_callback(await-self._ready_attrs)
 
         return True
 
@@ -2941,9 +2951,15 @@ class CommandSequence(object):
 from dronekit.mavlink import MAVConnection
 
 
+def default_still_waiting_callback(atts):
+    print("Still waiting for data from vehicle: %s" % ','.join(atts),
+          file=sys.stderr)
+
 def connect(ip,
             _initialize=True,
             wait_ready=None,
+            still_waiting_callback=default_still_waiting_callback,
+            still_waiting_interval=1,
             status_printer=errprinter,
             vehicle_class=None,
             rate=4,
@@ -3019,7 +3035,8 @@ def connect(ip,
 
     if wait_ready:
         if wait_ready == True:
-            vehicle.wait_ready(True)
+            vehicle.wait_ready(still_waiting_interval=still_waiting_interval,
+                               still_waiting_callback=still_waiting_callback)
         else:
             vehicle.wait_ready(*wait_ready)
 
