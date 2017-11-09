@@ -2958,6 +2958,7 @@ def default_still_waiting_callback(atts):
 def connect(ip,
             _initialize=True,
             wait_ready=None,
+            timeout=30,
             still_waiting_callback=default_still_waiting_callback,
             still_waiting_interval=1,
             status_printer=errprinter,
@@ -3036,7 +3037,8 @@ def connect(ip,
     if wait_ready:
         if wait_ready == True:
             vehicle.wait_ready(still_waiting_interval=still_waiting_interval,
-                               still_waiting_callback=still_waiting_callback)
+                               still_waiting_callback=still_waiting_callback,
+                               timeout=timeout)
         else:
             vehicle.wait_ready(*wait_ready)
 
