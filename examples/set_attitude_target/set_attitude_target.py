@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 
@@ -85,20 +84,18 @@ def arm_and_takeoff_nogps(aTargetAltitude):
         set_attitude(thrust = thrust)
         time.sleep(0.2)
 
-
-def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0.5, duration = 0):
+def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
+                         yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
+                         thrust = 0.5):
     """
-    Note that from AC3.3 the message should be re-sent every second (after about 3 seconds
-    with no message the velocity will drop back to zero). In AC3.2.1 and earlier the specified
-    velocity persists until it is canceled. The code below should work on either version
-    (sending the message multiple times does not cause problems).
+    use_yaw_rate: the yaw can be controlled using yaw_angle OR yaw_rate.
+                  When one is used, the other is ignored by Ardupilot.
+    thrust: 0 <= thrust <= 1, as a fraction of maximum vertical thrust.
+            Note that as of Copter 3.5, thrust = 0.5 triggers a special case in
+            the code for maintaining current altitude.
     """
-    
-    """
-    The roll and pitch rate cannot be controllbed with rate in radian in AC3.4.4 or earlier,
-    so you must use quaternion to control the pitch and roll for those vehicles.
-    """
-    
+    if not use_yaw_rate and yaw_angle is None:
+        yaw_angle = vehicle.attitude.yaw
     # Thrust >  0.5: Ascend
     # Thrust == 0.5: Hold the altitude
     # Thrust <  0.5: Descend
@@ -106,19 +103,38 @@ def set_attitude(roll_angle = 0.0, pitch_angle = 0.0, yaw_rate = 0.0, thrust = 0
         0, # time_boot_ms
         1, # Target system
         1, # Target component
-        0b00000000, # Type mask: bit 1 is LSB
-        to_quaternion(roll_angle, pitch_angle), # Quaternion
+        0b00000000 if use_yaw_rate else 0b00000100,
+        to_quaternion(roll_angle, pitch_angle, yaw_angle), # Quaternion
         0, # Body roll rate in radian
         0, # Body pitch rate in radian
-        math.radians(yaw_rate), # Body yaw rate in radian
+        math.radians(yaw_rate), # Body yaw rate in radian/second
         thrust  # Thrust
     )
     vehicle.send_mavlink(msg)
 
+def set_attitude(roll_angle = 0.0, pitch_angle = 0.0,
+                 yaw_angle = None, yaw_rate = 0.0, use_yaw_rate = False,
+                 thrust = 0.5, duration = 0):
+    """
+    Note that from AC3.3 the message should be re-sent more often than every
+    second, as an ATTITUDE_TARGET order has a timeout of 1s.
+    In AC3.2.1 and earlier the specified attitude persists until it is canceled.
+    The code below should work on either version.
+    Sending the message multiple times is the recommended way.
+    """
+    send_attitude_target(roll_angle, pitch_angle,
+                         yaw_angle, yaw_rate, False,
+                         thrust)
     start = time.time()
     while time.time() - start < duration:
-        vehicle.send_mavlink(msg)
+        send_attitude_target(roll_angle, pitch_angle,
+                             yaw_angle, yaw_rate, False,
+                             thrust)
         time.sleep(0.1)
+    # Reset attitude, or it will persist for 1s more due to the timeout
+    send_attitude_target(0, 0,
+                         0, 0, True,
+                         thrust)
 
 def to_quaternion(roll = 0.0, pitch = 0.0, yaw = 0.0):
     """
