@@ -27,6 +27,20 @@ The second parameter (``wait_ready``) is used to determine whether ``connect()``
 on connection or if it waits until *some* vehicle parameters and attributes are populated. In most cases you
 should use ``wait_ready=True`` to wait on the default set of parameters.
 
+Connecting over a serial device will look something like this:
+
+.. code-block:: python
+
+    from dronekit import connect
+
+    # Connect to the Vehicle (in this case a UDP endpoint)
+    vehicle = connect('/dev/ttyAMA0', wait_ready=True, baud=57600)
+
+.. tip::
+
+  If the baud rate is not set correctly, ``connect`` may fail with a
+  timeout error.  It is best to set the baud rate explicitly.
+
 :py:func:`connect() <dronekit.connect>` also has arguments for setting the baud rate, 
 the length of the connection timeout, and/or to use 
 a :ref:`custom vehicle class <example_create_attribute>`. 
