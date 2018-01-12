@@ -8,12 +8,12 @@ from nose.tools import assert_not_equals, assert_equals
 
 @with_sitl
 def test_mavlink(connpath):
-    vehicle = connect(connpath)
+    vehicle = connect(connpath, wait_ready=True)
     out = MAVConnection('udpin:localhost:15668')
     vehicle._handler.pipe(out)
     out.start()
 
-    vehicle2 = connect('udpout:localhost:15668')
+    vehicle2 = connect('udpout:localhost:15668', wait_ready=True)
 
     result = {'success': False}
 
@@ -24,5 +24,6 @@ def test_mavlink(connpath):
     i = 20
     while not result['success'] and i > 0:
         time.sleep(1)
+        i -= 1
 
     assert result['success']

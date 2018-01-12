@@ -197,7 +197,7 @@ class LocationLocal(object):
 
         if self.north is not None and self.east is not None:
             if self.down is not None:
-                return math.sqrt(self.north**2 + self.east**2 + self.down**2) 
+                return math.sqrt(self.north**2 + self.east**2 + self.down**2)
             else:
                 return math.sqrt(self.north**2 + self.east**2)
 
@@ -342,7 +342,7 @@ class Version(object):
         if self.release is None:
             return None
         types = [ "dev", "alpha", "beta", "rc" ]
-        return types[self.release/64]
+        return types[self.release//64]
 
     def __str__(self):
         prefix=""
@@ -751,7 +751,7 @@ class ChannelsOverride(dict):
     def _send(self):
         if self._active:
             overrides = [0] * 8
-            for k, v in self.iteritems():
+            for k, v in self.items():
                 overrides[int(k) - 1] = v
             self._vehicle._master.mav.rc_channels_override_send(0, 0, *overrides)
 
@@ -846,7 +846,7 @@ class Channels(dict):
     def overrides(self, newch):
         self._overrides._active = False
         self._overrides.clear()
-        for k, v in newch.iteritems():
+        for k, v in newch.items():
             if v:
                 self._overrides[str(k)] = v
             else:
@@ -1316,7 +1316,7 @@ class Vehicle(HasObservers):
                         self._params_last = monotonic.monotonic()
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
-                self._params_map[msg.param_id] = msg.param_value
+                self._params_map[msg.param_id.rstrip(b'\x00').decode('utf8')] = msg.param_value
                 self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value,
                                                             cache=True)
             except:
@@ -2658,8 +2658,7 @@ class Parameters(collections.MutableMapping, HasObservers):
         :param args: The callback to invoke when a change in the parameter is detected.
 
         """
-        attr_name = attr_name.upper()
-        return super(Parameters, self).add_attribute_listener(attr_name, *args, **kwargs)
+        return super(Parameters, self).add_attribute_listener(attr_name.upper(), *args, **kwargs)
 
     def remove_attribute_listener(self, attr_name, *args, **kwargs):
         """
@@ -2677,11 +2676,10 @@ class Parameters(collections.MutableMapping, HasObservers):
         :param args: The callback function to remove.
 
         """
-        attr_name = attr_name.upper()
-        return super(Parameters, self).remove_attribute_listener(attr_name, *args, **kwargs)
+        return super(Parameters, self).remove_attribute_listener(attr_name.upper(), *args, **kwargs)
 
     def notify_attribute_listeners(self, attr_name, *args, **kwargs):
-        attr_name = attr_name.upper()
+        attr_name = attr_name.rstrip(b'\x00').decode('utf8').upper()
         return super(Parameters, self).notify_attribute_listeners(attr_name, *args, **kwargs)
 
     def on_attribute(self, attr_name, *args, **kwargs):
