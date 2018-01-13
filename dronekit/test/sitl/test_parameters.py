@@ -32,7 +32,7 @@ def test_iterating(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     # Iterate over parameters.
-    for k, v in vehicle.parameters.iteritems():
+    for k, v in vehicle.parameters.items():
         break
     for key in vehicle.parameters:
         break
@@ -50,7 +50,7 @@ def test_setting(connpath):
 
     @vehicle.parameters.on_attribute('THR_MIN')
     def listener(self, name, value):
-        result['success'] = name == 'THR_MIN' and value == 3.000
+        result['success'] = (name == 'THR_MIN' and value == 3.000)
 
     vehicle.parameters['THR_MIN'] = 3.000
 
