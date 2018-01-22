@@ -32,7 +32,7 @@ def test_iterating(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     # Iterate over parameters.
-    for k, v in vehicle.parameters.iteritems():
+    for k, v in vehicle.parameters.items():
         break
     for key in vehicle.parameters:
         break
