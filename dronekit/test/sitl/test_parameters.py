@@ -50,7 +50,7 @@ def test_setting(connpath):
 
     @vehicle.parameters.on_attribute('THR_MIN')
     def listener(self, name, value):
-        result['success'] = name == 'THR_MIN' and value == 3.000
+        result['success'] = (name == 'THR_MIN' and value == 3.000)
 
     vehicle.parameters['THR_MIN'] = 3.000
 
