@@ -10,7 +10,7 @@ def assert_readback(vehicle, values):
     while i > 0:
         time.sleep(.1)
         i -= .1
-        for k, v in values.iteritems():
+        for k, v in values.items():
             if vehicle.channels[k] != v:
                 continue
         break
@@ -135,7 +135,7 @@ def test_timeout(connpath):
     # Set Ch2 to 33, clear channel 6
     vehicle.channels.overrides = {'2': 33, '6': None}
     assert_readback(vehicle, {'2': 33, '6': 1500})
-    assert_equals(vehicle.channels.overrides.keys(), ['2'])
+    assert_equals(list(vehicle.channels.overrides.keys()), ['2'])
 
     # Callbacks
     result = {'success': False}
