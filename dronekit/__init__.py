@@ -1290,7 +1290,7 @@ class Vehicle(HasObservers):
                 c = 0
                 for i, v in enumerate(self._params_set):
                     if v == None:
-                        self._master.mav.param_request_read_send(0, 0, b'', i)
+                        self._master.mav.param_request_read_send(0, 0, '', i)
                         c += 1
                         if c > 50:
                             break
@@ -1317,11 +1317,8 @@ class Vehicle(HasObservers):
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
 
-                # Normalize parameter name (convert to string)
-                param_name = msg.param_id.decode('utf8')
-
-                self._params_map[param_name] = msg.param_value
-                self._parameters.notify_attribute_listeners(param_name, msg.param_value,
+                self._params_map[msg.param_id] = msg.param_value
+                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value,
                                                             cache=True)
             except:
                 import traceback
@@ -3000,7 +2997,7 @@ def connect(ip,
 
         @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.decode('utf-8').rstrip()))
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
