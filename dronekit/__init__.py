@@ -1317,8 +1317,8 @@ class Vehicle(HasObservers):
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
 
-                # Normalize parameter name (remove trailing null bytes and convert to string)
-                param_name = msg.param_id.rstrip(b'\x00').decode('utf8')
+                # Normalize parameter name (convert to string)
+                param_name = msg.param_id.decode('utf8')
 
                 self._params_map[param_name] = msg.param_value
                 self._parameters.notify_attribute_listeners(param_name, msg.param_value,
@@ -3000,7 +3000,7 @@ def connect(ip,
 
         @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip(b'\x00').decode('utf-8').rstrip()))
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.decode('utf-8').rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
