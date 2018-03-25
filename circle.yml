@@ -1,6 +1,6 @@
 machine:
   post:
-    - pyenv global 2.7.13 3.6.0
+    - pyenv global 2.7.12 3.6.2
   environment:
     SITL_SPEEDUP: 10
     SITL_RATE: 200
