@@ -1,0 +1,87 @@
+# CircleCI 2.0 configuration file for dronekit-python
+
+# Steps common to both Python 2 and Python 3
+common: &commonsteps
+  steps:
+    - checkout
+
+    - run:
+        name: Install global tools
+        command: |
+          pip install -U virtualenv
+
+    - run:
+        name: Install dronekit with dependencies
+        command: |
+          virtualenv venv
+          source venv/bin/activate
+          pip install -UI future
+          pip install -r requirements.txt -UI
+          pip install . -UI
+
+    - run:
+        name: Run dronekit tests
+        environment:
+          SITL_SPEEDUP: 10
+          SITL_RATE: 200
+        command: |
+          source venv/bin/activate
+          nosetests -svx dronekit.test.unit
+          nosetests -svx dronekit.test.sitl
+
+    - run:
+        name: Build documentation
+        command: |
+          source venv/bin/activate
+          cd docs; make clean; make html
+
+    - store_artifacts:
+        path: test-reports
+        destination: test-reports
+
+# Jobs definition
+version: 2
+jobs:
+  python2:
+    docker:
+      - image: circleci/python:2.7-stretch
+    working_directory: ~/dronekit-python2
+    <<: *commonsteps
+
+  python3:
+    docker:
+      - image: circleci/python:3.6-stretch
+    working_directory: ~/dronekit-python3
+    <<: *commonsteps
+
+  deploy:
+    name: Deploy to dronekit.io
+    working_directory: ~/deploy
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: update docs
+          command: ./scripts/update-docs.sh
+
+# Send a notification on Gitter
+notify:
+ webhooks:
+   - url: https://webhooks.gitter.im/e/27b0e1a9fede99dbbe6c
+
+# Workflow definition
+# Run Python 2 and Python 3 testing in parallel
+# and deploy if the Python 2 build succeeds
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - python2
+      - python3
+      - deploy:
+          requires:
+            - python2
+          filters:
+            branches:
+              only:
+                - master
