@@ -7,8 +7,9 @@ machine:
 
 dependencies:
   override:
-    - 'pip install . -UI'
+    - 'pip install -UI future'
     - 'pip install -r requirements.txt -UI'
+    - 'pip install . -UI'
 
 test:
   override:
