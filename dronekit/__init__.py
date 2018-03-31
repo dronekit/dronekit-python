@@ -2360,6 +2360,21 @@ class Vehicle(HasObservers):
 
         return True
 
+    def reboot(self):
+        """Requests an autopilot reboot by sending a ``MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN`` command."""
+
+        reboot_msg = self.message_factory.command_long_encode(
+            0, 0,  # target_system, target_component
+            mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,  # command
+            0,  # confirmation
+            1,  # param 1, autopilot (reboot)
+            0,  # param 2, onboard computer (do nothing)
+            0,  # param 3, camera (do nothing)
+            0,  # param 4, mount (do nothing)
+            0, 0, 0)  # param 5 ~ 7 not used
+
+        self.send_mavlink(reboot_msg)
+
 
 class Gimbal(object):
     """
