@@ -78,10 +78,11 @@ workflows:
     jobs:
       - python2
 #      - python3
-      - deploy:
-          requires:
-            - python2
-          filters:
-            branches:
-              only:
-                - master
+#      disabling until we find a new docs server
+#      - deploy:
+#          requires:
+#            - python2
+#          filters:
+#            branches:
+#              only:
+#                - master
