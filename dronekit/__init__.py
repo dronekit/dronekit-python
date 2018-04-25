@@ -1170,6 +1170,7 @@ class Vehicle(HasObservers):
         self._ekf_poshorizabs = False
         self._ekf_constposmode = False
         self._ekf_predposhorizabs = False
+        self._ekf_compass_ok = False
 
         @self.on_message('EKF_STATUS_REPORT')
         def listener(self, name, m):
@@ -1179,6 +1180,9 @@ class Vehicle(HasObservers):
             self._ekf_constposmode = (m.flags & ardupilotmega.EKF_CONST_POS_MODE) > 0
             # boolean: EKF's predicted horizontal position (absolute) estimate is good
             self._ekf_predposhorizabs = (m.flags & ardupilotmega.EKF_PRED_POS_HORIZ_ABS) > 0
+
+            # boolean: EKF's compass is good
+            self._ekf_compass_ok = m.compass_variance < 0.8
 
             self.notify_attribute_listeners('ekf_ok', self.ekf_ok, cache=True)
 
@@ -1762,7 +1766,18 @@ class Vehicle(HasObservers):
         # check that mode is not INITIALSING
         # check that we have a GPS fix
         # check that EKF pre-arm is complete
-        return self.mode != 'INITIALISING' and self.gps_0.fix_type > 1 and self._ekf_predposhorizabs
+        return self.mode != 'INITIALISING' and self.gps_0.fix_type > 1 and self._ekf_predposhorizabs and self.compass_armable
+
+    @property
+    def compass_armable(self):
+        """
+        Returns ``True`` if the vehicle ARMING_CHECK Compass is unchecked, otherwise turn ekf compass status(``Boolean``).
+        """
+        arming_check_setting = int(self._params_map['ARMING_CHECK'])
+        if (arming_check_setting & 1) or (arming_check_setting & 4):
+            return self._ekf_compass_ok 
+        else:
+            return True 
 
     @property
     def system_status(self):
