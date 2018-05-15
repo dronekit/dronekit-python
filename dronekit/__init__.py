@@ -1969,7 +1969,7 @@ class Vehicle(HasObservers):
             0, 0,  # target system, target component
             mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
             0,  # confirmation
-            2,  # param 1: 1 to use current position, 2 to use the entered values.
+            0,  # param 1: 1 to use current position, 0 to use the entered values.
             0, 0, 0,  # params 2-4
             pos.lat, pos.lon, pos.alt))
 
