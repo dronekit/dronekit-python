@@ -2347,9 +2347,9 @@ class Vehicle(HasObservers):
             raise ValueError('wait_ready expects one or more string arguments.')
 
         # Wait for these attributes to have been set.
-        await = set(types)
+        await_attributes = set(types)
         start = monotonic.monotonic()
-        while not await.issubset(self._ready_attrs):
+        while not await_attributes.issubset(self._ready_attrs):
             time.sleep(0.1)
             if monotonic.monotonic() - start > timeout:
                 if raise_exception:
