@@ -1232,10 +1232,11 @@ class Vehicle(HasObservers):
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
+                """
                 if msg.seq == 0:
                     if not (msg.x == 0 and msg.y == 0 and msg.z == 0):
                         self._home_location = LocationGlobal(msg.x, msg.y, msg.z)
-
+                """
                 if msg.seq > self._wploader.count():
                     # Unexpected waypoint
                     pass
@@ -1245,8 +1246,8 @@ class Vehicle(HasObservers):
                 else:
                     self._wploader.add(msg)
 
-                    if msg.seq + 1 < self._wploader.expected_count:
-                        self._master.waypoint_request_send(msg.seq + 1)
+                    if msg.seq < self._wploader.expected_count:
+                        self._master.waypoint_request_send(msg.seq)
                     else:
                         self._wp_loaded = True
                         self.notify_attribute_listeners('commands', self.commands)
