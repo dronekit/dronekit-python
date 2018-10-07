@@ -1232,10 +1232,11 @@ class Vehicle(HasObservers):
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
         def listener(self, name, msg):
             if not self._wp_loaded:
+                """
                 if msg.seq == 0:
                     if not (msg.x == 0 and msg.y == 0 and msg.z == 0):
                         self._home_location = LocationGlobal(msg.x, msg.y, msg.z)
-
+                """
                 if msg.seq > self._wploader.count():
                     # Unexpected waypoint
                     pass
@@ -1245,8 +1246,8 @@ class Vehicle(HasObservers):
                 else:
                     self._wploader.add(msg)
 
-                    if msg.seq + 1 < self._wploader.expected_count:
-                        self._master.waypoint_request_send(msg.seq + 1)
+                    if msg.seq < self._wploader.expected_count:
+                        self._master.waypoint_request_send(msg.seq)
                     else:
                         self._wp_loaded = True
                         self.notify_attribute_listeners('commands', self.commands)
@@ -2849,14 +2850,18 @@ class CommandSequence(object):
 
         # Add home point again.
         self.wait_ready()
+        """
         home = None
         try:
             home = self._vehicle._wploader.wp(0)
         except:
             pass
+        """
         self._vehicle._wploader.clear()
+        """
         if home:
             self._vehicle._wploader.add(home, comment='Added by DroneKit')
+        """
         self._vehicle._wpts_dirty = True
 
     def add(self, cmd):
@@ -2881,15 +2886,25 @@ class CommandSequence(object):
         After the return from ``upload()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
         """
+        max_iter = 30
+        curr_iter = 0
+
         if self._vehicle._wpts_dirty:
             self._vehicle._master.waypoint_clear_all_send()
             if self._vehicle._wploader.count() > 0:
                 self._vehicle._wp_uploaded = [False] * self._vehicle._wploader.count()
                 self._vehicle._master.waypoint_count_send(self._vehicle._wploader.count())
-                while False in self._vehicle._wp_uploaded:
+                while False in self._vehicle._wp_uploaded and curr_iter < max_iter:
                     time.sleep(0.1)
+                    curr_iter += 1
+
+                if curr_iter >= max_iter:
+                    return False
+
                 self._vehicle._wp_uploaded = None
             self._vehicle._wpts_dirty = False
+
+        return True
 
     @property
     def count(self):
@@ -2898,7 +2913,8 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return max(self._vehicle._wploader.count() - 1, 0)
+        return max(self._vehicle._wpuploader.count(), 0)
+        #return max(self._vehicle._wploader.count() - 1, 0)
 
     @property
     def next(self):
@@ -2920,13 +2936,14 @@ class CommandSequence(object):
 
         :return: The number of waypoints in the sequence.
         '''
-        return max(self._vehicle._wploader.count() - 1, 0)
+        return max(self._vehicle._wploader.count(), 0)
+        #return max(self._vehicle._wploader.count() - 1, 0)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
             return [self[ii] for ii in range(*index.indices(len(self)))]
         elif isinstance(index, int):
-            item = self._vehicle._wploader.wp(index + 1)
+            item = self._vehicle._wploader.wp(index)
             if not item:
                 raise IndexError('Index %s out of range.' % index)
             return item
@@ -2934,7 +2951,7 @@ class CommandSequence(object):
             raise TypeError('Invalid argument type.')
 
     def __setitem__(self, index, value):
-        self._vehicle._wploader.set(value, index + 1)
+        self._vehicle._wploader.set(value, index)
         self._vehicle._wpts_dirty = True
 
 
