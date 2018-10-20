@@ -83,3 +83,5 @@ def test_location_notify(connpath):
     wait_for(lambda : ret['success'], 30)
 
     assert ret['success'], 'Expected location object to emit notifications.'
+
+    vehicle.close()

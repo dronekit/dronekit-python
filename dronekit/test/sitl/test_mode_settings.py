@@ -13,3 +13,5 @@ def test_modes_set(connpath):
         assert_equals('STABILIZE', self._flightmode)
 
     vehicle.add_message_listener('HEARTBEAT', listener)
+
+    vehicle.close()

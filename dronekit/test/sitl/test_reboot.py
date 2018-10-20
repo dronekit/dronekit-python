@@ -25,3 +25,5 @@ def test_reboot(connpath):
     assert_equal(1, len(reboot_acks))  # one and only one ACK
     assert_equal(246, reboot_acks[0].command)  # for the correct command
     assert_equal(0, reboot_acks[0].result)  # the result must be successful
+
+    vehicle.close()
