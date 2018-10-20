@@ -35,6 +35,8 @@ def test_timeout_empty():
         # Connect with timeout of 10s.
         vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True, heartbeat_timeout=20)
 
+        vehicle.close()
+
         # Should not pass
         assert False
     except:

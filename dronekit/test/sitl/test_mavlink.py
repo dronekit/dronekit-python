@@ -27,3 +27,6 @@ def test_mavlink(connpath):
         i -= 1
 
     assert result['success']
+
+    vehicle2.close()
+    vehicle.close()

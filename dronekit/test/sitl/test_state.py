@@ -13,3 +13,5 @@ def test_state(connpath):
 
     assert_equals(type(vehicle.system_status), SystemStatus)
     assert_equals(type(vehicle.system_status.state), str)
+
+    vehicle.close()

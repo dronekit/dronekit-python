@@ -41,6 +41,8 @@ def test_set_home(connpath):
     assert_equals(vehicle.home_location.lon, 149)
     assert_equals(vehicle.home_location.alt, 600)
 
+    vehicle.close()
+
 
 @with_sitl
 def test_parameter(connpath):
@@ -139,3 +141,5 @@ def test_227(connpath):
     vehicle.flush()  # Send commands
 
     assert_commands(1)
+
+    vehicle.close()

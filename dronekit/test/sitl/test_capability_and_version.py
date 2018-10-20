@@ -34,3 +34,5 @@ def test_115(connpath):
     assert_true(v.version.major is not None)
     assert_true(len(v.version.release_type()) >= 2)
     assert_true(v.version.release_version() is not None)
+
+    v.close()
