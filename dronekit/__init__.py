@@ -197,7 +197,7 @@ class LocationLocal(object):
 
         if self.north is not None and self.east is not None:
             if self.down is not None:
-                return math.sqrt(self.north**2 + self.east**2 + self.down**2) 
+                return math.sqrt(self.north**2 + self.east**2 + self.down**2)
             else:
                 return math.sqrt(self.north**2 + self.east**2)
 
@@ -3012,7 +3012,7 @@ def connect(ip,
 
         @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.decode("utf-8").rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
