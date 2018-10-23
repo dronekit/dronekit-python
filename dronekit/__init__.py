@@ -3012,7 +3012,7 @@ def connect(ip,
 
         @vehicle.on_message('STATUSTEXT')
         def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.decode("utf-8").rstrip()))
+            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
