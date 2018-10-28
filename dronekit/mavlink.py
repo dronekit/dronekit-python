@@ -203,12 +203,12 @@ class MAVConnection(object):
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
                 while self._alive:
-                    # Downtime
-                    time.sleep(0.05)
-
                     # Loop listeners.
                     for fn in self.loop_listeners:
                         fn(self)
+
+                    # Sleep
+                    self.master.select(0.05)
 
                     while self._accept_input:
                         try:
