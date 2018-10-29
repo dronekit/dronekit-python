@@ -2300,7 +2300,7 @@ class Vehicle(HasObservers):
         vehicle.send_mavlink(capability_msg)
 
     def play_tune(self, tune):
-        '''Request an AUTOPILOT_VERSION packet'''
+        '''Play a tune on the vehicle'''
         msg = self.message_factory.play_tune_encode(0, 0, tune)
         self.send_mavlink(msg)
 
