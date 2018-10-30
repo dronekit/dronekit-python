@@ -304,7 +304,7 @@ class Version(object):
         self.autopilot_type = autopilot_type
         self.vehicle_type = vehicle_type
         self.raw_version = raw_version
-        if(raw_version == None):
+        if raw_version is None:
             self.major = None
             self.minor = None
             self.patch = None
@@ -640,7 +640,7 @@ class HasObservers(object):
         """
         # Cached values are not re-sent if they are unchanged.
         if cache:
-            if attr_name in self._attribute_cache and self._attribute_cache[attr_name] == value:
+            if self._attribute_cache.get(attr_name) == value:
                 return
             self._attribute_cache[attr_name] = value
 
@@ -885,7 +885,7 @@ class Locations(HasObservers):
             vehicle.notify_attribute_listeners('location.global_relative_frame',
                                                vehicle.location.global_relative_frame)
 
-            if self._alt != None or m.alt != 0:
+            if self._alt is not None or m.alt != 0:
                 # Require first alt value to be non-0
                 # TODO is this the proper check to do?
                 self._alt = m.alt / 1000.0
@@ -1197,7 +1197,7 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('armed', self.armed, cache=True)
             self._autopilot_type = m.autopilot
             self._vehicle_type = m.type
-            if self._is_mode_available(m.custom_mode, m.base_mode) == False:
+            if self._is_mode_available(m.custom_mode, m.base_mode) is False:
                 raise APIException("mode (%s, %s) not available on mavlink definition" % (m.custom_mode, m.base_mode))
             if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
                 self._flightmode = mavutil.interpret_px4_mode(m.base_mode, m.custom_mode)
@@ -1254,7 +1254,7 @@ class Vehicle(HasObservers):
         # Waypoint send to master
         @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
         def listener(self, name, msg):
-            if self._wp_uploaded != None:
+            if self._wp_uploaded is not None:
                 wp = self._wploader.wp(msg.seq)
                 handler.fix_targets(wp)
                 self._master.mav.send(wp)
@@ -1282,7 +1282,7 @@ class Vehicle(HasObservers):
             if not self._params_start:
                 return
 
-            if None not in self._params_set and not self._params_loaded:
+            if not self._params_loaded and all(x is not None for x in self._params_set):
                 self._params_loaded = True
                 self.notify_attribute_listeners('parameters', self.parameters)
 
@@ -1312,7 +1312,7 @@ class Vehicle(HasObservers):
             # we lack a param_id.
             try:
                 if msg.param_index < msg.param_count and msg:
-                    if self._params_set[msg.param_index] == None:
+                    if self._params_set[msg.param_index] is None:
                         self._params_last = monotonic.monotonic()
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
@@ -1350,7 +1350,7 @@ class Vehicle(HasObservers):
                     raise APIException('No heartbeat in %s seconds, aborting.' %
                                        self._heartbeat_error)
                 elif monotonic.monotonic() - self._heartbeat_lastreceived > self._heartbeat_warning:
-                    if self._heartbeat_timeout == False:
+                    if self._heartbeat_timeout is False:
                         errprinter('>>> Link timeout, no heartbeat in last %s seconds' %
                                    self._heartbeat_warning)
                         self._heartbeat_timeout = True
@@ -1673,7 +1673,7 @@ class Vehicle(HasObservers):
         """
         Current system batter status (:py:class:`Battery`).
         """
-        if self._voltage == None or self._current == None or self._level == None:
+        if self._voltage is None or self._current is None or self._level is None:
             return None
         return Battery(self._voltage, self._current, self._level)
 
@@ -2180,9 +2180,9 @@ class Vehicle(HasObservers):
                                            0, 0, 0, location.lat, location.lon,
                                            alt)
 
-        if airspeed != None:
+        if airspeed is not None:
             self.airspeed = airspeed
-        if groundspeed != None:
+        if groundspeed is not None:
             self.groundspeed = groundspeed
 
     def send_mavlink(self, message):
@@ -2271,7 +2271,7 @@ class Vehicle(HasObservers):
             time.sleep(0.1)
 
         # Initialize data stream.
-        if rate != None:
+        if rate is not None:
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
 
@@ -3035,7 +3035,7 @@ def connect(ip,
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
 
     if wait_ready:
-        if wait_ready == True:
+        if wait_ready is True:
             vehicle.wait_ready(still_waiting_interval=still_waiting_interval,
                                still_waiting_callback=still_waiting_callback,
                                timeout=timeout)
