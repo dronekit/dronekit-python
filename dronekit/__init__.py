@@ -2366,7 +2366,7 @@ class Vehicle(HasObservers):
                 now - still_waiting_last_message_sent > still_waiting_message_interval):
                 still_waiting_last_message_sent = now
                 if still_waiting_callback:
-                    still_waiting_callback(await-self._ready_attrs)
+                    still_waiting_callback(await_attributes-self._ready_attrs)
 
         return True
 
