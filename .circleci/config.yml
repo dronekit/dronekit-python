@@ -6,11 +6,6 @@ common: &commonsteps
     - checkout
 
     - run:
-        name: Install global tools
-        command: |
-          pip install -U virtualenv
-
-    - run:
         name: Install dronekit with dependencies
         command: |
           virtualenv venv
