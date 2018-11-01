@@ -218,11 +218,15 @@ class MAVConnection(object):
                             if error.errno == ECONNABORTED:
                                 raise APIException('Connection aborting during send')
                             raise
-                        except Exception as e:
-                            # TODO this should be more rigorous. How to avoid
+                        except mavutil.mavlink.MAVError as e:
+                            # Avoid
                             #   invalid MAVLink prefix '73'
                             #   invalid MAVLink prefix '13'
-                            # errprinter('mav recv error:', e)
+                            #errprinter('mav recv error:', e)
+                            msg = None
+                        except Exception as e:
+                            # Log any other unexpected exception
+                            errprinter('>>> Exception while receiving message: ', e)
                             msg = None
                         if not msg:
                             break
