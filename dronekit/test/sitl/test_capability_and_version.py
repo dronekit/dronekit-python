@@ -1,6 +1,6 @@
 import time
 
-from dronekit import VehicleMode, connect
+from dronekit import connect
 from dronekit.test import with_sitl
 from nose.tools import assert_false, assert_true
 
@@ -15,11 +15,9 @@ def test_115(connpath):
     # flags before they are initialised.  Vehicle attempts to refetch
     # until capabilities are non-zero, but we may need to wait:
     start_time = time.time()
-    nonzero_capabilities = True
     slept = False
     while v.capabilities.mission_float == 0:
         if time.time() > start_time + 30:
-            nonzero_capabilities = False
             break
         time.sleep(0.1)
         slept = True

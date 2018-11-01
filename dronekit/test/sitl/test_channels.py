@@ -1,8 +1,7 @@
-from pymavlink import mavutil
 import time
-from dronekit import connect, VehicleMode, LocationGlobal
+from dronekit import connect
 from dronekit.test import with_sitl
-from nose.tools import assert_equals, assert_not_equals
+from nose.tools import assert_equals
 
 
 def assert_readback(vehicle, values):
@@ -63,7 +62,7 @@ def test_timeout(connpath):
     vehicle.channels.overrides['1'] = None
     assert_readback(vehicle, {'1': 1500, '2': 1500})
 
-    #test
+    # test
     try:
         vehicle.channels['9']
         assert False, "Can read over end of channels"

@@ -1,7 +1,5 @@
 import time
-import sys
-import os
-from dronekit import connect, VehicleMode
+from dronekit import connect
 from dronekit.test import with_sitl
 from nose.tools import assert_equals, assert_not_equals
 
