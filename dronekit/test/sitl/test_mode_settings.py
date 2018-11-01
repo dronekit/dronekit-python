@@ -1,5 +1,3 @@
-import time
-import math
 from dronekit import connect
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
