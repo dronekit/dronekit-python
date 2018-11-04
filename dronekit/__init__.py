@@ -25,6 +25,8 @@ Velocity-based movement and control over other vehicle features can be achieved 
 
 It is also possible to work with vehicle "missions" using the :py:attr:`Vehicle.commands` attribute, and run them in AUTO mode.
 
+All the logging is handled through the builtin Python `logging` module.
+
 A number of other useful classes and methods are listed below.
 
 ----
@@ -33,15 +35,13 @@ A number of other useful classes and methods are listed below.
 from __future__ import print_function
 import collections
 import copy
+import logging
 import math
 import struct
-import re
-import sys
 import time
 
 import monotonic
 from past.builtins import basestring
-from dronekit.util import errprinter
 
 from pymavlink import mavutil, mavwp
 from pymavlink.dialects.v10 import ardupilotmega
@@ -531,6 +531,8 @@ class SystemStatus(object):
 
 class HasObservers(object):
     def __init__(self):
+        self._logger = logging.getLogger(__name__)
+
         # A mapping from attr_name to a list of observers
         self._attribute_listeners = {}
         self._attribute_cache = {}
@@ -639,18 +641,14 @@ class HasObservers(object):
         for fn in self._attribute_listeners.get(attr_name, []):
             try:
                 fn(self, attr_name, value)
-            except Exception as e:
-                errprinter('>>> Exception in attribute handler for %s' %
-                           attr_name)
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
 
         for fn in self._attribute_listeners.get('*', []):
             try:
                 fn(self, attr_name, value)
-            except Exception as e:
-                errprinter('>>> Exception in attribute handler for %s' %
-                           attr_name)
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
 
     def on_attribute(self, name):
         """
@@ -987,6 +985,15 @@ class Vehicle(HasObservers):
     It is also possible to work with vehicle "missions" using the :py:attr:`commands` attribute,
     and run them in AUTO mode.
 
+    STATUSTEXT log messages from the autopilot are handled through a separate logger.
+    It is possible to configure the log level, the formatting, etc. by accessing the logger, e.g.:
+
+    .. code-block:: python
+
+        import logging
+        autopilot_logger = logging.getLogger('autopilot')
+        autopilot_logger.setLevel(logging.DEBUG)
+
     The guide contains more detailed information on the different ways you can use
     the ``Vehicle`` class:
 
@@ -1007,6 +1014,20 @@ class Vehicle(HasObservers):
 
     def __init__(self, handler):
         super(Vehicle, self).__init__()
+
+        self._logger = logging.getLogger(__name__)  # Logger for DroneKit
+        self._autopilot_logger = logging.getLogger('autopilot')  # Logger for the autopilot messages
+        # MAVLink-to-logging-module log severity mappings
+        self._mavlink_statustext_severity = {
+            0: logging.CRITICAL,
+            1: logging.CRITICAL,
+            2: logging.CRITICAL,
+            3: logging.ERROR,
+            4: logging.WARNING,
+            5: logging.INFO,
+            6: logging.INFO,
+            7: logging.DEBUG
+        }
 
         self._handler = handler
         self._master = handler.master
@@ -1033,6 +1054,14 @@ class Vehicle(HasObservers):
         self._vx = None
         self._vy = None
         self._vz = None
+
+        @self.on_message('STATUSTEXT')
+        def statustext_listener(self, name, m):
+            # Log the STATUSTEXT on the autopilot logger, with the correct severity
+            self._autopilot_logger.log(
+                msg=m.text.strip(),
+                level=self._mavlink_statustext_severity[m.severity]
+            )
 
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
@@ -1340,8 +1369,7 @@ class Vehicle(HasObservers):
                                        self._heartbeat_error)
                 elif monotonic.monotonic() - self._heartbeat_lastreceived > self._heartbeat_warning:
                     if self._heartbeat_timeout is False:
-                        errprinter('>>> Link timeout, no heartbeat in last %s seconds' %
-                                   self._heartbeat_warning)
+                        self._logger.warning('Link timeout, no heartbeat in last %s seconds' % self._heartbeat_warning)
                         self._heartbeat_timeout = True
 
         @self.on_message(['HEARTBEAT'])
@@ -1352,7 +1380,7 @@ class Vehicle(HasObservers):
             self._heartbeat_system = msg.get_srcSystem()
             self._heartbeat_lastreceived = monotonic.monotonic()
             if self._heartbeat_timeout:
-                errprinter('>>> ...link restored.')
+                self._logger.info('...link restored.')
             self._heartbeat_timeout = False
 
         self._last_heartbeat = None
@@ -1499,18 +1527,14 @@ class Vehicle(HasObservers):
         for fn in self._message_listeners.get(name, []):
             try:
                 fn(self, name, msg)
-            except Exception as e:
-                errprinter('>>> Exception in message handler for %s' %
-                           msg.get_type())
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in message handler for %s' % msg.get_type(), exc_info=True)
 
         for fn in self._message_listeners.get('*', []):
             try:
                 fn(self, name, msg)
-            except Exception as e:
-                errprinter('>>> Exception in message handler for %s' %
-                           msg.get_type())
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in message handler for %s' % msg.get_type(), exc_info=True)
 
     def close(self):
         return self._handler.close()
@@ -2572,6 +2596,7 @@ class Parameters(collections.MutableMapping, HasObservers):
 
     def __init__(self, vehicle):
         super(Parameters, self).__init__()
+        self._logger = logging.getLogger(__name__)
         self._vehicle = vehicle
 
     def __getitem__(self, name):
@@ -2624,7 +2649,7 @@ class Parameters(collections.MutableMapping, HasObservers):
                 time.sleep(0.1)
 
         if retries > 0:
-            errprinter("timeout setting parameter %s to %f" % (name, value))
+            self._logger.error("timeout setting parameter %s to %f" % (name, value))
         return False
 
     def wait_ready(self, **kwargs):
@@ -2936,8 +2961,7 @@ class CommandSequence(object):
 
 
 def default_still_waiting_callback(atts):
-    print("Still waiting for data from vehicle: %s" % ','.join(atts),
-          file=sys.stderr)
+    logging.getLogger(__name__).debug("Still waiting for data from vehicle: %s" % ','.join(atts))
 
 
 def connect(ip,
@@ -2946,7 +2970,7 @@ def connect(ip,
             timeout=30,
             still_waiting_callback=default_still_waiting_callback,
             still_waiting_interval=1,
-            status_printer=errprinter,
+            status_printer=None,
             vehicle_class=None,
             rate=4,
             baud=115200,
@@ -2978,9 +3002,7 @@ def connect(ip,
 
         For more information see :py:func:`Vehicle.wait_ready <Vehicle.wait_ready>`.
 
-    :param status_printer: Method of signature ``def status_printer(txt)`` that prints
-        STATUS_TEXT messages from the Vehicle and other diagnostic information.
-        By default the status information is printed to the command prompt in which the script is running.
+    :param status_printer: deprecated and unused (STATUSTEXT messages are directed to their own logger)
     :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method.
         This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).
     :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
@@ -3011,12 +3033,6 @@ def connect(ip,
 
     handler = MAVConnection(ip, baud=baud, source_system=source_system, use_native=use_native)
     vehicle = vehicle_class(handler)
-
-    if status_printer:
-
-        @vehicle.on_message('STATUSTEXT')
-        def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
