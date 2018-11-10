@@ -32,7 +32,6 @@ A number of other useful classes and methods are listed below.
 ----
 """
 
-from __future__ import print_function
 import collections
 import copy
 import logging
@@ -45,6 +44,8 @@ from past.builtins import basestring
 
 from pymavlink import mavutil, mavwp
 from pymavlink.dialects.v10 import ardupilotmega
+
+from dronekit.util import ErrprinterHandler
 
 
 class APIException(Exception):
@@ -3002,7 +3003,9 @@ def connect(ip,
 
         For more information see :py:func:`Vehicle.wait_ready <Vehicle.wait_ready>`.
 
-    :param status_printer: deprecated and unused (STATUSTEXT messages are directed to their own logger)
+    :param status_printer: (deprecated) method of signature ``def status_printer(txt)`` that prints
+        STATUS_TEXT messages from the Vehicle and other diagnostic information.
+        By default the status information is handled by the ``autopilot`` logger.
     :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method.
         This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).
     :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
@@ -3022,6 +3025,9 @@ def connect(ip,
             It is *good practice* to assign a unique id for every system on the MAVLink network.
             It is possible to configure the autopilot to only respond to guided-mode commands from a specified GCS ID.
 
+            The ``status_printer`` argument is deprecated. To redirect the logging from the library and from the
+            autopilot, configure the ``dronekit`` and ``autopilot`` loggers using the Python ``logging`` module.
+
 
     :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
     """
@@ -3033,6 +3039,9 @@ def connect(ip,
 
     handler = MAVConnection(ip, baud=baud, source_system=source_system, use_native=use_native)
     vehicle = vehicle_class(handler)
+
+    if status_printer:
+        vehicle._autopilot_logger.addHandler(ErrprinterHandler(status_printer))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
