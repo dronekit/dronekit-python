@@ -1310,7 +1310,7 @@ class Vehicle(HasObservers):
                 c = 0
                 for i, v in enumerate(self._params_set):
                     if v is None:
-                        self._master.mav.param_request_read_send(0, 0, '', i)
+                        self._master.mav.param_request_read_send(0, 0, b'', i)
                         c += 1
                         if c > 50:
                             break
