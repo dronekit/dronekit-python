@@ -29,7 +29,8 @@ the `project on Github <https://github.com/dronekit/dronekit-sitl>`_.
 
 .. note:: 
 
-    DroneKit-SITL is still relatively experimental and there are only a few pre-built vehicles.
+    DroneKit-SITL is still relatively experimental and there are only a few pre-built vehicles
+    (some of which are quite old and/or unstable).
     
     The binaries are built and tested on Windows 10, Ubuntu Linux, and Mac OS X
     "El Capitan". Binaries are only available for x86 architectures. ARM builds 
@@ -74,7 +75,13 @@ There are a number of other useful arguments:
     dronekit-sitl --reset       #Delete all downloaded vehicle binaries.
     dronekit-sitl ./path [args...]  #Start SITL instance at target file location.
 
-        
+
+.. note:: 
+
+    You can also use *dronekit-sitl* to start a SITL executable that you have built locally from source.
+    To do this, put the file path of the target executable in the `SITL_BINARY` environment variable,
+    or as the first argument when calling the tool.
+    
 
 .. _connecting_dronekit_sitl:
 
