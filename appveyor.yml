@@ -1,9 +1,19 @@
 environment:
   SITL_SPEEDUP: 10
   SITL_RATE: 200
+  PYTHONUNBUFFERED: 1
+
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7"
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7"
 
 cache:
   - "c:\\Users\\appveyor\\.pip-wheelhouse"
+
+init:
+  - cmd: "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
 install:
   - ps: |
@@ -15,17 +25,14 @@ install:
       [wheel]
       wheel-dir = c:/Users/appveyor/.pip-wheelhouse
       '@ | out-file -Encoding ascii -FilePath c:\Users\appveyor\pip\pip.ini
-
-  - cmd: 'SET PATH=%PYTHON%;c:\\Python27\\Scripts;%PATH%'
-  - cmd: 'SET PYTHONUNBUFFERED=1'
-
   - cmd: 'python -m pip install pip wheel -U'
   - cmd: 'pip install . -UI'
   - cmd: 'pip install -r requirements.txt -UI'
 
-build_script:
+build: off
+
+test_script:
   - cmd: 'nosetests -svx dronekit.test.unit'
   - cmd: 'nosetests -svx dronekit.test.sitl'
 
 clone_depth: 10
-test: 'off'
