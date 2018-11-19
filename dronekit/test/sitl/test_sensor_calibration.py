@@ -45,9 +45,9 @@ def test_simple_accelerometer_calibration(connpath):
         vehicle,
         mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION,
         timeout=30,
-        ack_result=mavutil.mavlink.MAV_RESULT_FAILED,  # TODO: change when APM is upgraded
+        ack_result=mavutil.mavlink.MAV_RESULT_FAILED,
     ):
-        vehicle.calibrate_accelerometer_simple()
+        vehicle.calibrate_accelerometer(simple=True)
 
     vehicle.close()
 
@@ -66,7 +66,7 @@ def test_accelerometer_calibration(connpath):
         timeout=30,
         ack_result=mavutil.mavlink.MAV_RESULT_FAILED,
     ):
-        vehicle.calibrate_accelerometer()
+        vehicle.calibrate_accelerometer(simple=False)
 
     vehicle.close()
 
