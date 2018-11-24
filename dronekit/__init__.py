@@ -2446,7 +2446,6 @@ class Vehicle(HasObservers):
                 0,  # param 7, 1: ESC calibration, 3: barometer temperature calibration
             )
 
-        self._logger.critical(calibration_command)
         self.send_mavlink(calibration_command)
 
     def calibrate_accelerometer(self, simple=False):
