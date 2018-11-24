@@ -2428,7 +2428,7 @@ class Vehicle(HasObservers):
                 1,  # param 2, Automatically retry on failure (0=no retry, 1=retry).
                 1,  # param 3, Save without user input (0=require input, 1=autosave).
                 0,  # param 4, Delay (seconds).
-                1,  # param 5, Autoreboot (0=user reboot, 1=autoreboot).
+                0,  # param 5, Autoreboot (0=user reboot, 1=autoreboot).
                 0,  # param 6, Empty.
                 0,  # param 7, Empty.
             )
@@ -2469,8 +2469,8 @@ class Vehicle(HasObservers):
         )
         self.send_mavlink(calibration_command)
 
-    def calibrate_board_level(self):
-        """Request board level calibration."""
+    def calibrate_vehicle_level(self):
+        """Request vehicle level (accelerometer trim) calibration."""
 
         calibration_command = self.message_factory.command_long_encode(
             self._handler.target_system, 0,  # target_system, target_component

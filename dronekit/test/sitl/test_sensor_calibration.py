@@ -78,7 +78,7 @@ def test_board_level_calibration(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     with assert_command_ack(vehicle, mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, timeout=30):
-        vehicle.calibrate_board_level()
+        vehicle.calibrate_vehicle_level()
 
     vehicle.close()
 
