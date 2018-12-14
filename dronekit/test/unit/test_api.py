@@ -1,5 +1,3 @@
-import mock
-from mock import MagicMock
 from dronekit import VehicleMode
 from nose.tools import assert_equals, assert_not_equals
 

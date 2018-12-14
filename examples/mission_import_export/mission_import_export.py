@@ -89,7 +89,7 @@ def upload_mission(aFileName):
     #Read mission from file
     missionlist = readmission(aFileName)
     
-    print("\nUpload mission from a file: %s" % import_mission_filename)
+    print("\nUpload mission from a file: %s" % aFileName)
     #Clear existing mission from vehicle
     print(' Clear mission')
     cmds = vehicle.commands
@@ -120,7 +120,7 @@ def save_mission(aFileName):
     Save a mission in the Waypoint file format 
     (http://qgroundcontrol.org/mavlink/waypoint_protocol#waypoint_file_format).
     """
-    print("\nSave mission from Vehicle to file: %s" % export_mission_filename)    
+    print("\nSave mission from Vehicle to file: %s" % aFileName)    
     #Download mission from vehicle
     missionlist = download_mission()
     #Add file-format information

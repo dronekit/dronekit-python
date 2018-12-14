@@ -1,9 +1,7 @@
 import time
-import math
 from dronekit import connect
 from dronekit.mavlink import MAVConnection
 from dronekit.test import with_sitl
-from nose.tools import assert_not_equals, assert_equals
 
 
 @with_sitl
@@ -27,3 +25,6 @@ def test_mavlink(connpath):
         i -= 1
 
     assert result['success']
+
+    vehicle2.close()
+    vehicle.close()

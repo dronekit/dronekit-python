@@ -1,19 +1,17 @@
 from __future__ import print_function
+
+import logging
 import time
 import socket
 import errno
 import sys
 import os
 import platform
-import re
 import copy
-import dronekit
 from dronekit import APIException
-from dronekit.util import errprinter
-from pymavlink import mavutil, mavwp
+from pymavlink import mavutil
 from queue import Queue, Empty
 from threading import Thread
-import types
 
 if platform.system() == 'Windows':
     from errno import WSAECONNRESET as ECONNABORTED
@@ -28,22 +26,24 @@ class MAVWriter(object):
     """
 
     def __init__(self, queue):
+        self._logger = logging.getLogger(__name__)
         self.queue = queue
 
     def write(self, pkt):
         self.queue.put(pkt)
 
     def read(self):
-        errprinter('writer should not have had a read request')
+        self._logger.critical('writer should not have had a read request')
         os._exit(43)
 
 
 class mavudpin_multi(mavutil.mavfile):
     '''a UDP mavlink socket'''
     def __init__(self, device, baud=None, input=True, broadcast=False, source_system=255, use_native=mavutil.default_native):
+        self._logger = logging.getLogger(__name__)
         a = device.split(':')
         if len(a) != 2:
-            print("UDP ports must be specified as host:port")
+            self._logger.critical("UDP ports must be specified as host:port")
             sys.exit(1)
         self.port = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.udp_server = input
@@ -58,26 +58,26 @@ class mavudpin_multi(mavutil.mavfile):
                 self.port.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
                 self.broadcast = True
         mavutil.set_close_on_exec(self.port.fileno())
-        self.port.setblocking(0)
+        self.port.setblocking(False)
         mavutil.mavfile.__init__(self, self.port.fileno(), device, source_system=source_system, input=input, use_native=use_native)
 
     def close(self):
         self.port.close()
 
-    def recv(self,n=None):
+    def recv(self, n=None):
         try:
             try:
                 data, new_addr = self.port.recvfrom(65535)
             except socket.error as e:
-                if e.errno in [ errno.EAGAIN, errno.EWOULDBLOCK, errno.ECONNREFUSED ]:
+                if e.errno in [errno.EAGAIN, errno.EWOULDBLOCK, errno.ECONNREFUSED]:
                     return ""
             if self.udp_server:
                 self.addresses.add(new_addr)
             elif self.broadcast:
-                self.addresses = set([new_addr])
+                self.addresses = {new_addr}
             return data
-        except Exception as e:
-            print(e)
+        except Exception:
+            self._logger.exception("Exception while reading data", exc_info=True)
 
     def write(self, buf):
         try:
@@ -93,8 +93,8 @@ class mavudpin_multi(mavutil.mavfile):
                     self.port.sendto(buf, self.destination_addr)
             except socket.error:
                 pass
-        except Exception as e:
-            print(e)
+        except Exception:
+            self._logger.exception("Exception while writing data", exc_info=True)
 
     def recv_msg(self):
         '''message receive routine for UDP link'''
@@ -122,6 +122,8 @@ class MAVConnection(object):
             self.mavlink_thread_out = None
 
     def __init__(self, ip, baud=115200, target_system=0, source_system=255, use_native=False):
+        self._logger = logging.getLogger(__name__)
+
         if ip.startswith("udpin:"):
             self.master = mavudpin_multi(ip[6:], input=True, baud=baud, source_system=source_system)
         else:
@@ -179,10 +181,10 @@ class MAVConnection(object):
                             raise APIException('Connection aborting during read')
                         raise
                     except Exception as e:
-                        errprinter('>>> mav send error:', e)
+                        self._logger.exception('mav send error: %s' % str(e))
                         break
             except APIException as e:
-                errprinter('>>> ' + str(e))
+                self._logger.exception("Exception in MAVLink write loop", exc_info=True)
                 self._alive = False
                 self.master.close()
                 self._death_error = e
@@ -203,12 +205,12 @@ class MAVConnection(object):
             # Huge try catch in case we see http://bugs.python.org/issue1856
             try:
                 while self._alive:
-                    # Downtime
-                    time.sleep(0.05)
-
                     # Loop listeners.
                     for fn in self.loop_listeners:
                         fn(self)
+
+                    # Sleep
+                    self.master.select(0.05)
 
                     while self._accept_input:
                         try:
@@ -218,11 +220,15 @@ class MAVConnection(object):
                             if error.errno == ECONNABORTED:
                                 raise APIException('Connection aborting during send')
                             raise
-                        except Exception as e:
-                            # TODO this should be more rigorous. How to avoid
+                        except mavutil.mavlink.MAVError as e:
+                            # Avoid
                             #   invalid MAVLink prefix '73'
                             #   invalid MAVLink prefix '13'
-                            # errprinter('mav recv error:', e)
+                            self._logger.debug('mav recv error: %s' % str(e))
+                            msg = None
+                        except Exception:
+                            # Log any other unexpected exception
+                            self._logger.exception('Exception while receiving message: ', exc_info=True)
                             msg = None
                         if not msg:
                             break
@@ -231,13 +237,14 @@ class MAVConnection(object):
                         for fn in self.message_listeners:
                             try:
                                 fn(self, msg)
-                            except Exception as e:
-                                errprinter('>>> Exception in message handler for %s' %
-                                           msg.get_type())
-                                errprinter('>>> ' + str(e))
+                            except Exception:
+                                self._logger.exception(
+                                    'Exception in message handler for %s' % msg.get_type(),
+                                    exc_info=True
+                                )
 
             except APIException as e:
-                errprinter('>>> ' + str(e))
+                self._logger.exception('Exception in MAVLink input loop')
                 self._alive = False
                 self.master.close()
                 self._death_error = e
@@ -315,7 +322,7 @@ class MAVConnection(object):
                     assert len(msg.get_msgbuf()) > 0
                     target.out_queue.put(msg.get_msgbuf())
                 except:
-                    errprinter('>>> Could not pack this object on receive: %s' % type(msg))
+                    self._logger.exception('Could not pack this object on receive: %s' % type(msg), exc_info=True)
 
         # target -> self -> vehicle
         @target.forward_message
@@ -329,6 +336,6 @@ class MAVConnection(object):
                     assert len(msg.get_msgbuf()) > 0
                     self.out_queue.put(msg.get_msgbuf())
                 except:
-                    errprinter('>>> Could not pack this object on forward: %s' % type(msg))
+                    self._logger.exception('Could not pack this object on forward: %s' % type(msg), exc_info=True)
 
         return target

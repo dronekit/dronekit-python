@@ -1,5 +1,5 @@
 import time
-from dronekit import connect, VehicleMode, LocationGlobal
+from dronekit import connect, VehicleMode
 from dronekit.test import with_sitl, wait_for
 from nose.tools import assert_equals, assert_not_equals
 
@@ -20,17 +20,17 @@ def test_timeout(connpath):
         """
 
         # Don't let the user try to fly autopilot is booting
-        wait_for(lambda : vehicle.is_armable, 60)
+        wait_for(lambda: vehicle.is_armable, 60)
         assert_equals(vehicle.is_armable, True)
 
         # Copter should arm in GUIDED mode
         vehicle.mode = VehicleMode("GUIDED")
-        wait_for(lambda : vehicle.mode.name == 'GUIDED', 60)
+        wait_for(lambda: vehicle.mode.name == 'GUIDED', 60)
         assert_equals(vehicle.mode.name, 'GUIDED')
 
         # Arm copter.
         vehicle.armed = True
-        wait_for(lambda : vehicle.armed, 60)
+        wait_for(lambda: vehicle.armed, 60)
         assert_equals(vehicle.armed, True)
 
         # Take off to target altitude
@@ -80,6 +80,8 @@ def test_location_notify(connpath):
         assert_not_equals(args[2].alt, 0)
         ret['success'] = True
 
-    wait_for(lambda : ret['success'], 30)
+    wait_for(lambda: ret['success'], 30)
 
     assert ret['success'], 'Expected location object to emit notifications.'
+
+    vehicle.close()

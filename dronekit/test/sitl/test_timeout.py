@@ -1,8 +1,6 @@
 import time
-import sys
-import os
 import socket
-from dronekit import connect, VehicleMode
+from dronekit import connect
 from dronekit.test import with_sitl
 from nose.tools import assert_equals
 
@@ -34,6 +32,8 @@ def test_timeout_empty():
     try:
         # Connect with timeout of 10s.
         vehicle = connect('tcp:127.0.0.1:5760', wait_ready=True, heartbeat_timeout=20)
+
+        vehicle.close()
 
         # Should not pass
         assert False

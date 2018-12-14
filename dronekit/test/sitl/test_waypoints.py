@@ -1,6 +1,5 @@
 import time
-import math
-from dronekit import connect, VehicleMode, LocationGlobal, Command
+from dronekit import connect, LocationGlobal, Command
 from pymavlink import mavutil
 from dronekit.test import with_sitl
 from nose.tools import assert_not_equals, assert_equals
@@ -40,6 +39,8 @@ def test_set_home(connpath):
     assert_equals(vehicle.home_location.lat, -35)
     assert_equals(vehicle.home_location.lon, 149)
     assert_equals(vehicle.home_location.alt, 600)
+
+    vehicle.close()
 
 
 @with_sitl
@@ -139,3 +140,5 @@ def test_227(connpath):
     vehicle.flush()  # Send commands
 
     assert_commands(1)
+
+    vehicle.close()

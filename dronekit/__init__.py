@@ -25,33 +25,27 @@ Velocity-based movement and control over other vehicle features can be achieved 
 
 It is also possible to work with vehicle "missions" using the :py:attr:`Vehicle.commands` attribute, and run them in AUTO mode.
 
+All the logging is handled through the builtin Python `logging` module.
+
 A number of other useful classes and methods are listed below.
 
 ----
 """
 
-from __future__ import print_function
 import collections
 import copy
+import logging
 import math
-import os
 import struct
-import platform
-from queue import Queue, Empty
-import re
-import socket
-import sys
-import threading
-from threading import Thread
 import time
-import types
 
 import monotonic
 from past.builtins import basestring
-from dronekit.util import errprinter
 
 from pymavlink import mavutil, mavwp
 from pymavlink.dialects.v10 import ardupilotmega
+
+from dronekit.util import ErrprinterHandler
 
 
 class APIException(Exception):
@@ -197,7 +191,7 @@ class LocationLocal(object):
 
         if self.north is not None and self.east is not None:
             if self.down is not None:
-                return math.sqrt(self.north**2 + self.east**2 + self.down**2) 
+                return math.sqrt(self.north**2 + self.east**2 + self.down**2)
             else:
                 return math.sqrt(self.north**2 + self.east**2)
 
@@ -270,6 +264,7 @@ class Rangefinder(object):
     def __str__(self):
         return "Rangefinder: distance={}, voltage={}".format(self.distance, self.voltage)
 
+
 class Version(object):
     """
     Autopilot version and type.
@@ -304,7 +299,7 @@ class Version(object):
         self.autopilot_type = autopilot_type
         self.vehicle_type = vehicle_type
         self.raw_version = raw_version
-        if(raw_version == None):
+        if raw_version is None:
             self.major = None
             self.minor = None
             self.patch = None
@@ -322,7 +317,6 @@ class Version(object):
         """
         return self.release == 255
 
-
     def release_version(self):
         """
         Returns the version within the release type (an integer).
@@ -330,10 +324,9 @@ class Version(object):
         """
         if self.release is None:
             return None
-        if(self.release == 255):
+        if self.release == 255:
             return 0
         return self.release % 64
-
 
     def release_type(self):
         """
@@ -341,27 +334,27 @@ class Version(object):
         """
         if self.release is None:
             return None
-        types = [ "dev", "alpha", "beta", "rc" ]
+        types = ["dev", "alpha", "beta", "rc"]
         return types[self.release >> 6]
 
     def __str__(self):
-        prefix=""
+        prefix = ""
 
-        if(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA):
+        if self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA:
             prefix += "APM:"
-        elif(self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4):
+        elif self.autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
             prefix += "PX4"
         else:
             prefix += "UnknownAutoPilot"
 
-        if(self.vehicle_type == mavutil.mavlink.MAV_TYPE_QUADROTOR):
+        if self.vehicle_type == mavutil.mavlink.MAV_TYPE_QUADROTOR:
             prefix += "Copter-"
-        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING):
+        elif self.vehicle_type == mavutil.mavlink.MAV_TYPE_FIXED_WING:
             prefix += "Plane-"
-        elif(self.vehicle_type == mavutil.mavlink.MAV_TYPE_GROUND_ROVER):
+        elif self.vehicle_type == mavutil.mavlink.MAV_TYPE_GROUND_ROVER:
             prefix += "Rover-"
         else:
-            prefix += "UnknownVehicleType%d-" % (self.vehicle_type)
+            prefix += "UnknownVehicleType%d-" % self.vehicle_type
 
         if self.release_type() is None:
             release_type = "UnknownReleaseType"
@@ -372,6 +365,7 @@ class Version(object):
             release_type = "-" + str(self.release_type()) + str(self.release_version())
 
         return prefix + "%s.%s.%s" % (self.major, self.minor, self.patch) + release_type
+
 
 class Capabilities:
     """
@@ -538,11 +532,11 @@ class SystemStatus(object):
 
 class HasObservers(object):
     def __init__(self):
+        self._logger = logging.getLogger(__name__)
+
         # A mapping from attr_name to a list of observers
         self._attribute_listeners = {}
         self._attribute_cache = {}
-
-
 
     def add_attribute_listener(self, attr_name, observer):
         """
@@ -587,12 +581,12 @@ class HasObservers(object):
         :param observer: The callback to invoke when a change in the attribute is detected.
 
         """
-        l = self._attribute_listeners.get(attr_name)
-        if l is None:
-            l = []
-            self._attribute_listeners[attr_name] = l
-        if not observer in l:
-            l.append(observer)
+        listeners_for_attr = self._attribute_listeners.get(attr_name)
+        if listeners_for_attr is None:
+            listeners_for_attr = []
+            self._attribute_listeners[attr_name] = listeners_for_attr
+        if observer not in listeners_for_attr:
+            listeners_for_attr.append(observer)
 
     def remove_attribute_listener(self, attr_name, observer):
         """
@@ -611,10 +605,10 @@ class HasObservers(object):
         :param observer: The callback function to remove.
 
         """
-        l = self._attribute_listeners.get(attr_name)
-        if l is not None:
-            l.remove(observer)
-            if len(l) == 0:
+        listeners_for_attr = self._attribute_listeners.get(attr_name)
+        if listeners_for_attr is not None:
+            listeners_for_attr.remove(observer)
+            if len(listeners_for_attr) == 0:
                 del self._attribute_listeners[attr_name]
 
     def notify_attribute_listeners(self, attr_name, value, cache=False):
@@ -640,7 +634,7 @@ class HasObservers(object):
         """
         # Cached values are not re-sent if they are unchanged.
         if cache:
-            if attr_name in self._attribute_cache and self._attribute_cache[attr_name] == value:
+            if self._attribute_cache.get(attr_name) == value:
                 return
             self._attribute_cache[attr_name] = value
 
@@ -648,18 +642,14 @@ class HasObservers(object):
         for fn in self._attribute_listeners.get(attr_name, []):
             try:
                 fn(self, attr_name, value)
-            except Exception as e:
-                errprinter('>>> Exception in attribute handler for %s' %
-                           attr_name)
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
 
         for fn in self._attribute_listeners.get('*', []):
             try:
                 fn(self, attr_name, value)
-            except Exception as e:
-                errprinter('>>> Exception in attribute handler for %s' %
-                           attr_name)
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
 
     def on_attribute(self, name):
         """
@@ -695,7 +685,7 @@ class HasObservers(object):
 
         See :ref:`vehicle_state_observe_attributes` for more information.
 
-        :param String attr_name: The name of the attribute to watch (or '*' to watch all attributes).
+        :param String name: The name of the attribute to watch (or '*' to watch all attributes).
         :param observer: The callback to invoke when a change in the attribute is detected.
         """
 
@@ -730,7 +720,7 @@ class ChannelsOverride(dict):
         return dict.__getitem__(self, str(key))
 
     def __setitem__(self, key, value):
-        if not (int(key) > 0 and int(key) <= self._count):
+        if not (0 < int(key) <= self._count):
             raise KeyError('Invalid channel index %s' % key)
         if not value:
             try:
@@ -885,7 +875,7 @@ class Locations(HasObservers):
             vehicle.notify_attribute_listeners('location.global_relative_frame',
                                                vehicle.location.global_relative_frame)
 
-            if self._alt != None or m.alt != 0:
+            if self._alt is not None or m.alt != 0:
                 # Require first alt value to be non-0
                 # TODO is this the proper check to do?
                 self._alt = m.alt / 1000.0
@@ -996,6 +986,15 @@ class Vehicle(HasObservers):
     It is also possible to work with vehicle "missions" using the :py:attr:`commands` attribute,
     and run them in AUTO mode.
 
+    STATUSTEXT log messages from the autopilot are handled through a separate logger.
+    It is possible to configure the log level, the formatting, etc. by accessing the logger, e.g.:
+
+    .. code-block:: python
+
+        import logging
+        autopilot_logger = logging.getLogger('autopilot')
+        autopilot_logger.setLevel(logging.DEBUG)
+
     The guide contains more detailed information on the different ways you can use
     the ``Vehicle`` class:
 
@@ -1017,12 +1016,26 @@ class Vehicle(HasObservers):
     def __init__(self, handler):
         super(Vehicle, self).__init__()
 
+        self._logger = logging.getLogger(__name__)  # Logger for DroneKit
+        self._autopilot_logger = logging.getLogger('autopilot')  # Logger for the autopilot messages
+        # MAVLink-to-logging-module log severity mappings
+        self._mavlink_statustext_severity = {
+            0: logging.CRITICAL,
+            1: logging.CRITICAL,
+            2: logging.CRITICAL,
+            3: logging.ERROR,
+            4: logging.WARNING,
+            5: logging.INFO,
+            6: logging.INFO,
+            7: logging.DEBUG
+        }
+
         self._handler = handler
         self._master = handler.master
 
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
-        self._ready_attrs = set(['commands'])
+        self._ready_attrs = {'commands'}
 
         # Default parameters when calling wait_ready() or wait_ready(True).
         self._default_ready_attrs = ['parameters', 'gps_0', 'armed', 'mode', 'attitude']
@@ -1042,6 +1055,14 @@ class Vehicle(HasObservers):
         self._vx = None
         self._vy = None
         self._vz = None
+
+        @self.on_message('STATUSTEXT')
+        def statustext_listener(self, name, m):
+            # Log the STATUSTEXT on the autopilot logger, with the correct severity
+            self._autopilot_logger.log(
+                msg=m.text.strip(),
+                level=self._mavlink_statustext_severity[m.severity]
+            )
 
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
@@ -1099,7 +1120,7 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('mount', self.mount_status)
 
         self._capabilities = None
-        self._raw_version =None
+        self._raw_version = None
         self._autopilot_version_msg_count = 0
 
         @self.on_message('AUTOPILOT_VERSION')
@@ -1189,8 +1210,8 @@ class Vehicle(HasObservers):
         self._flightmode = 'AUTO'
         self._armed = False
         self._system_status = None
-        self._autopilot_type = None#PX4, ArduPilot, etc.
-        self._vehicle_type = None#quadcopter, plane, etc.
+        self._autopilot_type = None  # PX4, ArduPilot, etc.
+        self._vehicle_type = None  # quadcopter, plane, etc.
 
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
@@ -1201,7 +1222,7 @@ class Vehicle(HasObservers):
             self.notify_attribute_listeners('armed', self.armed, cache=True)
             self._autopilot_type = m.autopilot
             self._vehicle_type = m.type
-            if self._is_mode_available(m.custom_mode, m.base_mode) == False:
+            if self._is_mode_available(m.custom_mode, m.base_mode) is False:
                 raise APIException("mode (%s, %s) not available on mavlink definition" % (m.custom_mode, m.base_mode))
             if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
                 self._flightmode = mavutil.interpret_px4_mode(m.base_mode, m.custom_mode)
@@ -1227,10 +1248,9 @@ class Vehicle(HasObservers):
                 self._wploader.expected_count = msg.count
                 self._master.waypoint_request_send(0)
 
-
         @self.on_message(['HOME_POSITION'])
         def listener(self, name, msg):
-            self._home_location = LocationGlobal(msg.latitude/1.0e7, msg.longitude/1.0e7, msg.altitude/1000.0);
+            self._home_location = LocationGlobal(msg.latitude / 1.0e7, msg.longitude / 1.0e7, msg.altitude / 1000.0)
             self.notify_attribute_listeners('home_location', self.home_location, cache=True)
 
         @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
@@ -1258,7 +1278,7 @@ class Vehicle(HasObservers):
         # Waypoint send to master
         @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
         def listener(self, name, msg):
-            if self._wp_uploaded != None:
+            if self._wp_uploaded is not None:
                 wp = self._wploader.wp(msg.seq)
                 handler.fix_targets(wp)
                 self._master.mav.send(wp)
@@ -1286,15 +1306,15 @@ class Vehicle(HasObservers):
             if not self._params_start:
                 return
 
-            if None not in self._params_set and not self._params_loaded:
+            if not self._params_loaded and all(x is not None for x in self._params_set):
                 self._params_loaded = True
                 self.notify_attribute_listeners('parameters', self.parameters)
 
             if not self._params_loaded and monotonic.monotonic() - self._params_last > self._params_duration:
                 c = 0
                 for i, v in enumerate(self._params_set):
-                    if v == None:
-                        self._master.mav.param_request_read_send(0, 0, '', i)
+                    if v is None:
+                        self._master.mav.param_request_read_send(0, 0, b'', i)
                         c += 1
                         if c > 50:
                             break
@@ -1316,7 +1336,7 @@ class Vehicle(HasObservers):
             # we lack a param_id.
             try:
                 if msg.param_index < msg.param_count and msg:
-                    if self._params_set[msg.param_index] == None:
+                    if self._params_set[msg.param_index] is None:
                         self._params_last = monotonic.monotonic()
                         self._params_duration = start_duration
                     self._params_set[msg.param_index] = msg
@@ -1349,14 +1369,12 @@ class Vehicle(HasObservers):
 
             # Timeouts.
             if self._heartbeat_started:
-                if self._heartbeat_error and self._heartbeat_error > 0 and monotonic.monotonic(
-                ) - self._heartbeat_lastreceived > self._heartbeat_error:
+                if self._heartbeat_error and monotonic.monotonic() - self._heartbeat_lastreceived > self._heartbeat_error > 0:
                     raise APIException('No heartbeat in %s seconds, aborting.' %
                                        self._heartbeat_error)
                 elif monotonic.monotonic() - self._heartbeat_lastreceived > self._heartbeat_warning:
-                    if self._heartbeat_timeout == False:
-                        errprinter('>>> Link timeout, no heartbeat in last %s seconds' %
-                                   self._heartbeat_warning)
+                    if self._heartbeat_timeout is False:
+                        self._logger.warning('Link timeout, no heartbeat in last %s seconds' % self._heartbeat_warning)
                         self._heartbeat_timeout = True
 
         @self.on_message(['HEARTBEAT'])
@@ -1367,7 +1385,7 @@ class Vehicle(HasObservers):
             self._heartbeat_system = msg.get_srcSystem()
             self._heartbeat_lastreceived = monotonic.monotonic()
             if self._heartbeat_timeout:
-                errprinter('>>> ...link restored.')
+                self._logger.info('...link restored.')
             self._heartbeat_timeout = False
 
         self._last_heartbeat = None
@@ -1514,19 +1532,14 @@ class Vehicle(HasObservers):
         for fn in self._message_listeners.get(name, []):
             try:
                 fn(self, name, msg)
-            except Exception as e:
-                errprinter('>>> Exception in message handler for %s' %
-                           msg.get_type())
-                errprinter('>>> ' + str(e))
+            except Exception:
+                self._logger.exception('Exception in message handler for %s' % msg.get_type(), exc_info=True)
 
         for fn in self._message_listeners.get('*', []):
             try:
                 fn(self, name, msg)
-            except Exception as e:
-                errprinter('>>> Exception in message handler for %s' %
-                           msg.get_type())
-                errprinter('>>> ' + str(e))
-
+            except Exception:
+                self._logger.exception('Exception in message handler for %s' % msg.get_type(), exc_info=True)
 
     def close(self):
         return self._handler.close()
@@ -1677,7 +1690,7 @@ class Vehicle(HasObservers):
         """
         Current system batter status (:py:class:`Battery`).
         """
-        if self._voltage == None or self._current == None or self._level == None:
+        if self._voltage is None or self._current is None or self._level is None:
             return None
         return Battery(self._voltage, self._current, self._level)
 
@@ -1827,19 +1840,18 @@ class Vehicle(HasObservers):
 
     @groundspeed.setter
     def groundspeed(self, speed):
-        speed_type = 1 # ground speed
+        speed_type = 1  # ground speed
         msg = self.message_factory.command_long_encode(
             0, 0,    # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
-            0, #confirmation
-            speed_type, #param 1
-            speed, # speed in metres/second
-            -1, 0, 0, 0, 0 #param 3 - 7
-            )
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED,  # command
+            0,  # confirmation
+            speed_type,  # param 1
+            speed,  # speed in metres/second
+            -1, 0, 0, 0, 0  # param 3 - 7
+        )
 
         # send command to vehicle
         self.send_mavlink(msg)
-
 
     @property
     def airspeed(self):
@@ -1854,15 +1866,15 @@ class Vehicle(HasObservers):
 
     @airspeed.setter
     def airspeed(self, speed):
-        speed_type = 0 # air speed
+        speed_type = 0  # air speed
         msg = self.message_factory.command_long_encode(
             0, 0,    # target system, target component
-            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED, #command
-            0, #confirmation
-            speed_type, #param 1
-            speed, # speed in metres/second
-            -1, 0, 0, 0, 0 #param 3 - 7
-            )
+            mavutil.mavlink.MAV_CMD_DO_CHANGE_SPEED,  # command
+            0,  # confirmation
+            speed_type,  # param 1
+            speed,  # speed in metres/second
+            -1, 0, 0, 0, 0  # param 3 - 7
+        )
 
         # send command to vehicle
         self.send_mavlink(msg)
@@ -1984,7 +1996,7 @@ class Vehicle(HasObservers):
             0, 0,  # target system, target component
             mavutil.mavlink.MAV_CMD_DO_SET_HOME,  # command
             0,  # confirmation
-            2,  # param 1: 1 to use current position, 2 to use the entered values.
+            0,  # param 1: 1 to use current position, 0 to use the entered values.
             0, 0, 0,  # params 2-4
             pos.lat, pos.lon, pos.alt))
 
@@ -2099,12 +2111,12 @@ class Vehicle(HasObservers):
 
         def check_alt():
             cur = get_alt()
-            delta = abs(alt-cur)
+            delta = abs(alt - cur)
 
             return (
                 (delta < epsilon) or
-                (start < alt and cur > alt) or
-                (start > alt and cur < alt)
+                (cur > alt > start) or
+                (cur < alt < start)
             )
 
         start = get_alt()
@@ -2146,7 +2158,7 @@ class Vehicle(HasObservers):
             if math.isnan(altitude) or math.isinf(altitude):
                 raise ValueError("Altitude was NaN or Infinity. Please provide a real number")
             self._master.mav.command_long_send(0, 0, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-                                                  0, 0, 0, 0, 0, 0, 0, altitude)
+                                               0, 0, 0, 0, 0, 0, 0, altitude)
 
     def simple_goto(self, location, airspeed=None, groundspeed=None):
         '''
@@ -2195,9 +2207,9 @@ class Vehicle(HasObservers):
                                            0, 0, 0, location.lat, location.lon,
                                            alt)
 
-        if airspeed != None:
+        if airspeed is not None:
             self.airspeed = airspeed
-        if groundspeed != None:
+        if groundspeed is not None:
             self.groundspeed = groundspeed
 
     def send_mavlink(self, message):
@@ -2286,7 +2298,7 @@ class Vehicle(HasObservers):
             time.sleep(0.1)
 
         # Initialize data stream.
-        if rate != None:
+        if rate is not None:
             self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
                                                       rate, 1)
 
@@ -2315,7 +2327,7 @@ class Vehicle(HasObservers):
         vehicle.send_mavlink(capability_msg)
 
     def play_tune(self, tune):
-        '''Request an AUTOPILOT_VERSION packet'''
+        '''Play a tune on the vehicle'''
         msg = self.message_factory.play_tune_encode(0, 0, tune)
         self.send_mavlink(msg)
 
@@ -2362,16 +2374,26 @@ class Vehicle(HasObservers):
             raise ValueError('wait_ready expects one or more string arguments.')
 
         # Wait for these attributes to have been set.
-        await = set(types)
+        await_attributes = set(types)
         start = monotonic.monotonic()
-        while not await.issubset(self._ready_attrs):
+        still_waiting_last_message_sent = start
+        still_waiting_callback = kwargs.get('still_waiting_callback')
+        still_waiting_message_interval = kwargs.get('still_waiting_interval', 1)
+
+        while not await_attributes.issubset(self._ready_attrs):
             time.sleep(0.1)
-            if monotonic.monotonic() - start > timeout:
+            now = monotonic.monotonic()
+            if now - start > timeout:
                 if raise_exception:
                     raise TimeoutError('wait_ready experienced a timeout after %s seconds.' %
                                        timeout)
                 else:
                     return False
+            if (still_waiting_callback and
+                    now - still_waiting_last_message_sent > still_waiting_message_interval):
+                still_waiting_last_message_sent = now
+                if still_waiting_callback:
+                    still_waiting_callback(await_attributes - self._ready_attrs)
 
         return True
 
@@ -2481,22 +2503,23 @@ class Gimbal(object):
         :param yaw: Gimbal yaw in degrees relative to *global frame* (0 is North, 90 is West, 180 is South etc.)
         """
         msg = self._vehicle.message_factory.mount_configure_encode(
-                    0, 1,    # target system, target component
-                    mavutil.mavlink.MAV_MOUNT_MODE_MAVLINK_TARGETING,  #mount_mode
-                    1,  # stabilize roll
-                    1,  # stabilize pitch
-                    1,  # stabilize yaw
-                    )
+            0, 1,    # target system, target component
+            mavutil.mavlink.MAV_MOUNT_MODE_MAVLINK_TARGETING,  #mount_mode
+            1,  # stabilize roll
+            1,  # stabilize pitch
+            1,  # stabilize yaw
+        )
         self._vehicle.send_mavlink(msg)
         msg = self._vehicle.message_factory.mount_control_encode(
-                    0, 1,    # target system, target component
-                    pitch * 100, # pitch is in centidegrees
-                    roll * 100, # roll
-                    yaw * 100, # yaw is in centidegrees
-                    0) # save position
+            0, 1,    # target system, target component
+            pitch * 100,  # pitch is in centidegrees
+            roll * 100,  # roll
+            yaw * 100,  # yaw is in centidegrees
+            0  # save position
+        )
         self._vehicle.send_mavlink(msg)
 
-    def target_location(self,roi):
+    def target_location(self, roi):
         """
         Point the gimbal at a specific region of interest (ROI).
 
@@ -2513,17 +2536,17 @@ class Gimbal(object):
 
         :param roi: Target location in global relative frame.
         """
-        #set gimbal to targeting mode
+        # set gimbal to targeting mode
         msg = self._vehicle.message_factory.mount_configure_encode(
-                    0, 1,    # target system, target component
-                    mavutil.mavlink.MAV_MOUNT_MODE_GPS_POINT,  #mount_mode
-                    1,  # stabilize roll
-                    1,  # stabilize pitch
-                    1,  # stabilize yaw
-                    )
+            0, 1,    # target system, target component
+            mavutil.mavlink.MAV_MOUNT_MODE_GPS_POINT,  # mount_mode
+            1,  # stabilize roll
+            1,  # stabilize pitch
+            1,  # stabilize yaw
+        )
         self._vehicle.send_mavlink(msg)
 
-        #Get altitude relative to home irrespective of Location object passed in.
+        # Get altitude relative to home irrespective of Location object passed in.
         if isinstance(roi, LocationGlobalRelative):
             alt = roi.alt
         elif isinstance(roi, LocationGlobal):
@@ -2534,16 +2557,16 @@ class Gimbal(object):
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
-        #set the ROI
+        # set the ROI
         msg = self._vehicle.message_factory.command_long_encode(
-                    0, 1,    # target system, target component
-                    mavutil.mavlink.MAV_CMD_DO_SET_ROI, #command
-                    0, #confirmation
-                    0, 0, 0, 0, #params 1-4
-                    roi.lat,
-                    roi.lon,
-                    alt
-                    )
+            0, 1,    # target system, target component
+            mavutil.mavlink.MAV_CMD_DO_SET_ROI,  # command
+            0,  # confirmation
+            0, 0, 0, 0,  # params 1-4
+            roi.lat,
+            roi.lon,
+            alt
+        )
         self._vehicle.send_mavlink(msg)
 
     def release(self):
@@ -2554,12 +2577,12 @@ class Gimbal(object):
         or :py:func:`target_location`. Control will automatically be released if you change vehicle mode.
         """
         msg = self._vehicle.message_factory.mount_configure_encode(
-                    0, 1,    # target system, target component
-                    mavutil.mavlink.MAV_MOUNT_MODE_RC_TARGETING,  #mount_mode
-                    1,  # stabilize roll
-                    1,  # stabilize pitch
-                    1,  # stabilize yaw
-                    )
+            0, 1,    # target system, target component
+            mavutil.mavlink.MAV_MOUNT_MODE_RC_TARGETING,  # mount_mode
+            1,  # stabilize roll
+            1,  # stabilize pitch
+            1,  # stabilize yaw
+        )
         self._vehicle.send_mavlink(msg)
 
     def __str__(self):
@@ -2589,6 +2612,7 @@ class Parameters(collections.MutableMapping, HasObservers):
 
     def __init__(self, vehicle):
         super(Parameters, self).__init__()
+        self._logger = logging.getLogger(__name__)
         self._vehicle = vehicle
 
     def __getitem__(self, name):
@@ -2628,7 +2652,6 @@ class Parameters(collections.MutableMapping, HasObservers):
         name = name.upper()
         # convert to single precision floating point number (the type used by low level mavlink messages)
         value = float(struct.unpack('f', struct.pack('f', value))[0])
-        success = False
         remaining = retries
         while True:
             self._vehicle._master.param_set_send(name, value)
@@ -2642,7 +2665,7 @@ class Parameters(collections.MutableMapping, HasObservers):
                 time.sleep(0.1)
 
         if retries > 0:
-            errprinter("timeout setting parameter %s to %f" % (name, value))
+            self._logger.error("timeout setting parameter %s to %f" % (name, value))
         return False
 
     def wait_ready(self, **kwargs):
@@ -2953,13 +2976,17 @@ class CommandSequence(object):
         self._vehicle._wpts_dirty = True
 
 
-from dronekit.mavlink import MAVConnection
+def default_still_waiting_callback(atts):
+    logging.getLogger(__name__).debug("Still waiting for data from vehicle: %s" % ','.join(atts))
 
 
 def connect(ip,
             _initialize=True,
             wait_ready=None,
-            status_printer=errprinter,
+            timeout=30,
+            still_waiting_callback=default_still_waiting_callback,
+            still_waiting_interval=1,
+            status_printer=None,
             vehicle_class=None,
             rate=4,
             baud=115200,
@@ -2991,9 +3018,9 @@ def connect(ip,
 
         For more information see :py:func:`Vehicle.wait_ready <Vehicle.wait_ready>`.
 
-    :param status_printer: Method of signature ``def status_printer(txt)`` that prints
+    :param status_printer: (deprecated) method of signature ``def status_printer(txt)`` that prints
         STATUS_TEXT messages from the Vehicle and other diagnostic information.
-        By default the status information is printed to the command prompt in which the script is running.
+        By default the status information is handled by the ``autopilot`` logger.
     :param Vehicle vehicle_class: The class that will be instantiated by the ``connect()`` method.
         This can be any sub-class of ``Vehicle`` (and defaults to ``Vehicle``).
     :param int rate: Data stream refresh rate. The default is 4Hz (4 updates per second).
@@ -3013,9 +3040,14 @@ def connect(ip,
             It is *good practice* to assign a unique id for every system on the MAVLink network.
             It is possible to configure the autopilot to only respond to guided-mode commands from a specified GCS ID.
 
+            The ``status_printer`` argument is deprecated. To redirect the logging from the library and from the
+            autopilot, configure the ``dronekit`` and ``autopilot`` loggers using the Python ``logging`` module.
+
 
     :returns: A connected vehicle of the type defined in ``vehicle_class`` (a superclass of :py:class:`Vehicle`).
     """
+
+    from dronekit.mavlink import MAVConnection
 
     if not vehicle_class:
         vehicle_class = Vehicle
@@ -3024,17 +3056,16 @@ def connect(ip,
     vehicle = vehicle_class(handler)
 
     if status_printer:
-
-        @vehicle.on_message('STATUSTEXT')
-        def listener(self, name, m):
-            status_printer(re.sub(r'(^|\n)', '>>> ', m.text.rstrip()))
+        vehicle._autopilot_logger.addHandler(ErrprinterHandler(status_printer))
 
     if _initialize:
         vehicle.initialize(rate=rate, heartbeat_timeout=heartbeat_timeout)
 
     if wait_ready:
-        if wait_ready == True:
-            vehicle.wait_ready(True)
+        if wait_ready is True:
+            vehicle.wait_ready(still_waiting_interval=still_waiting_interval,
+                               still_waiting_callback=still_waiting_callback,
+                               timeout=timeout)
         else:
             vehicle.wait_ready(*wait_ready)
 
