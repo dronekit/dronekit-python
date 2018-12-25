@@ -532,6 +532,7 @@ class SystemStatus(object):
 
 class HasObservers(object):
     def __init__(self):
+        logging.basicConfig()
         self._logger = logging.getLogger(__name__)
 
         # A mapping from attr_name to a list of observers
