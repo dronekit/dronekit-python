@@ -12,7 +12,7 @@ setuptools.setup(
     author='3D Robotics',
     install_requires=[
         'pymavlink>=2.2.20',
-        'monotonic>=1.3 ; python_version<"3.3"',
+        'monotonic>=1.3',
     ],
     author_email='tim@3drobotics.com, kevinh@geeksville.com',
     classifiers=[
