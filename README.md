@@ -2,7 +2,7 @@
 
 ![dronekit_python_logo](https://cloud.githubusercontent.com/assets/5368500/10805537/90dd4b14-7e22-11e5-9592-5925348a7df9.png)
 
-![PyPi published version](https://img.shields.io/pypi/v/dronekit.svg)
+[![PyPi published version](https://img.shields.io/pypi/v/dronekit.svg)](https://pypi.org/project/dronekit/)
 [![Windows Build status](https://img.shields.io/appveyor/ci/3drobotics/dronekit-python/master.svg?label=windows)](https://ci.appveyor.com/project/3drobotics/dronekit-python/branch/master)
 [![OS X Build Status](https://img.shields.io/travis/dronekit/dronekit-python/master.svg?label=os%20x)](https://travis-ci.org/dronekit/dronekit-python)
 [![Linux Build Status](https://img.shields.io/circleci/project/dronekit/dronekit-python/master.svg?label=linux)](https://circleci.com/gh/dronekit/dronekit-python) <a href="https://gitter.im/dronekit/dronekit-python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img align="right" src="https://badges.gitter.im/Join%20Chat.svg"></img></a>
@@ -25,12 +25,12 @@ The [Quick Start](http://python.dronekit.io/guide/quick_start.html) guide explai
 A basic script looks like this:
 
 ```python
-from dronekit import connect, VehicleMode
+from dronekit import connect
 
 # Connect to UDP endpoint.
 vehicle = connect('127.0.0.1:14550', wait_ready=True)
 # Use returned Vehicle object to query device state - e.g. to get the mode:
-print " Mode: %s" % vehicle.mode.name
+print("Mode: %s" % vehicle.mode.name)
 ```
 
 Once you've got DroneKit set up, the [guide](http://python.dronekit.io/guide/index.html) explains how to perform operations like taking off and flying the vehicle. You can also try out most of the tasks by running the [examples](http://python.dronekit.io/examples/index.html).
