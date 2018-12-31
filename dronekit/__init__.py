@@ -2397,7 +2397,7 @@ class Vehicle(HasObservers):
 
         self.send_mavlink(reboot_msg)
 
-    def calibrate_gyro(self):
+    def send_calibrate_gyro(self):
         """Request gyroscope calibration."""
 
         calibration_command = self.message_factory.command_long_encode(
@@ -2414,7 +2414,7 @@ class Vehicle(HasObservers):
         )
         self.send_mavlink(calibration_command)
 
-    def calibrate_magnetometer(self):
+    def send_calibrate_magnetometer(self):
         """Request magnetometer calibration."""
 
         # ArduPilot requires the MAV_CMD_DO_START_MAG_CAL command, only present in the ardupilotmega.xml definition
@@ -2447,7 +2447,7 @@ class Vehicle(HasObservers):
 
         self.send_mavlink(calibration_command)
 
-    def calibrate_accelerometer(self, simple=False):
+    def send_calibrate_accelerometer(self, simple=False):
         """Request accelerometer calibration.
 
         :param simple: if True, perform simple accelerometer calibration
@@ -2467,7 +2467,7 @@ class Vehicle(HasObservers):
         )
         self.send_mavlink(calibration_command)
 
-    def calibrate_vehicle_level(self):
+    def send_calibrate_vehicle_level(self):
         """Request vehicle level (accelerometer trim) calibration."""
 
         calibration_command = self.message_factory.command_long_encode(
@@ -2484,7 +2484,7 @@ class Vehicle(HasObservers):
         )
         self.send_mavlink(calibration_command)
 
-    def calibrate_barometer(self):
+    def send_calibrate_barometer(self):
         """Request barometer calibration."""
 
         calibration_command = self.message_factory.command_long_encode(
