@@ -13,7 +13,7 @@ def test_gyro_calibration(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     with assert_command_ack(vehicle, mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, timeout=30):
-        vehicle.calibrate_gyro()
+        vehicle.send_calibrate_gyro()
 
     vehicle.close()
 
@@ -30,7 +30,7 @@ def test_magnetometer_calibration(connpath):
         timeout=30,
         ack_result=mavutil.mavlink.MAV_RESULT_UNSUPPORTED,  # TODO: change when APM is upgraded
     ):
-        vehicle.calibrate_magnetometer()
+        vehicle.send_calibrate_magnetometer()
 
     vehicle.close()
 
@@ -47,7 +47,7 @@ def test_simple_accelerometer_calibration(connpath):
         timeout=30,
         ack_result=mavutil.mavlink.MAV_RESULT_FAILED,
     ):
-        vehicle.calibrate_accelerometer(simple=True)
+        vehicle.send_calibrate_accelerometer(simple=True)
 
     vehicle.close()
 
@@ -66,7 +66,7 @@ def test_accelerometer_calibration(connpath):
         timeout=30,
         ack_result=mavutil.mavlink.MAV_RESULT_FAILED,
     ):
-        vehicle.calibrate_accelerometer(simple=False)
+        vehicle.send_calibrate_accelerometer(simple=False)
 
     vehicle.close()
 
@@ -78,7 +78,7 @@ def test_board_level_calibration(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     with assert_command_ack(vehicle, mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, timeout=30):
-        vehicle.calibrate_vehicle_level()
+        vehicle.send_calibrate_vehicle_level()
 
     vehicle.close()
 
@@ -90,6 +90,6 @@ def test_barometer_calibration(connpath):
     vehicle = connect(connpath, wait_ready=True)
 
     with assert_command_ack(vehicle, mavutil.mavlink.MAV_CMD_PREFLIGHT_CALIBRATION, timeout=30):
-        vehicle.calibrate_barometer()
+        vehicle.send_calibrate_barometer()
 
     vehicle.close()
