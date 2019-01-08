@@ -1033,6 +1033,7 @@ class Vehicle(HasObservers):
 
         self._handler = handler
         self._master = handler.master
+        self.statustext_handler = None
 
         # Cache all updated attributes for wait_ready.
         # By default, we presume all "commands" are loaded.
@@ -1060,10 +1061,15 @@ class Vehicle(HasObservers):
         @self.on_message('STATUSTEXT')
         def statustext_listener(self, name, m):
             # Log the STATUSTEXT on the autopilot logger, with the correct severity
+
+            msg = m.text.strip()
+            level = self._mavlink_statustext_severity[m.severity]
             self._autopilot_logger.log(
-                msg=m.text.strip(),
-                level=self._mavlink_statustext_severity[m.severity]
+                msg=msg,
+                level=level
             )
+            if self.statustext_handler:
+                self.statustext_handler(msg, level)
 
         @self.on_message('GLOBAL_POSITION_INT')
         def listener(self, name, m):
