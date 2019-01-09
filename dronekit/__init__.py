@@ -2542,6 +2542,13 @@ class Gimbal(object):
             self._yaw = m.pointing_c / 100.0
             vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
 
+        @vehicle.on_message('MOUNT_ORIENTATION')
+        def listener(vehicle, name, m):
+            self._pitch = m.pitch 
+            self._roll = m.roll
+            self._yaw = m.yaw
+            vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
+
     @property
     def pitch(self):
         """
