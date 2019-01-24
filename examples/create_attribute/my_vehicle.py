@@ -17,7 +17,7 @@ class RawIMU(object):
     The RAW IMU readings for the usual 9DOF sensor setup. 
     This contains the true raw values without any scaling to allow data capture and system debugging.
     
-    The message definition is here: https://pixhawk.ethz.ch/mavlink/#RAW_IMU
+    The message definition is here: https://mavlink.io/en/messages/common.html#RAW_IMU
     
     :param time_boot_us: Timestamp (microseconds since system boot). #Note, not milliseconds as per spec
     :param xacc: X acceleration (mg)
