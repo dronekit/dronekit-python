@@ -3015,6 +3015,8 @@ class CommandSequence(object):
 
         After the return from ``upload()`` any writes are guaranteed to have completed (or thrown an
         exception) and future reads will see their effects.
+
+        :param int timeout: The timeout for uploading the mission. No timeout if not provided or set to None.
         """
         if self._vehicle._wpts_dirty:
             self._vehicle._master.waypoint_clear_all_send()
