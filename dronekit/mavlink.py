@@ -39,7 +39,7 @@ class MAVWriter(object):
 
 class mavudpin_multi(mavutil.mavfile):
     '''a UDP mavlink socket'''
-    def __init__(self, device, baud=None, input=True, broadcast=False, source_system=255, use_native=mavutil.default_native):
+    def __init__(self, device, baud=None, input=True, broadcast=False, source_system=255, source_component=0, use_native=mavutil.default_native):
         self._logger = logging.getLogger(__name__)
         a = device.split(':')
         if len(a) != 2:
@@ -59,7 +59,7 @@ class mavudpin_multi(mavutil.mavfile):
                 self.broadcast = True
         mavutil.set_close_on_exec(self.port.fileno())
         self.port.setblocking(False)
-        mavutil.mavfile.__init__(self, self.port.fileno(), device, source_system=source_system, input=input, use_native=use_native)
+        mavutil.mavfile.__init__(self, self.port.fileno(), device, source_system=source_system, source_component=source_component, input=input, use_native=use_native)
 
     def close(self):
         self.port.close()
@@ -121,13 +121,13 @@ class MAVConnection(object):
             self.mavlink_thread_out.join()
             self.mavlink_thread_out = None
 
-    def __init__(self, ip, baud=115200, target_system=0, source_system=255, use_native=False):
+    def __init__(self, ip, baud=115200, target_system=0, source_system=255, source_component=0, use_native=False):
         self._logger = logging.getLogger(__name__)
 
         if ip.startswith("udpin:"):
-            self.master = mavudpin_multi(ip[6:], input=True, baud=baud, source_system=source_system)
+            self.master = mavudpin_multi(ip[6:], input=True, baud=baud, source_system=source_system, source_component=source_component)
         else:
-            self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system)
+            self.master = mavutil.mavlink_connection(ip, baud=baud, source_system=source_system, source_component=source_component)
 
         # TODO get rid of "master" object as exposed,
         # keep it private, expose something smaller for dronekit
@@ -135,6 +135,7 @@ class MAVConnection(object):
         self.master.mav = mavutil.mavlink.MAVLink(
             MAVWriter(self.out_queue),
             srcSystem=self.master.source_system,
+            srcComponent=self.master.source_component,
             use_native=use_native)
 
         # Monkey-patch MAVLink object for fix_targets.
