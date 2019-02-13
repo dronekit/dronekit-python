@@ -80,7 +80,7 @@ The table below shows *connection strings* you can use for some of the more comm
 .. tip::
 
     The strings above are the same as are used when connecting the MAVProxy GCS. For other options see the 
-    `MAVProxy documentation <http://dronecode.github.io/MAVProxy/html/getting_started/starting.html#master>`_.
+    `MAVProxy documentation <http://ardupilot.github.io/MAVProxy/html/getting_started/starting.html>`_.
     
 .. note::
 
