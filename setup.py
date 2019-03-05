@@ -1,13 +1,20 @@
-import setuptools
+from setuptools import find_packages, setup
 
 version = '2.9.1'
 
-setuptools.setup(
+try:
+    with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+        LongDescription = f.read()
+except FileNotFoundError:
+    LongDescription = 'Python API for communication and control of drones over MAVLink.'
+
+
+setup(
     name='dronekit',
     zip_safe=True,
     version=version,
     description='Developer Tools for Drones.',
-    long_description='Python API for communication and control of drones over MAVLink.',
+    long_description=LongDescription,
     url='https://github.com/dronekit/dronekit-python',
     author='3D Robotics',
     install_requires=[
@@ -26,5 +33,5 @@ setuptools.setup(
         'Topic :: Scientific/Engineering',
     ],
     license='apache',
-    packages=setuptools.find_packages()
+    packages=find_packages()
 )
