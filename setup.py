@@ -1,13 +1,17 @@
 import setuptools
+import os
 
 version = '2.9.1'
+
+with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
+    LongDescription = f.read()
 
 setuptools.setup(
     name='dronekit',
     zip_safe=True,
     version=version,
     description='Developer Tools for Drones.',
-    long_description='Python API for communication and control of drones over MAVLink.',
+    long_description=LongDescription,
     url='https://github.com/dronekit/dronekit-python',
     author='3D Robotics',
     install_requires=[
