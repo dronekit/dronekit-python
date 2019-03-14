@@ -1,5 +1,31 @@
 # Changelog
 
+
+## Version 2.9.2 (2019-03-18)
+
+### Improvements
+* CI integration improvements
+* Python3 compatability
+* use logging module
+* log statustexts
+* documentation improvements
+* convenience functions added: wait_for, wait_for_armable, arm, disarm, wait_for_mode, wait_for_alt, wait_simple_takeoff
+* play_tune method added
+* reboot method added
+* send_calibrate_gyro, send_calibrate_magnetometer, send_calibrate_magnetometer, send_calibrate_vehicle_level, send_calibrate_barometer all added
+* update gimbal orientation from MOUNT_ORIENTATION
+* add a still-waiting callback for connect() to provide debug on where the connection is up to
+* several new tests added (including, play_tune, reboot and set_attitude_target)
+
+### Cleanup
+* flake8 compliance improvements
+* test includes pruned
+* examples cleaned up
+
+### Bug Fixes
+* ignore GCS heartbeats for the purposes of link up
+* many!
+
 ## Version 2.9.1 (2017-04-21)
 
 ### Improvements
