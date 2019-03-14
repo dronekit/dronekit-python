@@ -94,7 +94,8 @@ def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
             Note that as of Copter 3.5, thrust = 0.5 triggers a special case in
             the code for maintaining current altitude.
     """
-    if not use_yaw_rate and yaw_angle is None:
+    if yaw_angle is None:
+        # this value may be unused by the vehicle, depending on use_yaw_rate
         yaw_angle = vehicle.attitude.yaw
     # Thrust >  0.5: Ascend
     # Thrust == 0.5: Hold the altitude
