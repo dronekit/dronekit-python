@@ -1,11 +1,12 @@
 from setuptools import find_packages, setup
+import os
 
 version = '2.9.1'
 
 try:
-    with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+    with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as f:
         LongDescription = f.read()
-except FileNotFoundError:
+except:
     LongDescription = 'Python API for communication and control of drones over MAVLink.'
 
 
