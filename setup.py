@@ -11,6 +11,7 @@ setuptools.setup(
     zip_safe=True,
     version=version,
     description='Developer Tools for Drones.',
+    long_description_content_type="text/markdown",
     long_description=LongDescription,
     url='https://github.com/dronekit/dronekit-python',
     author='3D Robotics',
