@@ -23,6 +23,9 @@ Vagrant.configure(2) do |config|
         echo "[DroneKit]: Installing Sphinx ... "
         pip install sphinx
         cd /vagrant
+        pip install virtualenv
+        virtualenv venv
+        source venv/bin/activate
         echo "[DroneKit]: Installing DroneKit-Python requirements.txt ... "
         pip install -r requirements.txt
         echo "[DroneKit]: Building docs "
