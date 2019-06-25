@@ -1142,12 +1142,12 @@ class Vehicle(HasObservers):
         # All keys are strings.
         self._channels = Channels(self, 8)
 
-        @self.on_message('RC_CHANNELS_RAW')
+        @self.on_message('RC_CHANNELS')
         def listener(self, name, m):
             def set_rc(chnum, v):
                 '''Private utility for handling rc channel messages'''
                 # use port to allow ch nums greater than 8
-                self._channels._update_channel(str(m.port * 8 + chnum), v)
+                self._channels._update_channel(str(0 * 8 + chnum), v)
 
             set_rc(1, m.chan1_raw)
             set_rc(2, m.chan2_raw)
@@ -1157,6 +1157,16 @@ class Vehicle(HasObservers):
             set_rc(6, m.chan6_raw)
             set_rc(7, m.chan7_raw)
             set_rc(8, m.chan8_raw)
+            set_rc(9, m.chan9_raw)
+            set_rc(10, m.chan10_raw)
+            set_rc(11, m.chan11_raw)
+            set_rc(12, m.chan12_raw)
+            set_rc(13, m.chan13_raw)
+            set_rc(14, m.chan14_raw)
+            set_rc(15, m.chan15_raw)
+            set_rc(16, m.chan16_raw)
+            set_rc(17, m.chan17_raw)
+            set_rc(18, m.chan18_raw)
             self.notify_attribute_listeners('channels', self.channels)
 
         self._voltage = None
@@ -2544,7 +2554,7 @@ class Gimbal(object):
 
         @vehicle.on_message('MOUNT_ORIENTATION')
         def listener(vehicle, name, m):
-            self._pitch = m.pitch 
+            self._pitch = m.pitch
             self._roll = m.roll
             self._yaw = m.yaw
             vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
