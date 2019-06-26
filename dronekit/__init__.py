@@ -1142,8 +1142,7 @@ class Vehicle(HasObservers):
         # All keys are strings.
         self._channels = Channels(self, 8)
 
-        @self.on_message('RC_CHANNELS_RAW')
-        @self.on_message('RC_CHANNELS')
+        @self.on_message(['RC_CHANNELS_RAW', 'RC_CHANNELS'])
         def listener(self, name, m):
             def set_rc(chnum, v):
                 '''Private utility for handling rc channel messages'''
