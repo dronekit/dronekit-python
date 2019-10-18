@@ -32,7 +32,9 @@ A number of other useful classes and methods are listed below.
 ----
 """
 
-import asyncio
+import sys
+if sys.version_info >= (3, 7):
+    import asyncio
 import collections
 import copy
 import logging
@@ -640,11 +642,15 @@ class HasObservers(object):
                 return
             self._attribute_cache[attr_name] = value
 
+        loop = None
+
         # Notify observers.
         for fn in self._attribute_listeners.get(attr_name, []):
             try:
-                if asyncio.iscoroutinefunction(fn):
-                    asyncio.run(fn(self, attr_name, value))
+                if sys.version_info >= (3, 5) and asyncio.iscoroutinefunction(fn):
+                    if loop is None:
+                        loop = asyncio.new_event_loop()
+                    loop.run_until_complete(fn(self, attr_name, value))
                 else:
                     fn(self, attr_name, value)
             except Exception:
@@ -652,12 +658,17 @@ class HasObservers(object):
 
         for fn in self._attribute_listeners.get('*', []):
             try:
-                if asyncio.iscoroutinefunction(fn):
-                    asyncio.run(fn(self, attr_name, value))
+                if sys.version_info >= (3, 5) and asyncio.iscoroutinefunction(fn):
+                    if loop is None:
+                        loop = asyncio.new_event_loop()
+                    loop.run_until_complete(fn(self, attr_name, value))
                 else:
                     fn(self, attr_name, value)
             except Exception:
                 self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
+
+        if loop is not None:
+            loop.close()
 
     def on_attribute(self, name):
         """
