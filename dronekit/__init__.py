@@ -32,6 +32,7 @@ A number of other useful classes and methods are listed below.
 ----
 """
 
+import asyncio
 import collections
 import copy
 import logging
@@ -642,13 +643,19 @@ class HasObservers(object):
         # Notify observers.
         for fn in self._attribute_listeners.get(attr_name, []):
             try:
-                fn(self, attr_name, value)
+                if asyncio.iscoroutinefunction(fn):
+                    asyncio.run(fn(self, attr_name, value))
+                else:
+                    fn(self, attr_name, value)
             except Exception:
                 self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
 
         for fn in self._attribute_listeners.get('*', []):
             try:
-                fn(self, attr_name, value)
+                if asyncio.iscoroutinefunction(fn):
+                    asyncio.run(fn(self, attr_name, value))
+                else:
+                    fn(self, attr_name, value)
             except Exception:
                 self._logger.exception('Exception in attribute handler for %s' % attr_name, exc_info=True)
 
