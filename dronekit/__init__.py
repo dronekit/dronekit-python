@@ -33,7 +33,7 @@ A number of other useful classes and methods are listed below.
 """
 
 import sys
-if sys.version_info >= (3, 7):
+if sys.version_info >= (3, 4):
     import asyncio
 import collections
 import copy
@@ -647,7 +647,7 @@ class HasObservers(object):
         # Notify observers.
         for fn in self._attribute_listeners.get(attr_name, []):
             try:
-                if sys.version_info >= (3, 5) and asyncio.iscoroutinefunction(fn):
+                if sys.version_info >= (3, 4) and asyncio.iscoroutinefunction(fn):
                     if loop is None:
                         loop = asyncio.new_event_loop()
                     loop.run_until_complete(fn(self, attr_name, value))
@@ -658,7 +658,7 @@ class HasObservers(object):
 
         for fn in self._attribute_listeners.get('*', []):
             try:
-                if sys.version_info >= (3, 5) and asyncio.iscoroutinefunction(fn):
+                if sys.version_info >= (3, 4) and asyncio.iscoroutinefunction(fn):
                     if loop is None:
                         loop = asyncio.new_event_loop()
                     loop.run_until_complete(fn(self, attr_name, value))
