@@ -2598,9 +2598,9 @@ class Gimbal(object):
         msg = self._vehicle.message_factory.mount_configure_encode(
             0, 1,    # target system, target component
             mavutil.mavlink.MAV_MOUNT_MODE_MAVLINK_TARGETING,  #mount_mode
-            1,  # stabilize roll
-            1,  # stabilize pitch
-            1,  # stabilize yaw
+            0,  # don't stabilize roll
+            0,  # don't stabilize pitch
+            0,  # don't stabilize yaw
         )
         self._vehicle.send_mavlink(msg)
         msg = self._vehicle.message_factory.mount_control_encode(
@@ -2633,9 +2633,9 @@ class Gimbal(object):
         msg = self._vehicle.message_factory.mount_configure_encode(
             0, 1,    # target system, target component
             mavutil.mavlink.MAV_MOUNT_MODE_GPS_POINT,  # mount_mode
-            1,  # stabilize roll
-            1,  # stabilize pitch
-            1,  # stabilize yaw
+            0,  # don't stabilize roll
+            0,  # don't stabilize pitch
+            0,  # don't stabilize yaw
         )
         self._vehicle.send_mavlink(msg)
 
@@ -2643,10 +2643,10 @@ class Gimbal(object):
         if isinstance(roi, LocationGlobalRelative):
             alt = roi.alt
         elif isinstance(roi, LocationGlobal):
-            if not self.home_location:
-                self.commands.download()
-                self.commands.wait_ready()
-            alt = roi.alt - self.home_location.alt
+            if not self._vehicle.home_location:
+                self._vehicle.commands.download()
+                self._vehicle.commands.wait_ready()
+            alt = roi.alt - self._vehicle.home_location.alt
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
