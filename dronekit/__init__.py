@@ -2646,7 +2646,7 @@ class Gimbal(object):
             if not self._vehicle.home_location:
                 self._vehicle.commands.download()
                 self._vehicle.commands.wait_ready()
-            alt = roi.alt - self._vehicle.home_location.alt
+            alt = roi.alt #- self._vehicle.home_location.alt
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
