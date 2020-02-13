@@ -2640,18 +2640,18 @@ class Gimbal(object):
         self._vehicle.send_mavlink(msg)
 
         # Get altitude relative to home irrespective of Location object passed in.
+        # Global boi because python scoping rules are silly
+        alt = 0
         if isinstance(roi, LocationGlobalRelative):
             alt = roi.alt
         elif isinstance(roi, LocationGlobal):
-            if not self._vehicle.home_location:
+            if self._vehicle.home_location is not None:
                 self._vehicle.commands.download()
                 self._vehicle.commands.wait_ready()
-                # This might make sense - as what should we make alt if the vehicle
-                # doesn't have a GPS fix?
-                if self._vehicle.home_location is not None:
-                    alt = roi.alt - self._vehicle.home_location.alt
-                else:
-                    alt = roi.alt
+                alt = roi.alt - self._vehicle.home_location.alt
+            else:
+                # Just set to global instead of relative if home is none
+                alt = roi.alt
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
