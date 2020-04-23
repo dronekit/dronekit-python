@@ -1381,12 +1381,9 @@ class Vehicle(HasObservers):
                 self._logger.info('...link restored.')
             self._heartbeat_timeout = False
 
-        self._last_heartbeat = None
-
         @handler.forward_loop
         def listener(_):
             if self._heartbeat_lastreceived:
-                self._last_heartbeat = monotonic.monotonic() - self._heartbeat_lastreceived
                 self.notify_attribute_listeners('last_heartbeat', self.last_heartbeat)
 
     @property
@@ -1424,7 +1421,7 @@ class Vehicle(HasObservers):
             parameter passed to the :py:func:`connect() <dronekit.connect>` function.
 
         """
-        return self._last_heartbeat
+        return monotonic.monotonic() - self._heartbeat_lastreceived
 
     def on_message(self, name):
         """
