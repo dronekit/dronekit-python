@@ -1232,11 +1232,18 @@ class Vehicle(HasObservers):
         self._wp_loaded = True
         self._wp_uploaded = None
         self._wpts_dirty = False
+        #
+        self._wp_downloading = False
+        self._wp_mission_count = False
+        self._wp_request_timestamp = 0.0
+        self._wp_timeout = 500
+        #
         self._commands = CommandSequence(self)
 
         @self.on_message(['WAYPOINT_COUNT', 'MISSION_COUNT'])
         def listener(self, name, msg):
             if not self._wp_loaded:
+                self._wp_mission_count = True
                 self._wploader.clear()
                 self._wploader.expected_count = msg.count
                 self._master.waypoint_request_send(0)
@@ -1261,11 +1268,12 @@ class Vehicle(HasObservers):
                     pass
                 else:
                     self._wploader.add(msg)
-
                     if msg.seq + 1 < self._wploader.expected_count:
+                        self._wp_request_timestamp = time.time()
                         self._master.waypoint_request_send(msg.seq + 1)
                     else:
                         self._wp_loaded = True
+                        self._wp_downloading = False
                         self.notify_attribute_listeners('commands', self.commands)
 
         # Waypoint send to master
@@ -1277,7 +1285,17 @@ class Vehicle(HasObservers):
                 self._master.mav.send(wp)
                 self._wp_uploaded[msg.seq] = True
 
-        # TODO: Waypoint loop listeners
+        @handler.forward_loop
+        def listener(_):
+            # Waypoint loop listener
+            if self._wp_downloading is True and time.time() - self._wp_request_timestamp >= self._wp_timeout:
+                # Initiated wp download process but timeout occured
+                if self._wp_mission_count is False:
+                    # Re-request whole mission in case mission count did not arrive
+                    self._master.waypoint_request_list_send()
+                else:
+                    # Re-request next mission item to keep up with the rest items
+                    self._master.waypoint_request_send(self._wploader.wpoints[-1].seq + 1)
 
         # Parameters.
 
@@ -2961,6 +2979,9 @@ class CommandSequence(object):
         self._vehicle._ready_attrs.remove('commands')
         self._vehicle._wp_loaded = False
         self._vehicle._master.waypoint_request_list_send()
+        self._vehicle._wp_request_timestamp = time.time()
+        self._vehicle._wp_downloading = True
+        self._vehicle._wp_mission_count = False
         # BIG FIXME - wait for full wpt download before allowing any of the accessors to work
 
     def wait_ready(self, **kwargs):
