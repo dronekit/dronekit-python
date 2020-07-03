@@ -30,7 +30,8 @@ It is installed from **pip** on all platforms:
 
       sudo apt-get install python-pip python-dev
       
-  Alternatively, you can use the `ensurepip` module to install or upgrade Pip on Python 3:
+  Alternatively, you can use the `ensurepip` module to install or upgrade Pip on your system:
+
   
   .. code-block:: bash
 
