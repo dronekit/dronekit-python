@@ -220,6 +220,25 @@ class GPSInfo(object):
         return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type, self.satellites_visible)
 
 
+class Wind(object):
+    """
+    Wind information
+
+    An object of this type is returned by :py:attr: `Vehicle.wind`.
+
+    :param wind_direction: Wind direction in degrees
+    :param wind_speed: Wind speed in m/s
+    :param wind_speed_z: vertical wind speed in m/s
+    """
+    def __init__(self, wind_direction, wind_speed, wind_speed_z):
+        self.wind_direction = wind_direction
+        self.wind_speed = wind_speed
+        self.wind_speed_z = wind_speed_z
+    
+    def __str__(self):
+        return "Wind: wind direction: {}, wind speed: {}, wind speed z: {}".format(self.wind_direction, self.wind_speed, self.wind_speed_z)
+
+
 class Battery(object):
     """
     System battery information.
@@ -1057,6 +1076,19 @@ class Vehicle(HasObservers):
         self._vy = None
         self._vz = None
 
+
+        self._wind_direction = None
+        self._wind_speed = None
+        self._wind_speed_z = None
+
+        @self.on_message('WIND')
+        def listener(self,name, m):
+            """ WIND {direction : -180.0, speed : 0.0, speed_z : 0.0} """
+            self._wind_direction = m.direction
+            self._wind_speed = m.speed
+            self._wind_speed_z = m.speed_z
+
+
         @self.on_message('STATUSTEXT')
         def statustext_listener(self, name, m):
             # Log the STATUSTEXT on the autopilot logger, with the correct severity
@@ -1677,6 +1709,13 @@ class Vehicle(HasObservers):
             #Or watch using decorator: ``@vehicle.location.on_attribute('global_frame')``.
         """
         return self._location
+
+    @property
+    def wind(self):
+        """
+        Current wind status (:pu:class: `Wind`)
+        """
+        return Wind(self._wind_direction, self._wind_speed, self._wind_speed_z)
 
     @property
     def battery(self):
