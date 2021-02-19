@@ -1715,6 +1715,8 @@ class Vehicle(HasObservers):
         """
         Current wind status (:pu:class: `Wind`)
         """
+        if self._wind_direction is None or self._wind_speed is None or self._wind_speed_z is None:
+            return None
         return Wind(self._wind_direction, self._wind_speed, self._wind_speed_z)
 
     @property
