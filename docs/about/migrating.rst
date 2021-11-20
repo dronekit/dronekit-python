@@ -249,7 +249,7 @@ Observing attribute changes
 The DroneKit-Python 1.x observer function ``vehicle.add_attribute_observer`` has been replaced by 
 :py:func:`Vehicle.add_attribute_listener() <dronekit.Vehicle.add_attribute_listener>` or 
 :py:func:`Vehicle.on_attribute() <dronekit.Vehicle.on_attribute>` in DKYP2.x,  and ``Vehicle.remove_attribute_observer`` 
-has been repaced by :py:func:`remove_attribute_listener() <dronekit.Vehicle.remove_attribute_listener>`.
+has been replaced by :py:func:`remove_attribute_listener() <dronekit.Vehicle.remove_attribute_listener>`.
 
 The main difference is that the callback function now takes three arguments (the vehicle object, attribute name, attribute value)
 rather than just the attribute name. This allows you to more easily write callbacks that support attribute-specific and 
