@@ -32,7 +32,15 @@ A number of other useful classes and methods are listed below.
 ----
 """
 
+import sys
 import collections
+
+# Python3.10 removed MutableMapping from collections:
+if sys.version_info.major == 3 and sys.version_info.minor >= 10:
+    from collections.abc import MutableMapping
+else:
+    from collections import MutableMapping
+
 import copy
 import logging
 import math
@@ -2723,7 +2731,7 @@ class Gimbal(object):
         return "Gimbal: pitch={0}, roll={1}, yaw={2}".format(self.pitch, self.roll, self.yaw)
 
 
-class Parameters(collections.MutableMapping, HasObservers):
+class Parameters(MutableMapping, HasObservers):
     """
     This object is used to get and set the values of named parameters for a vehicle. See the following links for information about
     the supported parameters for each platform: `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
