@@ -1249,7 +1249,7 @@ class Vehicle(HasObservers):
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
             # ignore groundstations
-            if m.type == mavutil.mavlink.MAV_TYPE_GCS:
+            if m.type == mavutil.mavlink.MAV_TYPE_GCS or m.type == mavutil.mavlink.MAV_TYPE_GIMBAL:
                 return
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed, cache=True)
@@ -2647,9 +2647,9 @@ class Gimbal(object):
         msg = self._vehicle.message_factory.mount_configure_encode(
             0, 1,    # target system, target component
             mavutil.mavlink.MAV_MOUNT_MODE_MAVLINK_TARGETING,  #mount_mode
-            1,  # stabilize roll
-            1,  # stabilize pitch
-            1,  # stabilize yaw
+            0,  # don't stabilize roll
+            0,  # don't stabilize pitch
+            0,  # don't stabilize yaw
         )
         self._vehicle.send_mavlink(msg)
         msg = self._vehicle.message_factory.mount_control_encode(
@@ -2682,20 +2682,25 @@ class Gimbal(object):
         msg = self._vehicle.message_factory.mount_configure_encode(
             0, 1,    # target system, target component
             mavutil.mavlink.MAV_MOUNT_MODE_GPS_POINT,  # mount_mode
-            1,  # stabilize roll
-            1,  # stabilize pitch
-            1,  # stabilize yaw
+            0,  # don't stabilize roll
+            0,  # don't stabilize pitch
+            0,  # don't stabilize yaw
         )
         self._vehicle.send_mavlink(msg)
 
         # Get altitude relative to home irrespective of Location object passed in.
+        # Global boi because python scoping rules are silly
+        alt = 0
         if isinstance(roi, LocationGlobalRelative):
             alt = roi.alt
         elif isinstance(roi, LocationGlobal):
-            if not self.home_location:
-                self.commands.download()
-                self.commands.wait_ready()
-            alt = roi.alt - self.home_location.alt
+            if self._vehicle.home_location is not None:
+                self._vehicle.commands.download()
+                self._vehicle.commands.wait_ready()
+                alt = roi.alt - self._vehicle.home_location.alt
+            else:
+                # Just set to global instead of relative if home is none
+                alt = roi.alt
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
