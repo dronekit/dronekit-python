@@ -1320,13 +1320,18 @@ class Vehicle(HasObservers):
 
         @self.on_message(['PARAM_VALUE'])
         def listener(self, name, msg):
-            # If we discover a new param count, assume we
-            # are receiving a new param set.
+            # If we discover a new params count,
+            # we are modify length of params set
             if self._params_count != msg.param_count:
                 self._params_loaded = False
                 self._params_start = True
                 self._params_count = msg.param_count
-                self._params_set = [None] * msg.param_count
+
+                diff = self._params_count - len(self._params_set)
+                if diff > 0:
+                    self._params_set += [None] * diff
+                else:
+                    self._params_set[:diff]
 
             # Attempt to set the params. We throw an error
             # if the index is out of range of the count or
@@ -2544,7 +2549,7 @@ class Gimbal(object):
 
         @vehicle.on_message('MOUNT_ORIENTATION')
         def listener(vehicle, name, m):
-            self._pitch = m.pitch 
+            self._pitch = m.pitch
             self._roll = m.roll
             self._yaw = m.yaw
             vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
