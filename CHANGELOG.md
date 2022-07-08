@@ -1,7 +1,8 @@
 # Changelog
 
 
-## Version 2.9.2 (2019-03-14)
+## Version 2.9.2 (2019-03-18)
+
 
 ### Improvements
 * CI integration improvements

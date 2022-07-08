@@ -5,7 +5,7 @@
 © Copyright 2015-2016, 3D Robotics.
 mission_basic.py: Example demonstrating basic mission operations including creating, clearing and monitoring missions.
 
-Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
+Full documentation is provided at https://dronekit-python.readthedocs.io/en/latest/examples/mission_basic.html
 """
 from __future__ import print_function
 

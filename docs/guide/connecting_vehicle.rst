@@ -33,7 +33,7 @@ Connecting over a serial device will look something like this:
 
     from dronekit import connect
 
-    # Connect to the Vehicle (in this case a UDP endpoint)
+    # Connect to the Vehicle (in this case a serial endpoint)
     vehicle = connect('/dev/ttyAMA0', wait_ready=True, baud=57600)
 
 .. tip::
