@@ -1366,8 +1366,8 @@ class Vehicle(HasObservers):
                 diff = self._params_count - len(self._params_set)
                 if diff > 0:
                     self._params_set += [None] * diff
-                else:
-                    self._params_set[:diff]
+                elif diff < 0:
+                    self._params_set = self._params_set[:self._params_count]
 
             # Attempt to set the params. We throw an error
             # if the index is out of range of the count or
