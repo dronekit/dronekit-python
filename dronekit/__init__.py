@@ -242,7 +242,7 @@ class Wind(object):
         self.wind_direction = wind_direction
         self.wind_speed = wind_speed
         self.wind_speed_z = wind_speed_z
-    
+
     def __str__(self):
         return "Wind: wind direction: {}, wind speed: {}, wind speed z: {}".format(self.wind_direction, self.wind_speed, self.wind_speed_z)
 
@@ -1380,6 +1380,11 @@ class Vehicle(HasObservers):
                     self._params_set[msg.param_index] = msg
 
                 self._params_map[msg.param_id] = msg.param_value
+                print(
+                    'msg.param_id: {} msg.param_index: {} msg.param_count: {} len(self._params_map): {}'.format(
+                        msg.param_id, msg.param_index, msg.param_count, len(self._params_map)
+                    )
+                )
                 self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value,
                                                             cache=True)
             except:
@@ -2341,13 +2346,20 @@ class Vehicle(HasObservers):
         self.add_message_listener('HEARTBEAT', self.send_capabilities_request)
 
         # Ensure initial parameter download has started.
+        # TODO change to this when still trouble with infinity loop read params
+        # cnt = 50
+        # while cnt:
         while True:
             # This fn actually rate limits itself to every 2s.
             # Just retry with persistence to get our first param stream.
             self._master.param_fetch_all()
+            # TODO change to this when still trouble with full load params
+            # self._master.param_fetch_one(0)
             time.sleep(0.1)
             if self._params_count > -1:
                 break
+            # TODO change to this when still trouble with infinity loop read params
+            # cnt -= 1
 
     def send_capabilties_request(self, vehicle, name, m):
         '''An alias for send_capabilities_request.
