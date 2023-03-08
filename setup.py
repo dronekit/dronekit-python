@@ -3,6 +3,9 @@ import os
 
 version = '2.9.2'
 
+with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
+    LongDescription = f.read()
+
 setuptools.setup(
     name='dronekit',
     zip_safe=True,
