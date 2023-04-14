@@ -1249,7 +1249,7 @@ class Vehicle(HasObservers):
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
             # ignore groundstations
-            if m.type == mavutil.mavlink.MAV_TYPE_GCS:
+            if m.type == mavutil.mavlink.MAV_TYPE_GCS or (not self._handler.master.probably_vehicle_heartbeat(m)):
                 return
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed, cache=True)
@@ -1413,7 +1413,7 @@ class Vehicle(HasObservers):
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
             # ignore groundstations
-            if msg.type == mavutil.mavlink.MAV_TYPE_GCS:
+            if msg.type == mavutil.mavlink.MAV_TYPE_GCS or (not self._handler.master.probably_vehicle_heartbeat(msg)):
                 return
             self._heartbeat_system = msg.get_srcSystem()
             self._heartbeat_lastreceived = monotonic.monotonic()
