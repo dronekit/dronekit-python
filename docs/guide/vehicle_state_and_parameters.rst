@@ -250,7 +250,7 @@ The example below shows how you can declare an attribute callback using the
 .. note::
 
     The fragment above stores the result of the previous callback and only prints the output when there is a 
-    signficant change in :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>`. You might want to
+    significant change in :py:attr:`Vehicle.rangefinder <dronekit.Vehicle.rangefinder>`. You might want to
     perform caching like this to ignore updates that are not significant to your code.
         
 The examples above show how you can monitor a single attribute. You can pass the special name ('``*``') to specify a 

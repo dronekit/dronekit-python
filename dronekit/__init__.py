@@ -2859,7 +2859,7 @@ class Parameters(MutableMapping, HasObservers):
 
     def remove_attribute_listener(self, attr_name, *args, **kwargs):
         """
-        Remove a paremeter listener that was previously added using :py:func:`add_attribute_listener`.
+        Remove a parameter listener that was previously added using :py:func:`add_attribute_listener`.
 
         For example to remove the ``thr_min_callback()`` callback function:
 
