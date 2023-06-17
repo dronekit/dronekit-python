@@ -2692,10 +2692,10 @@ class Gimbal(object):
         if isinstance(roi, LocationGlobalRelative):
             alt = roi.alt
         elif isinstance(roi, LocationGlobal):
-            if not self.home_location:
-                self.commands.download()
-                self.commands.wait_ready()
-            alt = roi.alt - self.home_location.alt
+            if not self._vehicle.home_location:
+                self._vehicle.commands.download()
+                self._vehicle.commands.wait_ready()
+            alt = roi.alt - self._vehicle.home_location.alt
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
