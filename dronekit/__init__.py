@@ -247,6 +247,23 @@ class Wind(object):
         return "Wind: wind direction: {}, wind speed: {}, wind speed z: {}".format(self.wind_direction, self.wind_speed, self.wind_speed_z)
 
 
+class Servos(object):
+    """
+    The RAW values of the servo outputs.
+
+    An object of this type is returned by :py:attr:`Vehicle.servos`.
+
+    :param port: Servo output port (set of 8 outputs = 1 port). Flight stacks running on Pixhawk should use: 0 = MAIN, 1 = AUX.
+    :param servo_raw['1'] ~ servo_raw['16']: Servo output 1 ~ 16 value.
+    """
+    def __init__(self, port, servo_raw):
+        self.port = port
+        self.servo_raw = servo_raw
+    
+    def __str__(self):
+        return "Servos: servo output port: {}, servo value: {}".format(self.port, self.servo_raw)
+
+
 class Battery(object):
     """
     System battery information.
@@ -1195,6 +1212,20 @@ class Vehicle(HasObservers):
 
             self.notify_attribute_listeners('channels', self.channels)
 
+        self._port = None
+        self._servo_raw = None
+
+        @self.on_message('SERVO_OUTPUT_RAW')
+        def listener(self, name, m):
+            def set_servo(servonum, v):
+                """Private utility for handling servo output messages"""
+                self._servo_raw[str(i)] = v
+            self._port = m.port
+            self._servo_raw = {}
+            for i in range(1, 16+1):
+                set_servo(i, getattr(m, "servo{}_raw".format(i)))
+            self.notify_attribute_listeners('servos', self.servos)
+        
         self._voltage = None
         self._current = None
         self._level = None
@@ -1727,6 +1758,15 @@ class Vehicle(HasObservers):
             return None
         return Wind(self._wind_direction, self._wind_speed, self._wind_speed_z)
 
+    @property
+    def servos(self):
+        """
+        Current servo outputs (:py:class:`Servos`)
+        """
+        if self._port is None or self._servo_raw is None:
+            return None
+        return Servos(self._port, self._servo_raw)
+    
     @property
     def battery(self):
         """
