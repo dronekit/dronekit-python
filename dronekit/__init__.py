@@ -1752,7 +1752,7 @@ class Vehicle(HasObservers):
     @property
     def wind(self):
         """
-        Current wind status (:pu:class: `Wind`)
+        Current wind status (:py:class: `Wind`)
         """
         if self._wind_direction is None or self._wind_speed is None or self._wind_speed_z is None:
             return None
