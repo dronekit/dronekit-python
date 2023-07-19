@@ -1222,7 +1222,7 @@ class Vehicle(HasObservers):
                 self._servo_raw[str(i)] = v
             self._port = m.port
             self._servo_raw = {}
-            for i in range(1, 16+1):
+            for i in range(1, len(m.lengths)-1):
                 set_servo(i, getattr(m, "servo{}_raw".format(i)))
             self.notify_attribute_listeners('servos', self.servos)
         
