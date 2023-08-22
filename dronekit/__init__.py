@@ -1380,13 +1380,7 @@ class Vehicle(HasObservers):
                     self._params_set[msg.param_index] = msg
 
                 self._params_map[msg.param_id] = msg.param_value
-                print(
-                    'msg.param_id: {} msg.param_index: {} msg.param_count: {} len(self._params_map): {}'.format(
-                        msg.param_id, msg.param_index, msg.param_count, len(self._params_map)
-                    )
-                )
-                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value,
-                                                            cache=True)
+                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value, cache=True)
             except:
                 import traceback
                 traceback.print_exc()
@@ -2340,8 +2334,7 @@ class Vehicle(HasObservers):
 
         # Initialize data stream.
         if rate is not None:
-            self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
-                                                      rate, 1)
+            self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
 
         self.add_message_listener('HEARTBEAT', self.send_capabilities_request)
 
