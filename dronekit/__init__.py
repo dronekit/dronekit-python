@@ -242,7 +242,7 @@ class Wind(object):
         self.wind_direction = wind_direction
         self.wind_speed = wind_speed
         self.wind_speed_z = wind_speed_z
-    
+
     def __str__(self):
         return "Wind: wind direction: {}, wind speed: {}, wind speed z: {}".format(self.wind_direction, self.wind_speed, self.wind_speed_z)
 
@@ -1356,13 +1356,18 @@ class Vehicle(HasObservers):
 
         @self.on_message(['PARAM_VALUE'])
         def listener(self, name, msg):
-            # If we discover a new param count, assume we
-            # are receiving a new param set.
+            # If we discover a new params count,
+            # we are modify length of params set
             if self._params_count != msg.param_count:
                 self._params_loaded = False
                 self._params_start = True
                 self._params_count = msg.param_count
-                self._params_set = [None] * msg.param_count
+
+                diff = self._params_count - len(self._params_set)
+                if diff > 0:
+                    self._params_set += [None] * diff
+                elif diff < 0:
+                    self._params_set = self._params_set[:self._params_count]
 
             # Attempt to set the params. We throw an error
             # if the index is out of range of the count or
@@ -1375,8 +1380,7 @@ class Vehicle(HasObservers):
                     self._params_set[msg.param_index] = msg
 
                 self._params_map[msg.param_id] = msg.param_value
-                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value,
-                                                            cache=True)
+                self._parameters.notify_attribute_listeners(msg.param_id, msg.param_value, cache=True)
             except:
                 import traceback
                 traceback.print_exc()
@@ -2330,19 +2334,25 @@ class Vehicle(HasObservers):
 
         # Initialize data stream.
         if rate is not None:
-            self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL,
-                                                      rate, 1)
+            self._master.mav.request_data_stream_send(0, 0, mavutil.mavlink.MAV_DATA_STREAM_ALL, rate, 1)
 
         self.add_message_listener('HEARTBEAT', self.send_capabilities_request)
 
         # Ensure initial parameter download has started.
+        # TODO change to this when still trouble with infinity loop read params
+        # cnt = 50
+        # while cnt:
         while True:
             # This fn actually rate limits itself to every 2s.
             # Just retry with persistence to get our first param stream.
             self._master.param_fetch_all()
+            # TODO change to this when still trouble with full load params
+            # self._master.param_fetch_one(0)
             time.sleep(0.1)
             if self._params_count > -1:
                 break
+            # TODO change to this when still trouble with infinity loop read params
+            # cnt -= 1
 
     def send_capabilties_request(self, vehicle, name, m):
         '''An alias for send_capabilities_request.

@@ -3,6 +3,7 @@
 
 ## Version 2.9.2 (2019-03-18)
 
+
 ### Improvements
 * CI integration improvements
 * Python3 compatability
