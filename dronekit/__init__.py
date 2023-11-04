@@ -2917,7 +2917,7 @@ class Parameters(MutableMapping, HasObservers):
         return super(Parameters, self).on_attribute(attr_name, *args, **kwargs)
 
 
-class Command(mavutil.mavlink.MAVLink_mission_item_message):
+class Command(mavutil.mavlink.MAVLink_mission_item_int_message):
     """
     A waypoint object.
 
