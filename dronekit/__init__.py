@@ -1309,7 +1309,7 @@ class Vehicle(HasObservers):
                         self.notify_attribute_listeners('commands', self.commands)
 
         # Waypoint send to master
-        @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
+        @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST_INT'])
         def listener(self, name, msg):
             if self._wp_uploaded is not None:
                 wp = self._wploader.wp(msg.seq)
