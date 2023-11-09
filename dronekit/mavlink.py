@@ -72,7 +72,10 @@ class mavudpin_multi(mavutil.mavfile):
                 if e.errno in [errno.EAGAIN, errno.EWOULDBLOCK, errno.ECONNREFUSED]:
                     return ""
             if self.udp_server:
-                self.addresses.add(new_addr)
+                try:
+                    self.addresses.add(new_addr)
+                except:
+                    return ""
             elif self.broadcast:
                 self.addresses = {new_addr}
             return data
