@@ -11,7 +11,7 @@ DroneKit-Python helps you create powerful apps for UAVs.
 
 # ⚠️ ATTENTION: MAINTAINERS NEEDED ⚠️
 
-Hey it's true this project is not very active, but it could be with your help. We are looking for maintainers interested in keeping the project alive by keep up with CI and PRs. If you are interested in helping please apply by [creating an issue]([url](https://github.com/dronekit/dronekit-python/issues/new)) and listing the reasons why you would like to help, in return we will be granting committer access to folks who are truly interested in helping.
+Hey it's true this project is not very active, but it could be with your help. We are looking for maintainers interested in keeping the project alive by keep up with CI and PRs. If you are interested in helping please apply by [creating an issue]([url](https://github.com/dronekit/dronekit-python/issues/new)) and listing the reasons why you would like to help, in return we will be granting committer access to folks who are truly interested in helping..
 
 
 ## Overview
