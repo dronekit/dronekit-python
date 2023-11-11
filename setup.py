@@ -1,7 +1,7 @@
 import setuptools
 import os
 
-version = '2.9.2'
+version = '2.9.3'
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as f:
     LongDescription = f.read()
