@@ -1286,7 +1286,7 @@ class Vehicle(HasObservers):
             self._home_location = LocationGlobal(msg.latitude / 1.0e7, msg.longitude / 1.0e7, msg.altitude / 1000.0)
             self.notify_attribute_listeners('home_location', self.home_location, cache=True)
 
-        @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
+        @self.on_message(['WAYPOINT', 'MISSION_ITEM_INT'])
         def listener(self, name, msg):
             if not self._wp_loaded:
                 if msg.seq == 0:
