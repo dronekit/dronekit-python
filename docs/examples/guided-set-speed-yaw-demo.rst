@@ -189,16 +189,16 @@ The functions for controlling vehicle movement are:
   DroneKit position controller method. It is called from :ref:`goto <example_guided_mode_goto_convenience>` to fly a triangular path.
 * :ref:`goto_position_target_global_int() <example_guided_mode_goto_position_target_global_int>` 
   is a position controller that uses the 
-  `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ command.
+  `SET_POSITION_TARGET_GLOBAL_INT <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_GLOBAL_INT>`_ command.
 * :ref:`goto_position_target_local_ned() <example_guided_mode_goto_position_target_local_ned>` 
-  is a position controller that uses `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ 
+  is a position controller that uses `SET_POSITION_TARGET_LOCAL_NED <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_LOCAL_NED>`_ 
   command (taking values in NED frame, relative to the home position). This is used to fly a square path. 
   The script is put to sleep for a certain time in order to allow the vehicle to reach the specified position.
 * :ref:`send_ned_velocity() <guided_mode_copter_velocity_control>` is a velocity controller. 
-  It uses `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ 
+  It uses `SET_POSITION_TARGET_LOCAL_NED <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_LOCAL_NED>`_ 
   to fly a square path using velocity vectors to define the speed in each direction. 
 * :ref:`send_global_velocity() <example_guided_mode_send_global_velocity>` is a velocity controller. 
-  It uses `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ 
+  It uses `SET_POSITION_TARGET_GLOBAL_INT <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_GLOBAL_INT>`_ 
   to fly a diamond-shaped path. The behaviour is essentially the same as for ``send_ned_velocity()`` 
   because the velocity components in both commands are in the NED frame.
 * :ref:`goto <example_guided_mode_goto_convenience>` is a convenience function for specifying a target location 
@@ -262,7 +262,7 @@ send_global_velocity()
 ----------------------
 
 The function ``send_global_velocity()`` generates a 
-`SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ 
+`SET_POSITION_TARGET_GLOBAL_INT <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_GLOBAL_INT>`_ 
 MAVLink message which is used to directly specify the speed components of the vehicle in the NED
 frame.
 
@@ -359,7 +359,7 @@ The ``type_mask`` enables the position parameters (the last three bits of of the
 
 .. note:: 
 
-    The `MAVLink protocol documentation <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ 
+    The `MAVLink protocol documentation <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_LOCAL_NED>`_ 
     lists a number of possible frames of reference. Up until Copter 3.2.1 the actual frame used is always 
     relative to the home location (as indicated by MAV_FRAME_LOCAL_NED). Starting from Copter 3.3
     you can specify `other frames <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/#set_position_target_local_ned>`_,

@@ -83,8 +83,8 @@ for all positional movement commands until it is set to another value.
 .. tip::
 
     You can also set the position by sending the MAVLink commands 
-    `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ or 
-    `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_, specifying 
+    `SET_POSITION_TARGET_GLOBAL_INT <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_GLOBAL_INT>`_ or 
+    `SET_POSITION_TARGET_LOCAL_NED <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_LOCAL_NED>`_, specifying 
     a ``type_mask`` bitmask that enables the position parameters. The main difference between these commands is 
     that the former allows you to specify the location relative to the "global" frames (like 
     ``Vehicle.simple_goto()``), while the later lets you specify the location in NED co-ordinates relative 
@@ -175,7 +175,7 @@ When moving the vehicle you can send separate commands to control the yaw (and o
 .. tip::
 
     You can also control the velocity using the 
-    `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ 
+    `SET_POSITION_TARGET_GLOBAL_INT <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_GLOBAL_INT>`_ 
     MAVLink command, as described in :ref:`example_guided_mode_send_global_velocity`. 
 
 
@@ -189,8 +189,8 @@ ArduPilot does not currently support controlling the vehicle by specifying accel
 
 .. note:: 
 
-    The `SET_POSITION_TARGET_GLOBAL_INT <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_GLOBAL_INT>`_ and 
-    `SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ 
+    The `SET_POSITION_TARGET_GLOBAL_INT <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_GLOBAL_INT>`_ and 
+    `SET_POSITION_TARGET_LOCAL_NED <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_LOCAL_NED>`_ 
     MAVLink commands allow you to specify the acceleration, force and yaw. However, commands setting 
     these parameters are ignored by the vehicle.
 
@@ -221,7 +221,7 @@ to encode the message and then calling :py:func:`send_mavlink() <dronekit.Vehicl
 
 ``message_factory()`` uses a factory method for the encoding. The name of this method will always be the 
 lower case version of the message/command name with ``_encode`` appended. For example, to encode a 
-`SET_POSITION_TARGET_LOCAL_NED <https://pixhawk.ethz.ch/mavlink/#SET_POSITION_TARGET_LOCAL_NED>`_ 
+`SET_POSITION_TARGET_LOCAL_NED <https://mavlink.io/en/messages/common.html#SET_POSITION_TARGET_LOCAL_NED>`_ 
 message we call ``message_factory.set_position_target_local_ned_encode()`` with values for all the 
 message fields as arguments:
 
@@ -248,7 +248,7 @@ really intended for a specific component.
 
 .. _guided_mode_how_to_send_commands_command_long:
 
-In Copter, the `COMMAND_LONG message <https://pixhawk.ethz.ch/mavlink/#COMMAND_LONG>`_ can be used send/package 
+In Copter, the `COMMAND_LONG message <https://mavlink.io/en/messages/common.html#COMMAND_LONG>`_ can be used send/package 
 *a number* of different `supported MAV_CMD commands <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_. 
 The factory function is again the lower case message name with suffix ``_encode`` (``message_factory.command_long_encode``). 
 The message parameters include the actual command to be sent (in the code fragment below ``MAV_CMD_CONDITION_YAW``) and its fields.
@@ -474,7 +474,7 @@ Other information
 =================
 
 * `NED Frame <http://en.wikipedia.org/wiki/North_east_down>`_
-* `MISSION_ITEM <https://pixhawk.ethz.ch/mavlink/#MISSION_ITEM>`_
+* `MISSION_ITEM <https://mavlink.io/en/messages/common.html#MISSION_ITEM>`_
 * `GUIDED Mode for Copter <http://copter.ardupilot.com/wiki/flying-arducopter/flight-modes/ac2_guidedmode/>`_ (wiki).
 * `GUIDED mode for Plane <http://plane.ardupilot.com/wiki/flying/flight-modes/#guided>`_ (wiki).
 * `Copter Commands in Guided Mode <http://dev.ardupilot.com/wiki/copter-commands-in-guided-mode/>`_ (wiki).
