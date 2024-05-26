@@ -32,15 +32,7 @@ A number of other useful classes and methods are listed below.
 ----
 """
 
-import sys
 import collections
-
-# Python3.10 removed MutableMapping from collections:
-if sys.version_info.major == 3 and sys.version_info.minor >= 10:
-    from collections.abc import MutableMapping
-else:
-    from collections import MutableMapping
-
 import copy
 import logging
 import math
@@ -226,25 +218,6 @@ class GPSInfo(object):
 
     def __str__(self):
         return "GPSInfo:fix=%s,num_sat=%s" % (self.fix_type, self.satellites_visible)
-
-
-class Wind(object):
-    """
-    Wind information
-
-    An object of this type is returned by :py:attr: `Vehicle.wind`.
-
-    :param wind_direction: Wind direction in degrees
-    :param wind_speed: Wind speed in m/s
-    :param wind_speed_z: vertical wind speed in m/s
-    """
-    def __init__(self, wind_direction, wind_speed, wind_speed_z):
-        self.wind_direction = wind_direction
-        self.wind_speed = wind_speed
-        self.wind_speed_z = wind_speed_z
-    
-    def __str__(self):
-        return "Wind: wind direction: {}, wind speed: {}, wind speed z: {}".format(self.wind_direction, self.wind_speed, self.wind_speed_z)
 
 
 class Battery(object):
@@ -816,10 +789,10 @@ class Channels(dict):
     def _update_channel(self, channel, value):
         # If we have channels on different ports, we expand the Channels
         # object to support them.
+        channel = int(channel)
         self._readonly = False
         self[channel] = value
         self._readonly = True
-        channel = int(channel)
         self._count = max(self._count, channel)
 
     @property
@@ -1084,19 +1057,6 @@ class Vehicle(HasObservers):
         self._vy = None
         self._vz = None
 
-
-        self._wind_direction = None
-        self._wind_speed = None
-        self._wind_speed_z = None
-
-        @self.on_message('WIND')
-        def listener(self,name, m):
-            """ WIND {direction : -180.0, speed : 0.0, speed_z : 0.0} """
-            self._wind_direction = m.direction
-            self._wind_speed = m.speed
-            self._wind_speed_z = m.speed_z
-
-
         @self.on_message('STATUSTEXT')
         def statustext_listener(self, name, m):
             # Log the STATUSTEXT on the autopilot logger, with the correct severity
@@ -1182,17 +1142,21 @@ class Vehicle(HasObservers):
         # All keys are strings.
         self._channels = Channels(self, 8)
 
-        @self.on_message(['RC_CHANNELS_RAW', 'RC_CHANNELS'])
+        @self.on_message('RC_CHANNELS_RAW')
         def listener(self, name, m):
             def set_rc(chnum, v):
                 '''Private utility for handling rc channel messages'''
                 # use port to allow ch nums greater than 8
-                port = 0 if name == "RC_CHANNELS" else m.port
-                self._channels._update_channel(str(port * 8 + chnum), v)
+                self._channels._update_channel(str(m.port * 8 + chnum), v)
 
-            for i in range(1, (18 if name == "RC_CHANNELS" else 8)+1):
-                set_rc(i, getattr(m, "chan{}_raw".format(i)))
-
+            set_rc(1, m.chan1_raw)
+            set_rc(2, m.chan2_raw)
+            set_rc(3, m.chan3_raw)
+            set_rc(4, m.chan4_raw)
+            set_rc(5, m.chan5_raw)
+            set_rc(6, m.chan6_raw)
+            set_rc(7, m.chan7_raw)
+            set_rc(8, m.chan8_raw)
             self.notify_attribute_listeners('channels', self.channels)
 
         self._voltage = None
@@ -1249,7 +1213,7 @@ class Vehicle(HasObservers):
         @self.on_message('HEARTBEAT')
         def listener(self, name, m):
             # ignore groundstations
-            if m.type == mavutil.mavlink.MAV_TYPE_GCS or (not self._handler.master.probably_vehicle_heartbeat(m)):
+            if m.type == mavutil.mavlink.MAV_TYPE_GCS:
                 return
             self._armed = (m.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
             self.notify_attribute_listeners('armed', self.armed, cache=True)
@@ -1286,7 +1250,7 @@ class Vehicle(HasObservers):
             self._home_location = LocationGlobal(msg.latitude / 1.0e7, msg.longitude / 1.0e7, msg.altitude / 1000.0)
             self.notify_attribute_listeners('home_location', self.home_location, cache=True)
 
-        @self.on_message(['WAYPOINT', 'MISSION_ITEM'])
+        @self.on_message(['WAYPOINT', 'MISSION_ITEM', 'MISSION_ITEM_INT'])
         def listener(self, name, msg):
             if not self._wp_loaded:
                 if msg.seq == 0:
@@ -1309,7 +1273,7 @@ class Vehicle(HasObservers):
                         self.notify_attribute_listeners('commands', self.commands)
 
         # Waypoint send to master
-        @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST'])
+        @self.on_message(['WAYPOINT_REQUEST', 'MISSION_REQUEST', 'MISSION_REQUEST_INT'])
         def listener(self, name, msg):
             if self._wp_uploaded is not None:
                 wp = self._wploader.wp(msg.seq)
@@ -1413,7 +1377,7 @@ class Vehicle(HasObservers):
         @self.on_message(['HEARTBEAT'])
         def listener(self, name, msg):
             # ignore groundstations
-            if msg.type == mavutil.mavlink.MAV_TYPE_GCS or (not self._handler.master.probably_vehicle_heartbeat(msg)):
+            if msg.type == mavutil.mavlink.MAV_TYPE_GCS:
                 return
             self._heartbeat_system = msg.get_srcSystem()
             self._heartbeat_lastreceived = monotonic.monotonic()
@@ -1717,15 +1681,6 @@ class Vehicle(HasObservers):
             #Or watch using decorator: ``@vehicle.location.on_attribute('global_frame')``.
         """
         return self._location
-
-    @property
-    def wind(self):
-        """
-        Current wind status (:pu:class: `Wind`)
-        """
-        if self._wind_direction is None or self._wind_speed is None or self._wind_speed_z is None:
-            return None
-        return Wind(self._wind_direction, self._wind_speed, self._wind_speed_z)
 
     @property
     def battery(self):
@@ -2589,7 +2544,7 @@ class Gimbal(object):
 
         @vehicle.on_message('MOUNT_ORIENTATION')
         def listener(vehicle, name, m):
-            self._pitch = m.pitch
+            self._pitch = m.pitch 
             self._roll = m.roll
             self._yaw = m.yaw
             vehicle.notify_attribute_listeners('gimbal', vehicle.gimbal)
@@ -2731,7 +2686,7 @@ class Gimbal(object):
         return "Gimbal: pitch={0}, roll={1}, yaw={2}".format(self.pitch, self.roll, self.yaw)
 
 
-class Parameters(MutableMapping, HasObservers):
+class Parameters(collections.abc.MutableMapping, HasObservers):
     """
     This object is used to get and set the values of named parameters for a vehicle. See the following links for information about
     the supported parameters for each platform: `Copter Parameters <http://copter.ardupilot.com/wiki/configuration/arducopter-parameters/>`_,
