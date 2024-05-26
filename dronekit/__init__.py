@@ -1243,7 +1243,12 @@ class Vehicle(HasObservers):
             if not self._wp_loaded:
                 self._wploader.clear()
                 self._wploader.expected_count = msg.count
-                self._master.waypoint_request_send(0)
+                # self._master.waypoint_request_send(0)
+                self._master.mav.mission_request_int_send(
+                    target_system=self._master.target_system,
+                    target_component=self._master.target_component,
+                    seq=0  # Sequence number of the mission item to request
+                )
 
         @self.on_message(['HOME_POSITION'])
         def listener(self, name, msg):
@@ -1267,7 +1272,12 @@ class Vehicle(HasObservers):
                     self._wploader.add(msg)
 
                     if msg.seq + 1 < self._wploader.expected_count:
-                        self._master.waypoint_request_send(msg.seq + 1)
+                        # self._master.waypoint_request_send(msg.seq + 1)
+                        self._master.mav.mission_request_int_send(
+                            target_system=self._master.target_system,
+                            target_component=self._master.target_component,
+                            seq=msg.seq + 1  # Sequence number of the mission item to request
+                        )
                     else:
                         self._wp_loaded = True
                         self.notify_attribute_listeners('commands', self.commands)
@@ -2188,7 +2198,7 @@ class Vehicle(HasObservers):
         else:
             raise ValueError('Expecting location to be LocationGlobal or LocationGlobalRelative.')
 
-        self._master.mav.mission_item_send(0, 0, 0, frame,
+        self._master.mav.mission_item_int_send(0, 0, 0, frame,
                                            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 2, 0, 0,
                                            0, 0, 0, location.lat, location.lon,
                                            alt)
