@@ -136,7 +136,7 @@ class LocationGlobal(object):
 
 class LocationGlobalRelative(object):
     """
-    A global location object, with attitude relative to home location altitude.
+    A global location object, with altitude relative to home location altitude.
 
     The latitude and longitude are relative to the `WGS84 coordinate system <http://en.wikipedia.org/wiki/World_Geodetic_System>`_.
     The altitude is relative to the *home position*.
