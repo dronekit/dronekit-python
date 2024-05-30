@@ -248,8 +248,8 @@ class MAVConnection(object):
                                 )
 
             except APIException as e:
-                #self._logger.exception('Exception in MAVLink input loop')
-                self._logger.warning('%s' % str(e))
+                self._logger.exception('Exception in MAVLink input loop')
+                self._logger.error('%s' % str(e))
                 self._alive = False
                 self.master.close()
                 self._death_error = e
