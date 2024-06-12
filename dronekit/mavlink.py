@@ -281,7 +281,7 @@ class MAVConnection(object):
 
     def fix_targets(self, message):
         """Set correct target IDs for our vehicle"""
-        if hasattr(message, 'target_system'):
+        if hasattr(message, 'target_system') and message.target_system < 0:
             message.target_system = self.target_system
 
     def forward_loop(self, fn):
