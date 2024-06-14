@@ -816,10 +816,10 @@ class Channels(dict):
     def _update_channel(self, channel, value):
         # If we have channels on different ports, we expand the Channels
         # object to support them.
-        channel = int(channel)
         self._readonly = False
         self[channel] = value
         self._readonly = True
+        channel = int(channel)
         self._count = max(self._count, channel)
 
     @property
