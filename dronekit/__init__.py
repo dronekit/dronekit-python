@@ -2958,6 +2958,14 @@ class Command(mavutil.mavlink.MAVLink_mission_item_message):
     pass
 
 
+class CommandInt(mavutil.mavlink.MAVLink_mission_item_int_message):
+    """
+    A waypoint object.
+    The same as Command class but latitude and longitude passed as integers
+    """
+    pass
+
+
 class CommandSequence(object):
     """
     A sequence of vehicle waypoints (a "mission").
