@@ -36,8 +36,9 @@ import sys
 import collections
 
 # Python3.10 removed MutableMapping from collections:
-if sys.version_info.major == 3 and sys.version_info.minor >= 10:
-    from collections.abc import MutableMapping
+if sys.version_info.major == 3:
+    if sys.version_info.minor >= 10:
+        from collections.abc import MutableMapping
 else:
     from collections import MutableMapping
 
