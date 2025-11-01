@@ -104,7 +104,7 @@ def send_attitude_target(roll_angle = 0.0, pitch_angle = 0.0,
         0, # time_boot_ms
         1, # Target system
         1, # Target component
-        0b00000000 if use_yaw_rate else 0b00000100,
+        0b00000011 if use_yaw_rate else 0b00000111,
         to_quaternion(roll_angle, pitch_angle, yaw_angle), # Quaternion
         0, # Body roll rate in radian
         0, # Body pitch rate in radian
