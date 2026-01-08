@@ -48,7 +48,6 @@ import struct
 import time
 
 import monotonic
-from past.builtins import basestring
 
 from pymavlink import mavutil, mavwp
 from pymavlink.dialects.v10 import ardupilotmega
@@ -1646,7 +1645,7 @@ class Vehicle(HasObservers):
 
     @mode.setter
     def mode(self, v):
-        if isinstance(v, basestring):
+        if isinstance(v, (bytes, str)):
             v = VehicleMode(v)
 
         if self._autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
@@ -2401,7 +2400,7 @@ class Vehicle(HasObservers):
         if list(types) == [True] or list(types) == []:
             types = self._default_ready_attrs
 
-        if not all(isinstance(item, basestring) for item in types):
+        if not all(isinstance(item, (bytes, str)) for item in types):
             raise ValueError('wait_ready expects one or more string arguments.')
 
         # Wait for these attributes to have been set.
