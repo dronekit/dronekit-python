@@ -48,7 +48,9 @@ import struct
 import time
 
 import monotonic
-from past.builtins import basestring
+
+if sys.version_info.major >= 3:
+    basestring = str
 
 from pymavlink import mavutil, mavwp
 from pymavlink.dialects.v10 import ardupilotmega
